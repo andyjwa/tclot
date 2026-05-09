@@ -1124,9 +1124,34 @@ function App() {
       ? processedCompleteGws[processedCompleteGws.length - 1]
       : null
 
+  /**
+   * `useDraftBootstrapEvents` can be one snapshot behind; `fplLiveLandingGw` updates on each
+   * live load. Take the max so Squads & Results / Live roll forward when FPL bumps `current`.
+   */
+  const mergedFplCalendarCurrent = useMemo(() => {
+    const a = Number(draftBootstrapEvents.current)
+    const b = Number(fplLiveLandingGw)
+    const aOk = Number.isFinite(a) && a >= 1 && a <= 38
+    const bOk = Number.isFinite(b) && b >= 1 && b <= 38
+    if (aOk && bOk) return Math.max(a, b)
+    if (aOk) return a
+    if (bOk) return b
+    return null
+  }, [draftBootstrapEvents.current, fplLiveLandingGw])
+
   const draftGwCalendarCurrent =
-    draftBootstrapEvents.current ?? fplLiveLandingGw
+    mergedFplCalendarCurrent ??
+    draftBootstrapEvents.current ??
+    fplLiveLandingGw
   const draftGwCalendarNext = draftBootstrapEvents.next
+
+  /** Drop explicit GW pick when FPL calendar moves past it (follow “current” without reload). */
+  useEffect(() => {
+    const cur = Number(mergedFplCalendarCurrent)
+    const pinned = liveGw
+    if (pinned == null || !Number.isFinite(cur)) return
+    if (cur > pinned) setLiveGw(null)
+  }, [mergedFplCalendarCurrent, liveGw])
 
   /** Waiver GW picker: drops-gw-live GWs plus draft bootstrap current/next (shows GW35 before redeploy). */
   const waiverGwPickerOptions = useMemo(() => {
@@ -1390,7 +1415,7 @@ function App() {
 
   const liveGameweek = resolveLiveGameweek({
     matches,
-    bootstrapCurrent: draftBootstrapEvents.current ?? fplLiveLandingGw,
+    bootstrapCurrent: mergedFplCalendarCurrent,
     previousGameweek,
     nextEvent,
     fplLiveLandingGw,
@@ -2965,7 +2990,7 @@ function App() {
               kitIndexByEntry={kitIndexByEntry}
               leagueId={data?.league?.id ?? null}
               waiverOutGwRows={waiverOutGwRows}
-              fplDraftCurrentGw={fplLiveLandingGw}
+              fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
             />
           )}
 
