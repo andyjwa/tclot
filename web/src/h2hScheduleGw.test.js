@@ -16,7 +16,7 @@ test('h2hGameweekFullyFinished', () => {
   assert.equal(h2hGameweekFullyFinished(matchesThrough35, 36), false)
 })
 
-test('resolveLiveGameweek — calendar on 36, H2H through 35', () => {
+test('resolveLiveGameweek — follows FPL current even when H2H GW36 not finished in JSON', () => {
   assert.equal(
     resolveLiveGameweek({
       matches: matchesThrough35,
@@ -25,7 +25,18 @@ test('resolveLiveGameweek — calendar on 36, H2H through 35', () => {
       nextEvent: 36,
       previousGameweek: 35,
     }),
-    35,
+    36,
+  )
+})
+
+test('resolveLiveGameweek — bootstrap alone rolls Live to new GW', () => {
+  assert.equal(
+    resolveLiveGameweek({
+      matches: matchesThrough35,
+      bootstrapCurrent: 36,
+      previousGameweek: 35,
+    }),
+    36,
   )
 })
 

@@ -62,17 +62,25 @@ export function resolveLiveGameweek({
   const explicit = Number(explicitLiveGw)
   if (Number.isFinite(explicit) && explicit >= 1) return explicit
 
-  const lastFinished = lastFinishedH2hGameweek(matches)
-  const cur = Number(bootstrapCurrent ?? fplLiveLandingGw)
-  if (Number.isFinite(cur) && cur >= 1 && h2hGameweekFullyFinished(matches, cur)) {
-    return cur
+  /**
+   * Live tab must track draft `event/{gw}/live`, which follows FPL `events.current`.
+   * Do not require `details.json` H2H rows to be finished — that file can lag the calendar
+   * or GW36 can be “live” before all eight fixtures are `finished`.
+   */
+  const fromCalendar = Number(bootstrapCurrent ?? fplLiveLandingGw)
+  if (Number.isFinite(fromCalendar) && fromCalendar >= 1 && fromCalendar <= 38) {
+    return fromCalendar
   }
-  if (lastFinished != null) return lastFinished
 
   const landing = Number(fplLiveLandingGw)
-  if (Number.isFinite(landing) && landing >= 1) return landing
+  if (Number.isFinite(landing) && landing >= 1 && landing <= 38) return landing
+
   const next = Number(nextEvent)
-  if (Number.isFinite(next) && next >= 1) return next
+  if (Number.isFinite(next) && next >= 1 && next <= 38) return next
+
+  const lastFinished = lastFinishedH2hGameweek(matches)
+  if (lastFinished != null) return lastFinished
+
   const prev = Number(previousGameweek)
   if (Number.isFinite(prev) && prev >= 1) return prev
   return 1
