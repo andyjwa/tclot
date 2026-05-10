@@ -30,13 +30,20 @@ async function fetchElementSummary(elementId) {
   throw lastErr ?? new Error('Failed to load player history');
 }
 
+/** Gameweek index on a history row — classic API uses `round`, draft uses `event`. */
+function historyGw(h) {
+  if (!h || typeof h !== 'object') return NaN;
+  const n = Number(h.round ?? h.event);
+  return Number.isFinite(n) ? n : NaN;
+}
+
 /** Every gameweek row FPL returns for this player (current season `history`), oldest GW first. */
 function normalizeHistoryRows(payload) {
   const raw = payload?.history;
   if (!Array.isArray(raw)) return [];
   return [...raw]
-    .filter((h) => h && Number.isFinite(Number(h.round)))
-    .sort((a, b) => Number(a.round) - Number(b.round));
+    .filter((h) => h && Number.isFinite(historyGw(h)))
+    .sort((a, b) => historyGw(a) - historyGw(b));
 }
 
 /** Optional defensive-contribution count if draft/classic history ever exposes it. */
@@ -295,7 +302,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
                   </thead>
                   <tbody>
                     {historyRows.map((h, i) => {
-                      const round = Number(h.round);
+                      const round = historyGw(h);
                       const dc = historyDcCount(h);
                       let ownerCell = (
                         <span className="live-player-slide__owner-placeholder muted" aria-hidden>

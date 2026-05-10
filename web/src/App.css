@@ -5846,13 +5846,24 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
   border-color: rgba(250, 204, 21, 0.35);
 }
 
-@media (max-width: 560px) {
+/* Narrow width, or small/medium portrait: stack H2H sides vertically with tight gap.
+   Reset flex: 1 1 240px on `.live-fixture-season-h2h__side` — in column layout the 240px
+   basis applies to height and leaves a large empty band between home and away rows. */
+@media (max-width: 560px),
+  (orientation: portrait) and (min-width: 561px) and (max-width: 900px) {
   .live-fixture-season-h2h__side--away {
     justify-content: flex-start;
   }
 
   .live-fixture-season-h2h__row {
     flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .live-fixture-season-h2h__row .live-fixture-season-h2h__side {
+    flex: 0 0 auto;
+    width: 100%;
   }
 }
 

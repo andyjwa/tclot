@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-10T13:42:05.591Z",
+  "generated": "2026-05-10T13:48:28.646Z",
   "note": "Successful waiver (transactionKind w) and free-agency (f) swaps. droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)",
   "rows": [
     {
@@ -25,7 +25,7 @@
       "waiverPriority": null,
       "waiverWireIndex": null,
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 4,
       "transactionKind": "f"
     },
     {
