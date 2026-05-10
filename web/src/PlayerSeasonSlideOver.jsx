@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { buildElementOwnerLeagueEntryByGw } from './elementFantasyOwnerByGw.js';
+import { defensiveContributionPointThreshold } from './fplBonusFromBps.js';
 import { draftResourceUrl, fplApiBase } from './fplDraftUrl';
 import { TeamAvatar } from './TeamAvatar.jsx';
 
@@ -88,6 +89,35 @@ function HistoryStatBadge({ emoji, count, singularLabel, pluralLabel, empty = '�
   );
 }
 
+/** Season history DC: 🪖 only when actions meet position threshold; else raw progress; ×n = full thresholds met. */
+function HistoryDcCell({ dc, elementTypeId }) {
+  const raw = dc == null ? NaN : Number(dc);
+  if (!Number.isFinite(raw) || raw < 1) {
+    return <span className="tabular muted">—</span>;
+  }
+  const threshold = defensiveContributionPointThreshold(elementTypeId);
+  if (threshold == null) {
+    return <span className="tabular">{raw}</span>;
+  }
+  if (raw < threshold) {
+    const title = `${raw} defensive contribution${raw === 1 ? '' : 's'} — below ${threshold} this GW for Def Con FPL points`;
+    return (
+      <span className="tabular" title={title}>
+        {raw}
+      </span>
+    );
+  }
+  const stacks = Math.floor(raw / threshold);
+  return (
+    <HistoryStatBadge
+      emoji="🪖"
+      count={stacks}
+      singularLabel="defensive contribution point"
+      pluralLabel="defensive contribution points"
+    />
+  );
+}
+
 /**
  * Slide-in panel from the right (full width on narrow viewports) with season GW history from FPL.
  *
@@ -116,6 +146,8 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
   const [swipeDragging, setSwipeDragging] = useState(false);
   /** After open, defer inline `transform` so CSS slide-in still runs. */
   const [swipeInlineReady, setSwipeInlineReady] = useState(false);
+  /** From `league-data/fpl-mini.json` (element-summary has no `element_type`). */
+  const [elementTypeId, setElementTypeId] = useState(null);
 
   const elementId = target?.element ?? null;
   const titleName =
@@ -189,6 +221,36 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [target, elementId]);
+
+  useEffect(() => {
+    if (!target || !Number.isFinite(Number(elementId))) {
+      setElementTypeId(null);
+      return;
+    }
+    let cancelled = false;
+    setElementTypeId(null);
+    const url = `${LEAGUE_DATA_BASE}/fpl-mini.json`;
+    void fetch(url)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((json) => {
+        if (cancelled) return;
+        const els = json?.elements;
+        if (!Array.isArray(els)) return;
+        const id = Number(elementId);
+        const row = els.find((e) => Number(e?.id) === id);
+        const et = row?.element_type;
+        if (et != null && Number.isFinite(Number(et))) setElementTypeId(Number(et));
+      })
+      .catch(() => {
+        /* optional file / network — leave null → numeric DC only */
       });
     return () => {
       cancelled = true;
@@ -414,6 +476,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
         className={[
           'live-player-slide__sheet',
           swipeCloseEnabled ? 'live-player-slide__sheet--swipeable' : '',
+          swipeCloseEnabled ? 'live-player-slide__sheet--mobile-edge' : '',
           swipeDragging ? 'live-player-slide__sheet--swiping' : '',
         ]
           .filter(Boolean)
@@ -427,6 +490,19 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
         onLostPointerCapture={endSwipePointer}
         onTransitionEnd={onSheetTransitionEnd}
       >
+        {swipeCloseEnabled ?
+          <button
+            type="button"
+            className="live-player-slide__edge-dismiss"
+            aria-label="Back to previous view"
+            onClick={requestClose}
+          >
+            <span className="live-player-slide__edge-dismiss__rule" aria-hidden="true" />
+            <span className="live-player-slide__edge-dismiss__chev" aria-hidden="true">
+              ‹
+            </span>
+          </button>
+        : null}
         <header className="live-player-slide__header">
           <button
             type="button"
@@ -555,12 +631,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
                           </td>
                           <td className="tabular">{h.minutes ?? '—'}</td>
                           <td className="tabular live-player-slide__td-stat">
-                            <HistoryStatBadge
-                              emoji="🪖"
-                              count={dc}
-                              singularLabel="defensive contribution"
-                              pluralLabel="defensive contributions"
-                            />
+                            <HistoryDcCell dc={dc} elementTypeId={elementTypeId} />
                           </td>
                           <td className="tabular live-player-slide__td-stat">
                             <HistoryStatBadge

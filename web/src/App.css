@@ -6463,6 +6463,68 @@ body[data-tclot-theme='dark'] .live-player-slide {
   min-height: 0;
 }
 
+/* Narrow portrait: reserve strip for edge dismiss (same breakpoint as swipe — see SWIPE_CLOSE_MEDIA). */
+.live-player-slide__sheet--mobile-edge {
+  padding-left: 44px;
+}
+
+/* Shown only when sheet has --mobile-edge (same breakpoint as swipe — SWIPE_CLOSE_MEDIA). */
+.live-player-slide__edge-dismiss {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 44px;
+  min-height: 44px;
+  padding: 0 4px;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--fm-muted, #666);
+  cursor: pointer;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transform: translateY(-50%);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.live-player-slide__sheet--mobile-edge .live-player-slide__edge-dismiss {
+  display: flex;
+}
+
+.live-player-slide__edge-dismiss:hover {
+  color: var(--fm-text, #333);
+}
+
+.live-player-slide__edge-dismiss:focus {
+  outline: none;
+}
+
+.live-player-slide__edge-dismiss:focus-visible {
+  outline: 2px solid var(--fm-accent, #0b6);
+  outline-offset: -2px;
+}
+
+.live-player-slide__edge-dismiss__rule {
+  width: 2px;
+  height: 40px;
+  border-radius: 1px;
+  background: var(--fm-border, #e2e2e2);
+  flex-shrink: 0;
+}
+
+.live-player-slide__edge-dismiss__chev {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.92;
+}
+
 /*
  * Swipe-right dismiss: outer sheet uses touch-action: none so horizontal moves reach JS.
  * Vertical scroll uses pan-y on .live-player-slide__body and its descendants (cells default to

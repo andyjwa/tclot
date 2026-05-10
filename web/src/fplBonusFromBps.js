@@ -114,6 +114,19 @@ export function explainBlocksFromLiveElement(raw) {
 const DEFENSIVE_CONTRIBUTION_KEY = 'defensive_contribution';
 
 /**
+ * FPL 25/26: actions needed in the GW tally for one defensive-contribution fantasy point, by position.
+ * @param {number | null | undefined} elementTypeId — 1 GKP, 2 DEF, 3 MID, 4 FWD
+ * @returns {10 | 12 | null} null if position unknown — callers should show raw action count, not 🪖
+ */
+export function defensiveContributionPointThreshold(elementTypeId) {
+  const t = Number(elementTypeId);
+  if (!Number.isFinite(t)) return null;
+  if (t === 1 || t === 2) return 10;
+  if (t === 3 || t === 4) return 12;
+  return null;
+}
+
+/**
  * Live GW count of defensive contribution **actions** (FPL stat), not fantasy points.
  * Prefer `stats.defensive_contribution` from `event/live`; else sum `value` from explain lines.
  * @param {object | null | undefined} raw — full live element row
