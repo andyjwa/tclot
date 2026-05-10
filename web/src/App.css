@@ -6440,6 +6440,7 @@ body[data-tclot-theme='dark'] .live-player-slide {
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.26s ease;
+  z-index: 0;
 }
 
 .live-player-slide--open .live-player-slide__scrim {
@@ -6461,6 +6462,7 @@ body[data-tclot-theme='dark'] .live-player-slide {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  z-index: 1;
 }
 
 /* Narrow portrait: reserve strip for edge dismiss (same breakpoint as swipe — see SWIPE_CLOSE_MEDIA). */
@@ -6468,17 +6470,18 @@ body[data-tclot-theme='dark'] .live-player-slide {
   padding-left: 44px;
 }
 
-/* Shown only when sheet has --mobile-edge (same breakpoint as swipe — SWIPE_CLOSE_MEDIA). */
+/* Viewport-left back strip: sibling of sheet (not inside transformed sheet) so it stays visible & tappable. */
 .live-player-slide__edge-dismiss {
-  display: none;
+  display: flex;
   position: absolute;
   left: 0;
-  top: 50%;
-  z-index: 3;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
   box-sizing: border-box;
   width: 44px;
-  min-height: 44px;
-  padding: 0 4px;
+  padding-left: max(4px, env(safe-area-inset-left, 0px));
+  padding-right: 2px;
   margin: 0;
   border: none;
   border-radius: 0;
@@ -6489,12 +6492,7 @@ body[data-tclot-theme='dark'] .live-player-slide {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  transform: translateY(-50%);
   -webkit-tap-highlight-color: transparent;
-}
-
-.live-player-slide__sheet--mobile-edge .live-player-slide__edge-dismiss {
-  display: flex;
 }
 
 .live-player-slide__edge-dismiss:hover {
@@ -6512,7 +6510,7 @@ body[data-tclot-theme='dark'] .live-player-slide {
 
 .live-player-slide__edge-dismiss__rule {
   width: 2px;
-  height: 40px;
+  height: min(260px, 44vh);
   border-radius: 1px;
   background: var(--fm-border, #e2e2e2);
   flex-shrink: 0;

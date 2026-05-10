@@ -7,8 +7,8 @@ import { TeamAvatar } from './TeamAvatar.jsx';
 
 const LEAGUE_DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
 
-/** Portrait phones / small tablets: swipe-right dismiss (sheet anchored to the right). */
-const SWIPE_CLOSE_MEDIA = '(max-width: 900px) and (orientation: portrait)';
+/** Narrow viewports: swipe-right dismiss + viewport-left back strip (not portrait-only — landscape was hidden). */
+const NARROW_OVERLAY_MEDIA = '(max-width: 900px)';
 const SHEET_TRANSITION = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
 const SWIPE_OPEN_GRACE_MS = 320;
 
@@ -139,8 +139,8 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
   const [historyPayload, setHistoryPayload] = useState(null);
   const [ownerMaps, setOwnerMaps] = useState(null);
   const [ownerMapsLoading, setOwnerMapsLoading] = useState(false);
-  const [swipeCloseEnabled, setSwipeCloseEnabled] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia(SWIPE_CLOSE_MEDIA).matches,
+  const [narrowOverlay, setNarrowOverlay] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(NARROW_OVERLAY_MEDIA).matches,
   );
   const [swipePx, setSwipePx] = useState(0);
   const [swipeDragging, setSwipeDragging] = useState(false);
@@ -314,15 +314,15 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
   }, [target, requestClose]);
 
   useEffect(() => {
-    const mq = window.matchMedia(SWIPE_CLOSE_MEDIA);
-    const onChange = () => setSwipeCloseEnabled(mq.matches);
+    const mq = window.matchMedia(NARROW_OVERLAY_MEDIA);
+    const onChange = () => setNarrowOverlay(mq.matches);
     onChange();
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
   useEffect(() => {
-    if (!sheetOpen || !swipeCloseEnabled) {
+    if (!sheetOpen || !narrowOverlay) {
       setSwipeInlineReady(false);
       return;
     }
@@ -332,7 +332,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
       SWIPE_OPEN_GRACE_MS,
     );
     return () => clearTimeout(id);
-  }, [sheetOpen, swipeCloseEnabled]);
+  }, [sheetOpen, narrowOverlay]);
 
   useEffect(() => {
     swipePxRef.current = swipePx;
@@ -371,7 +371,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
 
   const onSheetPointerDown = useCallback(
     (e) => {
-      if (!swipeCloseEnabled || !sheetOpen) return;
+      if (!narrowOverlay || !sheetOpen) return;
       if (e.button !== 0) return;
       if (e.target.closest?.('button, a, input, textarea, select, label')) return;
       swipeGestureRef.current = {
@@ -382,7 +382,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
         t0: typeof performance !== 'undefined' ? performance.now() : Date.now(),
       };
     },
-    [swipeCloseEnabled, sheetOpen],
+    [narrowOverlay, sheetOpen],
   );
 
   const onSheetPointerMove = useCallback(
@@ -420,7 +420,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
       swipePxRef.current = x;
       setSwipePx(x);
     },
-    [sheetOpen, swipeCloseEnabled],
+    [sheetOpen, narrowOverlay],
   );
 
   const onSheetPointerCancel = useCallback(
@@ -442,7 +442,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
   );
 
   const useSwipeTransform =
-    swipeCloseEnabled &&
+    narrowOverlay &&
     sheetOpen &&
     (swipeInlineReady || swipeDragging || swipePx > 0);
 
@@ -475,8 +475,8 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
         ref={sheetRef}
         className={[
           'live-player-slide__sheet',
-          swipeCloseEnabled ? 'live-player-slide__sheet--swipeable' : '',
-          swipeCloseEnabled ? 'live-player-slide__sheet--mobile-edge' : '',
+          narrowOverlay ? 'live-player-slide__sheet--swipeable' : '',
+          narrowOverlay ? 'live-player-slide__sheet--mobile-edge' : '',
           swipeDragging ? 'live-player-slide__sheet--swiping' : '',
         ]
           .filter(Boolean)
@@ -490,19 +490,6 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
         onLostPointerCapture={endSwipePointer}
         onTransitionEnd={onSheetTransitionEnd}
       >
-        {swipeCloseEnabled ?
-          <button
-            type="button"
-            className="live-player-slide__edge-dismiss"
-            aria-label="Back to previous view"
-            onClick={requestClose}
-          >
-            <span className="live-player-slide__edge-dismiss__rule" aria-hidden="true" />
-            <span className="live-player-slide__edge-dismiss__chev" aria-hidden="true">
-              ‹
-            </span>
-          </button>
-        : null}
         <header className="live-player-slide__header">
           <button
             type="button"
@@ -662,6 +649,19 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
           )}
         </div>
       </div>
+      {narrowOverlay && sheetOpen ?
+        <button
+          type="button"
+          className="live-player-slide__edge-dismiss"
+          aria-label="Back to previous view"
+          onClick={requestClose}
+        >
+          <span className="live-player-slide__edge-dismiss__rule" aria-hidden="true" />
+          <span className="live-player-slide__edge-dismiss__chev" aria-hidden="true">
+            ‹
+          </span>
+        </button>
+      : null}
     </div>,
     document.body,
   );
