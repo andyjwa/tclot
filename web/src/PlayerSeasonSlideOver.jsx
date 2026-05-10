@@ -6,6 +6,11 @@ import { TeamAvatar } from './TeamAvatar.jsx';
 
 const LEAGUE_DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
 
+/** Phone portrait: allow swipe-right to dismiss (sheet enters from the right). */
+const SWIPE_CLOSE_MEDIA = '(max-width: 560px) and (orientation: portrait)';
+const SHEET_TRANSITION = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
+const SWIPE_OPEN_GRACE_MS = 320;
+
 /**
  * Fetch FPL element-summary (season history). Tries draft API first, then classic — same element ids.
  */
@@ -65,12 +70,27 @@ function historyDcCount(h) {
  */
 export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIndexByEntry }) {
   const sheetRef = useRef(null);
+  const swipePxRef = useRef(0);
+  const swipeGestureRef = useRef({
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    lock: null,
+    t0: 0,
+  });
   const [sheetOpen, setSheetOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [historyPayload, setHistoryPayload] = useState(null);
   const [ownerMaps, setOwnerMaps] = useState(null);
   const [ownerMapsLoading, setOwnerMapsLoading] = useState(false);
+  const [swipeCloseEnabled, setSwipeCloseEnabled] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(SWIPE_CLOSE_MEDIA).matches,
+  );
+  const [swipePx, setSwipePx] = useState(0);
+  const [swipeDragging, setSwipeDragging] = useState(false);
+  /** After open, defer inline `transform` so CSS slide-in still runs. */
+  const [swipeInlineReady, setSwipeInlineReady] = useState(false);
 
   const elementId = target?.element ?? null;
   const titleName =
@@ -106,11 +126,29 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
     setHistoryPayload(null);
     setOwnerMaps(null);
     setError(null);
-    const openRaf = requestAnimationFrame(() => {
-      requestAnimationFrame(() => setSheetOpen(true));
+    let innerRaf = null;
+    const outerRaf = requestAnimationFrame(() => {
+      innerRaf = requestAnimationFrame(() => setSheetOpen(true));
     });
-    return () => cancelAnimationFrame(openRaf);
+    return () => {
+      cancelAnimationFrame(outerRaf);
+      if (innerRaf != null) cancelAnimationFrame(innerRaf);
+    };
   }, [target]);
+
+  /** Drop in-flight swipe when the sheet context changes — avoids stale gesture / offset. */
+  useEffect(() => {
+    swipeGestureRef.current = {
+      pointerId: null,
+      startX: 0,
+      startY: 0,
+      lock: null,
+      t0: 0,
+    };
+    swipePxRef.current = 0;
+    setSwipePx(0);
+    setSwipeDragging(false);
+  }, [target, sheetOpen]);
 
   useEffect(() => {
     if (!target || !Number.isFinite(Number(elementId))) return;
@@ -188,6 +226,141 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
     return () => window.removeEventListener('keydown', onKey);
   }, [target, requestClose]);
 
+  useEffect(() => {
+    const mq = window.matchMedia(SWIPE_CLOSE_MEDIA);
+    const onChange = () => setSwipeCloseEnabled(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    if (!sheetOpen || !swipeCloseEnabled) {
+      setSwipeInlineReady(false);
+      return;
+    }
+    setSwipeInlineReady(false);
+    const id = window.setTimeout(
+      () => setSwipeInlineReady(true),
+      SWIPE_OPEN_GRACE_MS,
+    );
+    return () => clearTimeout(id);
+  }, [sheetOpen, swipeCloseEnabled]);
+
+  useEffect(() => {
+    swipePxRef.current = swipePx;
+  }, [swipePx]);
+
+  const endSwipePointer = useCallback((e) => {
+    const g = swipeGestureRef.current;
+    if (g.pointerId == null || e.pointerId !== g.pointerId) return;
+    try {
+      sheetRef.current?.releasePointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    g.pointerId = null;
+    g.lock = null;
+    setSwipeDragging(false);
+
+    const el = sheetRef.current;
+    const w = el?.getBoundingClientRect().width ?? window.innerWidth;
+    const px = swipePxRef.current;
+    const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const dt = Math.max(8, t1 - (g.t0 || t1));
+    const v = px / dt;
+    const threshold = Math.max(72, w * 0.2);
+    const shouldClose = px >= threshold || (px > 52 && v > 0.42);
+
+    if (shouldClose) {
+      swipePxRef.current = 0;
+      setSwipePx(0);
+      requestClose();
+    } else {
+      swipePxRef.current = 0;
+      setSwipePx(0);
+    }
+  }, [requestClose]);
+
+  const onSheetPointerDown = useCallback(
+    (e) => {
+      if (!swipeCloseEnabled || !sheetOpen) return;
+      if (e.button !== 0) return;
+      if (e.target.closest?.('button, a, input, textarea, select, label')) return;
+      swipeGestureRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        lock: null,
+        t0: typeof performance !== 'undefined' ? performance.now() : Date.now(),
+      };
+    },
+    [swipeCloseEnabled, sheetOpen],
+  );
+
+  const onSheetPointerMove = useCallback(
+    (e) => {
+      const g = swipeGestureRef.current;
+      if (g.pointerId == null || e.pointerId !== g.pointerId) return;
+      const dx = e.clientX - g.startX;
+      const dy = e.clientY - g.startY;
+      if (g.lock == null) {
+        if (dx * dx + dy * dy < 64) return;
+        if (dx > 0 && Math.abs(dx) > Math.abs(dy) * 1.08) {
+          g.lock = 'h';
+          setSwipeDragging(true);
+          try {
+            sheetRef.current?.setPointerCapture(e.pointerId);
+          } catch {
+            /* ignore */
+          }
+        } else {
+          g.pointerId = null;
+          g.lock = 'v';
+          return;
+        }
+      }
+      if (g.lock !== 'h') return;
+      e.preventDefault();
+      const w = sheetRef.current?.getBoundingClientRect().width ?? window.innerWidth;
+      const x = Math.min(Math.max(0, dx), w);
+      swipePxRef.current = x;
+      setSwipePx(x);
+    },
+    [sheetOpen, swipeCloseEnabled],
+  );
+
+  const onSheetPointerCancel = useCallback(
+    (e) => {
+      const g = swipeGestureRef.current;
+      if (g.pointerId == null || e.pointerId !== g.pointerId) return;
+      try {
+        sheetRef.current?.releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      g.pointerId = null;
+      g.lock = null;
+      setSwipeDragging(false);
+      swipePxRef.current = 0;
+      setSwipePx(0);
+    },
+    [],
+  );
+
+  const useSwipeTransform =
+    swipeCloseEnabled &&
+    sheetOpen &&
+    (swipeInlineReady || swipeDragging || swipePx > 0);
+
+  const sheetStyle =
+    useSwipeTransform ?
+      {
+        transform: `translateX(${swipePx}px)`,
+        transition: swipeDragging ? 'none' : SHEET_TRANSITION,
+      }
+    : undefined;
+
   if (!target || typeof document === 'undefined') return null;
 
   const historyRows = normalizeHistoryRows(historyPayload || {});
@@ -207,7 +380,20 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
       />
       <div
         ref={sheetRef}
-        className="live-player-slide__sheet"
+        className={[
+          'live-player-slide__sheet',
+          swipeCloseEnabled ? 'live-player-slide__sheet--swipeable' : '',
+          swipeDragging ? 'live-player-slide__sheet--swiping' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={sheetStyle}
+        onPointerDown={onSheetPointerDown}
+        onPointerMove={onSheetPointerMove}
+        onPointerUp={endSwipePointer}
+        onPointerCancel={onSheetPointerCancel}
+        /* Same as pointer up when capture drops without cancel (evaluate dismiss threshold). */
+        onLostPointerCapture={endSwipePointer}
         onTransitionEnd={onSheetTransitionEnd}
       >
         <header className="live-player-slide__header">
@@ -243,8 +429,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
             <p className="muted">No gameweek history in this response.</p>
           ) : (
             <>
-              <div className="table-scroll">
-                <table className="live-player-slide__table live-player-slide__table--stats">
+              <table className="live-player-slide__table live-player-slide__table--stats">
                   <thead>
                     <tr>
                       <th
@@ -348,8 +533,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
                       );
                     })}
                   </tbody>
-                </table>
-              </div>
+              </table>
             </>
           )}
         </div>

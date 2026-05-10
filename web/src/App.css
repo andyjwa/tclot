@@ -6399,11 +6399,31 @@ button.live-player-name--btn:focus-visible {
 }
 
 /* Slide-over: season history from FPL element-summary */
+/* Portal mounts on body (outside .app.fotmob) — mirror theme tokens so text/borders match the shell */
 .live-player-slide {
   position: fixed;
   inset: 0;
   z-index: 10050;
   pointer-events: none;
+  --fm-surface: #ffffff;
+  --fm-surface-0: #ffffff;
+  --fm-text: rgba(51, 51, 51, 0.92);
+  --fm-text-strong: #1a1a1a;
+  --fm-muted: rgba(0, 0, 0, 0.48);
+  --fm-border: #e2e2e2;
+  --fm-table-head: #f3f4f6;
+  --fm-surface-2: #f7f7f7;
+}
+
+body[data-tclot-theme='dark'] .live-player-slide {
+  --fm-surface: #1e1e1e;
+  --fm-surface-0: #1e1e1e;
+  --fm-text: rgba(255, 255, 255, 0.87);
+  --fm-text-strong: #ffffff;
+  --fm-muted: rgba(255, 255, 255, 0.55);
+  --fm-border: #2f2f2f;
+  --fm-table-head: #252830;
+  --fm-surface-2: #252525;
 }
 
 .live-player-slide--open {
@@ -6434,13 +6454,22 @@ button.live-player-name--btn:focus-visible {
   width: min(100vw, 28rem);
   max-width: 100%;
   background: var(--fm-surface, #f8f9fa);
-  color: var(--fm-text, #111);
+  color: var(--fm-text);
   box-shadow: -6px 0 28px rgba(0, 0, 0, 0.18);
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+/* Portrait phone: swipe-right dismiss — pan-y preserves vertical scroll until we lock horizontally. */
+.live-player-slide__sheet--swipeable {
+  touch-action: pan-y;
+}
+
+.live-player-slide__sheet--swiping {
+  touch-action: none;
 }
 
 .live-player-slide--open .live-player-slide__sheet {
@@ -6453,8 +6482,8 @@ button.live-player-name--btn:focus-visible {
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px 12px;
-  border-bottom: 1px solid var(--fm-border, #ddd);
-  background: var(--fm-surface, #fff);
+  border-bottom: 1px solid var(--fm-border);
+  background: var(--fm-surface);
 }
 
 .live-player-slide__back {
@@ -6466,8 +6495,8 @@ button.live-player-name--btn:focus-visible {
   padding: 8px 10px;
   border: none;
   border-radius: 8px;
-  background: var(--fm-surface-2, #eee);
-  color: inherit;
+  background: var(--fm-surface-2);
+  color: var(--fm-text);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -6494,6 +6523,7 @@ button.live-player-name--btn:focus-visible {
   font-weight: 700;
   line-height: 1.25;
   word-break: break-word;
+  color: var(--fm-text-strong);
 }
 
 .live-player-slide__subtitle {
@@ -6560,14 +6590,24 @@ body[data-tclot-theme='dark'] .player-history-name-btn:hover {
 
 .live-player-slide__body {
   flex: 1;
+  min-width: 0;
+  /* Single scrollport for x+y so thead position:sticky sticks while scrolling (nested .table-scroll breaks sticky) */
   overflow: auto;
-  padding: 12px;
+  /* No top padding: padding lets body rows scroll “above” a sticky thead visually */
+  padding: 0 12px 12px;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Space below sheet header for loading / error / empty (table is flush to scroll top) */
+.live-player-slide__body > :not(table) {
+  padding-top: 12px;
 }
 
 .live-player-slide__table {
   width: 100%;
-  border-collapse: collapse;
+  /* collapse breaks sticky thead in some browsers (Safari / Chrome) */
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.78rem;
 }
 
@@ -6582,8 +6622,31 @@ body[data-tclot-theme='dark'] .player-history-name-btn:hover {
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--fm-muted, #666);
-  background: var(--fm-table-head, #f0f0f0);
+  color: var(--fm-muted);
+  background-color: var(--fm-table-head);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06);
+  /* Paint a solid band so rows don’t show through when sticky */
+  background-clip: padding-box;
+}
+
+body[data-tclot-theme='dark'] .live-player-slide__table thead th {
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* Sticky header sits in scrollport of .live-player-slide__body — keep header row above body cells */
+.live-player-slide__body .live-player-slide__table thead th {
+  vertical-align: bottom;
+}
+
+.live-player-slide__table tbody td {
+  color: var(--fm-text);
+}
+
+.live-player-slide__table tbody td strong {
+  color: var(--fm-text-strong);
 }
 
 .live-player-slide__table--stats {
@@ -6637,16 +6700,17 @@ body[data-tclot-theme='dark'] .player-history-name-btn:hover {
 }
 
 body[data-tclot-theme='dark'] .live-player-slide__sheet {
-  background: var(--fm-surface-0, #1e1e1e);
+  background: var(--fm-surface);
   box-shadow: -6px 0 32px rgba(0, 0, 0, 0.45);
 }
 
 body[data-tclot-theme='dark'] .live-player-slide__header {
-  background: var(--fm-surface-0, #1e1e1e);
+  background: var(--fm-surface);
 }
 
 body[data-tclot-theme='dark'] .live-player-slide__back {
-  background: var(--fm-surface-2, #2a2a2a);
+  background: var(--fm-surface-2);
+  color: var(--fm-text);
 }
 
 @media (prefers-reduced-motion: reduce) {
