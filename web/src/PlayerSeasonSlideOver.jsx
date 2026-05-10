@@ -6,8 +6,8 @@ import { TeamAvatar } from './TeamAvatar.jsx';
 
 const LEAGUE_DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
 
-/** Phone portrait: allow swipe-right to dismiss (sheet enters from the right). */
-const SWIPE_CLOSE_MEDIA = '(max-width: 560px) and (orientation: portrait)';
+/** Portrait phones / small tablets: swipe-right dismiss (sheet anchored to the right). */
+const SWIPE_CLOSE_MEDIA = '(max-width: 900px) and (orientation: portrait)';
 const SHEET_TRANSITION = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
 const SWIPE_OPEN_GRACE_MS = 320;
 
@@ -305,8 +305,9 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
       const dx = e.clientX - g.startX;
       const dy = e.clientY - g.startY;
       if (g.lock == null) {
-        if (dx * dx + dy * dy < 64) return;
-        if (dx > 0 && Math.abs(dx) > Math.abs(dy) * 1.08) {
+        if (dx * dx + dy * dy < 36) return;
+        // Rightward dismiss: tolerate slight diagonal (iOS) — stricter ratio was locking to vertical scroll.
+        if (dx > 4 && Math.abs(dx) >= Math.abs(dy) * 0.85) {
           g.lock = 'h';
           setSwipeDragging(true);
           try {
@@ -314,9 +315,14 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
           } catch {
             /* ignore */
           }
-        } else {
+        } else if (
+          Math.abs(dy) > Math.abs(dx) * 1.15 &&
+          Math.abs(dy) > 6
+        ) {
           g.pointerId = null;
           g.lock = 'v';
+          return;
+        } else {
           return;
         }
       }

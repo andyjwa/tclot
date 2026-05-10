@@ -306,11 +306,16 @@ export function compareContributionEventsAsc(a, b) {
   return String(a?.stableId || '').localeCompare(String(b?.stableId || ''));
 }
 
+/** {@link contributionApproxTimelineSortKey} adds real kickoff ms — values below are placeholders. */
+const MIN_SANE_FPL_TIMELINE_SORT_KEY = 1e12;
+
 /**
- * Sort key for merged feed: recompute from current FPL live row + GW fixtures when possible so
- * order tracks **real-world** fixture time (kickoff + in-match clock), not stale `sortKey` from
- * storage or an older live tick.
- * FotMob- and ESPN-sourced rows keep `ev.sortKey` (real wall time / `wallclock`).
+ * Sort key for merged feed: FotMob/ESPN keep `ev.sortKey` (wall time). FPL diff rows prefer a
+ * **sane frozen** `sortKey` captured when the event was emitted. Recomputing from the **current**
+ * live row replaces in-game clock with FT minutes (often 90′ for everyone), which pushes older
+ * goals/assists back to the top of a latest-first feed on every poll.
+ *
+ * When `sortKey` is missing or tiny, fall back to live + fixtures (hydration / tests).
  *
  * @param {{ liveFullByElementId?: Record<number, object>, elementById?: Record<number, object>, gwFixtures?: object[] }} sortCtx
  */
@@ -320,9 +325,13 @@ export function effectiveContributionSortKey(ev, sortCtx) {
   if (sid.startsWith('fotmob:') || sid.startsWith('espn:')) {
     return Number(ev.sortKey) || 0;
   }
+  const stored = Number(ev.sortKey) || 0;
+  if (stored >= MIN_SANE_FPL_TIMELINE_SORT_KEY) {
+    return stored;
+  }
   const elid = Number(ev.elementId);
   const kind = ev.kind;
-  if (!Number.isFinite(elid) || !kind) return Number(ev.sortKey) || 0;
+  if (!Number.isFinite(elid) || !kind) return stored;
   const liveRow = sortCtx.liveFullByElementId?.[elid];
   const el = sortCtx.elementById?.[elid];
   const gwf = sortCtx.gwFixtures || [];
@@ -337,7 +346,7 @@ export function effectiveContributionSortKey(ev, sortCtx) {
     );
     if (Number.isFinite(k) && k > 0) return k;
   }
-  return Number(ev.sortKey) || 0;
+  return stored;
 }
 
 /**

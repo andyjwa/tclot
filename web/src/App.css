@@ -6463,12 +6463,36 @@ body[data-tclot-theme='dark'] .live-player-slide {
   min-height: 0;
 }
 
-/* Portrait phone: swipe-right dismiss — pan-y preserves vertical scroll until we lock horizontally. */
+/*
+ * Swipe-right dismiss: outer sheet uses touch-action: none so horizontal moves reach JS.
+ * Vertical scroll uses pan-y on .live-player-slide__body and its descendants (cells default to
+ * auto otherwise — iOS then mishandles mid-table horizontal swipes).
+ */
 .live-player-slide__sheet--swipeable {
+  touch-action: none;
+}
+
+.live-player-slide__sheet--swipeable .live-player-slide__body {
+  touch-action: pan-y;
+}
+
+/*
+ * Hit targets inside the body default to touch-action: auto; on iOS that can fight
+ * horizontal pointer tracking when swiping from the middle of the history table.
+ */
+.live-player-slide__sheet--swipeable .live-player-slide__body * {
   touch-action: pan-y;
 }
 
 .live-player-slide__sheet--swiping {
+  touch-action: none;
+}
+
+.live-player-slide__sheet--swiping .live-player-slide__body {
+  touch-action: none;
+}
+
+.live-player-slide__sheet--swiping .live-player-slide__body * {
   touch-action: none;
 }
 

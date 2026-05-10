@@ -485,7 +485,7 @@ test('compareContributionEventsAsc — earlier sortKey sorts first (match order)
   assert.ok(compareContributionEventsAsc(a, b) < 0, 'earlier timeline key (a) before later (b)');
 });
 
-test('effectiveContributionSortKey — recomputes FPL rows from live + fixtures; preserves FotMob/ESPN wall keys', () => {
+test('effectiveContributionSortKey — FPL recomputes when sortKey is bogus; preserves sane frozen keys', () => {
   const gwFixtures = [
     {
       id: 100,
@@ -512,6 +512,39 @@ test('effectiveContributionSortKey — recomputes FPL rows from live + fixtures;
   };
   const kFpl = effectiveContributionSortKey(fplEv, sortCtx);
   assert.ok(kFpl > 1e12, 'recomputed from kickoff + explain minute');
+  const el = elementById[5];
+  const rowAt47 = {
+    stats: { assists: 1, minutes: 47 },
+    explain: [[[{ stat: 'minutes', value: 47 }], 100]],
+  };
+  const frozenAssistKey = contributionApproxTimelineSortKey(
+    rowAt47,
+    el,
+    'assist',
+    gwFixtures,
+    5,
+    0
+  );
+  const assistEv = {
+    stableId: '8:5:assist:tot1',
+    kind: 'assist',
+    elementId: 5,
+    sortKey: frozenAssistKey,
+  };
+  const liveFullFt = {
+    5: {
+      stats: { assists: 1, minutes: 90 },
+      explain: [[[{ stat: 'minutes', value: 90 }], 100]],
+    },
+  };
+  assert.equal(
+    effectiveContributionSortKey(assistEv, {
+      ...sortCtx,
+      liveFullByElementId: liveFullFt,
+    }),
+    frozenAssistKey,
+    'FT live row must not drag 47′ assist to top of feed',
+  );
   const fm = {
     stableId: 'fotmob:9:yellow_card:5:x:1',
     kind: 'yellow_card',
