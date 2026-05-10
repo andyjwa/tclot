@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, Fragment } from 'react'
 import { TeamAvatar } from './TeamAvatar'
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { minOverallPickByEntryId } from './draftTeamOrder'
 
 const EMPTY_POINTS_FOR_BY_FPL = new Map()
@@ -262,7 +263,7 @@ export function DraftQuality({
                                 <li key={`${team.entryId}-${p.overallPick}`} className="draft-quality-pick-item">
                                   <span className="draft-quality-pick-round draft-round-display">
                                     <span className="draft-round-display__long">
-                                      Round {p.round} pick {p.pickInRound}
+                                      Round {p.round} Pick {p.pickInRound}
                                     </span>
                                     <span className="draft-round-display__short tabular" aria-hidden="true">
                                       {p.round}.{p.pickInRound}
@@ -270,7 +271,16 @@ export function DraftQuality({
                                   </span>
                                   <span className="draft-quality-pick-player">
                                     <ClubBadge src={p.badgeUrl} />
-                                    <span className="draft-quality-pick-name">{displayFull(p)}</span>
+                                    <span className="draft-quality-pick-name">
+                                      <ClickablePlayerName
+                                        element={p.element}
+                                        displayName={displayFull(p)}
+                                        web_name={p.playerName}
+                                        teamShort={p.teamShort}
+                                      >
+                                        {displayFull(p)}
+                                      </ClickablePlayerName>
+                                    </span>
                                   </span>
                                   <span className="draft-quality-pick-pts tabular">
                                     {p.totalPoints != null ? p.totalPoints : '—'}

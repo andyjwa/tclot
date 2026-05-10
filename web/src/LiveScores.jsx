@@ -10,6 +10,7 @@ import { useLiveScores } from './useLiveScores';
 import { eventNameToGameWeekLabel, gameWeekSelectLabel } from './gwLabel.js';
 import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
 import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
+import { usePlayerHistory, ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
 
 /**
@@ -75,9 +76,9 @@ function KitThumb({ shirtUrl, badgeUrl, teamShort }) {
 }
 
 /**
- * @param {{ rows: object[], autosubInElementIds?: Set<number> }} props
+ * @param {{ rows: object[], autosubInElementIds?: Set<number>, onPlayerClick?: (row: object) => void }} props
  */
-function PicksTable({ rows, autosubInElementIds }) {
+function PicksTable({ rows, autosubInElementIds, onPlayerClick }) {
   const portraitLineup = usePortraitLineupMatch();
   if (!rows.length) return <p className="muted muted--tight">No picks</p>;
   return (
@@ -172,21 +173,41 @@ function PicksTable({ rows, autosubInElementIds }) {
                   />
                   <div className="live-player-text">
                     <div className="live-player-name-row">
-                      <div
-                        className={
-                          'live-player-name' +
-                          (portraitLineup ? ' live-player-name--lineup-portrait' : '')
-                        }
-                        title={fullLabel}
-                      >
-                        {playerColName}
-                        {r.opponentShortLabel ? (
-                          <span className="live-player-opponent">
-                            {' '}
-                            ({r.opponentShortLabel})
-                          </span>
-                        ) : null}
-                      </div>
+                      {onPlayerClick ? (
+                        <button
+                          type="button"
+                          className={
+                            'live-player-name live-player-name--btn' +
+                            (portraitLineup ? ' live-player-name--lineup-portrait' : '')
+                          }
+                          title={`${fullLabel} — view season history`}
+                          onClick={() => onPlayerClick(r)}
+                        >
+                          {playerColName}
+                          {r.opponentShortLabel ? (
+                            <span className="live-player-opponent">
+                              {' '}
+                              ({r.opponentShortLabel})
+                            </span>
+                          ) : null}
+                        </button>
+                      ) : (
+                        <div
+                          className={
+                            'live-player-name' +
+                            (portraitLineup ? ' live-player-name--lineup-portrait' : '')
+                          }
+                          title={fullLabel}
+                        >
+                          {playerColName}
+                          {r.opponentShortLabel ? (
+                            <span className="live-player-opponent">
+                              {' '}
+                              ({r.opponentShortLabel})
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
                       {r.availabilityStatus === 'i' ? (
                         <span
                           className="live-player-injury"
@@ -311,6 +332,148 @@ function formatGwLeaguePtsBonus(h2hBonus) {
 
 function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
+}
+
+/**
+ * All `matches` rows between two `league_entry` ids this season (tile home/away = banner sides).
+ * Winner-first score in each chip (e.g. 34–21). For draws, home tile score first (same order as FPL row).
+ * Uses live GW XI totals when this row is the active gameweek pairing.
+ */
+function seasonH2hBetween(matches, homeId, awayId, gameweek, liveHomePts, liveAwayPts) {
+  const h = Number(homeId);
+  const a = Number(awayId);
+  const gwNum = Number(gameweek);
+  const homeWins = [];
+  const awayWins = [];
+  const draws = [];
+  for (const m of matches || []) {
+    const e1 = Number(m.league_entry_1);
+    const e2 = Number(m.league_entry_2);
+    if (!Number.isFinite(e1) || !Number.isFinite(e2)) continue;
+    if ((e1 !== h || e2 !== a) && (e1 !== a || e2 !== h)) continue;
+
+    const ev = Number(m.event);
+    let hp;
+    let ap;
+    if (Number.isFinite(ev) && ev === gwNum && liveHomePts != null && liveAwayPts != null) {
+      hp = liveHomePts;
+      ap = liveAwayPts;
+    } else {
+      const p1 = Number(m.league_entry_1_points);
+      const p2 = Number(m.league_entry_2_points);
+      if (!Number.isFinite(p1) || !Number.isFinite(p2)) continue;
+      hp = e1 === h ? p1 : p2;
+      ap = e1 === h ? p2 : p1;
+    }
+
+    if (hp > ap) {
+      homeWins.push({ gw: ev, label: `${hp}-${ap}` });
+    } else if (ap > hp) {
+      awayWins.push({ gw: ev, label: `${ap}-${hp}` });
+    } else {
+      draws.push({ gw: ev, label: `${hp}-${ap}` });
+    }
+  }
+  const byGw = (x, y) => x.gw - y.gw;
+  homeWins.sort(byGw);
+  awayWins.sort(byGw);
+  draws.sort(byGw);
+  return { homeWins, awayWins, draws };
+}
+
+/**
+ * @param {{ homeId: number, awayId: number, homeName: string, awayName: string, matches: object[], gameweek: number, liveHomePts: number | null | undefined, liveAwayPts: number | null | undefined, teamLogoMap: object, kitIndexByEntry?: object }} props
+ */
+function LiveFixtureSeasonH2h({
+  homeId,
+  awayId,
+  homeName,
+  awayName,
+  matches,
+  gameweek,
+  liveHomePts,
+  liveAwayPts,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
+  const { homeWins, awayWins, draws } = useMemo(
+    () =>
+      seasonH2hBetween(matches, homeId, awayId, gameweek, liveHomePts, liveAwayPts),
+    [matches, homeId, awayId, gameweek, liveHomePts, liveAwayPts],
+  );
+  const hasAny = homeWins.length + awayWins.length + draws.length > 0;
+
+  return (
+    <div className="live-fixture-season-h2h" aria-label="Season head-to-head">
+      <h4 className="live-fixture-season-h2h__heading">Season H2H</h4>
+      {!hasAny ? (
+        <p className="muted muted--tight live-fixture-season-h2h__empty">
+          No scored head-to-heads in league data for this pair yet.
+        </p>
+      ) : (
+        <>
+          <div className="live-fixture-season-h2h__row">
+            <div className="live-fixture-season-h2h__side">
+              <TeamAvatar
+                entryId={homeId}
+                name={homeName}
+                size="sm"
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+              <div className="live-fixture-season-h2h__chips">
+                {homeWins.map((x) => (
+                  <span
+                    key={`h2h-h-${homeId}-${awayId}-${x.gw}`}
+                    className="live-h2h-chip live-h2h-chip--win tabular"
+                    title={`GW ${x.gw}: ${homeName} ${x.label}`}
+                  >
+                    {x.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="live-fixture-season-h2h__side live-fixture-season-h2h__side--away">
+              <TeamAvatar
+                entryId={awayId}
+                name={awayName}
+                size="sm"
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+              <div className="live-fixture-season-h2h__chips">
+                {awayWins.map((x) => (
+                  <span
+                    key={`h2h-a-${homeId}-${awayId}-${x.gw}`}
+                    className="live-h2h-chip live-h2h-chip--win tabular"
+                    title={`GW ${x.gw}: ${awayName} ${x.label}`}
+                  >
+                    {x.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          {draws.length > 0 ? (
+            <div className="live-fixture-season-h2h__draws">
+              <span className="live-fixture-season-h2h__draws-label">Draws</span>
+              <div className="live-fixture-season-h2h__chips">
+                {draws.map((x) => (
+                  <span
+                    key={`h2h-d-${homeId}-${awayId}-${x.gw}`}
+                    className="live-h2h-chip live-h2h-chip--draw tabular"
+                    title={`GW ${x.gw}: draw ${x.label}`}
+                  >
+                    {x.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </>
+      )}
+    </div>
+  );
 }
 
 function squadsToGwPointsMap(squads) {
@@ -603,8 +766,8 @@ function LeftToPlayOutsideAfter({ count, leadingSpace = true }) {
   );
 }
 
-/** @param {{ squad: object }} */
-function SquadLineupPanel({ squad }) {
+/** @param {{ squad: object, onPlayerClick?: (row: object) => void }} */
+function SquadLineupPanel({ squad, onPlayerClick }) {
   if (!squad) {
     return <p className="muted muted--tight">No squad data for this team.</p>;
   }
@@ -655,7 +818,24 @@ function SquadLineupPanel({ squad }) {
             const nameOut = rowOut?.displayName ?? rowOut?.web_name ?? `#${a.element_out}`;
             return (
               <span key={`${a.element_in}-${a.element_out}`} className="live-auto-sub-pair">
-                {nameIn} ↔ {nameOut}
+                <ClickablePlayerName
+                  element={a.element_in}
+                  displayName={rowIn?.displayName}
+                  web_name={rowIn?.web_name ?? nameIn}
+                  teamShort={rowIn?.teamShort}
+                >
+                  {nameIn}
+                </ClickablePlayerName>
+                {' '}
+                ↔{' '}
+                <ClickablePlayerName
+                  element={a.element_out}
+                  displayName={rowOut?.displayName}
+                  web_name={rowOut?.web_name ?? nameOut}
+                  teamShort={rowOut?.teamShort}
+                >
+                  {nameOut}
+                </ClickablePlayerName>
               </span>
             );
           })}
@@ -669,11 +849,15 @@ function SquadLineupPanel({ squad }) {
       ) : null}
       <h4 className="live-lineup-heading">Starting XI</h4>
       <div className="live-picks-table-wrap live-picks-table-wrap--lineup-portrait">
-        <PicksTable rows={starters} autosubInElementIds={autosubInElementIds} />
+        <PicksTable
+          rows={starters}
+          autosubInElementIds={autosubInElementIds}
+          onPlayerClick={onPlayerClick}
+        />
       </div>
       <h4 className="live-lineup-heading live-lineup-heading--bench">Bench</h4>
       <div className="live-picks-table-wrap live-picks-table-wrap--lineup-portrait">
-        <PicksTable rows={bench} />
+        <PicksTable rows={bench} onPlayerClick={onPlayerClick} />
       </div>
     </>
   );
@@ -735,6 +919,9 @@ export function LiveScores({
 
   /** Single “fixtures left” panel for all H2H fixtures — collapsed by default. */
   const [ltpPanelExpanded, setLtpPanelExpanded] = useState(false);
+
+  /** FPL element id + labels — opens slide-over season history from `element-summary`. */
+  const { openPlayerHistory } = usePlayerHistory();
 
   const proxyHost = proxyHostLabel();
 
@@ -1236,7 +1423,20 @@ export function LiveScores({
                 </button>
 
                 {lineupOpen ? (
-                <div className="live-fixture-split" id={fixtureBodyId}>
+                  <div className="live-fixture-expanded-body" id={fixtureBodyId}>
+                    <LiveFixtureSeasonH2h
+                      homeId={homeId}
+                      awayId={awayId}
+                      homeName={homeName}
+                      awayName={awayName}
+                      matches={matches}
+                      gameweek={gameweek}
+                      liveHomePts={homeLive}
+                      liveAwayPts={awayLive}
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                    <div className="live-fixture-split">
                   <div
                     className={
                       'live-fixture-column' +
@@ -1269,7 +1469,7 @@ export function LiveScores({
                         ) : null}
                       </div>
                     </div>
-                    <SquadLineupPanel squad={homeSquad} />
+                    <SquadLineupPanel squad={homeSquad} onPlayerClick={openPlayerHistory} />
                   </div>
                   <div className="live-fixture-divider" aria-hidden="true" />
                   <div
@@ -1304,7 +1504,8 @@ export function LiveScores({
                         ) : null}
                       </div>
                     </div>
-                    <SquadLineupPanel squad={awaySquad} />
+                    <SquadLineupPanel squad={awaySquad} onPlayerClick={openPlayerHistory} />
+                    </div>
                   </div>
                 </div>
                 ) : null}
@@ -1367,7 +1568,7 @@ export function LiveScores({
                   ) : null}
                 </div>
               </div>
-              <SquadLineupPanel squad={squad} />
+              <SquadLineupPanel squad={squad} onPlayerClick={openPlayerHistory} />
             </section>
           );
         })
@@ -1427,7 +1628,7 @@ export function LiveScores({
                   ) : null}
                 </div>
               </div>
-              <SquadLineupPanel squad={squad} />
+              <SquadLineupPanel squad={squad} onPlayerClick={openPlayerHistory} />
             </section>
             );
           })

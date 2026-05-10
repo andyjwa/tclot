@@ -26,6 +26,7 @@ import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
+import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { PlayOffBracket } from './PlayOffBracket'
 import { DraftBoard } from './DraftBoard'
@@ -663,20 +664,32 @@ function FormCircles({ form }) {
 /** One player row inside a trade tile (offered or received leg). */
 function TradePlayerLine({ leg }) {
   if (!leg) return null
+  const teamShort = leg.gained.teamShort
   return (
     <div className="trade-player-line">
       <PlayerKit
         shirtUrl={leg.gained.shirtUrl}
         badgeUrl={leg.gained.badgeUrl}
-        teamShort={leg.gained.teamShort}
+        teamShort={teamShort}
       />
       <div className="trade-player-line__text">
-        <span className="trade-player-line__name">{leg.gained.web_name}</span>
-        <span className="trade-player-line__club muted">{leg.gained.teamShort}</span>
-        <span className="trade-player-line__pts tabular">
-          <strong>{leg.totalPoints}</strong> pts · GW {leg.gwRangeLabel}
-          {leg.stillOnTeam ? ' · on squad' : ''}
-        </span>
+        <ClickablePlayerName
+          element={leg.gained.elementId}
+          web_name={leg.gained.web_name}
+          teamShort={teamShort}
+          className="trade-player-line__name"
+        >
+          <span className="trade-player-line__name-text">{leg.gained.web_name}</span>
+          {teamShort ? (
+            <span className="trade-player-line__team-abbr muted"> ({teamShort})</span>
+          ) : null}
+        </ClickablePlayerName>
+        {leg.gwRangeLabel != null ? (
+          <span className="trade-player-line__pts muted tabular">
+            GW {leg.gwRangeLabel}
+            {leg.stillOnTeam ? ' · on squad' : ''}
+          </span>
+        ) : null}
       </div>
     </div>
   )
@@ -1479,6 +1492,7 @@ function App() {
   }
 
   return (
+    <PlayerHistoryProvider teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry}>
     <div className="app fotmob" data-theme={colorTheme}>
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
@@ -2475,7 +2489,14 @@ function App() {
                                       badgeUrl={r.pickedBadgeUrl}
                                       teamShort={r.pickedTeamShort}
                                     />
-                                    <span className="latest-waivers__player-name">{r.pickedName}</span>
+                                    <ClickablePlayerName
+                                      element={r.element_in}
+                                      web_name={r.pickedName}
+                                      teamShort={r.pickedTeamShort}
+                                      className="latest-waivers__player-name"
+                                    >
+                                      {r.pickedName}
+                                    </ClickablePlayerName>
                                     {r.waiverProcessOrder != null ? (
                                       <span
                                         className="latest-waivers__move-order muted tabular"
@@ -2493,7 +2514,14 @@ function App() {
                                       badgeUrl={r.droppedBadgeUrl}
                                       teamShort={r.droppedTeamShort}
                                     />
-                                    <span className="latest-waivers__player-name">{r.droppedName}</span>
+                                    <ClickablePlayerName
+                                      element={r.element_out}
+                                      web_name={r.droppedName}
+                                      teamShort={r.droppedTeamShort}
+                                      className="latest-waivers__player-name"
+                                    >
+                                      {r.droppedName}
+                                    </ClickablePlayerName>
                                   </div>
                               </div>
                             </li>
@@ -2555,9 +2583,14 @@ function App() {
                               badgeUrl={row.pickedBadgeUrl}
                               teamShort={row.pickedTeamShort}
                             />
-                            <span className="first-waiver-pick-card__player-name">
+                            <ClickablePlayerName
+                              element={row.element_in}
+                              web_name={row.pickedName}
+                              teamShort={row.pickedTeamShort}
+                              className="first-waiver-pick-card__player-name"
+                            >
                               {row.pickedName}
-                            </span>
+                            </ClickablePlayerName>
                           </div>
                           <div className="first-waiver-pick-card__pts muted">
                             <span className="first-waiver-pick-card__pts-label">GW pts</span>
@@ -2841,15 +2874,39 @@ function App() {
                             waiverGwTableMode === 'out' ? r.droppedName : r.pickedName
                           const otherName =
                             waiverGwTableMode === 'out' ? r.pickedName : r.droppedName
+                          const primaryEl =
+                            waiverGwTableMode === 'out' ? r.element_out : r.element_in
+                          const otherEl =
+                            waiverGwTableMode === 'out' ? r.element_in : r.element_out
+                          const primaryTeamShort =
+                            waiverGwTableMode === 'out' ? r.droppedTeamShort : r.pickedTeamShort
+                          const otherTeamShort =
+                            waiverGwTableMode === 'out' ? r.pickedTeamShort : r.droppedTeamShort
                           return (
                             <tr key={r.transactionId}>
                               <td className="waiver-gw-team">{r.teamName}</td>
                               <td className="tabular">{r.gameweek}</td>
-                              <td>{primaryName}</td>
+                              <td>
+                                <ClickablePlayerName
+                                  element={primaryEl}
+                                  web_name={primaryName}
+                                  teamShort={primaryTeamShort}
+                                >
+                                  {primaryName}
+                                </ClickablePlayerName>
+                              </td>
                               <td className="tabular fw-600">
                                 {primaryPts == null ? '—' : primaryPts}
                               </td>
-                              <td className="muted">{otherName}</td>
+                              <td className="muted">
+                                <ClickablePlayerName
+                                  element={otherEl}
+                                  web_name={otherName}
+                                  teamShort={otherTeamShort}
+                                >
+                                  {otherName}
+                                </ClickablePlayerName>
+                              </td>
                             </tr>
                           )
                         })}
@@ -2893,7 +2950,15 @@ function App() {
                       teamShort={r.teamShort}
                     />
                     <div className="waiver-info waiver-pickup-info">
-                      <span className="waiver-name">{r.playerName}</span>
+                      <ClickablePlayerName
+                        element={r.elementId}
+                        displayName={r.playerName}
+                        web_name={r.playerName}
+                        teamShort={r.teamShort}
+                        className="waiver-name"
+                      >
+                        {r.playerName}
+                      </ClickablePlayerName>
                       <span className="waiver-pickup-team">{r.teamName}</span>
                       <span className="waiver-club muted">
                         GW {r.firstGw}–{r.lastGw}
@@ -2923,7 +2988,14 @@ function App() {
                     <span className="waiver-rank">{i + 1}</span>
                     <PlayerKit shirtUrl={p.shirtUrl} badgeUrl={p.badgeUrl} teamShort={p.teamShort} />
                     <div className="waiver-info">
-                      <span className="waiver-name">{p.web_name}</span>
+                      <ClickablePlayerName
+                        element={p.elementId}
+                        web_name={p.web_name}
+                        teamShort={p.teamShort}
+                        className="waiver-name"
+                      >
+                        {p.web_name}
+                      </ClickablePlayerName>
                       <span className="waiver-club muted">{p.teamShort}</span>
                     </div>
                     <span className="waiver-count">{p.claims}</span>
@@ -2998,6 +3070,7 @@ function App() {
       </main>
       <footer className="page-footer--script">Tery is a Racist</footer>
     </div>
+    </PlayerHistoryProvider>
   )
 }
 

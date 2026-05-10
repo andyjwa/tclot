@@ -11,6 +11,7 @@ import {
   fplElementWebName,
   useNarrow560,
 } from './fplElementNames.js';
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
 function plBadgeUrl(code) {
@@ -182,7 +183,15 @@ function OwnerTag({ owner, teamLogoMap, kitIndexByEntry }) {
   );
 }
 
-function EventRow({ ev, ownerByEl, teamLogoMap, kitIndexByEntry, elementById, narrowName }) {
+function EventRow({
+  ev,
+  ownerByEl,
+  teamLogoMap,
+  kitIndexByEntry,
+  elementById,
+  teamById,
+  narrowName,
+}) {
   const meta = EVENT_META[ev.kind];
   if (!meta) return null;
   const owner = ev.elementId != null ? ownerByEl.get(ev.elementId) : null;
@@ -194,6 +203,8 @@ function EventRow({ ev, ownerByEl, teamLogoMap, kitIndexByEntry, elementById, na
     : (ev.playerName || '—');
   const fullTitle =
     el && narrowName ? fplElementFullName(el, ev.elementId) : undefined;
+  const teamShort =
+    el && teamById ? teamById[Number(el.team)]?.short_name : undefined;
   const sideClass =
     ev.teamSide === 'home'
       ? 'prem-ev-row--home'
@@ -208,7 +219,14 @@ function EventRow({ ev, ownerByEl, teamLogoMap, kitIndexByEntry, elementById, na
       </span>
       <span className="prem-ev-player">
         <span className="prem-ev-name" title={fullTitle}>
-          {nameShown}
+          <ClickablePlayerName
+            element={ev.elementId}
+            displayName={el ? fplElementFullName(el, ev.elementId) : undefined}
+            web_name={el ? fplElementWebName(el, ev.elementId) : undefined}
+            teamShort={teamShort}
+          >
+            {nameShown}
+          </ClickablePlayerName>
         </span>
         {ev.isPenalty ? <span className="prem-ev-tag">(pen)</span> : null}
         {ev.isOwnGoal ? <span className="prem-ev-tag">(OG)</span> : null}
@@ -230,6 +248,7 @@ function LineupPlayerRow({
   teamLogoMap,
   kitIndexByEntry,
   elementById,
+  teamById,
   narrowName,
 }) {
   const owner = player.elementId != null ? ownerByEl.get(player.elementId) : null;
@@ -242,6 +261,8 @@ function LineupPlayerRow({
         player.name ||
         `#${player.fotmobPlayerId ?? '?'}`);
   const fullTitle = el && narrowName ? fplElementFullName(el, player.elementId) : undefined;
+  const teamShort =
+    el && teamById ? teamById[Number(el.team)]?.short_name : undefined;
   const fplPos =
     player.fplPos != null && String(player.fplPos).trim()
       ? String(player.fplPos).trim()
@@ -250,7 +271,14 @@ function LineupPlayerRow({
     <div className="prem-lineup-row">
       <span className="prem-lineup-core">
         <span className="prem-lineup-name" title={fullTitle}>
-          {displayName}
+          <ClickablePlayerName
+            element={player.elementId}
+            displayName={el ? fplElementFullName(el, player.elementId) : undefined}
+            web_name={el ? fplElementWebName(el, player.elementId) : undefined}
+            teamShort={teamShort}
+          >
+            {displayName}
+          </ClickablePlayerName>
           {fplPos ? (
             <span className="prem-lineup-fpl-bracket" title="FPL position">
               {' '}
@@ -312,6 +340,7 @@ function LineupPaired({
   teamLogoMap,
   kitIndexByEntry,
   elementById,
+  teamById,
   narrowName,
 }) {
   if (!homeSide && !awaySide) {
@@ -352,6 +381,7 @@ function LineupPaired({
                   teamLogoMap={teamLogoMap}
                   kitIndexByEntry={kitIndexByEntry}
                   elementById={elementById}
+                  teamById={teamById}
                   narrowName={narrowName}
                 />
               ) : (
@@ -366,6 +396,7 @@ function LineupPaired({
                   teamLogoMap={teamLogoMap}
                   kitIndexByEntry={kitIndexByEntry}
                   elementById={elementById}
+                  teamById={teamById}
                   narrowName={narrowName}
                 />
               ) : (
@@ -394,6 +425,7 @@ function LineupPaired({
                       teamLogoMap={teamLogoMap}
                       kitIndexByEntry={kitIndexByEntry}
                       elementById={elementById}
+                      teamById={teamById}
                       narrowName={narrowName}
                     />
                   ) : (
@@ -408,6 +440,7 @@ function LineupPaired({
                       teamLogoMap={teamLogoMap}
                       kitIndexByEntry={kitIndexByEntry}
                       elementById={elementById}
+                      teamById={teamById}
                       narrowName={narrowName}
                     />
                   ) : (
@@ -598,6 +631,7 @@ function FixtureCard({
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                     elementById={elementById}
+                    teamById={teamById}
                     narrowName={narrowName}
                   />
                 ))}
@@ -619,6 +653,7 @@ function FixtureCard({
                 teamLogoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
                 elementById={elementById}
+                teamById={teamById}
                 narrowName={narrowName}
               />
             </div>

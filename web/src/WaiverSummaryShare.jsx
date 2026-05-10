@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar.jsx'
 import { PlayerKit } from './PlayerKit.jsx'
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import {
   flattenWaiverGroups,
   sortGroupsByTeamName,
@@ -102,9 +103,23 @@ function CompactMoveLine({
           />
         </div>
         <span className="waiver-summary-share__compact-pick">
-          {r.pickedName ?? '—'}{' '}
+          <ClickablePlayerName
+            element={r.element_in}
+            web_name={r.pickedName}
+            teamShort={r.pickedTeamShort}
+          >
+            {r.pickedName ?? '—'}
+          </ClickablePlayerName>{' '}
           <span className="waiver-summary-share__compact-arrow">←</span>{' '}
-          <span className="muted">{r.droppedName ?? '—'}</span>
+          <span className="muted">
+            <ClickablePlayerName
+              element={r.element_out}
+              web_name={r.droppedName}
+              teamShort={r.droppedTeamShort}
+            >
+              {r.droppedName ?? '—'}
+            </ClickablePlayerName>
+          </span>
         </span>
       </div>
       {showTeamColumn ? (

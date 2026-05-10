@@ -31,6 +31,7 @@ import {
   fplElementWebName,
   useNarrow560,
 } from './fplElementNames.js';
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 
 /**
  * ESPN supplies real wallclock (epoch-ms) ordering for these. We prefer its ordering when it matches
@@ -918,9 +919,15 @@ export function PlayerContributions({
                       : undefined
                   }
                 >
-                  <span className="pp-ev-name">
+                  <ClickablePlayerName
+                    element={r.elementId}
+                    displayName={r.playerLabelFull}
+                    web_name={r.playerLabelShort}
+                    teamShort={r.teamShort}
+                    className="pp-ev-name"
+                  >
                     {r.playerLabel}
-                  </span>
+                  </ClickablePlayerName>
                 </div>
                 {showMinute ? (
                   <span

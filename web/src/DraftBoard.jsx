@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, Fragment } from 'react'
 import { useDraftBoard } from './useDraftBoard'
 import { TeamAvatar } from './TeamAvatar'
 import { DraftQuality } from './DraftQuality'
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { compareLeagueEntriesByDraftSlot, minOverallPickByEntryId } from './draftTeamOrder'
 
 const POS_OPTIONS = ['GKP', 'DEF', 'MID', 'FWD']
@@ -368,7 +369,9 @@ export function DraftBoard({
                       #
                     </span>
                   ) : null}
-                  <span className="draft-board-head__cell">Player</span>
+                  <span className="draft-board-head__cell">
+                    Player
+                  </span>
                   <span className="draft-board-head__cell draft-board-head__cell--pos">Pos</span>
                   <DraftBoardSortHeadCell
                     columnKey="totalPoints"
@@ -410,7 +413,7 @@ export function DraftBoard({
                         </span>
                         <span className="draft-board-row__round draft-round-display">
                           <span className="draft-round-display__long">
-                            Round {p.round} pick {p.pickInRound}
+                            Round {p.round} Pick {p.pickInRound}
                           </span>
                           <span className="draft-round-display__short tabular" aria-hidden="true">
                             {p.round}.{p.pickInRound}
@@ -426,10 +429,28 @@ export function DraftBoard({
                         ) : null}
                         <span className="draft-board-row__player">
                           <ClubBadge src={p.badgeUrl} />
-                          <span className="draft-board-row__player-names">
-                            <span className="draft-board-row__player-full">{displayFull}</span>
-                            <span className="draft-board-row__player-short">{p.playerName}</span>
+                        <span className="draft-board-row__player-names">
+                          <span className="draft-board-row__player-full">
+                            <ClickablePlayerName
+                              element={p.element}
+                              displayName={displayFull}
+                              web_name={p.playerName}
+                              teamShort={p.teamShort}
+                            >
+                              {displayFull}
+                            </ClickablePlayerName>
                           </span>
+                          <span className="draft-board-row__player-short">
+                            <ClickablePlayerName
+                              element={p.element}
+                              displayName={displayFull}
+                              web_name={p.playerName}
+                              teamShort={p.teamShort}
+                            >
+                              {p.playerName}
+                            </ClickablePlayerName>
+                          </span>
+                        </span>
                         </span>
                         <span className="draft-board-row__pos tabular">{p.pos}</span>
                         <span className="draft-board-row__pts tabular" title="Season points to date">
