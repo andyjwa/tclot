@@ -63,6 +63,31 @@ function historyDcCount(h) {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Emoji + optional ×n (small) for history stat columns; matches live contributions (🪖 Def Con, 🍑 assists). */
+function HistoryStatBadge({ emoji, count, singularLabel, pluralLabel, empty = '—' }) {
+  const n = Number(count);
+  if (!Number.isFinite(n) || n < 1) {
+    return <span className="tabular muted">{empty}</span>;
+  }
+  const aria =
+    n === 1 ? `${n} ${singularLabel}` : `${n} ${pluralLabel}`;
+  return (
+    <span
+      className="live-player-slide__stat-badge tabular"
+      role="img"
+      aria-label={aria}
+      title={aria}
+    >
+      <span aria-hidden="true">{emoji}</span>
+      {n > 1 ? (
+        <span className="live-player-slide__stat-badge__mul" aria-hidden="true">
+          ×{n}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
 /**
  * Slide-in panel from the right (full width on narrow viewports) with season GW history from FPL.
  *
@@ -454,10 +479,11 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
                       </th>
                       <th
                         scope="col"
-                        className="live-player-slide__th-num"
-                        title="Defensive contributions (when FPL includes them on this row)"
+                        className="live-player-slide__th-emoji"
+                        title="Defensive contributions — Def Con (when FPL includes them on this row)"
+                        aria-label="Defensive contributions"
                       >
-                        DC
+                        <span aria-hidden="true">🪖</span>
                       </th>
                       <th
                         scope="col"
@@ -528,9 +554,30 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
                             {Number.isFinite(round) ? round : '—'}
                           </td>
                           <td className="tabular">{h.minutes ?? '—'}</td>
-                          <td className="tabular">{dc != null ? dc : '—'}</td>
-                          <td className="tabular">{h.goals_scored ?? 0}</td>
-                          <td className="tabular">{h.assists ?? 0}</td>
+                          <td className="tabular live-player-slide__td-stat">
+                            <HistoryStatBadge
+                              emoji="🪖"
+                              count={dc}
+                              singularLabel="defensive contribution"
+                              pluralLabel="defensive contributions"
+                            />
+                          </td>
+                          <td className="tabular live-player-slide__td-stat">
+                            <HistoryStatBadge
+                              emoji="⚽"
+                              count={h.goals_scored}
+                              singularLabel="goal"
+                              pluralLabel="goals"
+                            />
+                          </td>
+                          <td className="tabular live-player-slide__td-stat">
+                            <HistoryStatBadge
+                              emoji="🍑"
+                              count={h.assists}
+                              singularLabel="assist"
+                              pluralLabel="assists"
+                            />
+                          </td>
                           <td className="tabular">{h.bonus ?? 0}</td>
                           <td className="tabular live-player-slide__td-pts">
                             <strong>{h.total_points ?? '—'}</strong>

@@ -6685,6 +6685,23 @@ body[data-tclot-theme='dark'] .live-player-slide__table thead th {
   text-align: center;
 }
 
+.live-player-slide__stat-badge {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.08em;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.live-player-slide__stat-badge__mul {
+  font-size: 0.65em;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.82;
+  font-variant-numeric: tabular-nums;
+}
+
 .live-player-slide__table--stats th:nth-child(n + 3),
 .live-player-slide__table--stats td:nth-child(n + 3) {
   text-align: center;
