@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useRef,
   useSyncExternalStore,
 } from 'react'
 import {
@@ -1159,12 +1160,33 @@ function App() {
     fplLiveLandingGw
   const draftGwCalendarNext = draftBootstrapEvents.next
 
-  /** Drop explicit GW pick when FPL calendar moves past it (follow “current” without reload). */
+  /**
+   * Last draft-bootstrap “current” GW we saw. Used so we only clear `liveGw` when the calendar
+   * actually rolls forward past the GW the user had pinned — not when they pick an earlier GW to
+   * browse history while `mergedFplCalendarCurrent` stays higher (that used to snap the select back).
+   */
+  const liveGwCalendarRollRef = useRef(/** @type {number | null} */ (null))
+
+  /** Drop explicit GW pick when the live calendar advances across the pinned GW (season rolls on). */
   useEffect(() => {
-    const cur = Number(mergedFplCalendarCurrent)
+    const curNum = Number(mergedFplCalendarCurrent)
+    if (!Number.isFinite(curNum)) return
+
+    const prevCal = liveGwCalendarRollRef.current
+    liveGwCalendarRollRef.current = curNum
+
     const pinned = liveGw
-    if (pinned == null || !Number.isFinite(cur)) return
-    if (cur > pinned) setLiveGw(null)
+    if (pinned == null || !Number.isFinite(Number(pinned))) return
+
+    const pinNum = Number(pinned)
+    if (
+      prevCal != null &&
+      Number.isFinite(prevCal) &&
+      curNum > prevCal &&
+      curNum > pinNum
+    ) {
+      setLiveGw(null)
+    }
   }, [mergedFplCalendarCurrent, liveGw])
 
   /** Waiver GW picker: drops-gw-live GWs plus draft bootstrap current/next (shows GW35 before redeploy). */
