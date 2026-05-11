@@ -6014,6 +6014,32 @@ button.live-fixture-banner--toggle {
   color: var(--fm-muted, #6b7280);
 }
 
+.live-fixture-proj-players__th-team {
+  max-width: 11rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fm-text-strong, #111);
+  font-weight: 800;
+}
+
+.live-fixture-proj-players__row--played td {
+  background: color-mix(in srgb, var(--fm-win, #12a15a) 13%, var(--fm-card, #fff));
+}
+
+.live-fixture-proj-players__row--fixture-left td {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 10%, var(--fm-card, #fff));
+}
+
+.fotmob[data-theme='light'] .live-fixture-proj-players__row--played td {
+  background: color-mix(in srgb, var(--fm-win, #059669) 11%, #fff);
+}
+
+.fotmob[data-theme='light'] .live-fixture-proj-players__row--fixture-left td {
+  background: color-mix(in srgb, var(--tclot-logo-purple) 8%, #fff);
+}
+
 .live-fixture-proj-players__table .col-pos {
   width: 2.25rem;
 }

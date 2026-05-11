@@ -12,6 +12,7 @@ import {
   simulateFantasyH2hPercentsFromProjBlends,
 } from './livePredictionMappers.js';
 import { projectedGwTotalLiveBlendForElement } from './liveGwMidProjection.js';
+import { countElementGamesLeftToPlay } from './fplBonusFromBps.js';
 
 const UI_MODEL_CONFIG = {
   ...DEFAULT_MODEL_CONFIG,
@@ -52,7 +53,20 @@ function formatProj(n) {
 
 const POS_ABBREV = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' };
 
-function ProjectionPlayerTable({ rows }) {
+function posLetterAbbrev(pos) {
+  if (pos == null) return '—';
+  if (typeof pos === 'string') {
+    const up = pos.toUpperCase();
+    const m = { GK: 'G', G: 'G', DEF: 'D', D: 'D', MID: 'M', M: 'M', FWD: 'F', F: 'F', FORWARD: 'F' };
+    const v = m[up];
+    if (v) return v;
+  }
+  const n = Number(pos);
+  if (Number.isFinite(n)) return POS_ABBREV[n] ?? '—';
+  return '—';
+}
+
+function ProjectionPlayerTable({ rows, teamName }) {
   if (!Array.isArray(rows) || rows.length === 0) {
     return (
       <p className="muted muted--tight live-fixture-proj-players__empty">
@@ -60,12 +74,15 @@ function ProjectionPlayerTable({ rows }) {
       </p>
     );
   }
+  const nameCol = teamName?.trim() || 'Team';
   return (
     <div className="table-scroll live-fixture-proj-players">
       <table className="live-fixture-proj-players__table">
         <thead>
           <tr>
-            <th scope="col">Player</th>
+            <th scope="col" className="live-fixture-proj-players__th-team">
+              {nameCol}
+            </th>
             <th className="col-pos tabular" scope="col" title="Position">
               Pos
             </th>
@@ -87,7 +104,19 @@ function ProjectionPlayerTable({ rows }) {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.elementId}>
+            <tr
+              key={r.elementId}
+              className={
+                r.fixtureComplete
+                  ? 'live-fixture-proj-players__row live-fixture-proj-players__row--played'
+                  : 'live-fixture-proj-players__row live-fixture-proj-players__row--fixture-left'
+              }
+              title={
+                r.fixtureComplete
+                  ? 'Club fixture(s) for this GW finished for FPL scoring'
+                  : 'Still has club fixture minutes to come this GW'
+              }
+            >
               <td className="live-fixture-proj-players__name">
                 <ClickablePlayerName
                   element={r.elementId}
@@ -97,7 +126,7 @@ function ProjectionPlayerTable({ rows }) {
                   {r.displayName}
                 </ClickablePlayerName>
               </td>
-              <td className="col-pos tabular muted">{POS_ABBREV[r.pos] ?? '—'}</td>
+              <td className="col-pos tabular muted">{posLetterAbbrev(r.pos)}</td>
               <td className="tabular live-fixture-proj-players__num">{formatXp(r.xPts)}</td>
               <td className="tabular live-fixture-proj-players__num">
                 {r.projFinal != null && Number.isFinite(r.projFinal) ? formatProj(r.projFinal) : '—'}
@@ -168,8 +197,9 @@ function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) 
   return blends;
 }
 
-function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, liveByEl) {
+function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, liveByEl, gwFxList) {
   if (!Array.isArray(starters) || starters.length !== 11) return [];
+  const fixtures = Array.isArray(gwFxList) ? gwFxList : [];
   const out = [];
   for (let i = 0; i < starters.length; i++) {
     const pr = starters[i];
@@ -193,6 +223,16 @@ function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, live
       /* partial row */
     }
     const pos = bootstrapElementToPlayer(el).position;
+    const liveRow = liveByEl[pid];
+    const tid = Number(el.team);
+    const aggMins = Number(liveRow?.stats?.minutes ?? 0);
+    const gamesLeft = countElementGamesLeftToPlay(
+      el,
+      liveRow,
+      fixtures,
+      Number.isFinite(tid) ? tid : null,
+      aggMins,
+    );
     out.push({
       elementId: pid,
       web_name: el.web_name?.trim() || `Player ${pid}`,
@@ -200,6 +240,7 @@ function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, live
       xPts,
       projFinal,
       displayName: fplElementFullName(el, pid),
+      fixtureComplete: gamesLeft === 0,
     });
   }
   return out;
@@ -406,11 +447,11 @@ export function LiveProjectionsPanel({
 
       const homePlayers =
         Array.isArray(stH) && stH.length === 11
-          ? buildProjectionPlayerLines(stH, ctx, teamsById, gw, blendCtxH2h, liveByEl)
+          ? buildProjectionPlayerLines(stH, ctx, teamsById, gw, blendCtxH2h, liveByEl, allFx)
           : [];
       const awayPlayers =
         Array.isArray(stA) && stA.length === 11
-          ? buildProjectionPlayerLines(stA, ctx, teamsById, gw, blendCtxH2h, liveByEl)
+          ? buildProjectionPlayerLines(stA, ctx, teamsById, gw, blendCtxH2h, liveByEl, allFx)
           : [];
 
       fixtureProjectionRows.push({
@@ -794,11 +835,11 @@ export function LiveProjectionsPanel({
                     <div className="live-fixture-expanded-body" id={fixtureBodyId}>
                       <div className="live-fixture-split">
                         <div className="live-fixture-column">
-                          <ProjectionPlayerTable rows={fx.homePlayers} />
+                          <ProjectionPlayerTable rows={fx.homePlayers} teamName={fx.homeName} />
                         </div>
                         <div className="live-fixture-divider" aria-hidden="true" />
                         <div className="live-fixture-column">
-                          <ProjectionPlayerTable rows={fx.awayPlayers} />
+                          <ProjectionPlayerTable rows={fx.awayPlayers} teamName={fx.awayName} />
                         </div>
                       </div>
                     </div>
