@@ -1,0 +1,24 @@
+{
+  "name": "fpl-predictions",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Explainable event-probability model for Fantasy Premier League gameweek points",
+  "main": "./dist/predictions/index.js",
+  "types": "./dist/predictions/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/predictions/index.d.ts",
+      "import": "./dist/predictions/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2",
+    "vitest": "^3.0.5"
+  }
+}

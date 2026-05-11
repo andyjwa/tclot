@@ -46,6 +46,7 @@ import {
   resolveDefaultWaiverGameweek,
   resolveLiveGameweek,
 } from './h2hScheduleGw.js'
+import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
 import './App.css'
 
 /** Sorted ascending unique GWs from schedule rows (1–38). */
@@ -2131,10 +2132,18 @@ function App() {
             )}
           </section>
 
-                <section
-                  className="tile tile--compact"
-                  aria-labelledby="gw-raw-points-rank-heading"
-                >
+          <FixtureScheduleMatrix
+            matches={matches}
+            leagueEntries={leagueEntries}
+            tableRows={tableRows}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+
+          <section
+            className="tile tile--compact"
+            aria-labelledby="gw-raw-points-rank-heading"
+          >
                   <div className="tile-head-row tile-head-row--tight">
                     <h2 id="gw-raw-points-rank-heading" className="tile-title tile-title--sm">
                       Gameweek points table

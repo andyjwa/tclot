@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-10T14:13:01.472Z",
+  "generated": "2026-05-11T15:16:57.553Z",
   "note": "Successful waiver (transactionKind w) and free-agency (f) swaps. droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)",
   "rows": [
     {
@@ -11,7 +11,7 @@
       "added": "2026-05-09T07:47:39.480007Z",
       "waiverPriority": null,
       "waiverWireIndex": null,
-      "droppedPlayerGwPoints": 10,
+      "droppedPlayerGwPoints": 15,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
     },
@@ -24,8 +24,8 @@
       "added": "2026-05-09T07:04:02.294165Z",
       "waiverPriority": null,
       "waiverWireIndex": null,
-      "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 4,
+      "droppedPlayerGwPoints": 7,
+      "pickedUpPlayerGwPoints": 5,
       "transactionKind": "f"
     },
     {
@@ -77,7 +77,7 @@
       "waiverPriority": null,
       "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
     },
     {
@@ -89,7 +89,7 @@
       "added": "2026-05-08T13:06:10.141602Z",
       "waiverPriority": null,
       "waiverWireIndex": null,
-      "droppedPlayerGwPoints": 0,
+      "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
     },
@@ -102,7 +102,7 @@
       "added": "2026-05-08T13:02:57.095759Z",
       "waiverPriority": null,
       "waiverWireIndex": null,
-      "droppedPlayerGwPoints": 0,
+      "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
     },
@@ -141,7 +141,7 @@
       "added": "2026-05-08T10:43:23.586877Z",
       "waiverPriority": null,
       "waiverWireIndex": null,
-      "droppedPlayerGwPoints": 0,
+      "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
     },
@@ -154,7 +154,7 @@
       "added": "2026-05-08T10:31:07.473920Z",
       "waiverPriority": null,
       "waiverWireIndex": null,
-      "droppedPlayerGwPoints": 0,
+      "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
     },
@@ -206,7 +206,7 @@
       "added": "2026-05-08T09:50:24.457770Z",
       "waiverPriority": 1,
       "waiverWireIndex": 7,
-      "droppedPlayerGwPoints": 1,
+      "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
     },
@@ -246,7 +246,7 @@
       "waiverPriority": 1,
       "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 9,
+      "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
     },
     {
@@ -284,7 +284,7 @@
       "added": "2026-05-07T18:07:14.010515Z",
       "waiverPriority": 5,
       "waiverWireIndex": 23,
-      "droppedPlayerGwPoints": 0,
+      "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
     },
@@ -324,7 +324,7 @@
       "waiverPriority": 1,
       "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
     },
     {
@@ -337,7 +337,7 @@
       "waiverPriority": 15,
       "waiverWireIndex": 59,
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
     },
     {
@@ -350,7 +350,7 @@
       "waiverPriority": 11,
       "waiverWireIndex": 51,
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
     },
     {
@@ -362,8 +362,8 @@
       "added": "2026-05-05T05:59:25.085110Z",
       "waiverPriority": 7,
       "waiverWireIndex": 39,
-      "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0,
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
     },
     {
@@ -376,7 +376,7 @@
       "waiverPriority": 5,
       "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
     },
     {
@@ -389,7 +389,7 @@
       "waiverPriority": 1,
       "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
     },
     {
@@ -427,8 +427,8 @@
       "added": "2026-05-04T20:54:42.848623Z",
       "waiverPriority": 1,
       "waiverWireIndex": 8,
-      "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0,
+      "droppedPlayerGwPoints": 5,
+      "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
     },
     {
@@ -441,7 +441,7 @@
       "waiverPriority": 1,
       "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
     },
     {

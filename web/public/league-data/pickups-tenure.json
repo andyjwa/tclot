@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-10T14:13:01.476Z",
+  "generated": "2026-05-11T15:16:57.557Z",
   "note": "Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed.",
   "lastGwUsed": 36,
   "rows": [
@@ -97,49 +97,49 @@
   "teamWaiverInTotals": [
     {
       "entry": 74425,
-      "totalWaiverInPoints": 1076,
+      "totalWaiverInPoints": 1080,
       "distinctPlayers": 100,
       "leagueEntry": 72086
     },
     {
       "entry": 31812,
-      "totalWaiverInPoints": 1059,
+      "totalWaiverInPoints": 1074,
       "distinctPlayers": 53,
       "leagueEntry": 31076
     },
     {
-      "entry": 40240,
-      "totalWaiverInPoints": 979,
-      "distinctPlayers": 32,
-      "leagueEntry": 39078
-    },
-    {
       "entry": 27040,
-      "totalWaiverInPoints": 976,
+      "totalWaiverInPoints": 989,
       "distinctPlayers": 51,
       "leagueEntry": 26587
     },
     {
+      "entry": 40240,
+      "totalWaiverInPoints": 984,
+      "distinctPlayers": 32,
+      "leagueEntry": 39078
+    },
+    {
       "entry": 40385,
-      "totalWaiverInPoints": 934,
+      "totalWaiverInPoints": 950,
       "distinctPlayers": 65,
       "leagueEntry": 39219
     },
     {
       "entry": 27870,
-      "totalWaiverInPoints": 920,
+      "totalWaiverInPoints": 934,
       "distinctPlayers": 48,
       "leagueEntry": 27370
     },
     {
       "entry": 27134,
-      "totalWaiverInPoints": 841,
+      "totalWaiverInPoints": 844,
       "distinctPlayers": 52,
       "leagueEntry": 26675
     },
     {
       "entry": 41410,
-      "totalWaiverInPoints": 706,
+      "totalWaiverInPoints": 711,
       "distinctPlayers": 58,
       "leagueEntry": 40206
     }

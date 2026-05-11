@@ -12,6 +12,17 @@ import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
 import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
 import { usePlayerHistory, ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
+import { DEFAULT_MODEL_CONFIG } from 'fpl-predictions';
+import { liveGwDisplayTotal } from './liveGwTotals.js';
+import { LiveFixtureGwPointsChart } from './LiveFixtureGwPointsChart.jsx';
+import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
+import {
+  bootstrapTeamToPredictionTeam,
+  simulateFantasyH2hPercents,
+  simulateFantasyH2hPercentsFromProjBlends,
+  projectionRng as makePredictionRng,
+} from './livePredictionMappers.js';
+import { projectedGwTotalLiveBlendForElement } from './liveGwMidProjection.js';
 
 /**
  * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
@@ -289,32 +300,6 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick }) {
   );
 }
 
-function sumStarterPoints(starters) {
-  return starters.reduce((acc, r) => acc + (Number(r.total_points) || 0), 0);
-}
-
-/** Use post-autosub XI when we have a full 11 from `buildEffectiveLineup`. */
-function effectiveStartersForDisplay(squad) {
-  if (!squad || squad.error) return null;
-  const nBench = squad.bench?.length ?? 0;
-  if (squad.displayStarters?.length === 11 && squad.displayBench?.length === nBench) {
-    return squad.displayStarters;
-  }
-  return squad.starters?.length ? squad.starters : null;
-}
-
-/**
- * GW total for banners: prefer FPL `entry_history.points` (includes autosubs). If missing, sum
- * effective XI points (after projected/official autosub display rows).
- */
-function liveGwDisplayTotal(squad) {
-  if (!squad || squad.error) return null;
-  if (typeof squad.gwPoints === 'number') return squad.gwPoints;
-  const xs = effectiveStartersForDisplay(squad);
-  if (!xs?.length) return null;
-  return sumStarterPoints(xs);
-}
-
 /** 3 / 1 / 0 from live GW score vs opponent (same as H2H table stakes). */
 function liveH2hBonusPts(myLive, oppLive) {
   if (myLive == null || oppLive == null) return 0;
@@ -496,6 +481,64 @@ function villainVictoryLeagueEntryIds(squads, gwMatches) {
 function heroDefeatLeagueEntryIds(squads, gwMatches) {
   return heroDefeatEntryIds(squadsToGwPointsMap(squads), gwMatches);
 }
+
+const H2H_WIN_PCT_CONFIG = { ...DEFAULT_MODEL_CONFIG, simulationIterations: 450 };
+
+/**
+ * Collect per-player {projFinal, remaining} blends for exactly 11 starters.
+ * Returns null if any player is missing from context.
+ */
+function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) {
+  if (!Array.isArray(picks) || picks.length !== 11) return null;
+  const blends = [];
+  for (let i = 0; i < 11; i++) {
+    const pid = Number(picks[i]?.element);
+    const el = ctx.elementById?.[pid];
+    if (!el) return null;
+    try {
+      const blend = projectedGwTotalLiveBlendForElement(
+        el,
+        blendCtx,
+        teamsById,
+        gw,
+        H2H_WIN_PCT_CONFIG,
+        liveByEl[pid],
+        makePredictionRng(pid, 990_011 + gw + i * 31),
+      );
+      blends.push({ projFinal: blend.projFinal, remaining: blend.remaining });
+    } catch {
+      return null;
+    }
+  }
+  return blends;
+}
+
+/** Sum projected GW totals for 11 starters; matches `buildProjBlendsForPicks` RNG seeds. */
+function sumProjectedGwForStarters(picks, ctx, teamsById, gw, blendCtx, liveByEl) {
+  if (!Array.isArray(picks) || picks.length !== 11) return null;
+  let sum = 0;
+  for (let i = 0; i < 11; i++) {
+    const pid = Number(picks[i]?.element);
+    const el = ctx.elementById?.[pid];
+    if (!el) return null;
+    try {
+      const blend = projectedGwTotalLiveBlendForElement(
+        el,
+        blendCtx,
+        teamsById,
+        gw,
+        H2H_WIN_PCT_CONFIG,
+        liveByEl[pid],
+        makePredictionRng(pid, 990_011 + gw + i * 31),
+      );
+      sum += blend.projFinal;
+    } catch {
+      return null;
+    }
+  }
+  return sum;
+}
+
 
 /** Joker + “Villain Detected” for live tiles (image in `public/villain-detected.png`). */
 function VillainDetectedBadge({ variant = 'default' }) {
@@ -973,6 +1016,129 @@ export function LiveScores({
   }, [gwMatches, squadByLeagueEntry]);
 
   /**
+   * Win percentages for each H2H fixture: pre-live uses xPts MC; live uses per-player Proj MC.
+   * Keyed by `${homeId}-${awayId}-${gameweek}`.
+   */
+  const h2hWinPctByKey = useMemo(() => {
+    const ctx = contributionLiveContext;
+    if (!ctx?.elementById || !gwMatches.length) return new Map();
+    const gw = Number(gameweek);
+    if (!Number.isFinite(gw)) return new Map();
+
+    const allFx = Array.isArray(ctx.gwFixtures) ? ctx.gwFixtures : [];
+    const teamsById = new Map();
+    for (const t of Object.values(ctx.teamById || {})) {
+      const tm = bootstrapTeamToPredictionTeam(t);
+      teamsById.set(tm.id, tm);
+    }
+
+    const gwIsLive = allFx.some((f) => f?.started === true);
+    const liveByEl = ctx.liveFullByElementId || {};
+    const blendCtx = { gwFixtures: allFx };
+    const result = new Map();
+
+    for (const m of gwMatches) {
+      const homeId = Number(m.league_entry_1);
+      const awayId = Number(m.league_entry_2);
+      const sqH = squadByLeagueEntry.get(homeId);
+      const sqA = squadByLeagueEntry.get(awayId);
+      const stH =
+        sqH?.displayStarters?.length === 11 ? sqH.displayStarters : (sqH?.starters ?? []);
+      const stA =
+        sqA?.displayStarters?.length === 11 ? sqA.displayStarters : (sqA?.starters ?? []);
+      const key = `${homeId}-${awayId}-${gw}`;
+      const rnd = makePredictionRng(homeId, awayId);
+
+      if (gwIsLive && stH.length === 11 && stA.length === 11) {
+        const hBlends = buildProjBlendsForPicks(stH, ctx, teamsById, gw, blendCtx, liveByEl);
+        const aBlends = buildProjBlendsForPicks(stA, ctx, teamsById, gw, blendCtx, liveByEl);
+        if (hBlends && aBlends) {
+          const pct = simulateFantasyH2hPercentsFromProjBlends(hBlends, aBlends, rnd, 1500);
+          if (pct) {
+            result.set(key, { ...pct, isLive: true });
+            continue;
+          }
+        }
+      }
+
+      if (stH.length === 11 && stA.length === 11) {
+        const pct = simulateFantasyH2hPercents(
+          stH, stA, ctx, teamsById, gw, H2H_WIN_PCT_CONFIG, rnd, 1500,
+        );
+        if (pct) result.set(key, { ...pct, isLive: false });
+      }
+    }
+    return result;
+  }, [contributionLiveContext, gwMatches, gameweek, squadByLeagueEntry]);
+
+  /** Per-entry projected GW total (live blend); null when lineup or context incomplete. */
+  const projectedGwByEntryId = useMemo(() => {
+    const m = new Map();
+    const ctx = contributionLiveContext;
+    if (!ctx?.elementById || !gwMatches.length) return m;
+    const gw = Number(gameweek);
+    if (!Number.isFinite(gw)) return m;
+
+    const allFx = Array.isArray(ctx.gwFixtures) ? ctx.gwFixtures : [];
+    const teamsById = new Map();
+    for (const t of Object.values(ctx.teamById || {})) {
+      const tm = bootstrapTeamToPredictionTeam(t);
+      teamsById.set(tm.id, tm);
+    }
+    const blendCtx = { gwFixtures: allFx };
+    const liveByEl = ctx.liveFullByElementId || {};
+
+    const entryIds = new Set();
+    for (const fx of gwMatches) {
+      entryIds.add(Number(fx.league_entry_1));
+      entryIds.add(Number(fx.league_entry_2));
+    }
+    for (const id of entryIds) {
+      const sq = squadByLeagueEntry.get(id);
+      const st =
+        sq?.displayStarters?.length === 11
+          ? sq.displayStarters
+          : (sq?.starters ?? []);
+      if (st.length !== 11) {
+        m.set(id, null);
+        continue;
+      }
+      const sum = sumProjectedGwForStarters(
+        st,
+        ctx,
+        teamsById,
+        gw,
+        blendCtx,
+        liveByEl,
+      );
+      m.set(id, sum);
+    }
+    return m;
+  }, [contributionLiveContext, gwMatches, gameweek, squadByLeagueEntry]);
+
+  /**
+   * Median FPL points among winning sides in **finished** head-to-head matches (full season),
+   * from league `matches` — not the current GW’s live polling totals.
+   */
+  const medianGwWinScore = useMemo(() => {
+    const winners = [];
+    for (const m of matches) {
+      if (!m?.finished) continue;
+      const p1 = Number(m.league_entry_1_points);
+      const p2 = Number(m.league_entry_2_points);
+      if (!Number.isFinite(p1) || !Number.isFinite(p2)) continue;
+      if (p1 > p2) winners.push(p1);
+      else if (p2 > p1) winners.push(p2);
+    }
+    if (!winners.length) return null;
+    winners.sort((x, y) => x - y);
+    const mid = Math.floor(winners.length / 2);
+    return winners.length % 2 === 1
+      ? winners[mid]
+      : (winners[mid - 1] + winners[mid]) / 2;
+  }, [matches]);
+
+  /**
    * When “frozen”, PTS / For / Faced come from league `standings` only (no live +3 overlay).
    * FPL sometimes leaves `matches[].finished` false briefly after scores settle, and
    * `events.data[id].finished` can lag — so also freeze when the user is viewing a GW **before**
@@ -1060,6 +1226,16 @@ export function LiveScores({
       return { ...row, liveRank, ordinalLive, rankMove };
     });
   }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry, gwStandingsFrozen]);
+
+  const liveRankByEntry = useMemo(() => {
+    const o = {};
+    for (const row of liveStandingsRows) {
+      const eid = row.league_entry;
+      o[eid] = row.liveRank;
+      o[String(eid)] = row.liveRank;
+    }
+    return o;
+  }, [liveStandingsRows]);
 
   const villainVictoryEntryIds = useMemo(
     () => villainVictoryLeagueEntryIds(squads, gwMatches),
@@ -1263,6 +1439,7 @@ export function LiveScores({
             const awayHero = heroDefeatEntryIds.has(awayId);
 
             const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
+            const winPct = h2hWinPctByKey.get(fixtureKey);
             const lineupOpen = expandedFixtures.has(fixtureKey);
             const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
 
@@ -1304,6 +1481,18 @@ export function LiveScores({
                         </span>
                       ) : null}
                       <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--home">
+                        {winPct ? (
+                          <span
+                            className={
+                              'live-fixture-banner__win-pct live-fixture-banner__win-pct--home tabular' +
+                              (winPct.isLive ? ' live-fixture-banner__win-pct--live' : '')
+                            }
+                            title={winPct.isLive ? 'Home win % (live Proj MC)' : 'Home win % (xPts MC)'}
+                            aria-label={`Home win ${Math.round(winPct.homeWinPct)}%`}
+                          >
+                            {Math.round(winPct.homeWinPct)}%
+                          </span>
+                        ) : null}
                         <span className="live-fixture-banner__team-avatar">
                         <TeamAvatar
                           entryId={homeId}
@@ -1377,15 +1566,6 @@ export function LiveScores({
 
                     <span className="live-fixture-banner__team live-fixture-banner__team--away">
                       <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--away">
-                      <span className="live-fixture-banner__team-avatar">
-                        <TeamAvatar
-                          entryId={awayId}
-                          name={awayName}
-                          size="sm"
-                          logoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                      </span>
                       <span className="live-fixture-banner__team-text live-fixture-banner__team-text--away">
                         <span className="live-fixture-banner__team-inner">
                           <span className="live-fixture-banner__name-line">
@@ -1402,7 +1582,28 @@ export function LiveScores({
                           ) : null}
                         </span>
                       </span>
+                      <span className="live-fixture-banner__team-avatar">
+                        <TeamAvatar
+                          entryId={awayId}
+                          name={awayName}
+                          size="sm"
+                          logoMap={teamLogoMap}
+                          kitIndexByEntry={kitIndexByEntry}
+                        />
                       </span>
+                      </span>
+                      {winPct ? (
+                        <span
+                          className={
+                            'live-fixture-banner__win-pct live-fixture-banner__win-pct--away tabular' +
+                            (winPct.isLive ? ' live-fixture-banner__win-pct--live' : '')
+                          }
+                          title={winPct.isLive ? 'Away win % (live Proj MC)' : 'Away win % (xPts MC)'}
+                          aria-label={`Away win ${Math.round(winPct.awayWinPct)}%`}
+                        >
+                          {Math.round(winPct.awayWinPct)}%
+                        </span>
+                      ) : null}
                       {awayVillain ? (
                         <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
                           <VillainDetectedBadge variant="compact" />
@@ -1922,6 +2123,30 @@ export function LiveScores({
           ) : null}
         </p>
       </section>
+
+      {useFixtureLayout ? (
+        <LiveFixtureGwPointsChart
+          gameweek={gameweek}
+          gwMatches={gwMatches}
+          teams={teams}
+          squadByLeagueEntry={squadByLeagueEntry}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          projectedGwByEntryId={projectedGwByEntryId}
+          medianGwWinScore={medianGwWinScore}
+        />
+      ) : null}
+
+      <LiveProjectionsPanel
+        contributionLiveContext={contributionLiveContext}
+        gameweek={gameweek}
+        gwMatches={gwMatches}
+        squads={squads}
+        teams={teams}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+        liveRankByEntry={liveRankByEntry}
+      />
     </div>
   );
 }

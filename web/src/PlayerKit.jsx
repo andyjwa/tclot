@@ -10,9 +10,10 @@ export function PlayerKit({ shirtUrl, badgeUrl, teamShort }) {
       </span>
     )
   }
+  const isShirt = u === 0 && Boolean(shirtUrl)
   return (
     <img
-      className={u === 0 ? 'pl-kit-shirt' : 'pl-kit-badge'}
+      className={isShirt ? 'pl-kit-shirt' : 'pl-kit-badge'}
       src={urls[u]}
       alt=""
       loading="lazy"
