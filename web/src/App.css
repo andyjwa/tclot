@@ -6058,6 +6058,20 @@ button.live-fixture-banner--toggle {
   white-space: nowrap;
 }
 
+.live-fixture-proj-players__th-vs-xp,
+.live-fixture-proj-players__vs-xp {
+  width: 1.35rem;
+  max-width: 1.75rem;
+  padding-left: 2px !important;
+  padding-right: 4px !important;
+  text-align: center !important;
+  font-weight: 800;
+}
+
+.live-fixture-proj-players__vs-xp {
+  color: var(--fm-muted, #6b7280);
+}
+
 .live-fixture-proj-players__empty {
   padding: 8px 0;
 }

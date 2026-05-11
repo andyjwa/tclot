@@ -51,6 +51,22 @@ function formatProj(n) {
   return String(Math.round(n));
 }
 
+/** "+", "-", or "=" vs model xPts; null when inputs missing. */
+function formatVsXpSign(xPts, projFinal) {
+  if (!Number.isFinite(xPts) || !Number.isFinite(projFinal)) return null;
+  if (projFinal > xPts) return '+';
+  if (projFinal < xPts) return '-';
+  return '=';
+}
+
+function vsXpCellTitle(xPts, projFinal) {
+  const sign = formatVsXpSign(xPts, projFinal);
+  if (sign === '+') return 'Above expected points (xPts)';
+  if (sign === '-') return 'Below expected points (xPts)';
+  if (sign === '=') return 'Matched expected points (xPts)';
+  return undefined;
+}
+
 const POS_ABBREV = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' };
 
 function posLetterAbbrev(pos) {
@@ -96,9 +112,17 @@ function ProjectionPlayerTable({ rows, teamName }) {
             <th
               className="tabular live-fixture-proj-players__th-num live-fixture-proj-players__th-proj"
               scope="col"
-              title="Projected gameweek total (live blend)"
+              title="Projected gameweek total — or actual points when the GW is scoring live"
             >
-              Projected pts
+              Proj/Actual
+            </th>
+            <th
+              className="tabular live-fixture-proj-players__th-vs-xp"
+              scope="col"
+              title="Above (+), below (-), or matched (=) expected points (xPts)"
+              aria-label="Versus expected points"
+            >
+              ±
             </th>
           </tr>
         </thead>
@@ -130,6 +154,12 @@ function ProjectionPlayerTable({ rows, teamName }) {
               <td className="tabular live-fixture-proj-players__num">{formatXp(r.xPts)}</td>
               <td className="tabular live-fixture-proj-players__num">
                 {r.projFinal != null && Number.isFinite(r.projFinal) ? formatProj(r.projFinal) : '—'}
+              </td>
+              <td
+                className="tabular live-fixture-proj-players__vs-xp"
+                title={vsXpCellTitle(r.xPts, r.projFinal)}
+              >
+                {formatVsXpSign(r.xPts, r.projFinal) ?? ''}
               </td>
             </tr>
           ))}
