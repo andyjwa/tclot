@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "gameweek": 30,
+  "generatedAt": "2026-05-11T15:54:44.204Z",
+  "leagueId": 6802,
+  "leagueName": "The TC League of Titans",
+  "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
+  "model": {
+    "simulationIterations": 450,
+    "h2hMonteCarloItersXp": 2000,
+    "h2hMonteCarloItersProj": 1500,
+    "fplPredictionsSemver": "0.1.0"
+  },
+  "fixtures": {
+    "classicPlGameweek": 30,
+    "plGwHadFinishedFixture": true,
+    "fixtureCount": 10
+  },
+  "h2h": [
+    {
+      "league_entry_1": 26587,
+      "league_entry_2": 26675,
+      "teamName1": "Hanson of York AFC",
+      "teamName2": "Hackney Meat Loaf",
+      "fpl_entry_1": 27040,
+      "fpl_entry_2": 27134,
+      "actualH2hPts1": 68,
+      "actualH2hPts2": 33,
+      "actualXiPts1": 68,
+      "actualXiPts2": 33,
+      "actualWinner": "home",
+      "xPtsXi1": 32.1,
+      "xPtsXi2": 32.7,
+      "xPtsFavorite": "away",
+      "xPtsMc": {
+        "homeWinPct": 48,
+        "drawPct": 4,
+        "awayWinPct": 48
+      },
+      "projXi1": 68,
+      "projXi2": 33,
+      "projFavorite": "home",
+      "projMc": {
+        "homeWinPct": 100,
+        "drawPct": 0,
+        "awayWinPct": 0
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "official",
+      "autosubSourceAway": "official"
+    },
+    {
+      "league_entry_1": 27370,
+      "league_entry_2": 72086,
+      "teamName1": "Crouch End Oashisu",
+      "teamName2": "Brampton II Men",
+      "fpl_entry_1": 27870,
+      "fpl_entry_2": 74425,
+      "actualH2hPts1": 38,
+      "actualH2hPts2": 22,
+      "actualXiPts1": 38,
+      "actualXiPts2": 22,
+      "actualWinner": "home",
+      "xPtsXi1": 34.9,
+      "xPtsXi2": 32,
+      "xPtsFavorite": "home",
+      "xPtsMc": {
+        "homeWinPct": 58,
+        "drawPct": 3,
+        "awayWinPct": 39
+      },
+      "projXi1": 38,
+      "projXi2": 22,
+      "projFavorite": "home",
+      "projMc": {
+        "homeWinPct": 100,
+        "drawPct": 0,
+        "awayWinPct": 0
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "none",
+      "autosubSourceAway": "none"
+    },
+    {
+      "league_entry_1": 31076,
+      "league_entry_2": 40206,
+      "teamName1": "Seoul Club 7 🏆",
+      "teamName2": "Toronto Oizo",
+      "fpl_entry_1": 31812,
+      "fpl_entry_2": 41410,
+      "actualH2hPts1": 41,
+      "actualH2hPts2": 49,
+      "actualXiPts1": 41,
+      "actualXiPts2": 49,
+      "actualWinner": "away",
+      "xPtsXi1": 32.7,
+      "xPtsXi2": 34.6,
+      "xPtsFavorite": "away",
+      "xPtsMc": {
+        "homeWinPct": 40,
+        "drawPct": 4,
+        "awayWinPct": 57
+      },
+      "projXi1": 41,
+      "projXi2": 49,
+      "projFavorite": "away",
+      "projMc": {
+        "homeWinPct": 7,
+        "drawPct": 0,
+        "awayWinPct": 93
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "official",
+      "autosubSourceAway": "official"
+    },
+    {
+      "league_entry_1": 39078,
+      "league_entry_2": 39219,
+      "teamName1": "Clapton Cornershop",
+      "teamName2": "Morpeth Jamiroquai",
+      "fpl_entry_1": 40240,
+      "fpl_entry_2": 40385,
+      "actualH2hPts1": 60,
+      "actualH2hPts2": 34,
+      "actualXiPts1": 60,
+      "actualXiPts2": 34,
+      "actualWinner": "home",
+      "xPtsXi1": 33.6,
+      "xPtsXi2": 29.6,
+      "xPtsFavorite": "home",
+      "xPtsMc": {
+        "homeWinPct": 66,
+        "drawPct": 3,
+        "awayWinPct": 31
+      },
+      "projXi1": 60,
+      "projXi2": 34,
+      "projFavorite": "home",
+      "projMc": {
+        "homeWinPct": 100,
+        "drawPct": 0,
+        "awayWinPct": 0
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "none",
+      "autosubSourceAway": "official"
+    }
+  ]
+}
