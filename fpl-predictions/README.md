@@ -25,6 +25,8 @@ npm test         # vitest
 node dist/exampleRun.js
 ```
 
+Installing from the parent **`web/`** app (`npm ci` / `npm install`) runs the `prepare` script and **builds `dist/` automatically**, so a fresh clone can build `web` without a manual step under `fpl-predictions/`.
+
 ## API sketch
 
 ```ts
