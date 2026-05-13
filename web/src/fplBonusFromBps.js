@@ -210,6 +210,63 @@ export function activeExplainBlocks(liveRow) {
 }
 
 /**
+ * BPS for one fixture from `explain` only (draft + classic). Does not use aggregate
+ * `stats.bps`, which is GW-wide and must not be compared inside a single fixture’s pool
+ * when the player’s club has a double.
+ *
+ * @returns {number | null | 'pending'} fixture BPS; `null` if no minutes in this fixture;
+ *   `'pending'` if minutes are logged but no `bps` line is present yet.
+ */
+export function bpsForFixtureFromExplain(liveRow, fixtureId) {
+  const fid = Number(fixtureId);
+  if (!Number.isFinite(fid)) return null;
+  const ex = liveRow?.explain;
+  if (!Array.isArray(ex) || ex.length === 0) return null;
+  const first = ex[0];
+
+  const scanStats = (statsArr) => {
+    let minutes = 0;
+    let bpsSum = null;
+    for (const s of statsArr || []) {
+      const id = s.identifier ?? s.stat;
+      const val = s.value;
+      if (id === 'minutes') minutes = Number(val) || 0;
+      if (id === 'bps') {
+        bpsSum = (bpsSum ?? 0) + (Number(val) || 0);
+      }
+    }
+    if (minutes <= 0) return null;
+    if (bpsSum !== null) return bpsSum;
+    return 'pending';
+  };
+
+  if (Array.isArray(first) && first.length === 2 && typeof first[1] === 'number') {
+    let pending = false;
+    for (const pair of ex) {
+      const [statList, f] = pair;
+      if (Number(f) !== fid) continue;
+      const r = scanStats(statList);
+      if (typeof r === 'number') return r;
+      if (r === 'pending') pending = true;
+    }
+    return pending ? 'pending' : null;
+  }
+
+  if (first && first.fixture != null) {
+    let pending = false;
+    for (const block of ex) {
+      if (Number(block.fixture) !== fid) continue;
+      const r = scanStats(block.stats);
+      if (typeof r === 'number') return r;
+      if (r === 'pending') pending = true;
+    }
+    return pending ? 'pending' : null;
+  }
+
+  return null;
+}
+
+/**
  * BPS for a fixture’s bonus race: use aggregate stats.bps only when the player
  * has minutes in exactly one GW fixture (avoids wrong splits on DGW).
  *
@@ -360,6 +417,23 @@ export function participatingFixtureIdsForElement(el, liveRow, gwFixtures) {
  */
 export function bpsForElementInFixture(el, liveRow, fixtureId, gwFixtures) {
   if (!liveRow) return null;
+  const tid = Number(el?.team);
+  const tfLen =
+    Number.isFinite(tid) && Array.isArray(gwFixtures)
+      ? fixturesForTeamInGw(gwFixtures, tid).length
+      : 0;
+  const dgw = tfLen > 1;
+
+  const exBps = bpsForFixtureFromExplain(liveRow, fixtureId);
+  if (typeof exBps === 'number') return exBps;
+  if (exBps === 'pending') {
+    if (dgw) return null;
+  }
+
+  if (dgw) {
+    return null;
+  }
+
   const direct = bpsForFixturePool(liveRow, fixtureId);
   if (direct != null) return direct;
   const fb = fallbackSingleFixtureId(el, liveRow, gwFixtures);
