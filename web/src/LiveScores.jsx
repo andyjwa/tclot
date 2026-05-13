@@ -150,7 +150,7 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick }) {
             <th
               scope="col"
               className="live-picks-col-num live-picks-col-bonus"
-              title="Uses FPL bonus when stats.bonus is non-zero; otherwise BPS-based projection (keeps showing after full-time until FPL posts the final number)."
+              title="FPL stats.bonus when &gt;0; else BPS estimate while live. After all of this club’s GW fixtures are full-time, if FPL still shows 0 bonus the estimate is dropped so it won’t freeze vs the official site."
             >
               Bonus
             </th>

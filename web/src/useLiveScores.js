@@ -4,6 +4,7 @@ import {
   countElementGamesLeftToPlay,
   defensiveContributionCountFromLiveRow,
   fixturesForTeamInGw,
+  gwTeamFixturesAllHardFinished,
   isFixtureFullyDone,
   selectDisplayBonus,
 } from './fplBonusFromBps';
@@ -322,10 +323,15 @@ function xiRowsForLeftToPlayCount(starters, bench, displayStarters, displayBench
   return starters;
 }
 
-function applyBonusColumn(rows, provisionalByElement) {
+function applyBonusColumn(rows, provisionalByElement, elementById, gwFixtures) {
   return rows.map((r) => {
     const prov = provisionalByElement.get(r.element) ?? 0;
-    const display = selectDisplayBonus(r.bonusApi, prov);
+    const el = elementById?.[r.element];
+    const trustApiZero =
+      el != null &&
+      gwTeamFixturesAllHardFinished(el.team, gwFixtures) &&
+      (Number(r.bonusApi) || 0) === 0;
+    const display = selectDisplayBonus(r.bonusApi, prov, { trustApiZero });
     const total_points =
       Number(r.total_points) - Number(r.bonusApi) + Number(display);
     return { ...r, bonus: display, total_points };
@@ -510,7 +516,12 @@ export function useLiveScores({
             gwFixtures,
             espnPremRows
           );
-          const withBonus = applyBonusColumn(rows, provisionalByElement);
+          const withBonus = applyBonusColumn(
+            rows,
+            provisionalByElement,
+            elementById,
+            gwFixtures
+          );
           const withCaptain = withBonus.map((r) => ({
             ...r,
             total_points:

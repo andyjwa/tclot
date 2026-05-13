@@ -233,6 +233,24 @@ export function fixturesForTeamInGw(gwFixtures, teamId) {
   );
 }
 
+/**
+ * Every PL fixture this club has this GW has `finished === true` (hard full-time, not
+ * only `finished_provisional`). When FPL keeps `stats.bonus` at **0** after that, the
+ * game has settled “no bonus”; our BPS-based estimate may still show +1/+2 briefly or
+ * incorrectly — so {@link selectDisplayBonus} can trust API zero.
+ *
+ * @param {number | null | undefined} teamId
+ * @param {object[]} gwFixtures
+ */
+export function gwTeamFixturesAllHardFinished(teamId, gwFixtures) {
+  const tid = Number(teamId);
+  if (!Number.isFinite(tid)) return false;
+  if (!Array.isArray(gwFixtures) || !gwFixtures.length) return false;
+  const mine = fixturesForTeamInGw(gwFixtures, tid);
+  if (!mine.length) return false;
+  return mine.every((f) => f?.finished === true);
+}
+
 /** Match is over for live / LTP purposes (`finished` and/or `finished_provisional`). */
 export function isFixtureFullyDone(f) {
   if (f == null) return true;
@@ -400,14 +418,20 @@ export function allFixturesFinished(fixtureIds, fixtureById) {
 }
 
 /**
- * One column: prefer FPL `stats.bonus` once it is non-zero; otherwise keep BPS-based projection.
- * After a match ends, FPL often leaves bonus at 0 until confirmation — using provisional avoids
- * the bonus column going blank during that gap.
+ * One column: prefer FPL `stats.bonus` once it is non-zero; otherwise keep BPS-based projection
+ * while matches are live or in provisional full-time. Once **all** of the player’s club’s GW
+ * fixtures are hard-finished (`finished === true`) and FPL still reports `bonus === 0`,
+ * stop showing stale BPS bonus (matches official site when no bonus is awarded).
  *
  * @param {number} apiBonus — stats.bonus
  * @param {number} provisionalSum — sum across GW fixtures from BPS tiers
+ * @param {{ trustApiZero?: boolean }} [opts]
  */
-export function selectDisplayBonus(apiBonus, provisionalSum) {
-  if (apiBonus > 0) return apiBonus;
-  return provisionalSum;
+export function selectDisplayBonus(apiBonus, provisionalSum, opts = {}) {
+  const api = Number(apiBonus);
+  const safeApi = Number.isFinite(api) ? api : 0;
+  if (safeApi > 0) return safeApi;
+  if (opts.trustApiZero && safeApi === 0) return 0;
+  const p = Number(provisionalSum);
+  return Number.isFinite(p) ? p : 0;
 }
