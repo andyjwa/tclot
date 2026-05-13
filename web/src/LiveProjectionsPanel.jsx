@@ -11,7 +11,10 @@ import {
   simulateFantasyH2hPercents,
   simulateFantasyH2hPercentsFromProjBlends,
 } from './livePredictionMappers.js';
-import { projectedGwTotalLiveBlendForElement } from './liveGwMidProjection.js';
+import {
+  monteCarloBlendFromLiveBlend,
+  projectedGwTotalLiveBlendForElement,
+} from './liveGwMidProjection.js';
 import { countElementGamesLeftToPlay } from './fplBonusFromBps.js';
 
 const UI_MODEL_CONFIG = {
@@ -192,7 +195,7 @@ function sumProjForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) {
         320,
         Number(pr?.fplMultiplier) || 1,
       );
-      sum += blend.projFinal;
+      sum += monteCarloBlendFromLiveBlend(blend, pr).projFinal;
     } catch {
       return null;
     }
@@ -223,7 +226,7 @@ function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) 
         320,
         Number(picks[i]?.fplMultiplier) || 1,
       );
-      blends.push({ projFinal: blend.projFinal, remaining: blend.remaining });
+      blends.push(monteCarloBlendFromLiveBlend(blend, picks[i]));
     } catch {
       return null;
     }
@@ -257,7 +260,7 @@ function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, live
         320,
         mult,
       );
-      projFinal = blend.projFinal;
+      projFinal = monteCarloBlendFromLiveBlend(blend, pr).projFinal;
     } catch {
       /* partial row */
     }

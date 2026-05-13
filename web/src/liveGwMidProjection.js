@@ -227,3 +227,32 @@ export function projectedGwTotalLiveBlendForElement(
     fplMultiplier,
   });
 }
+
+/**
+ * Headline win-% Monte Carlo uses `{ projFinal, remaining }` per starter. When the Live tab
+ * shows **no club fixtures left** for that pick (`playerGamesLeftToPlay` ≤ 0), treat the score
+ * as **fully locked**: `remaining = 0` and `projFinal = banked × captain mult` only.
+ *
+ * Without this, `projectedGwTotalLiveBlend` can still attach small `remaining` while a PL
+ * `fixtures` row is slow to flip to `finished` (or DGW edge cases), which puts stray Gaussian
+ * noise on a “done” team and yields ~5–15% false hope.
+ *
+ * @param {{ projFinal: number, remaining: number, banked?: number }} blend
+ * @param {{ playerGamesLeftToPlay?: number, fplMultiplier?: number } | null | undefined} pickRow
+ */
+export function monteCarloBlendFromLiveBlend(blend, pickRow) {
+  if (!blend || typeof blend !== 'object') {
+    return { projFinal: 0, remaining: 0 };
+  }
+  const gl = Number(pickRow?.playerGamesLeftToPlay);
+  if (!Number.isFinite(gl) || gl > 0) {
+    return {
+      projFinal: Number(blend.projFinal) || 0,
+      remaining: Number(blend.remaining) || 0,
+    };
+  }
+  const mult = Number(pickRow?.fplMultiplier) || 1;
+  const banked = Number(blend.banked);
+  const b = Number.isFinite(banked) ? banked : 0;
+  return { projFinal: b * mult, remaining: 0 };
+}

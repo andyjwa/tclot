@@ -22,7 +22,10 @@ import {
   simulateFantasyH2hPercentsFromProjBlends,
   projectionRng as makePredictionRng,
 } from './livePredictionMappers.js';
-import { projectedGwTotalLiveBlendForElement } from './liveGwMidProjection.js';
+import {
+  monteCarloBlendFromLiveBlend,
+  projectedGwTotalLiveBlendForElement,
+} from './liveGwMidProjection.js';
 
 /**
  * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
@@ -507,7 +510,7 @@ function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) 
         320,
         Number(picks[i]?.fplMultiplier) || 1,
       );
-      blends.push({ projFinal: blend.projFinal, remaining: blend.remaining });
+      blends.push(monteCarloBlendFromLiveBlend(blend, picks[i]));
     } catch {
       return null;
     }
@@ -535,7 +538,7 @@ function sumProjectedGwForStarters(picks, ctx, teamsById, gw, blendCtx, liveByEl
         320,
         Number(picks[i]?.fplMultiplier) || 1,
       );
-      sum += blend.projFinal;
+      sum += monteCarloBlendFromLiveBlend(blend, picks[i]).projFinal;
     } catch {
       return null;
     }
