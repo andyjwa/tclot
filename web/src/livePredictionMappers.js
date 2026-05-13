@@ -312,16 +312,23 @@ function sampleStdGaussian(rnd) {
  * has `gamesLeft` ≤ 0 (finite) and `remaining` noise is zero — i.e. same bar
  * as “no club fixtures left” on the Live tab, not merely `remaining` ≈ 0.
  *
+ * If `opts.homeXiFixturesLeft` / `awayXiFixturesLeft` are set (effective XI
+ * fixture slots remaining, same as banner `leftToPlayCount`), deterministic
+ * mode is **skipped** when either is &gt; 0. That covers cases where per-pick
+ * `playerGamesLeftToPlay` is wrong but the aggregate count is right.
+ *
  * @param {Array<{projFinal: number, remaining: number, gamesLeft?: number}>} homeProjBlends
  * @param {Array<{projFinal: number, remaining: number, gamesLeft?: number}>} awayProjBlends
  * @param {() => number} rnd
  * @param {number} [iterations]
+ * @param {{ homeXiFixturesLeft?: number | null, awayXiFixturesLeft?: number | null }} [opts]
  */
 export function simulateFantasyH2hPercentsFromProjBlends(
   homeProjBlends,
   awayProjBlends,
   rnd,
   iterations = 1500,
+  opts,
 ) {
   const nh = homeProjBlends.length;
   const na = awayProjBlends.length;
@@ -362,7 +369,13 @@ export function simulateFantasyH2hPercentsFromProjBlends(
     detA += awayProjBlends[j].projFinal;
   }
 
-  const allLocked = xiFullyDeterministic(homeProjBlends) && xiFullyDeterministic(awayProjBlends);
+  let allLocked = xiFullyDeterministic(homeProjBlends) && xiFullyDeterministic(awayProjBlends);
+  if (opts && typeof opts === 'object') {
+    const hLtp = Number(opts.homeXiFixturesLeft);
+    const aLtp = Number(opts.awayXiFixturesLeft);
+    if (Number.isFinite(hLtp) && hLtp > 0) allLocked = false;
+    if (Number.isFinite(aLtp) && aLtp > 0) allLocked = false;
+  }
 
   if (allLocked) {
     if (detH > detA) return { homeWinPct: 100, drawPct: 0, awayWinPct: 0 };

@@ -457,6 +457,10 @@ export function LiveProjectionsPanel({
             aBlends,
             rnd,
             H2H_MONTE_CARLO_ITERS,
+            {
+              homeXiFixturesLeft: sqH?.leftToPlayCount,
+              awayXiFixturesLeft: sqA?.leftToPlayCount,
+            },
           );
         }
       }

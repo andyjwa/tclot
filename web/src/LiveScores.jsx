@@ -1060,7 +1060,10 @@ export function LiveScores({
         const hBlends = buildProjBlendsForPicks(stH, ctx, teamsById, gw, blendCtx, liveByEl);
         const aBlends = buildProjBlendsForPicks(stA, ctx, teamsById, gw, blendCtx, liveByEl);
         if (hBlends && aBlends) {
-          const pct = simulateFantasyH2hPercentsFromProjBlends(hBlends, aBlends, rnd, 1500);
+          const pct = simulateFantasyH2hPercentsFromProjBlends(hBlends, aBlends, rnd, 1500, {
+            homeXiFixturesLeft: sqH?.leftToPlayCount,
+            awayXiFixturesLeft: sqA?.leftToPlayCount,
+          });
           if (pct) {
             result.set(key, { ...pct, isLive: true });
             continue;
