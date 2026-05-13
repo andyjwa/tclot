@@ -303,13 +303,17 @@ function sampleStdGaussian(rnd) {
 /**
  * Monte Carlo H2H win % from per-player projected GW totals (live blend).
  * Each player's total is sampled as Normal(projFinal, sigma) where
- * sigma scales with **expected points still to come** for that player (`remaining`).
- * When `remaining` is ~0 the score is treated as locked (no artificial jitter): a
- * fixed +1.5 under sqrt() used to inject noise even for finished players, which
- * wrongly gave trailing sides ~30–35% win rates despite the maths being settled.
+ * sigma scales with **expected points still to come** (`remaining`), except
+ * when classic fixtures/`explain` lag: if `gamesLeft` > 0 but `remaining` ≈ 0,
+ * we keep a small minimum sigma so a side is not treated as mathematically dead
+ * while the UI still shows fixtures to play.
  *
- * @param {Array<{projFinal: number, remaining: number}>} homeProjBlends
- * @param {Array<{projFinal: number, remaining: number}>} awayProjBlends
+ * **Deterministic 100/0** is used only when **every** starter on **both** teams
+ * has `gamesLeft` ≤ 0 (finite) and `remaining` noise is zero — i.e. same bar
+ * as “no club fixtures left” on the Live tab, not merely `remaining` ≈ 0.
+ *
+ * @param {Array<{projFinal: number, remaining: number, gamesLeft?: number}>} homeProjBlends
+ * @param {Array<{projFinal: number, remaining: number, gamesLeft?: number}>} awayProjBlends
  * @param {() => number} rnd
  * @param {number} [iterations]
  */
@@ -327,26 +331,38 @@ export function simulateFantasyH2hPercentsFromProjBlends(
   let dr = 0;
   let wA = 0;
 
-  /** `remaining` = expected GW points not yet banked (from live blend), not "games left". */
-  const sigmaFor = (remaining) => {
+  /** @param {number} gamesLeft — from `pick.playerGamesLeftToPlay` when available */
+  const sigmaFor = (remaining, gamesLeft) => {
     const r = Math.max(0, Number(remaining) || 0);
+    const gl = Number(gamesLeft);
+    if (Number.isFinite(gl) && gl > 0 && r < 1e-3) {
+      return Math.sqrt(1.5);
+    }
     if (r < 1e-3) return 0;
     return Math.sqrt(r + 1.5);
   };
 
+  const xiFullyDeterministic = (blends) => {
+    if (!Array.isArray(blends) || blends.length === 0) return false;
+    for (const b of blends) {
+      const gl = Number(b.gamesLeft);
+      if (!Number.isFinite(gl)) return false;
+      if (gl > 0) return false;
+      if (sigmaFor(Number(b.remaining) || 0, gl) > 0) return false;
+    }
+    return true;
+  };
+
   let detH = 0;
   let detA = 0;
-  let allLocked = true;
   for (let j = 0; j < nh; j++) {
-    const { projFinal, remaining } = homeProjBlends[j];
-    if (sigmaFor(remaining) > 0) allLocked = false;
-    detH += projFinal;
+    detH += homeProjBlends[j].projFinal;
   }
   for (let j = 0; j < na; j++) {
-    const { projFinal, remaining } = awayProjBlends[j];
-    if (sigmaFor(remaining) > 0) allLocked = false;
-    detA += projFinal;
+    detA += awayProjBlends[j].projFinal;
   }
+
+  const allLocked = xiFullyDeterministic(homeProjBlends) && xiFullyDeterministic(awayProjBlends);
 
   if (allLocked) {
     if (detH > detA) return { homeWinPct: 100, drawPct: 0, awayWinPct: 0 };
@@ -358,13 +374,13 @@ export function simulateFantasyH2hPercentsFromProjBlends(
     let sH = 0;
     let sA = 0;
     for (let j = 0; j < nh; j++) {
-      const { projFinal, remaining } = homeProjBlends[j];
-      const sigma = sigmaFor(remaining);
+      const { projFinal, remaining, gamesLeft } = homeProjBlends[j];
+      const sigma = sigmaFor(remaining, gamesLeft);
       sH += projFinal + sampleStdGaussian(rnd) * sigma;
     }
     for (let j = 0; j < na; j++) {
-      const { projFinal, remaining } = awayProjBlends[j];
-      const sigma = sigmaFor(remaining);
+      const { projFinal, remaining, gamesLeft } = awayProjBlends[j];
+      const sigma = sigmaFor(remaining, gamesLeft);
       sA += projFinal + sampleStdGaussian(rnd) * sigma;
     }
     if (sH > sA) wH += 1;
