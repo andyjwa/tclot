@@ -189,6 +189,8 @@ function sumProjForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) {
         UI_MODEL_CONFIG,
         liveByEl[pid],
         rngFor(pid, 990_011 + gw + i * 31 + Math.imul(picks.length, 997)),
+        320,
+        Number(pr?.fplMultiplier) || 1,
       );
       sum += blend.projFinal;
     } catch {
@@ -218,6 +220,8 @@ function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) 
         UI_MODEL_CONFIG,
         liveByEl[pid],
         rngFor(pid, 990_011 + gw + i * 31),
+        320,
+        Number(picks[i]?.fplMultiplier) || 1,
       );
       blends.push({ projFinal: blend.projFinal, remaining: blend.remaining });
     } catch {
@@ -236,7 +240,10 @@ function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, live
     const pid = Number(pr?.element);
     const el = ctx.elementById?.[pid];
     if (!el) continue;
-    const xPts = predictedXpForPickRow(pr, ctx, teamsById, gw, UI_MODEL_CONFIG, i);
+    const mult = Number(pr.fplMultiplier) || 1;
+    const xPtsBase = predictedXpForPickRow(pr, ctx, teamsById, gw, UI_MODEL_CONFIG, i);
+    const xPts =
+      xPtsBase != null && Number.isFinite(xPtsBase) ? xPtsBase * mult : xPtsBase;
     let projFinal = null;
     try {
       const blend = projectedGwTotalLiveBlendForElement(
@@ -247,6 +254,8 @@ function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, live
         UI_MODEL_CONFIG,
         liveByEl[pid],
         rngFor(pid, 990_011 + gw + i * 31),
+        320,
+        mult,
       );
       projFinal = blend.projFinal;
     } catch {

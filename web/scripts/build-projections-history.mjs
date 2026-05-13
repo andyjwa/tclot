@@ -83,6 +83,8 @@ function sumProjForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) {
         UI_MODEL_CONFIG,
         liveByEl[pid],
         rngFor(pid, 990_011 + gw + i * 31 + Math.imul(picks.length, 997)),
+        320,
+        Number(pr?.multiplier) || 1,
       );
       sum += blend.projFinal;
     } catch {
@@ -108,6 +110,8 @@ function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) 
         UI_MODEL_CONFIG,
         liveByEl[pid],
         rngFor(pid, 990_011 + gw + i * 31),
+        320,
+        Number(picks[i]?.multiplier) || 1,
       );
       blends.push({ projFinal: blend.projFinal, remaining: blend.remaining });
     } catch {

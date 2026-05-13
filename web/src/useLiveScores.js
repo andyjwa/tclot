@@ -191,6 +191,9 @@ function mapPickRows(
     const typ = el ? typeById[el.element_type] : null;
     const st = liveByElementId[pid] || {};
     const liveRow = liveFullByElementId[pid];
+    const multRaw = Number(p.multiplier);
+    const fplMultiplier =
+      Number.isFinite(multRaw) && multRaw > 0 ? multRaw : 1;
     const mins = st.minutes ?? 0;
     const goalsScored = Number(st.goals_scored) || 0;
     const assists = Number(st.assists) || 0;
@@ -259,6 +262,8 @@ function mapPickRows(
       bonusApi,
       bonus: bonusApi,
       pickPosition: p.position,
+      /** Draft captain / vice scoring — applied to `total_points` after provisional bonus. */
+      fplMultiplier,
       dcCount: defensiveContributionCountFromLiveRow(liveRow),
       clubGwFixturesFinished: teamAllGwFixturesFinished(tid, gwFixtures),
       stillYetToPlayPl,
@@ -506,8 +511,13 @@ export function useLiveScores({
             espnPremRows
           );
           const withBonus = applyBonusColumn(rows, provisionalByElement);
-          const starters = withBonus.filter((r) => r.pickPosition <= 11);
-          const bench = withBonus.filter((r) => r.pickPosition > 11);
+          const withCaptain = withBonus.map((r) => ({
+            ...r,
+            total_points:
+              Number(r.total_points) * (Number(r.fplMultiplier) || 1),
+          }));
+          const starters = withCaptain.filter((r) => r.pickPosition <= 11);
+          const bench = withCaptain.filter((r) => r.pickPosition > 11);
 
           const eh = picksPayload.entry_history;
           const gwPoints =

@@ -19,13 +19,23 @@ export function effectiveStartersForDisplay(squad) {
 }
 
 /**
- * GW total for banners: prefer FPL `entry_history.points` (includes autosubs). If missing, sum
- * effective XI points (after projected/official autosub display rows).
+ * GW total for banners: reconcile FPL `entry_history.points` (autosubs, official total) with the
+ * sum of effective XI `total_points` (live element stats + captain multiplier). During a live GW
+ * the APIs can briefly disagree — one updates before the other — so a naive “pick only one”
+ * source shows totals below the real app and skews win %.
  */
 export function liveGwDisplayTotal(squad) {
   if (!squad || squad.error) return null;
-  if (typeof squad.gwPoints === 'number') return squad.gwPoints;
   const xs = effectiveStartersForDisplay(squad);
-  if (!xs?.length) return null;
-  return sumStarterPoints(xs);
+  const sumXi = xs?.length ? sumStarterPoints(xs) : null;
+  const official =
+    typeof squad.gwPoints === 'number' && Number.isFinite(squad.gwPoints)
+      ? squad.gwPoints
+      : null;
+  if (official != null && sumXi != null) {
+    return Math.max(official, sumXi);
+  }
+  if (official != null) return official;
+  if (sumXi != null) return sumXi;
+  return null;
 }

@@ -138,6 +138,7 @@ function meanIncrementalFromBundle(player, bundle, remFrac, minsInFx, iterations
  * @param {object | null | undefined} opts.liveFullRow
  * @param {() => number} opts.rnd
  * @param {number} [opts.incrementalIters=320]
+ * @param {number} [opts.fplMultiplier=1] — draft captain (`picks[].multiplier`); scales banked + remaining.
  */
 export function projectedGwTotalLiveBlend({
   player,
@@ -148,6 +149,7 @@ export function projectedGwTotalLiveBlend({
   liveFullRow,
   rnd,
   incrementalIters = 320,
+  fplMultiplier = 1,
 }) {
   const st = liveFullRow?.stats || {};
   const banked = Number(st.total_points);
@@ -191,10 +193,13 @@ export function projectedGwTotalLiveBlend({
     }
   }
 
+  const multRaw = Number(fplMultiplier);
+  const mult = Number.isFinite(multRaw) && multRaw > 0 ? multRaw : 1;
+
   return {
     banked: bankedN,
-    remaining,
-    projFinal: bankedN + remaining,
+    remaining: remaining * mult,
+    projFinal: (bankedN + remaining) * mult,
   };
 }
 
@@ -207,6 +212,7 @@ export function projectedGwTotalLiveBlendForElement(
   liveFullRow,
   rnd,
   incrementalIters = 320,
+  fplMultiplier = 1,
 ) {
   const player = bootstrapElementToPlayer(element);
   return projectedGwTotalLiveBlend({
@@ -218,5 +224,6 @@ export function projectedGwTotalLiveBlendForElement(
     liveFullRow,
     rnd,
     incrementalIters,
+    fplMultiplier,
   });
 }

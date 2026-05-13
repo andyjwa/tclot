@@ -504,6 +504,8 @@ function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) 
         H2H_WIN_PCT_CONFIG,
         liveByEl[pid],
         makePredictionRng(pid, 990_011 + gw + i * 31),
+        320,
+        Number(picks[i]?.fplMultiplier) || 1,
       );
       blends.push({ projFinal: blend.projFinal, remaining: blend.remaining });
     } catch {
@@ -530,6 +532,8 @@ function sumProjectedGwForStarters(picks, ctx, teamsById, gw, blendCtx, liveByEl
         H2H_WIN_PCT_CONFIG,
         liveByEl[pid],
         makePredictionRng(pid, 990_011 + gw + i * 31),
+        320,
+        Number(picks[i]?.fplMultiplier) || 1,
       );
       sum += blend.projFinal;
     } catch {

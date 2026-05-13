@@ -303,7 +303,10 @@ function sampleStdGaussian(rnd) {
 /**
  * Monte Carlo H2H win % from per-player projected GW totals (live blend).
  * Each player's total is sampled as Normal(projFinal, sigma) where
- * sigma = sqrt(max(remaining, 0) + 1.5) — scales with remaining uncertainty.
+ * sigma scales with **expected points still to come** for that player (`remaining`).
+ * When `remaining` is ~0 the score is treated as locked (no artificial jitter): a
+ * fixed +1.5 under sqrt() used to inject noise even for finished players, which
+ * wrongly gave trailing sides ~30–35% win rates despite the maths being settled.
  *
  * @param {Array<{projFinal: number, remaining: number}>} homeProjBlends
  * @param {Array<{projFinal: number, remaining: number}>} awayProjBlends
@@ -323,17 +326,45 @@ export function simulateFantasyH2hPercentsFromProjBlends(
   let wH = 0;
   let dr = 0;
   let wA = 0;
+
+  /** `remaining` = expected GW points not yet banked (from live blend), not "games left". */
+  const sigmaFor = (remaining) => {
+    const r = Math.max(0, Number(remaining) || 0);
+    if (r < 1e-3) return 0;
+    return Math.sqrt(r + 1.5);
+  };
+
+  let detH = 0;
+  let detA = 0;
+  let allLocked = true;
+  for (let j = 0; j < nh; j++) {
+    const { projFinal, remaining } = homeProjBlends[j];
+    if (sigmaFor(remaining) > 0) allLocked = false;
+    detH += projFinal;
+  }
+  for (let j = 0; j < na; j++) {
+    const { projFinal, remaining } = awayProjBlends[j];
+    if (sigmaFor(remaining) > 0) allLocked = false;
+    detA += projFinal;
+  }
+
+  if (allLocked) {
+    if (detH > detA) return { homeWinPct: 100, drawPct: 0, awayWinPct: 0 };
+    if (detA > detH) return { homeWinPct: 0, drawPct: 0, awayWinPct: 100 };
+    return { homeWinPct: 0, drawPct: 100, awayWinPct: 0 };
+  }
+
   for (let i = 0; i < n; i++) {
     let sH = 0;
     let sA = 0;
     for (let j = 0; j < nh; j++) {
       const { projFinal, remaining } = homeProjBlends[j];
-      const sigma = Math.sqrt(Math.max(remaining, 0) + 1.5);
+      const sigma = sigmaFor(remaining);
       sH += projFinal + sampleStdGaussian(rnd) * sigma;
     }
     for (let j = 0; j < na; j++) {
       const { projFinal, remaining } = awayProjBlends[j];
-      const sigma = Math.sqrt(Math.max(remaining, 0) + 1.5);
+      const sigma = sigmaFor(remaining);
       sA += projFinal + sampleStdGaussian(rnd) * sigma;
     }
     if (sH > sA) wH += 1;
