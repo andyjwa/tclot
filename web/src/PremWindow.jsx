@@ -793,7 +793,7 @@ export function PremWindow({
     <div className="dashboard-stack prem-window-root">
       <section className="tile tile--compact" aria-labelledby="prem-window-heading">
         <h2 id="prem-window-heading" className="tile-title tile-title--sm">
-          PL Squads
+          Lineups
         </h2>
 
         <div className="live-toolbar">

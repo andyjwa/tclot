@@ -2926,7 +2926,7 @@ function App() {
                     alt=""
                     aria-hidden
                   />
-                  PL Squads
+                  Lineups
                 </button>
                 <button
                   type="button"
