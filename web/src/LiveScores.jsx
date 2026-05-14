@@ -1959,7 +1959,7 @@ export function LiveScores({
       >
         <div className="tile-head-row tile-head-row--tight">
           <h2 id="live-standings-heading" className="tile-title tile-title--sm">
-            {gwStandingsFrozen ? 'Standings' : 'Live standings'}
+            Live Table
           </h2>
           <span className="league-pill league-pill--sm">GW {gameweek}</span>
         </div>
