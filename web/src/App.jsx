@@ -2876,6 +2876,9 @@ function App() {
               onNavigate={selectDashboardView}
               colorTheme={colorTheme}
               onThemeChange={setColorTheme}
+              badgeTeams={teamsForFormSelect}
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
             />
           ) : null}
 

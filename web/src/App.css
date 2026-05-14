@@ -500,6 +500,26 @@
     display: none;
   }
 
+  .title-hero-row__logos {
+    display: none;
+  }
+
+  .dashboard-layout--with-nav .dashboard-page-hero .tile.tile--title-banner {
+    padding: 12px 18px 10px;
+  }
+
+  .dashboard-layout--with-nav .dashboard-page-hero .tile.tile--title-banner.tile--title-with-flank-logos {
+    padding-bottom: 10px;
+  }
+
+  .title-hero-row {
+    gap: 0;
+  }
+
+  .title-hero-brand-img {
+    max-width: min(100%, 14rem);
+  }
+
   .dashboard-nav--bottom {
     position: fixed;
     left: 0;
@@ -695,6 +715,52 @@
   .dashboard-more__empty {
     margin: 8px 0 0;
     font-size: 0.875rem;
+  }
+
+  .dashboard-more__badges {
+    margin-bottom: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--fm-border);
+  }
+
+  .dashboard-more__section-title {
+    margin: 0 0 12px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fm-muted);
+  }
+
+  .dashboard-more__badge-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px 8px;
+  }
+
+  .dashboard-more__badge-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .dashboard-more__badge-name {
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--fm-text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    width: 100%;
   }
 }
 
@@ -2324,7 +2390,7 @@
   }
 
   .dashboard-layout--with-nav .dashboard-page-hero .tile.tile--title-banner {
-    padding: 20px 22px calc(16px + var(--fm-title-banner-band, 44px));
+    padding: 12px 18px 10px;
     margin-bottom: 0;
   }
 

@@ -3,6 +3,7 @@ import {
   showDashboardPlayoff,
 } from './siteFeatures'
 import { ThemeToggle } from './ThemeToggle'
+import { TeamAvatar } from './TeamAvatar'
 
 /** @typedef {'standings' | 'playoff' | 'teamSelection' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
 
@@ -140,6 +141,9 @@ export function DashboardMorePanel({
   onNavigate,
   colorTheme,
   onThemeChange,
+  badgeTeams = [],
+  teamLogoMap = {},
+  kitIndexByEntry = {},
 }) {
   const rows = [
     ...(showDashboardPlayoff
@@ -153,6 +157,25 @@ export function DashboardMorePanel({
   return (
     <section className="tile tile--compact dashboard-more" aria-label="More">
       <h2 className="tile-title tile-title--sm">More</h2>
+      {badgeTeams.length > 0 ? (
+        <div className="dashboard-more__badges">
+          <h3 className="dashboard-more__section-title">Badges</h3>
+          <ul className="dashboard-more__badge-grid">
+            {badgeTeams.map((t) => (
+              <li key={t.id} className="dashboard-more__badge-cell">
+                <TeamAvatar
+                  entryId={t.id}
+                  name={t.teamName}
+                  size="lg"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span className="dashboard-more__badge-name">{t.teamName}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <ul className="dashboard-more__list">
         {rows.map((row) => (
           <li key={row.id}>
