@@ -60,11 +60,6 @@ export function FormAndH2hSection({
     [matches, idToName, activeFormEntry],
   )
 
-  const teamName =
-    activeFormEntry != null && idToName[Number(activeFormEntry)]
-      ? idToName[Number(activeFormEntry)]
-      : null
-
   const showH2hBlock = leagueTeamCount >= 2
 
   return (
@@ -77,10 +72,6 @@ export function FormAndH2hSection({
           Form and H2H
         </h2>
       </div>
-      <p className="tile-hint muted tile-hint--tight">
-        <strong>Standings &amp; Form</strong> only — on narrow screens the app opens Live first; switch tabs in
-        the nav if needed. Pick a team to see recent results and season records vs every opponent.
-      </p>
 
       <div className="form-team-toolbar form-team-toolbar--full">
         <div className="form-team-picker form-team-picker--full">
@@ -147,17 +138,6 @@ export function FormAndH2hSection({
 
       {showH2hBlock ? (
         <div className="form-and-h2h__h2h">
-          <p className="tile-hint muted tile-hint--tight">
-            Finished H2Hs this season
-            {teamName ? (
-              <>
-                {' '}
-                for <span className="tabular">{teamName}</span>
-              </>
-            ) : null}
-            . Record is W–D–L; For / Faced are your FPL points and your opponents’, summed across
-            meetings.
-          </p>
           {activeFormEntry == null || !Number.isFinite(Number(activeFormEntry)) ? (
             <p className="muted muted--tight">Choose a team in the dropdown above.</p>
           ) : rivalRows.length === 0 ? (
