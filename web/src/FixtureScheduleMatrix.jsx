@@ -46,8 +46,9 @@ export function FixtureScheduleMatrix({
         </h2>
       </div>
       <p className="tile-hint muted tile-hint--tight">
-        H2H league points if each squad kept its own weekly scores but ran every other
-        team’s opponent sequence (whose weekly opponent scores they face).{' '}
+        Each squad keeps its own weekly scores but runs every other team’s opponent sequence
+        (whose weekly opponent scores they face). Cells are accumulated table points (3 / 1 / 0
+        per week).{' '}
         <span className="fixture-schedule-matrix__legend fixture-schedule-matrix__legend--up">
           Green
         </span>{' '}
@@ -55,7 +56,7 @@ export function FixtureScheduleMatrix({
         <span className="fixture-schedule-matrix__legend fixture-schedule-matrix__legend--down">
           red
         </span>{' '}
-        = worse. <strong>Avg</strong> is the mean across all schedules in that row.
+        = worse. <strong>Avg</strong> is the mean across all schedule columns in that row.
       </p>
       <div className="table-scroll table-scroll--win-margin">
         <table className="fixture-schedule-matrix">
@@ -81,7 +82,7 @@ export function FixtureScheduleMatrix({
               <th
                 scope="col"
                 className="fixture-schedule-matrix__avg-head tabular"
-                title="Mean H2H league points across all columns in this row"
+                title="Mean table points (3/1/0) across all columns in this row"
               >
                 Avg
               </th>
@@ -130,7 +131,7 @@ export function FixtureScheduleMatrix({
                       <td
                         key={`${rowId}-${colId}`}
                         className={`fixture-schedule-matrix__cell tabular ${tone}`}
-                        title={`${teamName} with ${colTitle}'s H2H opponents: ${v} pts. ${cmp}`}
+                        title={`${teamName} with ${colTitle}’s opponents: ${v} table pts. ${cmp}`}
                       >
                         {v}
                       </td>
@@ -138,7 +139,7 @@ export function FixtureScheduleMatrix({
                   })}
                   <td
                     className="fixture-schedule-matrix__cell fixture-schedule-matrix__avg tabular"
-                    title={`Average H2H league points across all ${orderedIds.length} schedules`}
+                    title={`Mean table points across all ${orderedIds.length} schedule columns (includes diagonal)`}
                   >
                     {rowAverages[i].toFixed(1)}
                   </td>

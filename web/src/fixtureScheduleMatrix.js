@@ -1,6 +1,6 @@
 /**
- * Counterfactual H2H league points: each squad keeps its real weekly scores, but faces
- * the same opponent sequence (and thus opposing GW scores) as another squad’s schedule.
+ * Counterfactual table points (3 / 1 / 0): each squad keeps its real weekly scores, but
+ * faces the same opponent sequence (and thus opposing GW scores) as another squad’s schedule.
  */
 
 /**

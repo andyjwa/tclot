@@ -445,7 +445,11 @@ function buildDefaultKitIndexByLeagueEntry(sortedByRank, teams) {
   return out;
 }
 
-/** When details.json has matches but empty/missing standings (bad deploy / old file). */
+/**
+ * Rebuild cumulative H2H table from finished matches only (same scoring order as before).
+ * The draft API often updates `matches[].finished` and points shortly before `standings`
+ * totals catch up after a GW — deriving here keeps PTS / PL / form / next in sync with fixtures.
+ */
 function deriveStandingsFromMatches(leagueEntries, matchList, teams) {
   const idSet = new Set();
   for (const e of leagueEntries || []) {
@@ -676,14 +680,9 @@ function processLeagueData(raw, extras = {}) {
   const teams = buildTeamsMap(leagueEntries);
   const finishedCount = matches.filter((m) => m.finished).length;
 
-  if (
-    (!standingsRaw.length || standingsRaw.every((s) => !teams[s.league_entry])) &&
-    finishedCount > 0 &&
-    leagueEntries.length > 0
-  ) {
+  if (finishedCount > 0 && leagueEntries.length > 0) {
     standingsRaw = deriveStandingsFromMatches(leagueEntries, matches, teams);
-  }
-  if (!standingsRaw.length && finishedCount > 0 && leagueEntries.length === 0) {
+  } else if (!standingsRaw.length && finishedCount > 0 && leagueEntries.length === 0) {
     standingsRaw = deriveStandingsFromMatches([], matches, teams);
   }
 

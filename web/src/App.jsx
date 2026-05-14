@@ -48,6 +48,7 @@ import {
   resolveLiveGameweek,
 } from './h2hScheduleGw.js'
 import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
+import { H2hRivalsSection } from './H2hRivalsSection.jsx'
 import './App.css'
 
 /** Sorted ascending unique GWs from schedule rows (1–38). */
@@ -309,7 +310,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 sortState={sort}
                 onSort={handleSort}
                 label="Total Pts"
-                title="Total H2H league points"
+                title="Total table points (3 / 1 / 0 per H2H), summed across seasons"
                 className="col-num tabular hall-manager-th--num col-pts"
               />
               <HallManagerSortTh
@@ -1872,6 +1873,14 @@ function App() {
             </p>
           </section>
 
+          <FixtureScheduleMatrix
+            matches={matches}
+            leagueEntries={leagueEntries}
+            tableRows={tableRows}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+
               <div className="dashboard-stack">
                 <div className="dashboard-gw-two">
                   <section className="tile tile--compact">
@@ -1987,6 +1996,16 @@ function App() {
               )}
             </div>
           </section>
+
+          <H2hRivalsSection
+            matches={matches}
+            teamsForFormSelect={teamsForFormSelect}
+            tableRows={tableRows}
+            leagueEntries={leagueEntries}
+            activeFormEntry={activeFormEntry}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
 
           <section className="tile tile--compact" aria-labelledby="points-against-heading">
             <div className="tile-head-row tile-head-row--tight">
@@ -2153,14 +2172,6 @@ function App() {
               <p className="muted muted--tight">No losses in finished matches yet.</p>
             )}
           </section>
-
-          <FixtureScheduleMatrix
-            matches={matches}
-            leagueEntries={leagueEntries}
-            tableRows={tableRows}
-            teamLogoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
 
           <section
             className="tile tile--compact"

@@ -7605,6 +7605,19 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   font-weight: 600;
 }
 
+/* H2H rivals table: hide Last on narrow portrait phones */
+@media (max-width: 639px) and (orientation: portrait) {
+  .h2h-rivals-table .h2h-rivals-table__col--last {
+    display: none;
+  }
+}
+
+.h2h-rivals-table__last-cell {
+  white-space: nowrap;
+  max-width: 12rem;
+  font-size: 0.72rem;
+}
+
 .waiver-totals-list--grid {
   margin-top: 0 !important;
 }
