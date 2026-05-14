@@ -152,15 +152,23 @@ export function FormAndH2hSection({
                     </th>
                     <th
                       scope="col"
-                      className="win-margin-table__n tabular"
+                      className="win-margin-table__n tabular h2h-rivals-table__col--record"
                       title="Wins – draws – losses vs this opponent"
                     >
                       Record
                     </th>
-                    <th scope="col" className="win-margin-table__n tabular" title="Your FPL points total">
+                    <th
+                      scope="col"
+                      className="win-margin-table__n tabular h2h-rivals-table__col--for"
+                      title="Your FPL points total"
+                    >
                       For
                     </th>
-                    <th scope="col" className="win-margin-table__n tabular" title="Their FPL points total">
+                    <th
+                      scope="col"
+                      className="win-margin-table__n tabular h2h-rivals-table__col--faced"
+                      title="Their FPL points total"
+                    >
                       Faced
                     </th>
                     <th
@@ -187,9 +195,15 @@ export function FormAndH2hSection({
                           <span className="win-margin-table__name">{r.opponentName}</span>
                         </span>
                       </th>
-                      <td className="tabular win-margin-table__n">{r.record}</td>
-                      <td className="tabular win-margin-table__n">{r.for}</td>
-                      <td className="tabular win-margin-table__n">{r.against}</td>
+                      <td className="tabular win-margin-table__n h2h-rivals-table__col--record">
+                        {r.record}
+                      </td>
+                      <td className="tabular win-margin-table__n h2h-rivals-table__col--for">
+                        {r.for}
+                      </td>
+                      <td className="tabular win-margin-table__n h2h-rivals-table__col--faced">
+                        {r.against}
+                      </td>
                       <td className="tabular win-margin-table__n h2h-rivals-table__col--last h2h-rivals-table__last-cell">
                         {r.lastLabel}
                       </td>

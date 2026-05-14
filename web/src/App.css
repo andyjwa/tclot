@@ -8010,10 +8010,61 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   font-weight: 600;
 }
 
-/* H2H rivals table: hide Last on narrow portrait phones */
-@media (max-width: 639px) and (orientation: portrait) {
-  .h2h-rivals-table .h2h-rivals-table__col--last {
+/* H2H rivals: portrait = opponent + record only; landscape = full table */
+@media (max-width: 1080px) and (orientation: portrait) {
+  .form-and-h2h__h2h .table-scroll--win-margin {
+    overflow-x: visible;
+  }
+
+  .h2h-rivals-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .h2h-rivals-table .h2h-rivals-table__col--for,
+  .h2h-rivals-table .h2h-rivals-table__col--faced,
+  .h2h-rivals-table .h2h-rivals-table__col--last,
+  .h2h-rivals-table tbody .h2h-rivals-table__col--for,
+  .h2h-rivals-table tbody .h2h-rivals-table__col--faced,
+  .h2h-rivals-table tbody .h2h-rivals-table__col--last {
     display: none;
+  }
+
+  .h2h-rivals-table .win-margin-table__team {
+    min-width: 0;
+    width: auto;
+  }
+
+  .h2h-rivals-table .h2h-rivals-table__col--record {
+    width: 4.25rem;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .h2h-rivals-table .win-margin-table__name {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
+
+  .h2h-rivals-table .win-margin-table__team-inner {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 1080px) and (orientation: landscape) {
+  .form-and-h2h__h2h .table-scroll--win-margin {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .h2h-rivals-table {
+    min-width: 32rem;
   }
 }
 
