@@ -791,12 +791,8 @@ export function PremWindow({
 
   return (
     <div className="dashboard-stack prem-window-root">
-      <section className="tile tile--compact" aria-labelledby="prem-window-heading">
-        <h2 id="prem-window-heading" className="tile-title tile-title--sm">
-          Lineups
-        </h2>
-
-        <div className="live-toolbar">
+      <section className="prem-window-chrome" aria-label="Lineups">
+        <div className="live-toolbar live-toolbar--section-sticky">
           <div className="live-gw-field">
             <div className="live-gw-input-row">
               <label className="live-gw-label">
