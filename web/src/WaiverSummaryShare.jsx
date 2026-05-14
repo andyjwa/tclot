@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar.jsx'
 import { PlayerKit } from './PlayerKit.jsx'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
+import { gameWeekSelectLabel } from './gwLabel.js'
 import {
   flattenWaiverGroups,
   sortGroupsByTeamName,
@@ -150,6 +151,9 @@ export function WaiverSummaryShare({
   leagueTitle,
   teamLogoMap = {},
   kitIndexByEntry = {},
+  gwPickerOptions = [],
+  gwValue,
+  onGwChange,
 }) {
   const [copied, setCopied] = useState(false)
   const [layoutMode, setLayoutMode] = useState('league')
@@ -214,7 +218,21 @@ export function WaiverSummaryShare({
   return (
     <div className="waiver-summary-share">
       <div className="waiver-summary-share__toolbar">
-        <div className="waiver-summary-share__toolbar-actions">
+        <div className="waiver-summary-share__toolbar-row waiver-summary-share__toolbar-row--primary">
+          {gwPickerOptions.length > 0 && gwValue != null && onGwChange ? (
+            <select
+              className="tile-gw-select tile-gw-select--inline waiver-summary-share__gw-select"
+              aria-label="Waivers game week"
+              value={gwValue}
+              onChange={(e) => onGwChange(Number(e.target.value))}
+            >
+              {gwPickerOptions.map((g) => (
+                <option key={g} value={g}>
+                  {gameWeekSelectLabel(g)}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <div
             className="waiver-summary-share__layout-toggle"
             role="group"
@@ -230,7 +248,7 @@ export function WaiverSummaryShare({
               aria-pressed={layoutMode === 'league'}
               onClick={() => setLayoutMode('league')}
             >
-              Waiver order
+              By order
             </button>
             <button
               type="button"
@@ -245,6 +263,8 @@ export function WaiverSummaryShare({
               By team
             </button>
           </div>
+        </div>
+        <div className="waiver-summary-share__toolbar-actions">
           <button
             type="button"
             className="waiver-summary-share__copy"

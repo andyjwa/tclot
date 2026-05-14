@@ -3018,6 +3018,28 @@ button.player-history-name-btn.latest-waivers__player-name {
   color: var(--fm-text-strong);
 }
 
+@media (max-width: 1080px) {
+  .waiver-summary-share__toolbar-row--primary {
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+
+  .waiver-summary-share__gw-select {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .waiver-summary-share__layout-toggle {
+    flex: 0 0 auto;
+    max-width: min(100%, 11.5rem);
+  }
+
+  .waiver-summary-share__layout-btn {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+}
+
 /* Compact waiver summary (screenshot + copy) */
 .waiver-summary-share {
   margin-top: 4px;
@@ -3028,6 +3050,19 @@ button.player-history-name-btn.latest-waivers__player-name {
   flex-direction: column;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.waiver-summary-share__toolbar-row--primary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.waiver-summary-share__gw-select {
+  flex: 1 1 8rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .waiver-summary-share__toolbar-actions {

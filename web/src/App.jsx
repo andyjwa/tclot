@@ -2236,7 +2236,7 @@ function App() {
                         Waiver summary
                       </button>
                     </span>
-                    {waiverGwPickerOptions.length > 0 ? (
+                    {waiverGwPickerOptions.length > 0 && waiverFeedTab === 'latest' ? (
                       <select
                         className="tile-gw-select tile-gw-select--inline"
                         aria-label="Waivers game week"
@@ -2267,6 +2267,9 @@ function App() {
                       leagueTitle={LEAGUE_TITLE}
                       teamLogoMap={teamLogoMap}
                       kitIndexByEntry={kitIndexByEntry}
+                      gwPickerOptions={waiverGwPickerOptions}
+                      gwValue={waiverGwEffective}
+                      onGwChange={setWaiverGwView}
                     />
                   ) : waiversForSelectedGw.groups.length ? (
                     <div className="latest-waivers">
