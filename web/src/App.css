@@ -500,8 +500,10 @@
     display: none;
   }
 
-  .title-hero-row__logos {
-    display: none;
+  .dashboard-page-hero .title-hero-row__logos,
+  .dashboard-page-hero .title-hero-row__logos--left,
+  .dashboard-page-hero .title-hero-row__logos--right {
+    display: none !important;
   }
 
   .dashboard-layout--with-nav .dashboard-page-hero .tile.tile--title-banner {
@@ -8325,7 +8327,7 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 @media (max-width: 960px) {
   .title-hero-row {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 0;
   }
 
   .title-hero-row__title {
@@ -8333,32 +8335,11 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
     max-width: 100%;
   }
 
-  /* One horizontal row of four per side (eight total in two rows below the title). */
-  .title-hero-row__logos {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-template-rows: auto;
-    width: 100%;
-    max-width: min(100%, 22rem);
-    margin-left: auto;
-    margin-right: auto;
-    gap: 6px 4px;
-    justify-items: center;
-  }
-
-  .title-hero-row__logo-wrap {
-    width: min(48px, 20vw);
-    height: min(48px, 20vw);
-  }
-
-  .title-hero-row__logo-wrap .team-avatar-frame--lg {
-    width: min(46px, calc(20vw - 2px));
-    height: min(46px, calc(20vw - 2px));
-  }
-
+  /* Badges live under More on mobile — keep header brand-only */
+  .title-hero-row__logos,
   .title-hero-row__logos--left,
   .title-hero-row__logos--right {
-    margin-left: auto;
-    margin-right: auto;
+    display: none !important;
   }
 }
 
