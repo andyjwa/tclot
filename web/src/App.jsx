@@ -48,7 +48,7 @@ import {
   resolveLiveGameweek,
 } from './h2hScheduleGw.js'
 import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
-import { H2hRivalsSection } from './H2hRivalsSection.jsx'
+import { FormAndH2hSection } from './FormAndH2hSection.jsx'
 import './App.css'
 
 /** Sorted ascending unique GWs from schedule rows (1–38). */
@@ -1934,70 +1934,17 @@ function App() {
                   </section>
                 </div>
 
-                <section className="tile tile--compact tile--team-form">
-            <h2 className="tile-title tile-title--sm">Team form</h2>
-            <div className="form-team-toolbar form-team-toolbar--full">
-              <div className="form-team-picker form-team-picker--full">
-                <span className="form-team-picker__glyph" aria-hidden>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </span>
-                <select
-                  id="form-team-select"
-                  className="form-team-select"
-                  aria-label="Team for form strip"
-                  value={activeFormEntry ?? ''}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    setFormTeamId(v === '' ? null : Number(v))
-                  }}
-                >
-                  {teamsForFormSelect.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.teamName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="form-strip form-strip--tight">
-              {formStripRows.length ? (
-                formStripRows.map((row, i) => (
-                  <div key={`${row.event}-${i}`} className="form-strip__item">
-                    <div
-                      className={`form-score form-score--${row.result === 'W' ? 'win' : row.result === 'L' ? 'loss' : 'draw'}`}
-                    >
-                      {row.scoreStr}
-                    </div>
-                    <span className="form-strip__opp" title={row.opponentName}>
-                      <TeamAvatar
-                        entryId={row.opponentEntryId}
-                        name={row.opponentName}
-                        size="sm"
-                        logoMap={teamLogoMap}
-                        kitIndexByEntry={kitIndexByEntry}
-                      />
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="muted">No finished matches yet.</p>
-              )}
-            </div>
-          </section>
-
-          <H2hRivalsSection
-            matches={matches}
-            teamsForFormSelect={teamsForFormSelect}
-            tableRows={tableRows}
-            leagueEntries={leagueEntries}
-            activeFormEntry={activeFormEntry}
-            teamLogoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
+                <FormAndH2hSection
+                  formStripRows={formStripRows}
+                  teamsForFormSelect={teamsForFormSelect}
+                  activeFormEntry={activeFormEntry}
+                  onFormTeamChange={setFormTeamId}
+                  matches={matches}
+                  tableRows={tableRows}
+                  leagueEntries={leagueEntries}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
 
           <FixtureScheduleMatrix
             matches={matches}

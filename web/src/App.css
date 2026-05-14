@@ -9029,6 +9029,12 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   flex: 0 0 auto;
 }
 
+.form-and-h2h__h2h {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--fm-border);
+}
+
 .tile--team-form .form-team-select {
   flex: 0 1 auto;
   width: auto;
