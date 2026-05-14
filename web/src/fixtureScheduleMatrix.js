@@ -1,6 +1,6 @@
 /**
- * Counterfactual table points (3 / 1 / 0): each squad keeps its real weekly scores, but
- * faces the same opponent sequence (and thus opposing GW scores) as another squad’s schedule.
+ * Counterfactual total table points: each row keeps its real weekly scores; each column uses
+ * that column team’s opponent fixture list (the GW opponent scores they would have faced).
  */
 
 /**

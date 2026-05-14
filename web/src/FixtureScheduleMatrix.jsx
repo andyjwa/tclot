@@ -46,9 +46,8 @@ export function FixtureScheduleMatrix({
         </h2>
       </div>
       <p className="tile-hint muted tile-hint--tight">
-        Each squad keeps its own weekly scores but runs every other team’s opponent sequence
-        (whose weekly opponent scores they face). Cells are accumulated table points (3 / 1 / 0
-        per week).{' '}
+        Total table points if you had every other team’s opponent fixture list (your weekly scores
+        stay the same).{' '}
         <span className="fixture-schedule-matrix__legend fixture-schedule-matrix__legend--up">
           Green
         </span>{' '}
