@@ -635,6 +635,12 @@
     font-size: 0.75rem;
   }
 
+  .section-chrome--sticky .live-score-ticker-slot--section-chrome {
+    margin-top: 10px;
+    width: 100%;
+    min-width: 0;
+  }
+
   .section-body {
     min-width: 0;
   }

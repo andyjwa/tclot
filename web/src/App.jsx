@@ -27,6 +27,7 @@ import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
+import { FplLiveGwTickerBar } from './FplLiveGwTickerBar'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { PlayOffBracket } from './PlayOffBracket'
@@ -2945,6 +2946,14 @@ function App() {
                   Projections
                 </button>
               </div>
+              <FplLiveGwTickerBar
+                teams={teamsForFormSelect}
+                matches={matches ?? []}
+                gameweek={liveGameweek}
+                onBootstrapLiveMeta={onBootstrapLiveMeta}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
               </div>
               <div className="section-body">
               {fplLiveTab === 'squads' ? (
