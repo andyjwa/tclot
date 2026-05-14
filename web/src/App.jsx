@@ -2907,7 +2907,7 @@ function App() {
                   <span className="team-selection-submenu__emoji" aria-hidden="true">
                     ⚽
                   </span>
-                  FPL Live
+                  Live GW
                 </button>
                 <button
                   type="button"

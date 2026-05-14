@@ -1323,7 +1323,7 @@ export function LiveScores({
             (compactMobileChrome ? ' live-heading--hide-mobile' : '')
           }
         >
-          {projectionsOnly ? 'Projections' : 'FPL Live'}
+          {projectionsOnly ? 'Projections' : 'Live GW'}
         </h2>
 
         {!proxyHost ? (
