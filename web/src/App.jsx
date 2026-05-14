@@ -1873,14 +1873,6 @@ function App() {
             </p>
           </section>
 
-          <FixtureScheduleMatrix
-            matches={matches}
-            leagueEntries={leagueEntries}
-            tableRows={tableRows}
-            teamLogoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-
               <div className="dashboard-stack">
                 <div className="dashboard-gw-two">
                   <section className="tile tile--compact">
@@ -2003,6 +1995,14 @@ function App() {
             tableRows={tableRows}
             leagueEntries={leagueEntries}
             activeFormEntry={activeFormEntry}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+
+          <FixtureScheduleMatrix
+            matches={matches}
+            leagueEntries={leagueEntries}
+            tableRows={tableRows}
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
           />
