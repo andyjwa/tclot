@@ -655,14 +655,22 @@
     position: sticky;
     top: var(--mobile-section-chrome-h);
     z-index: 30;
-    margin-left: -16px;
-    margin-right: -16px;
-    padding-left: 16px;
-    padding-right: 16px;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
     padding-top: 8px;
     padding-bottom: 8px;
-    background: var(--fm-bg);
-    border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+    background: transparent;
+    border-bottom: none;
+  }
+
+  .live-scores-chrome {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
   }
 
   .dashboard-more__list {

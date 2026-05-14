@@ -1315,7 +1315,12 @@ export function LiveScores({
         (compactMobileChrome ? ' live-scores-root--compact-chrome' : '')
       }
     >
-      <section className="tile tile--compact" aria-labelledby="live-heading">
+      <section
+        className={
+          compactMobileChrome ? 'live-scores-chrome' : 'tile tile--compact'
+        }
+        aria-labelledby="live-heading"
+      >
         <h2
           id="live-heading"
           className={
