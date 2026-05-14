@@ -39,6 +39,14 @@
   --fm-nav-hover-bg: color-mix(in srgb, var(--tclot-logo-purple) 26%, transparent);
   --fm-nav-hover-border: var(--tclot-logo-purple);
   --fm-nav-hover-text: #e0d8ff;
+  /* Modern nav — PL-style tab underline + pill segments */
+  --dash-nav-tab-active: #ffffff;
+  --dash-nav-tab-line: #ffffff;
+  /* Idle tabs: clearly readable on dark chrome (not “washed out”) */
+  --dash-nav-tab-idle: rgba(255, 255, 255, 0.82);
+  --pill-active-bg: #ffffff;
+  --pill-active-fg: #121212;
+  --pill-idle-hover-bg: rgba(255, 255, 255, 0.07);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--fm-bg);
   color: var(--fm-text);
@@ -79,6 +87,12 @@
   --fm-nav-hover-border: var(--tclot-logo-purple);
   /* Dark violet in same family as header art (readable on pale hover) */
   --fm-nav-hover-text: #3d0f9e;
+  --dash-nav-tab-active: #111111;
+  --dash-nav-tab-line: #111111;
+  --dash-nav-tab-idle: rgba(17, 17, 17, 0.72);
+  --pill-active-bg: #111111;
+  --pill-active-fg: #ffffff;
+  --pill-idle-hover-bg: rgba(0, 0, 0, 0.06);
 }
 
 .fotmob[data-theme='light'] .tile {
@@ -295,18 +309,24 @@
   margin-bottom: 0;
 }
 
-/* Row 2: section tabs */
+/* Row 2: primary nav — Premier League–style text tabs + underline indicator */
 .dashboard-layout--with-nav > .dashboard-nav {
   grid-column: 1;
   grid-row: 2;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  gap: 10px;
+  gap: 0;
   align-items: stretch;
   position: static;
   align-self: stretch;
   min-width: 0;
+  margin-top: 10px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--fm-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .dashboard-layout--with-nav > .dashboard-content {
@@ -316,11 +336,24 @@
 }
 
 .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-width: 0;
   width: auto;
   justify-content: center;
   text-align: center;
+  padding: 14px 16px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--dash-nav-tab-idle);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  position: relative;
+  transition:
+    color 0.12s ease,
+    background-color 0.12s ease;
 }
 
 /* Match default .tile horizontal padding so league title lines up with tiles below.
@@ -346,29 +379,29 @@
   margin: 0;
   padding: 12px 14px;
   font: inherit;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 700;
   text-align: left;
-  color: var(--fm-text);
-  background-color: var(--fm-card);
+  letter-spacing: -0.01em;
+  color: var(--dash-nav-tab-idle);
+  background-color: transparent;
   background-image: none;
-  border: 1px solid var(--fm-border);
-  border-radius: 10px;
+  border: none;
+  border-radius: 0;
   cursor: pointer;
-  /* Snappy hover; avoid transitioning into gradient (that felt like a delay on click) */
   transition:
-    background-color 0.08s ease-out,
-    border-color 0.08s ease-out,
-    color 0.08s ease-out;
+    color 0.12s ease,
+    background-color 0.12s ease;
 }
 
 .dashboard-nav__emoji {
   flex-shrink: 0;
-  font-size: 1.1em;
+  font-size: 1.05em;
   line-height: 1;
+  opacity: 1;
 }
 
-/* Premier League wordmark — Squads & Results tab */
+/* Premier League wordmark — e.g. legacy Squads tab asset */
 .dashboard-nav__pl-logo {
   display: block;
   flex-shrink: 0;
@@ -379,24 +412,27 @@
   object-position: left center;
 }
 
-.dashboard-nav__btn--active .dashboard-nav__pl-logo {
-  filter: brightness(0) invert(1);
+/* Tab bar: full-colour logo on light; light mono on dark inactive */
+.fotmob[data-theme='light'] .dashboard-nav__pl-logo {
+  filter: none;
 }
 
-/* Dark shell: wordmark SVG is purple-on-transparent; invert so it reads on unselected nav tiles */
-.fotmob[data-theme='dark']
-  .dashboard-nav__btn:not(.dashboard-nav__btn--active)
-  .dashboard-nav__pl-logo {
+.fotmob[data-theme='dark'] .dashboard-nav__pl-logo {
   filter: brightness(0) invert(1);
+  opacity: 0.94;
 }
 
-/* Fantasy Draft mark — FPL Live Scores (full-colour asset; no PL wordmark filter) */
+.fotmob[data-theme='dark'] .dashboard-nav__btn--active .dashboard-nav__pl-logo {
+  opacity: 1;
+}
+
+/* Fantasy Draft mark — FPL Live */
 .dashboard-nav__fd-logo {
   display: block;
   flex-shrink: 0;
-  height: 1.35em;
+  height: 1.25em;
   width: auto;
-  max-width: 5.2em;
+  max-width: 5em;
   object-fit: contain;
   object-position: left center;
   border-radius: 4px;
@@ -404,26 +440,369 @@
 
 .dashboard-nav__label {
   min-width: 0;
+  white-space: nowrap;
 }
 
 .dashboard-nav__btn:not(.dashboard-nav__btn--active):hover {
-  background-color: var(--fm-nav-hover-bg);
-  border-color: var(--fm-nav-hover-border);
-  color: var(--fm-nav-hover-text);
+  background-color: var(--pill-idle-hover-bg);
+  border: none;
+  color: var(--fm-text-strong);
+}
+
+.fotmob[data-theme='dark'] .dashboard-nav__btn:not(.dashboard-nav__btn--active):hover {
+  color: #ffffff;
 }
 
 .dashboard-nav__btn--active {
-  background: var(--fm-dashboard-nav-active-bg, var(--tclot-logo-purple));
-  color: #fff;
+  background: transparent;
+  color: var(--dash-nav-tab-active);
   border: none;
-  box-shadow: var(--fm-dashboard-nav-active-glow);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  transition: filter 0.1s ease;
+  box-shadow: none;
+  text-shadow: none;
+  font-weight: 700;
+  transition: color 0.12s ease;
+}
+
+.dashboard-nav__btn--active::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 4px;
+  background: var(--dash-nav-tab-line);
+  border-radius: 2px 2px 0 0;
 }
 
 .dashboard-nav__btn--active:hover {
-  filter: brightness(1.06);
-  color: #fff;
+  filter: none;
+  color: var(--dash-nav-tab-active);
+  background: transparent;
+}
+
+/* —— Mobile app shell: bottom nav, sticky section chrome, scroll-hide —— */
+:root {
+  --mobile-bottom-nav-h: 56px;
+  --mobile-section-chrome-h: 52px;
+}
+
+@media (max-width: 1080px) {
+  .dashboard-nav--top {
+    display: none !important;
+  }
+
+  .app.fotmob.dashboard-layout-host,
+  .app.fotmob {
+    padding-bottom: calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+  }
+
+  .title-banner__toolbar {
+    display: none;
+  }
+
+  .dashboard-nav--bottom {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 0;
+    margin: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    background: var(--fm-card);
+    border-top: 1px solid var(--fm-border);
+    border-bottom: none;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+
+  .fotmob[data-theme='dark'] .dashboard-nav--bottom {
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .app.fotmob[data-bottom-nav-hidden='true'] .dashboard-nav--bottom {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dashboard-nav--bottom {
+      transition: none;
+    }
+  }
+
+  .dashboard-nav__btn--bottom {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    border-radius: 8px;
+  }
+
+  .dashboard-nav__btn--bottom .dashboard-nav__emoji {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .dashboard-nav__btn--bottom .dashboard-nav__fd-logo {
+    height: 1.25rem;
+    max-width: 2.2rem;
+    width: auto;
+  }
+
+  .dashboard-nav__btn--bottom .dashboard-nav__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-nav__btn--bottom.dashboard-nav__btn--active::after {
+    display: none;
+  }
+
+  .dashboard-nav__btn--bottom.dashboard-nav__btn--active {
+    color: var(--tclot-logo-purple);
+  }
+
+  .fotmob[data-theme='light'] .dashboard-nav__btn--bottom.dashboard-nav__btn--active {
+    color: var(--tclot-logo-purple);
+  }
+
+  .section-chrome--sticky {
+    position: sticky;
+    top: 0;
+    z-index: 31;
+    margin: -14px -16px 0;
+    padding: 10px 16px 8px;
+    background: var(--fm-bg);
+    border-bottom: 1px solid var(--fm-border);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .fotmob[data-theme='dark'] .section-chrome--sticky {
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  }
+
+  .section-chrome--sticky .team-selection-submenu {
+    margin-bottom: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .section-chrome--sticky .team-selection-submenu::-webkit-scrollbar {
+    display: none;
+  }
+
+  .section-chrome--sticky .team-selection-submenu__btn {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    font-size: 0.75rem;
+  }
+
+  .section-body {
+    min-width: 0;
+  }
+
+  .live-heading--hide-mobile {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .live-toolbar--section-sticky {
+    position: sticky;
+    top: var(--mobile-section-chrome-h);
+    z-index: 30;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background: var(--fm-bg);
+    border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+  }
+
+  .dashboard-more__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dashboard-more__btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 14px 4px;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: left;
+    color: var(--fm-text-strong);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--fm-border);
+    cursor: pointer;
+  }
+
+  .dashboard-more__btn:hover {
+    color: var(--tclot-logo-purple);
+  }
+
+  .dashboard-more__chevron {
+    margin-left: auto;
+    color: var(--fm-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .dashboard-more__theme-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 4px;
+  }
+
+  .dashboard-more__theme-label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--fm-text-strong);
+  }
+
+  .dashboard-more__empty {
+    margin: 8px 0 0;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1081px) {
+  .dashboard-nav--bottom {
+    display: none !important;
+  }
+}
+
+/* Team Selection / FPL Live — floating capsule pills (fixture list–style segments) */
+.tile--team-selection .tile-head-row {
+  margin-bottom: 10px;
+}
+
+.team-selection-submenu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.team-selection-submenu__btn {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin: 0;
+  padding: 10px 18px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  border: 1px solid var(--fm-border);
+  background: var(--fm-card);
+  color: var(--fm-text-strong);
+  cursor: pointer;
+  box-shadow: none;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    filter 0.1s ease;
+}
+
+.fotmob[data-theme='light'] .team-selection-submenu__btn {
+  background: #ffffff;
+  border-color: #e5e5e5;
+  color: #111111;
+}
+
+.team-selection-submenu__emoji {
+  flex-shrink: 0;
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+.team-selection-submenu__pl-logo {
+  display: block;
+  flex-shrink: 0;
+  height: 1.05em;
+  width: auto;
+  max-width: 3.4em;
+  object-fit: contain;
+  object-position: center;
+}
+
+.fotmob[data-theme='light'] .team-selection-submenu__btn--active .team-selection-submenu__pl-logo {
+  filter: brightness(0) invert(1);
+}
+
+.fotmob[data-theme='dark'] .team-selection-submenu__btn:not(.team-selection-submenu__btn--active) .team-selection-submenu__pl-logo {
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+.team-selection-submenu__btn--active .team-selection-submenu__pl-logo {
+  filter: none;
+  opacity: 1;
+}
+
+.team-selection-submenu__btn:hover:not(.team-selection-submenu__btn--active) {
+  background: var(--pill-idle-hover-bg);
+  border-color: var(--fm-border);
+  color: var(--fm-text-strong);
+}
+
+.team-selection-submenu__btn:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: 2px;
+}
+
+.team-selection-submenu__btn--active {
+  background: var(--pill-active-bg);
+  color: var(--pill-active-fg);
+  border-color: transparent;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.team-selection-submenu__btn--active:hover {
+  filter: brightness(0.97);
+  color: var(--pill-active-fg);
 }
 
 .dashboard-content {
@@ -1954,24 +2333,22 @@
     margin-right: 0;
   }
 
-  /* Keep one row: scroll horizontally if tabs don’t fit */
+  /* Primary nav: single horizontal strip, scroll when needed */
   .dashboard-layout--with-nav > .dashboard-nav {
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    gap: 8px;
-    padding-bottom: 4px;
-    scrollbar-color: rgba(255, 213, 74, 0.45) transparent;
+    gap: 0;
+    padding-bottom: 0;
+    margin-top: 8px;
+    scrollbar-color: color-mix(in srgb, var(--fm-muted) 55%, transparent) transparent;
   }
 
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
     flex: 0 0 auto;
-    min-width: 132px;
-    min-height: 80px;
-    width: auto;
-    align-self: stretch;
-    justify-content: center;
-    text-align: center;
+    min-width: max-content;
+    min-height: 0;
+    padding: 12px 14px 14px;
   }
 
   /* Gameweek + refresh on one row (phones / narrow tablets) */
@@ -2002,41 +2379,28 @@
   }
 }
 
-/* Narrow portrait: grid instead of horizontal scroll (phones / tablets upright) */
+/* Narrow portrait: same tab strip as landscape (no tile grid) */
 @media (max-width: 1080px) and (orientation: portrait) {
   .dashboard-layout--with-nav > .dashboard-nav {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    overflow-x: visible;
+    display: flex;
+    overflow-x: auto;
     padding-bottom: 0;
   }
 
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
-    flex: unset;
-    min-width: 0;
-    width: auto;
-    min-height: 80px;
-    padding: 14px 12px;
-    justify-content: center;
-    text-align: center;
+    min-height: 0;
   }
 
-  /*
-   * Odd number of tabs: last child is nth-child(odd) → span full row (e.g. FPL Live Scores).
-   * Even count: last is nth-child(even) → stays one column like the others in that row.
-   */
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
+    grid-column: unset;
   }
 }
 
-/* Phones / small tablets: compact nav tiles (~half the 80px min-height band) */
+/* Phones: slightly tighter tabs */
 @media (max-width: 768px) {
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
-    min-height: 40px;
-    padding: 6px 10px;
-    font-size: 0.78rem;
+    padding: 10px 12px 12px;
+    font-size: 0.85rem;
   }
 
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__emoji {
@@ -2044,12 +2408,12 @@
   }
 
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__pl-logo {
-    max-width: 3.6em;
+    max-width: 3.2em;
   }
 
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__fd-logo {
-    max-width: 4.2em;
-    height: 1.2em;
+    max-width: 3.8em;
+    height: 1.1em;
   }
 }
 
@@ -3011,31 +3375,11 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   border-bottom: none;
 }
 
-/* Points against tile */
+/* Shared list base (e.g. waiver totals grid) */
 .pa-list {
   list-style: none;
   margin: 8px 0 0;
   padding: 0;
-}
-
-.pa-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--fm-border);
-}
-
-.pa-row:last-child {
-  border-bottom: none;
-}
-
-.pa-rank {
-  width: 20px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--fm-text);
-  flex-shrink: 0;
 }
 
 .pa-team {
@@ -3047,13 +3391,6 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.pa-value {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--fm-text-strong);
-  flex-shrink: 0;
 }
 
 .waiver-out-filters {
@@ -7658,10 +7995,6 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--fm-text);
-}
-
-.pa-row--waiver-total {
-  align-items: flex-start;
 }
 
 .waiver-total-main {

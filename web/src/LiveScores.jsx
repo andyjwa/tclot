@@ -930,7 +930,7 @@ function isLikelyLocalDev() {
 }
 
 /**
- * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object, leagueId?: number | null, waiverOutGwRows?: object[], fplDraftCurrentGw?: number | null }}
+ * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object, leagueId?: number | null, waiverOutGwRows?: object[], fplDraftCurrentGw?: number | null, projectionsOnly?: boolean }}
  */
 export function LiveScores({
   teams,
@@ -945,6 +945,10 @@ export function LiveScores({
   waiverOutGwRows = [],
   /** Draft bootstrap `events.current` — when the selected GW is earlier, standings use league totals only (no live +3 overlay). */
   fplDraftCurrentGw = null,
+  /** When true, only the GW toolbar and {@link LiveProjectionsPanel} (FPL Live → Projections sub-tab). */
+  projectionsOnly = false,
+  /** Mobile app shell: hide tile h2; GW toolbar sticks below section sub-pills. */
+  compactMobileChrome = false,
 }) {
   const { loading, error, refresh, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
@@ -1305,10 +1309,21 @@ export function LiveScores({
   const useFixtureLayout = gwMatches.length > 0;
 
   return (
-    <div className="dashboard-stack live-scores-root">
+    <div
+      className={
+        'dashboard-stack live-scores-root' +
+        (compactMobileChrome ? ' live-scores-root--compact-chrome' : '')
+      }
+    >
       <section className="tile tile--compact" aria-labelledby="live-heading">
-        <h2 id="live-heading" className="tile-title tile-title--sm">
-          FPL Live Scores
+        <h2
+          id="live-heading"
+          className={
+            'tile-title tile-title--sm' +
+            (compactMobileChrome ? ' live-heading--hide-mobile' : '')
+          }
+        >
+          {projectionsOnly ? 'Projections' : 'FPL Live'}
         </h2>
 
         {!proxyHost ? (
@@ -1343,7 +1358,12 @@ export function LiveScores({
           </div>
         ) : null}
 
-        <div className="live-toolbar">
+        <div
+          className={
+            'live-toolbar' +
+            (compactMobileChrome ? ' live-toolbar--section-sticky' : '')
+          }
+        >
           <div className="live-gw-field">
             <div className="live-gw-input-row">
               <label className="live-gw-label">
@@ -1390,6 +1410,19 @@ export function LiveScores({
         ) : null}
       </section>
 
+      {projectionsOnly ? (
+        <LiveProjectionsPanel
+          contributionLiveContext={contributionLiveContext}
+          gameweek={gameweek}
+          gwMatches={gwMatches}
+          squads={squads}
+          teams={teams}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          liveRankByEntry={liveRankByEntry}
+        />
+      ) : (
+        <>
       {useFixtureLayout ? (
         <div className="live-score-ticker-slot">
           <LiveScoreFixtureTicker
@@ -2146,17 +2179,8 @@ export function LiveScores({
           medianGwWinScore={medianGwWinScore}
         />
       ) : null}
-
-      <LiveProjectionsPanel
-        contributionLiveContext={contributionLiveContext}
-        gameweek={gameweek}
-        gwMatches={gwMatches}
-        squads={squads}
-        teams={teams}
-        teamLogoMap={teamLogoMap}
-        kitIndexByEntry={kitIndexByEntry}
-        liveRankByEntry={liveRankByEntry}
-      />
+        </>
+      )}
     </div>
   );
 }

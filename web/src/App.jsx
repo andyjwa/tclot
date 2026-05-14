@@ -32,6 +32,8 @@ import { PremWindow } from './PremWindow'
 import { PlayOffBracket } from './PlayOffBracket'
 import { DraftBoard } from './DraftBoard'
 import { ThemeToggle } from './ThemeToggle'
+import { DashboardNav, DashboardMorePanel } from './DashboardNav'
+import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
 import {
   sortGroupsByFirstWaiverOrder,
@@ -826,7 +828,7 @@ function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
 /** Match `max-width: 1080px` nav breakpoint — phones / narrow tablets default to Live. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'standings'
-  return window.matchMedia('(max-width: 1080px)').matches ? 'live' : 'standings'
+  return window.matchMedia('(max-width: 1080px)').matches ? 'fplLive' : 'standings'
 }
 
 /** Match `max-width: 600px` mobile layout — default waivers tab to compact Waiver summary. */
@@ -926,7 +928,6 @@ function App() {
     teamLogoMap = {},
     defaultKitIndexByLeagueEntry: kitIndexByEntry = {},
     mostWaiveredPlayers = [],
-    pointsAgainstList = [],
     waiverOutPointsByTeam = [],
     waiverInTenureTopRows = [],
     waiverInPointsByTeam = [],
@@ -939,15 +940,19 @@ function App() {
     gwRankExtremesMeta = { maxGw: 0, teamCount: 0 },
     gwWeeksAtFirst = [],
     gwWeeksAtLast = [],
-    gwRawPointsRankMeta = { maxGw: 0, teamCount: 0 },
-    gwRawPointsRankRows = [],
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [formTeamId, setFormTeamId] = useState(null)
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
   const [waiverOutGwFilter, setWaiverOutGwFilter] = useState('all')
   const [waiverGwTableMode, setWaiverGwTableMode] = useState('out')
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | waivers | trades | draft | hall | prem | live
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | teamSelection | hall | fplLive
+  const [teamSelectionTab, setTeamSelectionTab] = useState(
+    /** @type {'waivers' | 'trades' | 'draft'} */ ('waivers'),
+  )
+  const [fplLiveTab, setFplLiveTab] = useState(
+    /** @type {'squads' | 'live' | 'projections'} */ ('live'),
+  )
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
   const [liveGw, setLiveGw] = useState(null)
@@ -960,6 +965,19 @@ function App() {
   const [futureGwView, setFutureGwView] = useState(null)
   const formStripDisplayCount = useFormStripDisplayCount()
   const [colorTheme, setColorTheme] = useState(() => readStoredTheme())
+
+  const bottomNavHidden = useAutoHideBottomNav({
+    enabled: dashboardView !== 'more',
+  })
+
+  const fplLogoSrc = `${import.meta.env.BASE_URL}fpl-fantasy-draft-logo.png`
+
+  const selectDashboardView = useCallback((view) => {
+    setDashboardView(view)
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0)
+    }
+  }, [])
 
   useLayoutEffect(() => {
     document.body.dataset.tclotTheme = colorTheme
@@ -981,19 +999,27 @@ function App() {
   const draftBootstrapEvents = useDraftBootstrapEvents()
 
   useEffect(() => {
-    if (dashboardView === 'trades' && !showDashboardTrades) {
-      setDashboardView('live')
+    if (
+      dashboardView === 'teamSelection' &&
+      teamSelectionTab === 'trades' &&
+      !showDashboardTrades
+    ) {
+      setTeamSelectionTab('waivers')
+    }
+    if (dashboardView === 'more' && !showDashboardHall && !showDashboardPlayoff) {
+      setDashboardView('fplLive')
       return
     }
     if (dashboardView === 'hall' && !showDashboardHall) {
-      setDashboardView('live')
+      setDashboardView('fplLive')
       return
     }
     if (dashboardView === 'playoff' && !showDashboardPlayoff) {
-      setDashboardView('live')
+      setDashboardView('fplLive')
     }
   }, [
     dashboardView,
+    teamSelectionTab,
     showDashboardTrades,
     showDashboardHall,
     showDashboardPlayoff,
@@ -1517,7 +1543,11 @@ function App() {
 
   return (
     <PlayerHistoryProvider teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry}>
-    <div className="app fotmob" data-theme={colorTheme}>
+    <div
+      className="app fotmob"
+      data-theme={colorTheme}
+      data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
+    >
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
           <header className="page-header page-header--centered">
@@ -1606,136 +1636,12 @@ function App() {
             )}
           </header>
         </div>
-        <nav className="dashboard-nav" aria-label="Dashboard sections">
-          <button
-            type="button"
-            className={
-              'dashboard-nav__btn' +
-              (dashboardView === 'standings' ? ' dashboard-nav__btn--active' : '')
-            }
-            onClick={() => setDashboardView('standings')}
-            aria-current={dashboardView === 'standings' ? 'page' : undefined}
-          >
-            <span className="dashboard-nav__emoji" aria-hidden="true">
-              📈
-            </span>
-            <span className="dashboard-nav__label">Standings &amp; Form</span>
-          </button>
-          {showDashboardPlayoff ? (
-            <button
-              type="button"
-              className={
-                'dashboard-nav__btn' +
-                (dashboardView === 'playoff' ? ' dashboard-nav__btn--active' : '')
-              }
-              onClick={() => setDashboardView('playoff')}
-              aria-current={dashboardView === 'playoff' ? 'page' : undefined}
-            >
-              <span className="dashboard-nav__emoji" aria-hidden="true">
-                🏅
-              </span>
-              <span className="dashboard-nav__label">Play Off</span>
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className={
-              'dashboard-nav__btn' +
-              (dashboardView === 'waivers' ? ' dashboard-nav__btn--active' : '')
-            }
-            onClick={() => setDashboardView('waivers')}
-            aria-current={dashboardView === 'waivers' ? 'page' : undefined}
-          >
-            <span className="dashboard-nav__emoji" aria-hidden="true">
-              🏃
-            </span>
-            <span className="dashboard-nav__label">Waivers</span>
-          </button>
-          {showDashboardTrades ? (
-            <button
-              type="button"
-              className={
-                'dashboard-nav__btn' +
-                (dashboardView === 'trades' ? ' dashboard-nav__btn--active' : '')
-              }
-              onClick={() => setDashboardView('trades')}
-              aria-current={dashboardView === 'trades' ? 'page' : undefined}
-            >
-              <span className="dashboard-nav__emoji" aria-hidden="true">
-                🤝
-              </span>
-              <span className="dashboard-nav__label">Trades</span>
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className={
-              'dashboard-nav__btn' +
-              (dashboardView === 'draft' ? ' dashboard-nav__btn--active' : '')
-            }
-            onClick={() => setDashboardView('draft')}
-            aria-current={dashboardView === 'draft' ? 'page' : undefined}
-          >
-            <span className="dashboard-nav__emoji" aria-hidden="true">
-              📋
-            </span>
-            <span className="dashboard-nav__label">Draft</span>
-          </button>
-          {showDashboardHall ? (
-            <button
-              type="button"
-              className={
-                'dashboard-nav__btn' +
-                (dashboardView === 'hall' ? ' dashboard-nav__btn--active' : '')
-              }
-              onClick={() => setDashboardView('hall')}
-              aria-current={dashboardView === 'hall' ? 'page' : undefined}
-            >
-              <span className="dashboard-nav__emoji" aria-hidden="true">
-                🏆
-              </span>
-              <span className="dashboard-nav__label">Hall of Champions</span>
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className={
-              'dashboard-nav__btn' +
-              (dashboardView === 'prem' ? ' dashboard-nav__btn--active' : '')
-            }
-            onClick={() => setDashboardView('prem')}
-            aria-current={dashboardView === 'prem' ? 'page' : undefined}
-          >
-            <img
-              className="dashboard-nav__pl-logo"
-              src={`${import.meta.env.BASE_URL}premier-league-logo.svg`}
-              alt=""
-              loading="eager"
-              decoding="async"
-              aria-hidden
-            />
-            <span className="dashboard-nav__label">Squads &amp; Results</span>
-          </button>
-          <button
-            type="button"
-            className={
-              'dashboard-nav__btn' +
-              (dashboardView === 'live' ? ' dashboard-nav__btn--active' : '')
-            }
-            onClick={() => setDashboardView('live')}
-            aria-current={dashboardView === 'live' ? 'page' : undefined}
-          >
-            <img
-              className="dashboard-nav__fd-logo"
-              src={`${import.meta.env.BASE_URL}fpl-fantasy-draft-logo.png`}
-              alt=""
-              loading="eager"
-              decoding="async"
-              aria-hidden
-            />
-            <span className="dashboard-nav__label">FPL Live Scores</span>
-          </button>
-        </nav>
+        <DashboardNav
+          variant="top"
+          dashboardView={dashboardView}
+          onSelect={selectDashboardView}
+          fplLogoSrc={fplLogoSrc}
+        />
         <div className="dashboard-content">
           {dashboardView === 'standings' && (
             <>
@@ -1954,34 +1860,6 @@ function App() {
             kitIndexByEntry={kitIndexByEntry}
           />
 
-          <section className="tile tile--compact" aria-labelledby="points-against-heading">
-            <div className="tile-head-row tile-head-row--tight">
-              <h2 id="points-against-heading" className="tile-title tile-title--sm">
-                Points against
-              </h2>
-            </div>
-            {pointsAgainstList?.length ? (
-              <ol className="pa-list">
-                {pointsAgainstList.map((row, i) => (
-                  <li key={row.league_entry} className="pa-row">
-                    <span className="pa-rank">{i + 1}</span>
-                    <TeamAvatar
-                      entryId={row.league_entry}
-                      name={row.teamName}
-                      size="sm"
-                      logoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                    <span className="pa-team">{row.teamName}</span>
-                    <span className="pa-value tabular">{row.pointsAgainst}</span>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="muted muted--tight">No finished matches yet.</p>
-            )}
-          </section>
-
           <section
             className="tile tile--compact"
             aria-labelledby="win-margin-buckets-heading"
@@ -2120,109 +1998,6 @@ function App() {
             )}
           </section>
 
-          <section
-            className="tile tile--compact"
-            aria-labelledby="gw-raw-points-rank-heading"
-          >
-                  <div className="tile-head-row tile-head-row--tight">
-                    <h2 id="gw-raw-points-rank-heading" className="tile-title tile-title--sm">
-                      Gameweek points table
-                    </h2>
-                  </div>
-                  <p className="tile-hint muted tile-hint--tight">
-                    Each finished week, teams are ordered by <strong>raw GW FPL points</strong>{' '}
-                    (from the H2H scoreline). Finish 1st → 1 position point, 8th → 8 (lower
-                    total is better). Tied raw scores share the average of those ranks.
-                    <strong> Villain</strong>: won the H2H while ranked 7th on raw GW points.{' '}
-                    <strong> Hero</strong>: lost the H2H while ranked 2nd (same rules as Live).
-                    {gwRawPointsRankMeta.maxGw > 0 ? (
-                      <>
-                        {' '}
-                        Through <span className="tabular">GW {gwRawPointsRankMeta.maxGw}</span>.
-                      </>
-                    ) : null}
-                  </p>
-                  {gwRawPointsRankRows.length > 0 ? (
-                    <div className="table-scroll table-scroll--win-margin">
-                      <table className="win-margin-table gw-raw-points-rank-table">
-                        <thead>
-                          <tr>
-                            <th scope="col" className="win-margin-table__team">
-                              Team
-                            </th>
-                            <th
-                              scope="col"
-                              className="win-margin-table__n tabular"
-                              title="Sum of weekly position points (1 best … 8 worst)"
-                            >
-                              Total
-                            </th>
-                            <th
-                              scope="col"
-                              className="win-margin-table__n tabular"
-                              title="Mean finish position by raw GW points (1 = best)"
-                            >
-                              Avg finish
-                            </th>
-                            <th
-                              scope="col"
-                              className="win-margin-table__n tabular"
-                              title="Villain victory: H2H win at 7th on raw GW points"
-                            >
-                              Villain
-                            </th>
-                            <th
-                              scope="col"
-                              className="win-margin-table__n tabular"
-                              title="Hero defeat: H2H loss at 2nd on raw GW points"
-                            >
-                              Hero
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {gwRawPointsRankRows.map((row) => (
-                            <tr key={row.league_entry}>
-                              <th scope="row" className="win-margin-table__team">
-                                <span className="win-margin-table__team-inner">
-                                  <TeamAvatar
-                                    entryId={row.league_entry}
-                                    name={row.teamName}
-                                    size="sm"
-                                    logoMap={teamLogoMap}
-                                    kitIndexByEntry={kitIndexByEntry}
-                                  />
-                                  <span className="win-margin-table__name">{row.teamName}</span>
-                                </span>
-                              </th>
-                              <td className="tabular win-margin-table__n">
-                                {Number.isInteger(row.totalPositionPoints)
-                                  ? row.totalPositionPoints
-                                  : row.totalPositionPoints.toFixed(1)}
-                              </td>
-                              <td className="tabular win-margin-table__n">
-                                {row.avgFinishRank != null
-                                  ? row.avgFinishRank.toFixed(2)
-                                  : '—'}
-                              </td>
-                              <td className="tabular win-margin-table__n">
-                                {row.villainVictories}
-                              </td>
-                              <td className="tabular win-margin-table__n">{row.heroDefeats}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <p className="muted muted--tight">
-                      {gwRawPointsRankMeta.maxGw > 0
-                        ? 'No finished gameweek scores for all teams yet.'
-                        : 'No finished gameweeks in the schedule yet.'}
-                    </p>
-                  )}
-                </section>
-
                 <div className="dashboard-gw-two">
                   <section className="tile tile--compact" aria-labelledby="gw-weeks-first-heading">
                     <div className="tile-head-row tile-head-row--tight">
@@ -2356,19 +2131,71 @@ function App() {
             />
           ) : null}
 
-          {dashboardView === 'draft' ? (
-            <div className="dashboard-stack">
-              <DraftBoard
-                league={data?.league}
-                leagueEntries={leagueEntries}
-                tableRows={tableRows}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            </div>
-          ) : null}
-
-          {dashboardView === 'waivers' && (
+          {dashboardView === 'teamSelection' && (
+            <section
+              className="tile tile--compact tile--team-selection"
+              aria-label="Team selection"
+            >
+              <div className="section-chrome section-chrome--sticky">
+              <div
+                className="team-selection-submenu"
+                role="tablist"
+                aria-label="Team selection views"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-team-selection-waivers"
+                  aria-selected={teamSelectionTab === 'waivers'}
+                  className={
+                    'team-selection-submenu__btn' +
+                    (teamSelectionTab === 'waivers' ? ' team-selection-submenu__btn--active' : '')
+                  }
+                  onClick={() => setTeamSelectionTab('waivers')}
+                >
+                  <span className="team-selection-submenu__emoji" aria-hidden="true">
+                    🏃
+                  </span>
+                  Waivers
+                </button>
+                {showDashboardTrades ? (
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-team-selection-trades"
+                    aria-selected={teamSelectionTab === 'trades'}
+                    className={
+                      'team-selection-submenu__btn' +
+                      (teamSelectionTab === 'trades' ? ' team-selection-submenu__btn--active' : '')
+                    }
+                    onClick={() => setTeamSelectionTab('trades')}
+                  >
+                    <span className="team-selection-submenu__emoji" aria-hidden="true">
+                      🤝
+                    </span>
+                    Trades
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-team-selection-draft"
+                  aria-selected={teamSelectionTab === 'draft'}
+                  className={
+                    'team-selection-submenu__btn' +
+                    (teamSelectionTab === 'draft' ? ' team-selection-submenu__btn--active' : '')
+                  }
+                  onClick={() => setTeamSelectionTab('draft')}
+                >
+                  <span className="team-selection-submenu__emoji" aria-hidden="true">
+                    📋
+                  </span>
+                  Draft
+                </button>
+              </div>
+              </div>
+              <div className="section-body">
+              {teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
               <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
                 <div className="tile-head-row tile-head-row--tight">
@@ -2999,9 +2826,9 @@ function App() {
             )}
           </section>
             </div>
-          )}
+              )}
 
-          {showDashboardTrades && dashboardView === 'trades' ? (
+              {teamSelectionTab === 'trades' && showDashboardTrades && (
             <div className="dashboard-stack">
               <section className="tile tile--compact" aria-labelledby="trades-heading">
                 <h2 id="trades-heading" className="tile-title tile-title--sm">
@@ -3027,36 +2854,151 @@ function App() {
                 )}
               </section>
             </div>
+              )}
+
+              {teamSelectionTab === 'draft' && (
+            <div className="dashboard-stack">
+              <DraftBoard
+                league={data?.league}
+                leagueEntries={leagueEntries}
+                tableRows={tableRows}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </div>
+              )}
+              </div>
+            </section>
+          )}
+
+          {dashboardView === 'more' ? (
+            <DashboardMorePanel
+              onNavigate={selectDashboardView}
+              colorTheme={colorTheme}
+              onThemeChange={setColorTheme}
+            />
           ) : null}
 
-          {dashboardView === 'prem' && (
-            <PremWindow
-              teams={teamsForFormSelect}
-              gameweek={liveGameweek}
-              onGameweekChange={setLiveGw}
-              onBootstrapLiveMeta={onBootstrapLiveMeta}
-              teamLogoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          )}
-          {dashboardView === 'live' && (
-            <LiveScores
-              teams={teamsForFormSelect}
-              tableRows={tableRows}
-              matches={matches ?? []}
-              gameweek={liveGameweek}
-              onGameweekChange={setLiveGw}
-              onBootstrapLiveMeta={onBootstrapLiveMeta}
-              teamLogoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-              leagueId={data?.league?.id ?? null}
-              waiverOutGwRows={waiverOutGwRows}
-              fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
-            />
+          {dashboardView === 'fplLive' && (
+            <section
+              className="tile tile--compact tile--team-selection"
+              aria-label="FPL Live"
+            >
+              <div className="section-chrome section-chrome--sticky">
+              <div
+                className="team-selection-submenu"
+                role="tablist"
+                aria-label="FPL Live views"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-scores"
+                  aria-selected={fplLiveTab === 'live'}
+                  className={
+                    'team-selection-submenu__btn' +
+                    (fplLiveTab === 'live' ? ' team-selection-submenu__btn--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('live')}
+                >
+                  <span className="team-selection-submenu__emoji" aria-hidden="true">
+                    ⚽
+                  </span>
+                  Live Scores
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-squads"
+                  aria-selected={fplLiveTab === 'squads'}
+                  className={
+                    'team-selection-submenu__btn' +
+                    (fplLiveTab === 'squads' ? ' team-selection-submenu__btn--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('squads')}
+                >
+                  <img
+                    className="team-selection-submenu__pl-logo"
+                    src={`${import.meta.env.BASE_URL}premier-league-logo.svg`}
+                    alt=""
+                    aria-hidden
+                  />
+                  Squads &amp; Results
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-projections"
+                  aria-selected={fplLiveTab === 'projections'}
+                  className={
+                    'team-selection-submenu__btn' +
+                    (fplLiveTab === 'projections' ? ' team-selection-submenu__btn--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('projections')}
+                >
+                  <span className="team-selection-submenu__emoji" aria-hidden="true">
+                    📈
+                  </span>
+                  Projections
+                </button>
+              </div>
+              </div>
+              <div className="section-body">
+              {fplLiveTab === 'squads' ? (
+                <PremWindow
+                  teams={teamsForFormSelect}
+                  gameweek={liveGameweek}
+                  onGameweekChange={setLiveGw}
+                  onBootstrapLiveMeta={onBootstrapLiveMeta}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              ) : null}
+              {fplLiveTab === 'live' ? (
+                <LiveScores
+                  teams={teamsForFormSelect}
+                  tableRows={tableRows}
+                  matches={matches ?? []}
+                  gameweek={liveGameweek}
+                  onGameweekChange={setLiveGw}
+                  onBootstrapLiveMeta={onBootstrapLiveMeta}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  leagueId={data?.league?.id ?? null}
+                  waiverOutGwRows={waiverOutGwRows}
+                  fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
+                  compactMobileChrome
+                />
+              ) : null}
+              {fplLiveTab === 'projections' ? (
+                <LiveScores
+                  teams={teamsForFormSelect}
+                  tableRows={tableRows}
+                  matches={matches ?? []}
+                  gameweek={liveGameweek}
+                  onGameweekChange={setLiveGw}
+                  onBootstrapLiveMeta={onBootstrapLiveMeta}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  leagueId={data?.league?.id ?? null}
+                  waiverOutGwRows={waiverOutGwRows}
+                  fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
+                  projectionsOnly
+                  compactMobileChrome
+                />
+              ) : null}
+              </div>
+            </section>
           )}
 
         </div>
       </main>
+      <DashboardNav
+        variant="bottom"
+        dashboardView={dashboardView}
+        onSelect={selectDashboardView}
+        fplLogoSrc={fplLogoSrc}
+      />
       <footer className="page-footer--script">Tery is a Racist</footer>
     </div>
     </PlayerHistoryProvider>

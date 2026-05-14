@@ -34,6 +34,7 @@ export default defineConfig({
   },
   plugins: [react(), redirectRootToBasePath(base)].filter(Boolean),
   server: {
+    host: true,
     // App lives under base `/TCLOT/` — open `http://localhost:5173/TCLOT/` (root URL alone is empty).
     open: '/TCLOT/',
     // Live tab: same-origin `/__fpl/*` when `npm run dev` and VITE_FPL_PROXY_URL is unset
