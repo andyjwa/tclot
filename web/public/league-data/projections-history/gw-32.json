@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 32,
-  "generatedAt": "2026-05-11T15:54:45.739Z",
+  "generatedAt": "2026-05-15T21:48:38.066Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -29,11 +29,11 @@
       "actualXiPts1": 71,
       "actualXiPts2": 37,
       "actualWinner": "home",
-      "xPtsXi1": 32,
-      "xPtsXi2": 32.1,
-      "xPtsFavorite": "away",
+      "xPtsXi1": 31.4,
+      "xPtsXi2": 31.3,
+      "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 45,
+        "homeWinPct": 44,
         "drawPct": 4,
         "awayWinPct": 52
       },
@@ -62,7 +62,7 @@
       "actualXiPts2": 66,
       "actualWinner": "away",
       "xPtsXi1": 30.6,
-      "xPtsXi2": 32.2,
+      "xPtsXi2": 32.1,
       "xPtsFavorite": "away",
       "xPtsMc": {
         "homeWinPct": 44,
@@ -93,13 +93,13 @@
       "actualXiPts1": 27,
       "actualXiPts2": 55,
       "actualWinner": "away",
-      "xPtsXi1": 33.9,
-      "xPtsXi2": 31.4,
+      "xPtsXi1": 34,
+      "xPtsXi2": 32.1,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 55,
-        "drawPct": 4,
-        "awayWinPct": 41
+        "homeWinPct": 50,
+        "drawPct": 3,
+        "awayWinPct": 47
       },
       "projXi1": 27,
       "projXi2": 55,
@@ -125,21 +125,21 @@
       "actualXiPts1": 36,
       "actualXiPts2": 49,
       "actualWinner": "away",
-      "xPtsXi1": 27,
-      "xPtsXi2": 32.9,
+      "xPtsXi1": 27.6,
+      "xPtsXi2": 32.7,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 28,
-        "drawPct": 3,
-        "awayWinPct": 69
+        "homeWinPct": 31,
+        "drawPct": 5,
+        "awayWinPct": 64
       },
       "projXi1": 36,
       "projXi2": 49,
       "projFavorite": "away",
       "projMc": {
-        "homeWinPct": 1,
+        "homeWinPct": 0,
         "drawPct": 0,
-        "awayWinPct": 99
+        "awayWinPct": 100
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",

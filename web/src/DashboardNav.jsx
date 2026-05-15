@@ -5,7 +5,7 @@ import {
 import { ThemeToggle } from './ThemeToggle'
 import { TeamAvatar } from './TeamAvatar'
 
-/** @typedef {'standings' | 'playoff' | 'teamSelection' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
+/** @typedef {'standings' | 'playoff' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
 
 /**
  * @param {{ id: DashboardViewId, label: string, shortLabel: string, emoji?: string, logoSrc?: string, bottomOnly?: boolean }} item
@@ -72,6 +72,12 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
       emoji: '👥',
     },
     {
+      id: /** @type {const} */ ('players'),
+      label: 'Players',
+      shortLabel: 'Wire',
+      emoji: '🪂',
+    },
+    {
       id: /** @type {const} */ ('more'),
       label: 'More',
       shortLabel: 'More',
@@ -103,6 +109,7 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
           },
         ]
       : []),
+    primaryItems.find((i) => i.id === 'players'),
     primaryItems.find((i) => i.id === 'fplLive'),
   ].filter(Boolean)
 

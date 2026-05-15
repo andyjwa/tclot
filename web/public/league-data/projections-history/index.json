@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-11T15:54:48.033Z",
+  "updatedAt": "2026-05-15T21:48:41.277Z",
   "gameweeks": [
     1,
     2,
@@ -36,7 +36,8 @@
     32,
     33,
     34,
-    35
+    35,
+    36
   ],
   "note": "Maps to projections-history/gw-NN.json; regenerate via npm run build or node scripts/build-projections-history.mjs"
 }

@@ -18,6 +18,7 @@ import {
   fplApiBase,
 } from './fplDraftUrl';
 import { fplShirtImageUrl } from './fplShirtUrl';
+import { bustFplLiveCache, fetchFplJsonCached } from './fplFetchCache.js';
 import { gameWeekSelectLabel } from './gwLabel.js';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
@@ -90,7 +91,7 @@ function badgeUrl(teamCode) {
   return `https://resources.premierleague.com/premierleague/badges/50/t${teamCode}.png`;
 }
 
-import { fplElementFullName } from './fplElementNames.js';
+import { fplElementWebName, fetchKnownNameMap, enrichElementWithKnownName } from './fplElementNames.js';
 
 /**
  * True when this PL team has at least one GW fixture and all are finished (provisional).
@@ -245,7 +246,7 @@ function mapPickRows(
     return {
       element: pid,
       web_name: webName,
-      displayName: fplElementFullName(el, pid),
+      displayName: fplElementWebName(el, pid),
       /** FPL element `status`: `i` = injured (see bootstrap-static). */
       availabilityStatus: el?.status != null ? String(el.status) : null,
       availabilityNews: el?.news != null ? String(el.news) : null,
@@ -372,6 +373,17 @@ export function useLiveScores({
   /** Bumps on each load start so a slow stale request cannot overwrite newer squads (wrong players / GW). */
   const loadGenerationRef = useRef(0);
 
+  const [tabVisible, setTabVisible] = useState(() =>
+    typeof document === 'undefined' ? true : !document.hidden,
+  );
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const onVis = () => setTabVisible(!document.hidden);
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
   const load = useCallback(async () => {
     const teamList = teamsRef.current;
     const gw = Number(gameweek);
@@ -385,11 +397,9 @@ export function useLiveScores({
 
     try {
       const bootUrl = draftResourceUrl('bootstrap-static');
-      const bootRes = await fetch(bootUrl);
-      if (!bootRes.ok) {
-        throw new Error(`draft bootstrap-static HTTP ${bootRes.status}`);
-      }
-      const boot = await bootRes.json();
+      const boot = await fetchFplJsonCached(bootUrl, {
+        label: 'draft bootstrap-static',
+      });
       const evRoot = boot.events;
       const evList = bootstrapEventList(boot);
       const currentGw = evRoot?.current;
@@ -409,8 +419,13 @@ export function useLiveScores({
       const ev = evs.find((e) => e.id === gw);
       setEventSnapshot(ev ?? { id: gw, name: gameWeekSelectLabel(gw) });
 
+      const knownMap = await fetchKnownNameMap();
+      const elements = (boot.elements || []).map((e) =>
+        enrichElementWithKnownName(e, knownMap),
+      );
+
       const elementById = Object.fromEntries(
-        (boot.elements || []).map((e) => [Number(e.id), e])
+        elements.map((e) => [Number(e.id), e]),
       );
       const teamById = Object.fromEntries(
         (boot.teams || []).map((t) => [Number(t.id), t])
@@ -420,11 +435,9 @@ export function useLiveScores({
       );
 
       const liveUrl = draftResourceUrl(`event/${gw}/live`);
-      const liveRes = await fetch(liveUrl);
-      if (!liveRes.ok) {
-        throw new Error(`draft event/live HTTP ${liveRes.status}`);
-      }
-      const liveJson = await liveRes.json();
+      const liveJson = await fetchFplJsonCached(liveUrl, {
+        label: 'draft event/live',
+      });
       const liveByElementId = liveStatsByElementId(liveJson);
       const liveFull = liveFullByElementId(liveJson);
       const liveFullNumeric = {};
@@ -434,17 +447,15 @@ export function useLiveScores({
       }
 
       const fxUrl = classicResourceUrl(`fixtures?event=${gw}`);
-      const fxRes = await fetch(fxUrl);
-      if (!fxRes.ok) {
-        throw new Error(`classic fixtures HTTP ${fxRes.status}`);
-      }
-      const fixturesPayload = await fxRes.json();
+      const fixturesPayload = await fetchFplJsonCached(fxUrl, {
+        label: 'classic fixtures',
+      });
       const gwFixtures = Array.isArray(fixturesPayload)
         ? fixturesPayload.filter((f) => Number(f.event) === gw)
         : [];
 
       const provisionalByElement = computeProvisionalGwBonusByElementId(
-        boot.elements || [],
+        elements,
         liveFullNumeric,
         gwFixtures
       );
@@ -486,13 +497,19 @@ export function useLiveScores({
           }
 
           const url = draftEntryEventUrl(t.fplEntryId, gw);
-          const pr = await fetch(url);
-          if (!pr.ok) {
+          let picksPayload;
+          try {
+            picksPayload = await fetchFplJsonCached(url, { label: 'draft picks' });
+          } catch (pickErr) {
+            const pickMsg = pickErr?.message || String(pickErr);
+            const statusMatch = pickMsg.match(/HTTP (\d+)/);
             return {
               leagueEntryId: t.id,
               teamName: t.teamName,
               fplEntryId: t.fplEntryId,
-              error: `Draft picks HTTP ${pr.status}`,
+              error: statusMatch
+                ? `Draft picks HTTP ${statusMatch[1]}`
+                : pickMsg,
               starters: [],
               bench: [],
               displayStarters: [],
@@ -504,7 +521,6 @@ export function useLiveScores({
               leftToPlayCount: null,
             };
           }
-          const picksPayload = await pr.json();
           const picks = picksPayload.picks || [];
           const rows = mapPickRows(
             picks,
@@ -623,6 +639,7 @@ export function useLiveScores({
   }, [enabled, gameweek, load, teamCount]);
 
   const canPollLiveGw = (() => {
+    if (!tabVisible) return false;
     if (pollIntervalMs == null || !(Number(pollIntervalMs) > 0)) return false;
     const gw = Number(gameweek);
     if (!Number.isFinite(gw)) return false;
@@ -641,12 +658,17 @@ export function useLiveScores({
       void load();
     }, ms);
     return () => window.clearInterval(id);
-  }, [enabled, canPollLiveGw, pollIntervalMs, load]);
+  }, [enabled, canPollLiveGw, pollIntervalMs, load, tabVisible]);
+
+  const refresh = useCallback(() => {
+    bustFplLiveCache();
+    return load();
+  }, [load]);
 
   return {
     loading,
     error,
-    refresh: load,
+    refresh,
     lastUpdated,
     events,
     eventSnapshot,

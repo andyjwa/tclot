@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 6,
-  "generatedAt": "2026-05-11T15:54:24.854Z",
+  "generatedAt": "2026-05-15T21:48:16.853Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -29,13 +29,13 @@
       "actualXiPts1": 32,
       "actualXiPts2": 15,
       "actualWinner": "home",
-      "xPtsXi1": 33.1,
-      "xPtsXi2": 33.1,
+      "xPtsXi1": 31.4,
+      "xPtsXi2": 33.9,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 47,
+        "homeWinPct": 42,
         "drawPct": 3,
-        "awayWinPct": 50
+        "awayWinPct": 55
       },
       "projXi1": 32,
       "projXi2": 15,
@@ -61,12 +61,12 @@
       "actualXiPts1": 31,
       "actualXiPts2": 51,
       "actualWinner": "away",
-      "xPtsXi1": 33.5,
-      "xPtsXi2": 31.7,
+      "xPtsXi1": 33.6,
+      "xPtsXi2": 31.3,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 56,
-        "drawPct": 3,
+        "homeWinPct": 54,
+        "drawPct": 5,
         "awayWinPct": 41
       },
       "projXi1": 31,
@@ -93,13 +93,13 @@
       "actualXiPts1": 21,
       "actualXiPts2": 64,
       "actualWinner": "away",
-      "xPtsXi1": 32.6,
-      "xPtsXi2": 34.6,
+      "xPtsXi1": 33.4,
+      "xPtsXi2": 35,
       "xPtsFavorite": "away",
       "xPtsMc": {
         "homeWinPct": 39,
         "drawPct": 4,
-        "awayWinPct": 57
+        "awayWinPct": 56
       },
       "projXi1": 21,
       "projXi2": 64,
@@ -125,21 +125,21 @@
       "actualXiPts1": 44,
       "actualXiPts2": 39,
       "actualWinner": "home",
-      "xPtsXi1": 29.2,
-      "xPtsXi2": 27.4,
+      "xPtsXi1": 28.9,
+      "xPtsXi2": 28.2,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 53,
-        "drawPct": 4,
-        "awayWinPct": 43
+        "homeWinPct": 46,
+        "drawPct": 5,
+        "awayWinPct": 49
       },
       "projXi1": 44,
       "projXi2": 39,
       "projFavorite": "home",
       "projMc": {
-        "homeWinPct": 82,
+        "homeWinPct": 100,
         "drawPct": 0,
-        "awayWinPct": 18
+        "awayWinPct": 0
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "none",

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { buildElementOwnerLeagueEntryByGw } from './elementFantasyOwnerByGw.js';
 import { defensiveContributionPointThreshold } from './fplBonusFromBps.js';
 import { draftResourceUrl, fplApiBase } from './fplDraftUrl';
-import { TeamAvatar } from './TeamAvatar.jsx';
+import { formatHistoryBlankStat } from './playerGwHistory.js';
 
 const LEAGUE_DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
 
@@ -65,10 +65,10 @@ function historyDcCount(h) {
 }
 
 /** Emoji + optional ×n (small) for history stat columns; matches live contributions (🪖 Def Con, 🍑 assists). */
-function HistoryStatBadge({ emoji, count, singularLabel, pluralLabel, empty = '—' }) {
+function HistoryStatBadge({ emoji, count, singularLabel, pluralLabel }) {
   const n = Number(count);
   if (!Number.isFinite(n) || n < 1) {
-    return <span className="tabular muted">{empty}</span>;
+    return null;
   }
   const aria =
     n === 1 ? `${n} ${singularLabel}` : `${n} ${pluralLabel}`;
@@ -636,7 +636,7 @@ export function PlayerSeasonSlideOver({ target, onClose, teamLogoMap = {}, kitIn
                               pluralLabel="assists"
                             />
                           </td>
-                          <td className="tabular">{h.bonus ?? 0}</td>
+                          <td className="tabular">{formatHistoryBlankStat(h.bonus)}</td>
                           <td className="tabular live-player-slide__td-pts">
                             <strong>{h.total_points ?? '—'}</strong>
                           </td>

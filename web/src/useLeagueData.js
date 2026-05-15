@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
+import { fplElementWebName } from './fplElementNames.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
-import { buildGwRawPointsRankSeasonTotals } from './gwRawPointsRankSeason.js';
 
 const DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
 /** Set at build (`write-league-data-revision.mjs`) and mirrored in `revision.json`. */
@@ -109,7 +109,7 @@ function buildMostWaivered(transactionsPayload, fplMini) {
       const teamId = e?.team;
       return {
         elementId: Number(id),
-        web_name: e?.web_name ?? `Player #${id}`,
+        web_name: fplElementWebName(e, id),
         teamShort: tm?.short_name ?? '—',
         teamCode: tm?.code,
         teamId,
@@ -177,7 +177,7 @@ function buildFirstWaiverOrderPicks(
       teamName: teams[fplEntry]?.entry_name ?? `Team ${fplEntry}`,
       element_in: elementIn,
       pickedName:
-        pickEl?.web_name ??
+        fplElementWebName(pickEl, elementIn) ??
         (elementIn != null ? `Player #${elementIn}` : '—'),
       pickedTeamShort: pickTm?.short_name ?? '—',
       pickedShirtUrl: fplShirtImageUrl(pickTm?.code, pickEl?.element_type),
@@ -202,7 +202,7 @@ function enrichTradePlayer(elementId, elemById, teamById) {
   const teamId = e?.team;
   return {
     elementId,
-    web_name: e?.web_name ?? `Player #${elementId}`,
+    web_name: fplElementWebName(e, elementId),
     teamShort: tm?.short_name ?? '—',
     teamId,
     elementTypeId: e?.element_type,
@@ -704,12 +704,6 @@ function processLeagueData(raw, extras = {}) {
     teams,
   );
 
-  const { gwRawPointsRankMeta, gwRawPointsRankRows } = buildGwRawPointsRankSeasonTotals(
-    matches,
-    leagueEntries,
-    teams,
-  );
-
   const winMarginByEntry = {};
   for (const e of leagueEntries || []) {
     if (e?.id == null) continue;
@@ -930,8 +924,11 @@ function processLeagueData(raw, extras = {}) {
       ...row,
       teamName: teams[row.entry]?.entry_name ?? `Team ${row.entry}`,
       droppedName:
-        dropEl?.web_name ?? `Player #${row.element_out}`,
-      pickedName: pickEl?.web_name ?? `Player #${row.element_in}`,
+        fplElementWebName(dropEl, row.element_out) ??
+        `Player #${row.element_out}`,
+      pickedName:
+        fplElementWebName(pickEl, row.element_in) ??
+        `Player #${row.element_in}`,
       droppedTeamShort: dropTm?.short_name ?? '—',
       pickedTeamShort: pickTm?.short_name ?? '—',
       droppedShirtUrl: fplShirtImageUrl(dropTm?.code, dropEl?.element_type),
@@ -965,7 +962,7 @@ function processLeagueData(raw, extras = {}) {
       return {
         ...r,
         teamName: teams[r.entry]?.entry_name ?? `Team ${r.entry}`,
-        playerName: e?.web_name ?? `Player #${r.elementId}`,
+        playerName: fplElementWebName(e, r.elementId),
         teamShort: tm?.short_name ?? '—',
         teamId: e?.team,
         shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
@@ -1054,18 +1051,6 @@ function processLeagueData(raw, extras = {}) {
       return a.teamName.localeCompare(b.teamName);
     });
 
-  const pointsAgainstList = sortedByRank
-    .map((s) => ({
-      league_entry: s.league_entry,
-      teamName: s.teamName,
-      pointsAgainst: Number(s.points_against) || 0,
-    }))
-    .sort(
-      (a, b) =>
-        b.pointsAgainst - a.pointsAgainst ||
-        a.teamName.localeCompare(b.teamName)
-    );
-
   const tradesPanelRows = processTradesPanel(
     extras.tradesPanel,
     elemById,
@@ -1095,10 +1080,7 @@ function processLeagueData(raw, extras = {}) {
     gwRankExtremesMeta,
     gwWeeksAtFirst,
     gwWeeksAtLast,
-    gwRawPointsRankMeta,
-    gwRawPointsRankRows,
     mostWaiveredPlayers,
-    pointsAgainstList,
     waiverOutGwRows,
     firstWaiverOrderPicks,
     waiverOutPointsByTeam,

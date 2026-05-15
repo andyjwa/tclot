@@ -66,6 +66,24 @@ const bootstrapDraftPath = existsSync(bootstrapDraftData)
 if (bootstrapDraftPath) {
   try {
     const b = JSON.parse(readFileSync(bootstrapDraftPath, 'utf8'));
+    const classicCandidates = [
+      join(dataDir, 'bootstrap_fpl.json'),
+      join(dest, 'bootstrap_fpl.json'),
+    ];
+    const classicPath = classicCandidates.find((p) => existsSync(p));
+    if (classicPath) {
+      const classic = JSON.parse(readFileSync(classicPath, 'utf8'));
+      const knownById = new Map(
+        (classic.elements || [])
+          .map((el) => [Number(el.id), el.known_name?.trim()])
+          .filter(([id, kn]) => Number.isFinite(id) && kn),
+      );
+      for (const el of b.elements || []) {
+        const kn = knownById.get(Number(el.id));
+        if (kn) el.known_name = kn;
+      }
+      writeFileSync(join(dest, 'bootstrap_draft.json'), JSON.stringify(b, null, 2));
+    }
     const mini = {
       teams: (b.teams || []).map((t) => ({
         id: t.id,
@@ -76,6 +94,7 @@ if (bootstrapDraftPath) {
       elements: (b.elements || []).map((e) => ({
         id: e.id,
         web_name: e.web_name,
+        known_name: e.known_name ?? null,
         team: e.team,
         element_type: e.element_type,
       })),

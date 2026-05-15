@@ -27,9 +27,8 @@ import {
 } from './playerContributionStorage';
 import { fetchEspnContributionTimeline } from './espnPremTimeline';
 import {
-  fplElementFullName,
+  fplElementDisplayName,
   fplElementWebName,
-  useNarrow560,
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 
@@ -262,8 +261,6 @@ export function PlayerContributions({
   const prevLiveRef = useRef(null);
   const hydratedKeyRef = useRef('');
   const listScrollRef = useRef(null);
-  const narrow = useNarrow560();
-
   const storageKey = useMemo(
     () => playerContributionStorageKey(leagueId, gameweek),
     [leagueId, gameweek]
@@ -604,8 +601,8 @@ export function PlayerContributions({
         ev.stableId,
         ev.kind
       );
-      const fullName = fplElementFullName(el, elidN);
-      const shortName = fplElementWebName(el, elidN);
+      const knownName = fplElementDisplayName(el, elidN);
+      const fantasyName = fplElementWebName(el, elidN);
       const minFromLive = liveStatMinutesLabel(liveFull, elidN);
       const rawEventMin = ev.minuteLabel;
       const minLbl =
@@ -644,11 +641,9 @@ export function PlayerContributions({
           : null;
       return {
         ...ev,
-        /** Visible list label: `web_name` on ≤560px, full FPL name on larger viewports. */
-        playerLabel: narrow ? shortName : fullName,
-        /** FPL `first_name`+`second_name` (or fallback) — always for screen readers. */
-        playerLabelFull: fullName,
-        playerLabelShort: shortName,
+        playerLabel: knownName,
+        playerLabelFull: knownName,
+        playerLabelShort: fantasyName,
         badgeUrl: badgeUrl(tm?.code),
         teamShort: tm?.short_name ?? '—',
         ownerLine,
@@ -671,7 +666,6 @@ export function PlayerContributions({
     ownerByEl,
     dropByEl,
     compareRowsFn,
-    narrow,
   ]);
 
   const filteredRows = useMemo(() => {
