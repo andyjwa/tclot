@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 10,
-  "generatedAt": "2026-05-11T15:54:28.649Z",
+  "generatedAt": "2026-05-15T21:48:20.131Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -29,21 +29,21 @@
       "actualXiPts1": 49,
       "actualXiPts2": 46,
       "actualWinner": "home",
-      "xPtsXi1": 34.1,
-      "xPtsXi2": 36,
-      "xPtsFavorite": "away",
+      "xPtsXi1": 34.6,
+      "xPtsXi2": 33.7,
+      "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 45,
+        "homeWinPct": 51,
         "drawPct": 3,
-        "awayWinPct": 52
+        "awayWinPct": 46
       },
       "projXi1": 49,
       "projXi2": 46,
       "projFavorite": "home",
       "projMc": {
-        "homeWinPct": 70,
+        "homeWinPct": 100,
         "drawPct": 0,
-        "awayWinPct": 30
+        "awayWinPct": 0
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",
@@ -61,11 +61,11 @@
       "actualXiPts1": 38,
       "actualXiPts2": 55,
       "actualWinner": "away",
-      "xPtsXi1": 35.3,
-      "xPtsXi2": 28.9,
+      "xPtsXi1": 36.5,
+      "xPtsXi2": 29.6,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 68,
+        "homeWinPct": 67,
         "drawPct": 4,
         "awayWinPct": 29
       },
@@ -93,21 +93,21 @@
       "actualXiPts1": 35,
       "actualXiPts2": 48,
       "actualWinner": "away",
-      "xPtsXi1": 32.3,
-      "xPtsXi2": 31.3,
+      "xPtsXi1": 33.2,
+      "xPtsXi2": 31.4,
       "xPtsFavorite": "home",
       "xPtsMc": {
         "homeWinPct": 54,
-        "drawPct": 3,
-        "awayWinPct": 43
+        "drawPct": 4,
+        "awayWinPct": 42
       },
       "projXi1": 35,
       "projXi2": 48,
       "projFavorite": "away",
       "projMc": {
-        "homeWinPct": 1,
+        "homeWinPct": 0,
         "drawPct": 0,
-        "awayWinPct": 99
+        "awayWinPct": 100
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "none",
@@ -125,12 +125,12 @@
       "actualXiPts1": 50,
       "actualXiPts2": 27,
       "actualWinner": "home",
-      "xPtsXi1": 29,
-      "xPtsXi2": 33.3,
+      "xPtsXi1": 29.1,
+      "xPtsXi2": 33.6,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 33,
-        "drawPct": 3,
+        "homeWinPct": 32,
+        "drawPct": 4,
         "awayWinPct": 64
       },
       "projXi1": 50,

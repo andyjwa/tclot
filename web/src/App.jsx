@@ -52,6 +52,8 @@ import {
 } from './h2hScheduleGw.js'
 import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
 import { FormAndH2hSection } from './FormAndH2hSection.jsx'
+import { PlayersWorkbench } from './PlayersWorkbench.jsx'
+import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
 import './App.css'
 
 /** Sorted ascending unique GWs from schedule rows (1–38). */
@@ -829,6 +831,7 @@ function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
 /** Match `max-width: 1080px` nav breakpoint — phones / narrow tablets default to Live. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'standings'
+  if (parsePlayersHash()) return /** @type {const} */ ('players')
   return window.matchMedia('(max-width: 1080px)').matches ? 'fplLive' : 'standings'
 }
 
@@ -966,15 +969,20 @@ function App() {
   const [futureGwView, setFutureGwView] = useState(null)
   const formStripDisplayCount = useFormStripDisplayCount()
   const [colorTheme, setColorTheme] = useState(() => readStoredTheme())
+  const [wireDetailOpen, setWireDetailOpen] = useState(false)
 
   const bottomNavHidden = useAutoHideBottomNav({
-    enabled: dashboardView !== 'more',
+    enabled: dashboardView !== 'more' && !wireDetailOpen,
   })
 
   const fplLogoSrc = `${import.meta.env.BASE_URL}fpl-fantasy-draft-logo.png`
 
   const selectDashboardView = useCallback((view) => {
     setDashboardView(view)
+    if (view !== 'players') {
+      stripPlayersHash()
+      setWireDetailOpen(false)
+    }
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0)
     }
@@ -983,6 +991,17 @@ function App() {
   useLayoutEffect(() => {
     document.body.dataset.tclotTheme = colorTheme
   }, [colorTheme])
+
+
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    function onPlayersHashNavigate() {
+      if (parsePlayersHash()) setDashboardView('players')
+    }
+    window.addEventListener('hashchange', onPlayersHashNavigate)
+    return () => window.removeEventListener('hashchange', onPlayersHashNavigate)
+  }, [])
 
   useEffect(() => {
     try {
@@ -2130,6 +2149,21 @@ function App() {
               kitIndexByEntry={kitIndexByEntry}
               tableRows={tableRows}
             />
+          ) : null}
+
+          {dashboardView === 'players' ? (
+            <div className="dashboard-stack">
+              <PlayersWorkbench
+                leagueEntries={leagueEntries}
+                teamsForFormSelect={teamsForFormSelect}
+                leagueDataRevision={String(
+                  import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
+                ).trim()}
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+                onDetailOpenChange={setWireDetailOpen}
+              />
+            </div>
           ) : null}
 
           {dashboardView === 'teamSelection' && (

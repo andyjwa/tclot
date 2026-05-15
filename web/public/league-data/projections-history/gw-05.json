@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 5,
-  "generatedAt": "2026-05-11T15:54:23.974Z",
+  "generatedAt": "2026-05-15T21:48:16.035Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -29,21 +29,21 @@
       "actualXiPts1": 42,
       "actualXiPts2": 37,
       "actualWinner": "home",
-      "xPtsXi1": 30.9,
-      "xPtsXi2": 30.3,
+      "xPtsXi1": 31.5,
+      "xPtsXi2": 28.6,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 52,
+        "homeWinPct": 59,
         "drawPct": 3,
-        "awayWinPct": 45
+        "awayWinPct": 38
       },
       "projXi1": 42,
       "projXi2": 37,
       "projFavorite": "home",
       "projMc": {
-        "homeWinPct": 81,
+        "homeWinPct": 100,
         "drawPct": 0,
-        "awayWinPct": 19
+        "awayWinPct": 0
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "none",
@@ -61,21 +61,21 @@
       "actualXiPts1": 28,
       "actualXiPts2": 29,
       "actualWinner": "away",
-      "xPtsXi1": 32.1,
-      "xPtsXi2": 31.3,
+      "xPtsXi1": 33.4,
+      "xPtsXi2": 30.9,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 49,
-        "drawPct": 4,
-        "awayWinPct": 47
+        "homeWinPct": 53,
+        "drawPct": 3,
+        "awayWinPct": 43
       },
       "projXi1": 28,
       "projXi2": 29,
       "projFavorite": "away",
       "projMc": {
-        "homeWinPct": 45,
+        "homeWinPct": 0,
         "drawPct": 0,
-        "awayWinPct": 55
+        "awayWinPct": 100
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",
@@ -93,21 +93,21 @@
       "actualXiPts1": 41,
       "actualXiPts2": 51,
       "actualWinner": "away",
-      "xPtsXi1": 33.5,
-      "xPtsXi2": 29.5,
+      "xPtsXi1": 33.1,
+      "xPtsXi2": 30.2,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 62,
+        "homeWinPct": 60,
         "drawPct": 3,
-        "awayWinPct": 35
+        "awayWinPct": 37
       },
       "projXi1": 41,
       "projXi2": 51,
       "projFavorite": "away",
       "projMc": {
-        "homeWinPct": 3,
+        "homeWinPct": 0,
         "drawPct": 0,
-        "awayWinPct": 97
+        "awayWinPct": 100
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "none",
@@ -125,21 +125,21 @@
       "actualXiPts1": 44,
       "actualXiPts2": 55,
       "actualWinner": "away",
-      "xPtsXi1": 34.4,
-      "xPtsXi2": 31.6,
+      "xPtsXi1": 34.9,
+      "xPtsXi2": 31.5,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 55,
-        "drawPct": 3,
-        "awayWinPct": 42
+        "homeWinPct": 57,
+        "drawPct": 4,
+        "awayWinPct": 39
       },
       "projXi1": 44,
       "projXi2": 55,
       "projFavorite": "away",
       "projMc": {
-        "homeWinPct": 3,
+        "homeWinPct": 0,
         "drawPct": 0,
-        "awayWinPct": 97
+        "awayWinPct": 100
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",

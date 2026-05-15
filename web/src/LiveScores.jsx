@@ -172,9 +172,7 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick }) {
         <tbody>
           {rows.map((r) => {
             const minsTone = livePickMinsCellClass(r);
-            const playerColName = portraitLineup
-              ? (r.web_name ?? r.displayName ?? '—')
-              : (r.displayName ?? r.web_name ?? '—');
+            const playerColName = r.displayName ?? r.web_name ?? '—';
             const fullLabel = `${playerColName}${r.opponentShortLabel ? ` (${r.opponentShortLabel})` : ''} · #${r.element}${r.teamName ? ` · ${r.teamName}` : ''}`;
             return (
             <tr key={`${r.pickPosition}-${r.element}`}>
@@ -1245,8 +1243,25 @@ export function LiveScores({
           <div className="data-banner data-banner--error" role="alert">
             <strong>Could not load live data.</strong> {error}{' '}
             <span className="muted">
-              On GitHub Pages, set <code>VITE_FPL_PROXY_URL</code> to your Worker (see{' '}
-              <code>web/workers/fpl-proxy/README.md</code>) and redeploy.
+              {proxyHost ? (
+                <>
+                  The FPL proxy (<code>{proxyHost}</code>) may be unavailable or over its daily
+                  request limit (Cloudflare Workers free tier). Wait until after midnight UTC, run{' '}
+                  <code>npm run dev:vite</code> locally, or upgrade the Workers plan — see{' '}
+                  <code>web/workers/fpl-proxy/README.md</code>.
+                </>
+              ) : isLikelyLocalDev() ? (
+                <>
+                  Restart Vite after adding <code>VITE_FPL_PROXY_URL</code> to{' '}
+                  <code>web/.env.local</code>, or leave that unset so dev uses the built-in{' '}
+                  <code>/__fpl</code> proxy.
+                </>
+              ) : (
+                <>
+                  On GitHub Pages, set <code>VITE_FPL_PROXY_URL</code> to your Worker (see{' '}
+                  <code>web/workers/fpl-proxy/README.md</code>) and redeploy.
+                </>
+              )}
             </span>
           </div>
         ) : null}

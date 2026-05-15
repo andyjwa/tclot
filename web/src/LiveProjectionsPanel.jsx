@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { DEFAULT_MODEL_CONFIG } from 'fpl-predictions';
 import { TeamAvatar } from './TeamAvatar';
-import { fplElementFullName } from './fplElementNames';
+import { fplElementWebName } from './fplElementNames';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import {
   bootstrapElementToPlayer,
@@ -281,7 +281,7 @@ function buildProjectionPlayerLines(starters, ctx, teamsById, gw, blendCtx, live
       pos,
       xPts,
       projFinal,
-      displayName: fplElementFullName(el, pid),
+      displayName: fplElementWebName(el, pid),
       fixtureComplete: gamesLeft === 0,
     });
   }

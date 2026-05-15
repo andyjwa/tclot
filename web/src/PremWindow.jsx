@@ -7,9 +7,8 @@ import { gameWeekSelectLabel } from './gwLabel.js';
 import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
 import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
 import {
-  fplElementFullName,
+  fplElementDisplayName,
   fplElementWebName,
-  useNarrow560,
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 
@@ -197,12 +196,8 @@ function EventRow({
   const owner = ev.elementId != null ? ownerByEl.get(ev.elementId) : null;
   const el = ev.elementId != null && elementById ? elementById[ev.elementId] : null;
   const nameShown = el
-    ? narrowName
-      ? fplElementWebName(el, ev.elementId)
-      : fplElementFullName(el, ev.elementId)
+    ? fplElementDisplayName(el, ev.elementId)
     : (ev.playerName || '—');
-  const fullTitle =
-    el && narrowName ? fplElementFullName(el, ev.elementId) : undefined;
   const teamShort =
     el && teamById ? teamById[Number(el.team)]?.short_name : undefined;
   const sideClass =
@@ -218,10 +213,10 @@ function EventRow({
         {meta.icon}
       </span>
       <span className="prem-ev-player">
-        <span className="prem-ev-name" title={fullTitle}>
+        <span className="prem-ev-name">
           <ClickablePlayerName
             element={ev.elementId}
-            displayName={el ? fplElementFullName(el, ev.elementId) : undefined}
+            displayName={el ? fplElementWebName(el, ev.elementId) : undefined}
             web_name={el ? fplElementWebName(el, ev.elementId) : undefined}
             teamShort={teamShort}
           >
@@ -254,13 +249,10 @@ function LineupPlayerRow({
   const owner = player.elementId != null ? ownerByEl.get(player.elementId) : null;
   const el = player.elementId != null && elementById ? elementById[player.elementId] : null;
   const displayName = el
-    ? narrowName
-      ? fplElementWebName(el, player.elementId)
-      : fplElementFullName(el, player.elementId)
+    ? fplElementDisplayName(el, player.elementId)
     : (player.fplWebName?.trim() ||
         player.name ||
         `#${player.fotmobPlayerId ?? '?'}`);
-  const fullTitle = el && narrowName ? fplElementFullName(el, player.elementId) : undefined;
   const teamShort =
     el && teamById ? teamById[Number(el.team)]?.short_name : undefined;
   const fplPos =
@@ -270,10 +262,10 @@ function LineupPlayerRow({
   return (
     <div className="prem-lineup-row">
       <span className="prem-lineup-core">
-        <span className="prem-lineup-name" title={fullTitle}>
+        <span className="prem-lineup-name">
           <ClickablePlayerName
             element={player.elementId}
-            displayName={el ? fplElementFullName(el, player.elementId) : undefined}
+            displayName={el ? fplElementWebName(el, player.elementId) : undefined}
             web_name={el ? fplElementWebName(el, player.elementId) : undefined}
             teamShort={teamShort}
           >

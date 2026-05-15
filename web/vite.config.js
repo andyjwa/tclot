@@ -22,10 +22,12 @@ function redirectRootToBasePath(base) {
   }
 }
 
-// GitHub Actions sets VITE_BASE_PATH=./ for Pages; local dev defaults to /TCLOT/
-const base = process.env.VITE_BASE_PATH || '/TCLOT/'
+/** Production / static deploy: subpath on GitHub Pages. Local `vite`/`npm run dev:vite` uses `/` so http://localhost:5173/ and #/players work. */
+const productionBase = process.env.VITE_BASE_PATH || '/TCLOT/'
 
-export default defineConfig({
+export default defineConfig(({ command }) => {
+  const base = command === 'serve' ? '/' : productionBase
+  return {
   base,
   define: {
     'import.meta.env.VITE_LEAGUE_DATA_REVISION': JSON.stringify(
@@ -35,8 +37,11 @@ export default defineConfig({
   plugins: [react(), redirectRootToBasePath(base)].filter(Boolean),
   server: {
     host: true,
-    // App lives under base `/TCLOT/` — open `http://localhost:5173/TCLOT/` (root URL alone is empty).
-    open: '/TCLOT/',
+    /** Avoid clash with bowls-web (and other Vite apps) on default 5173 — use http://127.0.0.1:5175/ */
+    port: 5175,
+    strictPort: true,
+    // Dev: root is the app (`base: '/'`). Build: open still useful if someone runs preview with subpath.
+    open: command === 'serve' ? '/' : '/TCLOT/',
     // Live tab: same-origin `/__fpl/*` when `npm run dev` and VITE_FPL_PROXY_URL is unset
     // (avoids CORS + works without redeploying the Cloudflare worker).
     proxy: {
@@ -63,4 +68,5 @@ export default defineConfig({
       },
     },
   },
+  }
 })

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 22,
-  "generatedAt": "2026-05-11T15:54:37.887Z",
+  "generatedAt": "2026-05-15T21:48:29.865Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -29,21 +29,21 @@
       "actualXiPts1": 34,
       "actualXiPts2": 40,
       "actualWinner": "away",
-      "xPtsXi1": 27.9,
-      "xPtsXi2": 35.1,
+      "xPtsXi1": 28.2,
+      "xPtsXi2": 34.9,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 25,
+        "homeWinPct": 26,
         "drawPct": 3,
-        "awayWinPct": 72
+        "awayWinPct": 71
       },
       "projXi1": 34,
       "projXi2": 40,
       "projFavorite": "away",
       "projMc": {
-        "homeWinPct": 16,
+        "homeWinPct": 0,
         "drawPct": 0,
-        "awayWinPct": 84
+        "awayWinPct": 100
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",
@@ -62,20 +62,20 @@
       "actualXiPts2": 31,
       "actualWinner": "home",
       "xPtsXi1": 33.3,
-      "xPtsXi2": 33.3,
+      "xPtsXi2": 33.5,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 49,
+        "homeWinPct": 47,
         "drawPct": 3,
-        "awayWinPct": 48
+        "awayWinPct": 50
       },
       "projXi1": 45,
       "projXi2": 31,
       "projFavorite": "home",
       "projMc": {
-        "homeWinPct": 99,
+        "homeWinPct": 100,
         "drawPct": 0,
-        "awayWinPct": 1
+        "awayWinPct": 0
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "none",
@@ -93,13 +93,13 @@
       "actualXiPts1": 23,
       "actualXiPts2": 42,
       "actualWinner": "away",
-      "xPtsXi1": 26,
-      "xPtsXi2": 32.4,
+      "xPtsXi1": 26.6,
+      "xPtsXi2": 31.8,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 28,
-        "drawPct": 3,
-        "awayWinPct": 68
+        "homeWinPct": 32,
+        "drawPct": 4,
+        "awayWinPct": 64
       },
       "projXi1": 23,
       "projXi2": 42,
@@ -125,7 +125,7 @@
       "actualXiPts1": 22,
       "actualXiPts2": 42,
       "actualWinner": "away",
-      "xPtsXi1": 33.8,
+      "xPtsXi1": 34,
       "xPtsXi2": 35.4,
       "xPtsFavorite": "away",
       "xPtsMc": {

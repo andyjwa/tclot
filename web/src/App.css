@@ -44,8 +44,9 @@
   --dash-nav-tab-line: #ffffff;
   /* Idle tabs: clearly readable on dark chrome (not “washed out”) */
   --dash-nav-tab-idle: rgba(255, 255, 255, 0.82);
-  --pill-active-bg: #ffffff;
-  --pill-active-fg: #121212;
+  --pill-active-bg: color-mix(in srgb, rgba(121, 91, 251, 0.18) 58%, var(--fm-card));
+  --pill-active-fg: var(--fm-text-strong);
+  --pill-active-border: color-mix(in srgb, #795bfb 52%, var(--fm-border));
   --pill-idle-hover-bg: rgba(255, 255, 255, 0.07);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--fm-bg);
@@ -90,8 +91,9 @@
   --dash-nav-tab-active: #111111;
   --dash-nav-tab-line: #111111;
   --dash-nav-tab-idle: rgba(17, 17, 17, 0.72);
-  --pill-active-bg: #111111;
-  --pill-active-fg: #ffffff;
+  --pill-active-bg: color-mix(in srgb, rgba(121, 91, 251, 0.14) 52%, #ffffff);
+  --pill-active-fg: var(--fm-text-strong);
+  --pill-active-border: color-mix(in srgb, #795bfb 46%, #d8cffc);
   --pill-idle-hover-bg: rgba(0, 0, 0, 0.06);
 }
 
@@ -850,7 +852,8 @@
 }
 
 .fotmob[data-theme='light'] .team-selection-submenu__btn--active .team-selection-submenu__pl-logo {
-  filter: brightness(0) invert(1);
+  filter: none;
+  opacity: 1;
 }
 
 .fotmob[data-theme='dark'] .team-selection-submenu__btn:not(.team-selection-submenu__btn--active) .team-selection-submenu__pl-logo {
@@ -875,16 +878,40 @@
 }
 
 .team-selection-submenu__btn--active {
-  background: var(--pill-active-bg);
   color: var(--pill-active-fg);
-  border-color: transparent;
   box-shadow: none;
   text-shadow: none;
 }
 
-.team-selection-submenu__btn--active:hover {
-  filter: brightness(0.97);
+.team-selection-submenu__btn.team-selection-submenu__btn--active {
+  background: color-mix(
+    in srgb,
+    rgba(121, 91, 251, 0.18) 58%,
+    var(--fm-card)
+  );
+  border-color: color-mix(in srgb, #795bfb 52%, var(--fm-border));
+}
+
+.fotmob[data-theme='light'] .team-selection-submenu__btn.team-selection-submenu__btn--active {
+  background: color-mix(
+    in srgb,
+    rgba(121, 91, 251, 0.14) 52%,
+    #ffffff
+  );
+  color: var(--fm-text-strong);
+  border-color: color-mix(in srgb, #795bfb 46%, #d8cffc);
+}
+
+.team-selection-submenu__btn.team-selection-submenu__btn--active:hover {
+  background: color-mix(in srgb, rgba(121, 91, 251, 0.22) 62%, var(--fm-card));
   color: var(--pill-active-fg);
+  border-color: color-mix(in srgb, #795bfb 58%, var(--fm-border));
+}
+
+.fotmob[data-theme='light'] .team-selection-submenu__btn.team-selection-submenu__btn--active:hover {
+  background: color-mix(in srgb, rgba(121, 91, 251, 0.18) 56%, #ffffff);
+  color: var(--fm-text-strong);
+  border-color: color-mix(in srgb, #795bfb 52%, #d0c4fa);
 }
 
 .dashboard-content {

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 17,
-  "generatedAt": "2026-05-11T15:54:34.028Z",
+  "generatedAt": "2026-05-15T21:48:25.770Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -30,12 +30,12 @@
       "actualXiPts2": 41,
       "actualWinner": "home",
       "xPtsXi1": 31.6,
-      "xPtsXi2": 31.7,
-      "xPtsFavorite": "away",
+      "xPtsXi2": 30,
+      "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 45,
+        "homeWinPct": 52,
         "drawPct": 4,
-        "awayWinPct": 51
+        "awayWinPct": 44
       },
       "projXi1": 58,
       "projXi2": 41,
@@ -61,12 +61,12 @@
       "actualXiPts1": 59,
       "actualXiPts2": 33,
       "actualWinner": "home",
-      "xPtsXi1": 29.2,
-      "xPtsXi2": 27.6,
+      "xPtsXi1": 29.7,
+      "xPtsXi2": 28.1,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 55,
-        "drawPct": 5,
+        "homeWinPct": 56,
+        "drawPct": 4,
         "awayWinPct": 40
       },
       "projXi1": 59,
@@ -94,20 +94,20 @@
       "actualXiPts2": 45,
       "actualWinner": "home",
       "xPtsXi1": 32.7,
-      "xPtsXi2": 32.5,
-      "xPtsFavorite": "home",
+      "xPtsXi2": 33,
+      "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 50,
-        "drawPct": 4,
-        "awayWinPct": 46
+        "homeWinPct": 46,
+        "drawPct": 3,
+        "awayWinPct": 51
       },
       "projXi1": 53,
       "projXi2": 45,
       "projFavorite": "home",
       "projMc": {
-        "homeWinPct": 91,
+        "homeWinPct": 100,
         "drawPct": 0,
-        "awayWinPct": 9
+        "awayWinPct": 0
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",
@@ -125,21 +125,21 @@
       "actualXiPts1": 41,
       "actualXiPts2": 45,
       "actualWinner": "away",
-      "xPtsXi1": 33.6,
-      "xPtsXi2": 33,
+      "xPtsXi1": 33.5,
+      "xPtsXi2": 32.7,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 50,
-        "drawPct": 5,
+        "homeWinPct": 51,
+        "drawPct": 4,
         "awayWinPct": 45
       },
       "projXi1": 41,
       "projXi2": 45,
       "projFavorite": "away",
       "projMc": {
-        "homeWinPct": 25,
+        "homeWinPct": 0,
         "drawPct": 0,
-        "awayWinPct": 75
+        "awayWinPct": 100
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",

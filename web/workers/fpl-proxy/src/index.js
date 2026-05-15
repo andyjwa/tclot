@@ -24,8 +24,35 @@ function corsHeaders(env, request) {
   };
 }
 
+/** Edge cache TTL (seconds) — reduces upstream + worker load on the free tier. */
+function cacheTtlSeconds(path, upstreamBase) {
+  if (path === 'bootstrap-static') return 600;
+  if (path.includes('/live')) return 45;
+  if (path.startsWith('fixtures')) return 180;
+  if (path.includes('/entry/') && path.includes('/event/')) return 45;
+  if (upstreamBase === FOTMOB_API) return 60;
+  if (upstreamBase === ESPN_API) return 120;
+  return 0;
+}
+
+function withCors(upstream, ch, cacheTtl) {
+  const outHeaders = new Headers(upstream.headers);
+  for (const [k, v] of Object.entries(ch)) {
+    outHeaders.set(k, v);
+  }
+  outHeaders.delete('Set-Cookie');
+  if (cacheTtl > 0) {
+    outHeaders.set('Cache-Control', `public, max-age=${cacheTtl}`);
+  }
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: outHeaders,
+  });
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const ch = corsHeaders(env, request);
 
     if (request.method === 'OPTIONS') {
@@ -54,6 +81,17 @@ export default {
       upstreamBase = ESPN_API;
     }
     const target = `${upstreamBase}/${path}${url.search}`;
+    const cacheTtl = cacheTtlSeconds(path, upstreamBase);
+    const cache = caches.default;
+    const cacheKey = new Request(target, { method: 'GET' });
+
+    if (request.method === 'GET' && cacheTtl > 0) {
+      const cached = await cache.match(cacheKey);
+      if (cached) {
+        return withCors(cached, ch, cacheTtl);
+      }
+    }
+
     const headers = {
       Accept: 'application/json',
       'User-Agent': 'TCLOT-fpl-proxy/1.0',
@@ -66,16 +104,12 @@ export default {
       headers,
     });
 
-    const outHeaders = new Headers(upstream.headers);
-    for (const [k, v] of Object.entries(ch)) {
-      outHeaders.set(k, v);
-    }
-    // Avoid browsers caching live JSON for too long when upstream sends long TTL
-    outHeaders.delete('Set-Cookie');
+    const response = withCors(upstream, ch, cacheTtl);
 
-    return new Response(upstream.body, {
-      status: upstream.status,
-      headers: outHeaders,
-    });
+    if (request.method === 'GET' && upstream.ok && cacheTtl > 0) {
+      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    }
+
+    return response;
   },
 };
