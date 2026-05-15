@@ -107,7 +107,7 @@ export function formatHistoryDcForRow(
 ) {
   const dc = historyDcCount(historyRow)
   const raw = dc == null ? NaN : Number(dc)
-  if (!Number.isFinite(raw) || raw < 1) return '—'
+  if (!Number.isFinite(raw) || raw < 1) return ''
   const threshold = defensiveContributionPointThreshold(elementTypeId)
   if (threshold == null) return String(raw)
   if (raw < threshold) return String(raw)
@@ -121,24 +121,6 @@ export function formatHistoryDcForRow(
   )
   if (hits > 1) return `🪖×${hits}`
   return '🪖'
-}
-
-/** DC fantasy-point hits this GW — numeric, blank when none (portrait DEF detail column). */
-export function formatHistoryDcAchievedBlank(
-  historyRow,
-  elementId,
-  teamId,
-  elementTypeId,
-  allFixtures = null,
-) {
-  const hits = defConFixtureHitsInGw(
-    historyRow,
-    elementId,
-    teamId,
-    elementTypeId,
-    allFixtures,
-  )
-  return hits > 0 ? String(hits) : ''
 }
 
 /** @deprecated Use {@link formatHistoryDcForRow} — kept for callers passing aggregate count only. */

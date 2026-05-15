@@ -15,7 +15,6 @@ import {
 import {
   formatHistoryBlankStat,
   formatHistoryCount,
-  formatHistoryDcAchievedBlank,
   formatHistoryDcForRow,
   historyGw,
   historyPoints,
@@ -153,7 +152,7 @@ export function PlayerDetailView({
     elementType != null ? String(elementType) : 'all'
   const posLabel = POS_LABEL[elementType] ?? '?'
   const showCs = elementType !== 4
-  const portraitDefDetail = portrait && elementType === 2
+  const defDetail = elementType === 2
 
   const [detailStatIds, setDetailStatIds] = useState(() =>
     readWireStatSelection(detailPositionFilter),
@@ -407,26 +406,25 @@ export function PlayerDetailView({
               <tr>
                 <th scope="col">GW</th>
                 <th scope="col">Mins</th>
-                <th
-                  scope="col"
-                  title={
-                    portraitDefDetail
-                      ? 'Defensive contribution points earned this gameweek'
-                      : 'Goals'
-                  }
-                >
-                  {portraitDefDetail ? 'DC' : 'G'}
+                <th scope="col" title="Goals">
+                  G
                 </th>
                 <th scope="col" title="Assists">
                   A
                 </th>
-                {!portraitDefDetail ? (
+                {!defDetail ? (
                   <th scope="col" title="Defensive contributions">
                     DC
                   </th>
                 ) : null}
                 {showCs ? <th scope="col">CS</th> : null}
-                <th scope="col">Bps</th>
+                {defDetail ? (
+                  <th scope="col" title="Defensive contributions">
+                    DC
+                  </th>
+                ) : (
+                  <th scope="col">Bps</th>
+                )}
                 <th scope="col">Pts</th>
               </tr>
             </thead>
@@ -441,20 +439,12 @@ export function PlayerDetailView({
                     </td>
                     <td className="tabular">{h.minutes ?? '—'}</td>
                     <td className="tabular">
-                      {portraitDefDetail
-                        ? formatHistoryDcAchievedBlank(
-                            h,
-                            playerId,
-                            playerEl?.team,
-                            elementType,
-                            plFixtures,
-                          )
-                        : formatHistoryCount('⚽', h.goals_scored)}
+                      {formatHistoryCount('⚽', h.goals_scored)}
                     </td>
                     <td className="tabular">
                       {formatHistoryCount('🍑', h.assists)}
                     </td>
-                    {!portraitDefDetail ? (
+                    {!defDetail ? (
                       <td className="tabular">
                         {formatHistoryDcForRow(
                           h,
@@ -470,7 +460,17 @@ export function PlayerDetailView({
                         {formatHistoryBlankStat(h.clean_sheets)}
                       </td>
                     ) : null}
-                    <td className="tabular">{formatHistoryBlankStat(h.bonus)}</td>
+                    <td className="tabular">
+                      {defDetail
+                        ? formatHistoryDcForRow(
+                            h,
+                            playerId,
+                            playerEl?.team,
+                            elementType,
+                            plFixtures,
+                          )
+                        : formatHistoryBlankStat(h.bonus)}
+                    </td>
                     <td className="tabular players-detail__pts">
                       {pts != null ? pts : '—'}
                     </td>
