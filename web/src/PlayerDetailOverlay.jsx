@@ -23,7 +23,7 @@ import {
   suggestBenchTarget,
 } from './playersBenchShared.js'
 import { PlayerDetailView } from './PlayerDetailView.jsx'
-import { useMobileLayout } from './usePortraitMobile.js'
+import { matchesMobileLayoutViewport, useMobileLayout } from './usePortraitMobile.js'
 import './PlayerDetailOverlay.css'
 
 const OverlayContext = createContext(null)
@@ -77,10 +77,16 @@ export function PlayerDetailOverlayProvider({
   const slideSheetRef = useRef(null)
   const pendingSlideExitFinalizeRef = useRef(false)
   const [slideShellOpen, setSlideShellOpen] = useState(false)
+  /** `'opening'` | `'shown'` | `'closing'` — mobile overlay sheet slide (see CSS `data-mobile-phase`). */
+  const [mobileSheetPhase, setMobileSheetPhase] = useState(null)
+  const mobileSheetPhaseRef = useRef(null)
+  const mobileSurfaceRef = useRef(null)
+  mobileSheetPhaseRef.current = mobileSheetPhase
 
   const closeDetailImmediately = useCallback(() => {
     pendingSlideExitFinalizeRef.current = false
     setSlideShellOpen(false)
+    setMobileSheetPhase(null)
     setOverlayPlayerId(null)
     setOverlayLeagueEntryId(null)
     setCompareSource(null)
@@ -100,8 +106,38 @@ export function PlayerDetailOverlayProvider({
     dashboardViewSeenRef.current = dashboardView
   }, [dashboardView])
 
+  useLayoutEffect(() => {
+    if (mobileSheetPhase !== 'opening') return undefined
+    let innerRaf = null
+    const outerRaf = requestAnimationFrame(() => {
+      innerRaf = requestAnimationFrame(() =>
+        setMobileSheetPhase((p) => (p === 'opening' ? 'shown' : p)),
+      )
+    })
+    return () => {
+      cancelAnimationFrame(outerRaf)
+      if (innerRaf != null) cancelAnimationFrame(innerRaf)
+    }
+  }, [mobileSheetPhase])
+
+  const onMobileSheetTransitionEnd = useCallback(
+    (e) => {
+      if (!mobileSurfaceRef.current || e.target !== mobileSurfaceRef.current) return
+      if (e.propertyName !== 'transform') return
+      if (mobileSheetPhaseRef.current !== 'closing') return
+      closeDetailImmediately()
+    },
+    [closeDetailImmediately],
+  )
+
   const requestDetailClose = useCallback(() => {
     if (mobileLayout) {
+      const phase = mobileSheetPhaseRef.current
+      if (phase === 'closing') return
+      if (phase === 'shown') {
+        setMobileSheetPhase('closing')
+        return
+      }
       closeDetailImmediately()
       return
     }
@@ -154,6 +190,10 @@ export function PlayerDetailOverlayProvider({
       setOverlayLeagueEntryId(leagueOk ? Number(leagueRaw) : null)
       setCompareSource(nextCmp)
       setBenchId(null)
+
+      if (matchesMobileLayoutViewport()) {
+        setMobileSheetPhase('opening')
+      }
 
       onOpenChange?.(true)
 
@@ -361,6 +401,14 @@ export function PlayerDetailOverlayProvider({
 
   const ctxValue = useMemo(() => ({ openPlayerDetail }), [openPlayerDetail])
 
+  /** CSS `data-mobile-phase` (`enter`|`open`|`exit`). */
+  const overlayMobileSlidePhaseAttr =
+    mobileSheetPhase === 'shown'
+      ? 'open'
+      : mobileSheetPhase === 'closing'
+        ? 'exit'
+        : 'enter'
+
   const handleSearchBenchSelect = useCallback((id) => {
     if (id != null) setCompareSource(null)
     setBenchId(id)
@@ -407,9 +455,26 @@ export function PlayerDetailOverlayProvider({
         <OverlayEffects onClose={requestDetailClose} />
         {!bootstrap && !squadsErr ?
           mobileLayout ?
-            <div className="player-detail-overlay-shell" role="dialog" aria-modal="true">
-              <div className="player-detail-overlay__panel">
-                <p className="muted">Loading player…</p>
+            <div
+              className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
+              role="dialog"
+              aria-modal="true"
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) requestDetailClose()
+              }}
+            >
+              <div
+                ref={mobileSurfaceRef}
+                className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
+                data-mobile-phase={overlayMobileSlidePhaseAttr}
+                onTransitionEnd={onMobileSheetTransitionEnd}
+                onMouseDown={(e) => {
+                  e.stopPropagation()
+                }}
+              >
+                <div className="player-detail-overlay__panel player-detail-overlay__panel--pullsheet">
+                  <p className="muted">Loading player…</p>
+                </div>
               </div>
             </div>
           : desktopSlideChrome(
@@ -419,16 +484,33 @@ export function PlayerDetailOverlayProvider({
             )
         : squadsErr && bootstrap == null ?
           mobileLayout ?
-            <div className="player-detail-overlay-shell" role="dialog" aria-modal="true">
-              <div className="player-detail-overlay__panel player-detail-overlay__panel--error">
-                <p>{squadsErr}</p>
-                <button
-                  type="button"
-                  className="player-detail-overlay__btn"
-                  onClick={requestDetailClose}
-                >
-                  Close
-                </button>
+            <div
+              className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
+              role="dialog"
+              aria-modal="true"
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) requestDetailClose()
+              }}
+            >
+              <div
+                ref={mobileSurfaceRef}
+                className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
+                data-mobile-phase={overlayMobileSlidePhaseAttr}
+                onTransitionEnd={onMobileSheetTransitionEnd}
+                onMouseDown={(e) => {
+                  e.stopPropagation()
+                }}
+              >
+                <div className="player-detail-overlay__panel player-detail-overlay__panel--error player-detail-overlay__panel--pullsheet">
+                  <p>{squadsErr}</p>
+                  <button
+                    type="button"
+                    className="player-detail-overlay__btn"
+                    onClick={requestDetailClose}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           : desktopSlideChrome(
@@ -447,16 +529,33 @@ export function PlayerDetailOverlayProvider({
             )
         : !detailPlayerEl ?
           mobileLayout ?
-            <div className="player-detail-overlay-shell" role="dialog" aria-modal="true">
-              <div className="player-detail-overlay__panel player-detail-overlay__panel--error">
-                <p className="muted">Player data not loaded yet.</p>
-                <button
-                  type="button"
-                  className="player-detail-overlay__btn"
-                  onClick={requestDetailClose}
-                >
-                  Close
-                </button>
+            <div
+              className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
+              role="dialog"
+              aria-modal="true"
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) requestDetailClose()
+              }}
+            >
+              <div
+                ref={mobileSurfaceRef}
+                className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
+                data-mobile-phase={overlayMobileSlidePhaseAttr}
+                onTransitionEnd={onMobileSheetTransitionEnd}
+                onMouseDown={(e) => {
+                  e.stopPropagation()
+                }}
+              >
+                <div className="player-detail-overlay__panel player-detail-overlay__panel--error player-detail-overlay__panel--pullsheet">
+                  <p className="muted">Player data not loaded yet.</p>
+                  <button
+                    type="button"
+                    className="player-detail-overlay__btn"
+                    onClick={requestDetailClose}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           : desktopSlideChrome(
@@ -475,7 +574,7 @@ export function PlayerDetailOverlayProvider({
             )
         : mobileLayout ?
           <div
-            className="player-detail-overlay-shell player-detail-overlay-shell--body"
+            className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
             role="dialog"
             aria-modal="true"
             aria-label="Player detail"
@@ -484,7 +583,10 @@ export function PlayerDetailOverlayProvider({
             }}
           >
             <div
-              className="player-detail-overlay__surface"
+              ref={mobileSurfaceRef}
+              className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
+              data-mobile-phase={overlayMobileSlidePhaseAttr}
+              onTransitionEnd={onMobileSheetTransitionEnd}
               onMouseDown={(e) => {
                 e.stopPropagation()
               }}

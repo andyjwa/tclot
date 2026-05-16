@@ -6,6 +6,12 @@ export const PORTRAIT_MOBILE_MQ = '(max-width: 600px)'
 /** Bottom-nav mobile shell — portrait + landscape phone/tablet narrow */
 export const MOBILE_LAYOUT_MQ = '(max-width: 1080px)'
 
+/** Synchronous viewport check for non-hook code paths (overlay open helpers). */
+export function matchesMobileLayoutViewport() {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia(MOBILE_LAYOUT_MQ).matches
+}
+
 /**
  * @returns {boolean} true when viewport matches portrait-phone breakpoint
  */

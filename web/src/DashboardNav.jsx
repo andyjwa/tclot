@@ -8,10 +8,11 @@ import { TeamAvatar } from './TeamAvatar'
 /** @typedef {'standings' | 'playoff' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
 
 /**
- * @param {{ id: DashboardViewId, label: string, shortLabel: string, emoji?: string, logoSrc?: string, bottomOnly?: boolean }} item
+ * @param {{ id: DashboardViewId, label: string, shortLabel: string, emoji?: string, bottomEmoji?: string, logoSrc?: string, bottomOnly?: boolean }} item
  */
 function NavButton({ item, active, onSelect, variant }) {
   const isBottom = variant === 'bottom'
+  const emoji = isBottom && item.bottomEmoji != null ? item.bottomEmoji : item.emoji
   return (
     <button
       type="button"
@@ -36,7 +37,7 @@ function NavButton({ item, active, onSelect, variant }) {
         />
       ) : (
         <span className="dashboard-nav__emoji" aria-hidden="true">
-          {item.emoji}
+          {emoji}
         </span>
       )}
       <span className="dashboard-nav__label">
@@ -64,12 +65,14 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
       label: 'Standings & Form',
       shortLabel: 'Table',
       emoji: '📈',
+      bottomEmoji: '🧩',
     },
     {
       id: /** @type {const} */ ('teamSelection'),
       label: 'Team Selection',
       shortLabel: 'Moves',
       emoji: '👥',
+      bottomEmoji: '🎢',
     },
     {
       id: /** @type {const} */ ('players'),

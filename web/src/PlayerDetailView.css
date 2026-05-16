@@ -115,6 +115,66 @@
   }
 }
 
+/* Below GW table — stacked arrow + BACK, left-aligned (overlay + bench). */
+.players-detail__footer-back {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-shrink: 0;
+  padding-top: 0.55rem;
+  padding-left: 2px;
+  padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
+}
+
+.players-detail__stack-back {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.12rem;
+  margin: 0;
+  padding: 0.2rem 0.45rem 0.35rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  color: color-mix(in srgb, var(--fm-text-strong) 94%, transparent);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.players-detail__stack-back:hover {
+  background: color-mix(in srgb, var(--fm-muted) 8%, transparent);
+}
+
+.players-detail__stack-back:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.players-detail__stack-back__arrow {
+  display: block;
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+}
+
+.players-detail__stack-back__label {
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  line-height: 1;
+}
+
+body[data-tclot-theme='dark'] .players-detail__stack-back {
+  color: color-mix(in srgb, var(--fm-text-strong, #fff) 90%, transparent);
+}
+
+body[data-tclot-theme='dark'] .players-detail__stack-back:hover {
+  background: color-mix(in srgb, var(--fm-muted) 14%, transparent);
+}
+
 .players-detail__compare-label {
   flex-shrink: 0;
   font-size: 0.8125rem;
@@ -304,38 +364,6 @@
   gap: 0.3rem;
 }
 
-.players-detail__back {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  height: 2.125rem;
-  min-height: 2.125rem;
-  margin: 0;
-  padding: 0 10px;
-  border: none;
-  border-radius: 8px;
-  background: var(--fm-surface-2);
-  color: var(--fm-text);
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.players-detail__back:hover {
-  filter: brightness(0.97);
-}
-
-.players-detail__back:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple) 55%, transparent);
-  outline-offset: 1px;
-}
-
-/* Mobile: viewport-left back strip beside scrollable content */
 .players-detail__main {
   display: flex;
   flex-direction: column;
@@ -351,15 +379,12 @@
   gap: 0.75rem;
 }
 
+/* Mobile scroll region for GW table (narrow viewports — same overlay + workbench paths). */
 .players-detail__table-area {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-}
-
-.players-detail__edge-back {
-  display: none;
 }
 
 @media (max-width: 1080px) {
@@ -396,60 +421,6 @@
       calc(100dvh - var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) - 18.5rem),
       46vh
     );
-  }
-
-  /* Float in the left margin — zero layout width, table stays full bleed */
-  .players-detail__edge-back {
-    display: flex;
-    position: absolute;
-    left: -0.55rem;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 12;
-    width: 2.75rem;
-    height: 2.75rem;
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    color: var(--fm-muted, #888);
-    cursor: pointer;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    padding-left: max(0px, env(safe-area-inset-left, 0px));
-    gap: 0;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    pointer-events: auto;
-  }
-
-  .players-detail__edge-back:hover {
-    color: var(--fm-text, #333);
-  }
-
-  .players-detail__edge-back:focus {
-    outline: none;
-  }
-
-  .players-detail__edge-back:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple) 45%, transparent);
-    outline-offset: -2px;
-  }
-
-  .players-detail__edge-back__chev {
-    font-size: 1.35rem;
-    font-weight: 600;
-    line-height: 1;
-    opacity: 0.65;
-  }
-
-  .players-detail__edge-back:hover .players-detail__edge-back__chev,
-  .players-detail__edge-back:focus-visible .players-detail__edge-back__chev,
-  .players-detail__edge-back:active .players-detail__edge-back__chev {
-    opacity: 1;
   }
 }
 

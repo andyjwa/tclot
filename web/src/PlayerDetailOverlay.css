@@ -53,6 +53,52 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   align-items: stretch;
 }
 
+/* Mobile overlay: slide down from above; reverse on close. */
+.player-detail-overlay-shell--mobile-sheet.player-detail-overlay-shell--body {
+  justify-content: flex-start;
+}
+
+.player-detail-overlay__surface.player-detail-overlay__surface--mobile-sheet-anim {
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase='enter'] {
+  transform: translateY(calc(-100% - 18px));
+  opacity: 0.94;
+  transition: none;
+}
+
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase='open'] {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase='exit'] {
+  transform: translateY(calc(-100% - 24px));
+  opacity: 0;
+  transition: transform 0.31s cubic-bezier(0.4, 0, 1, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-detail-overlay__surface.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase] {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+.player-detail-overlay__panel--pullsheet {
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.player-detail-overlay__surface.player-detail-overlay__surface--mobile-sheet-anim
+  > .player-detail-overlay__panel--pullsheet {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 .player-detail-overlay__surface {
   flex: 1 1 auto;
   min-height: 0;

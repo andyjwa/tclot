@@ -390,16 +390,6 @@ export function PlayerDetailView({
   return (
     <div className="players-detail" aria-label={`${fplElementKnownName(playerEl, playerId)} season detail`}>
       <header className="players-detail__toolbar players-detail__toolbar--sticky team-selection-submenu">
-        {!mobileLayout ? (
-          <button
-            type="button"
-            className="players-detail__back"
-            onClick={onBack}
-            aria-label="Back to waivers"
-          >
-            Back
-          </button>
-        ) : null}
         <div className="players-detail__compare-row">
           <div className="players-detail__compare-primary">
             {!mobileLayout ? (
@@ -478,18 +468,6 @@ export function PlayerDetailView({
           mobileLayout ? ' players-detail__table-area--edge-back' : ''
         }`}
       >
-        {mobileLayout ? (
-          <button
-            type="button"
-            className="players-detail__edge-back"
-            onClick={onBack}
-            aria-label="Back to waivers"
-          >
-            <span className="players-detail__edge-back__chev" aria-hidden="true">
-              ‹
-            </span>
-          </button>
-        ) : null}
       <div className="players-detail__table-wrap" ref={tableScrollRef}>
         {loadingPrimary ? (
           <p className="muted players-detail__loading">Loading gameweek history…</p>
@@ -600,6 +578,19 @@ export function PlayerDetailView({
           </table>
         )}
       </div>
+      </div>
+      <div className="players-detail__footer-back">
+        <button
+          type="button"
+          className="players-detail__stack-back"
+          onClick={onBack}
+          aria-label="Back"
+        >
+          <span className="players-detail__stack-back__arrow" aria-hidden="true">
+            ←
+          </span>
+          <span className="players-detail__stack-back__label">BACK</span>
+        </button>
       </div>
         </div>
       </div>
