@@ -9,6 +9,7 @@ import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
 import {
   fplElementDisplayName,
   fplElementWebName,
+  useNarrow560,
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 
@@ -754,6 +755,21 @@ export function PremWindow({
 
   const ownerByEl = useMemo(() => buildOwnerMap(squads), [squads]);
 
+  const awaitingFplContext =
+    !liveError &&
+    (teams?.length ?? 0) > 0 &&
+    gwFixtures == null &&
+    (liveLoading || contributionLiveContext == null);
+
+  const awaitingEspnLineups =
+    !liveError &&
+    !espnWindowError &&
+    Array.isArray(gwFixtures) &&
+    gwFixtures.length > 0 &&
+    espnWindowLoading &&
+    liveWithLineups.length === 0 &&
+    otherFixtures.length === 0;
+
   const gwOptions = useMemo(() => {
     if (!Array.isArray(events) || !events.length) return [];
     return events
@@ -834,6 +850,18 @@ export function PremWindow({
           </div>
         ) : null}
       </section>
+
+      {awaitingFplContext ? (
+        <section className="tile tile--compact" aria-busy="true">
+          <p className="muted muted--tight">Loading Premier League fixtures (FPL) for lineups…</p>
+        </section>
+      ) : null}
+
+      {awaitingEspnLineups ? (
+        <section className="tile tile--compact" aria-busy="true">
+          <p className="muted muted--tight">Loading ESPN scores and lineup feeds…</p>
+        </section>
+      ) : null}
 
       {liveWithLineups.length === 0 &&
       otherFixtures.length === 0 &&

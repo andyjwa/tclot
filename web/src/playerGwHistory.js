@@ -194,6 +194,83 @@ export function historyPoints(h) {
   return Number.isFinite(n) ? n : null
 }
 
+/**
+ * @param {Map<number, object> | Record<number | string, object> | null | undefined} teamById
+ */
+function lookupPlTeam(teamById, teamNumericId) {
+  const tid = Number(teamNumericId)
+  if (!Number.isFinite(tid)) return null
+  if (teamById instanceof Map) {
+    const t = teamById.get(tid)
+    return t && typeof t === 'object' ? t : null
+  }
+  const t = teamById?.[tid]
+  return t && typeof t === 'object' ? t : null
+}
+
+/** @typedef {{ code: number | null, short: string, name: string, isHome: boolean }} HistoryOppClub */
+
+/**
+ * Premier League opponents for this GW (`fixtures.json` × bootstrap teams); used for badges in player detail history.
+ *
+ * @param {number | null | undefined} gameweek
+ * @param {number | null | undefined} playerTeamId FPL real-life team id (`element.team`)
+ * @param {object[] | null | undefined} allFixtures
+ * @param {Map<number, object> | Record<number | string, object> | null | undefined} teamById
+ * @returns {{ opponents: HistoryOppClub[], title: string }}
+ */
+export function historyOpponentMetaForGw(gameweek, playerTeamId, allFixtures, teamById) {
+  /** @type {{ opponents: HistoryOppClub[], title: string }} */
+  const unset = { opponents: [], title: '' }
+  const gw = Number(gameweek)
+  const tid = Number(playerTeamId)
+  if (!Number.isFinite(gw) || !Number.isFinite(tid)) return unset
+  const list = Array.isArray(allFixtures) ? allFixtures : []
+  if (!list.length || teamById == null) return unset
+
+  const gwFixtures = list.filter((f) => Number(f.event) === gw)
+  const mine = fixturesForTeamInGw(gwFixtures, tid)
+  if (!mine.length) return unset
+
+  const sorted = mine.slice().sort((a, b) => {
+    const ka = a.kickoff_time != null ? String(a.kickoff_time) : ''
+    const kb = b.kickoff_time != null ? String(b.kickoff_time) : ''
+    return ka.localeCompare(kb)
+  })
+
+  /** @type {HistoryOppClub[]} */
+  const opponents = []
+  const seenShort = new Set()
+  for (const f of sorted) {
+    const th = Number(f.team_h)
+    const ta = Number(f.team_a)
+    const oppId = th === tid ? ta : th
+    /** Player's club is listed as team_h → home fixture. */
+    const isHome = th === tid
+    const opp = lookupPlTeam(teamById, oppId)
+    const short =
+      opp?.short_name != null ? String(opp.short_name) : opp?.short != null ? String(opp.short) : null
+    if (!short || seenShort.has(short)) continue
+    seenShort.add(short)
+    const name = opp?.name != null ? String(opp.name) : short
+    const codeRaw = opp?.code
+    const codeN = Number(codeRaw)
+    opponents.push({
+      code: Number.isFinite(codeN) ? codeN : null,
+      short,
+      name,
+      isHome,
+    })
+  }
+
+  if (!opponents.length) return unset
+  const title = opponents.map((o) => `${o.isHome ? 'Home' : 'Away'} vs ${o.name}`).join(' · ')
+  return {
+    opponents,
+    title,
+  }
+}
+
 export function formatHistoryCount(emoji, count) {
   const n = Number(count)
   if (!Number.isFinite(n) || n < 1) return ''

@@ -1,3 +1,5 @@
+import { viteSameOriginProxyHost } from './viteSameOriginProxyHost.js'
+
 /** Same-origin proxy / direct draft host as Live tab (`useLiveScores`). */
 const FPL_DIRECT = 'https://fantasy.premierleague.com/api'
 const DRAFT_DIRECT = 'https://draft.premierleague.com/api'
@@ -7,6 +9,8 @@ export function fplApiBase() {
   const trimmed = raw != null ? String(raw).trim() : ''
   if (trimmed !== '') return trimmed.replace(/\/$/, '')
   if (import.meta.env.DEV) return '/__fpl'
+  /** `vite preview` (PROD bundle) on loopback — same proxy rules as dev (see `vite.config.js`). */
+  if (viteSameOriginProxyHost()) return '/__fpl'
   return FPL_DIRECT
 }
 

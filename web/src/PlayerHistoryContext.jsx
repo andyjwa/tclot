@@ -4,7 +4,8 @@ import {
   useContext,
   useMemo,
   useState,
-} from 'react';
+} from 'react'
+import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx'
 import { PlayerSeasonSlideOver } from './PlayerSeasonSlideOver.jsx';
 
 const PlayerHistoryContext = createContext(null);
@@ -25,6 +26,7 @@ const PlayerHistoryContext = createContext(null);
  */
 export function PlayerHistoryProvider({ children, teamLogoMap = {}, kitIndexByEntry }) {
   const [target, setTarget] = useState(null);
+  const playerDetailOverlay = usePlayerDetailOverlayOptional();
 
   const openPlayerHistory = useCallback((row) => {
     const element = Number(row?.element ?? row?.elementId);
@@ -38,8 +40,22 @@ export function PlayerHistoryProvider({ children, teamLogoMap = {}, kitIndexByEn
       row?.pickedTeamShort ??
       row?.droppedTeamShort ??
       undefined;
+    if (playerDetailOverlay) {
+      let leagueRaw = row?.leagueEntryId ?? null;
+      if (leagueRaw != null) leagueRaw = Number(leagueRaw);
+      const leagueOk = Number.isFinite(leagueRaw) ? leagueRaw : undefined;
+
+      playerDetailOverlay.openPlayerDetail({
+        element,
+        ...(leagueOk != null ? { leagueEntryId: leagueOk } : {}),
+        displayName,
+        web_name,
+        teamShort,
+      });
+      return;
+    }
     setTarget({ element, displayName, web_name, teamShort });
-  }, []);
+  }, [playerDetailOverlay]);
 
   const closePlayerHistory = useCallback(() => setTarget(null), []);
 
@@ -51,7 +67,7 @@ export function PlayerHistoryProvider({ children, teamLogoMap = {}, kitIndexByEn
   return (
     <PlayerHistoryContext.Provider value={value}>
       {children}
-      {target ? (
+      {!playerDetailOverlay && target ? (
         <PlayerSeasonSlideOver
           target={target}
           onClose={closePlayerHistory}
@@ -89,26 +105,26 @@ export function ClickablePlayerName({
   title: titleProp,
   children,
 }) {
-  const open = useOpenPlayerHistoryOptional();
+  const openHistory = useOpenPlayerHistoryOptional();
   const id = Number(element);
-  const can = open && Number.isFinite(id);
+  const canOpen = Boolean(openHistory) && Number.isFinite(id);
 
-  if (!can) {
+  if (!canOpen) {
     return <span className={className}>{children}</span>;
   }
 
   const title =
     titleProp ??
-    `${typeof children === 'string' ? children : 'Player'} — view season history`;
+    `${typeof children === 'string' ? children : 'Player'} — player detail`;
 
   return (
     <button
       type="button"
       className={`player-history-name-btn${className ? ` ${className}` : ''}`}
       title={title}
-      onClick={() =>
-        open({ element: id, displayName, web_name, teamShort })
-      }
+      onClick={() => {
+        openHistory?.({ element: id, displayName, web_name, teamShort });
+      }}
     >
       {children}
     </button>

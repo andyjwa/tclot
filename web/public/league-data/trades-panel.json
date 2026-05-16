@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-15T21:48:11.643Z",
+  "generated": "2026-05-16T07:11:23.858Z",
   "lastGwUsed": 37,
   "note": "Per player acquired in a processed trade (state p): FPL pts from trade.event through first drop by that manager, or last finished GW. GW range like 9–28 = inclusive gameweeks on that squad.",
   "trades": [
@@ -121,7 +121,7 @@
           "gaveElementId": 97,
           "startGw": 13,
           "endGw": 37,
-          "totalPoints": 122,
+          "totalPoints": 125,
           "stillOnTeam": true,
           "gwRangeLabel": "13–37"
         },
@@ -178,7 +178,7 @@
             "gaveElementId": 97,
             "startGw": 13,
             "endGw": 37,
-            "totalPoints": 122,
+            "totalPoints": 125,
             "stillOnTeam": true,
             "gwRangeLabel": "13–37"
           },

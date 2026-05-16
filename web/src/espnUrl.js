@@ -1,9 +1,11 @@
+import { viteSameOriginProxyHost } from './viteSameOriginProxyHost.js'
+
 /** ESPN soccer API (eng.1 = Premier League) — same-origin via Worker or Vite dev proxy. */
 const ESPN_DIRECT = 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1';
 
 /**
  * Base URL for ESPN fetches. Mirrors `fplApiBase` / `fotmobApiBase`:
- * Worker adds `/espn`, dev uses `/__espn`.
+ * Worker adds `/espn`, dev / loopback preview use `/__espn`.
  */
 export function espnApiBase() {
   // `import.meta.env` is defined by Vite at build time; outside Vite (unit tests, pure Node)
@@ -13,7 +15,7 @@ export function espnApiBase() {
   const raw = env.VITE_FPL_PROXY_URL;
   const trimmed = raw != null ? String(raw).trim() : '';
   if (trimmed !== '') return `${trimmed.replace(/\/$/, '')}/espn`;
-  if (env.DEV) return '/__espn';
+  if (env.DEV || viteSameOriginProxyHost()) return '/__espn';
   return ESPN_DIRECT;
 }
 

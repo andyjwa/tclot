@@ -1702,7 +1702,7 @@
       "event": 37,
       "finished": false,
       "league_entry_1": 26587,
-      "league_entry_1_points": 8,
+      "league_entry_1_points": 9,
       "league_entry_2": 26675,
       "league_entry_2_points": 0,
       "started": true,
@@ -1726,7 +1726,7 @@
       "league_entry_1": 31076,
       "league_entry_1_points": 0,
       "league_entry_2": 40206,
-      "league_entry_2_points": 13,
+      "league_entry_2_points": 16,
       "started": true,
       "winning_league_entry": null,
       "winning_method": null

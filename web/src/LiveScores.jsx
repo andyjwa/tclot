@@ -11,8 +11,10 @@ import { eventNameToGameWeekLabel, gameWeekSelectLabel } from './gwLabel.js';
 import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
 import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
 import { usePlayerHistory, ClickablePlayerName } from './PlayerHistoryContext.jsx';
+import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx';
 import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
 import { DEFAULT_MODEL_CONFIG } from 'fpl-predictions';
+import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import { LiveFixtureGwPointsChart } from './LiveFixtureGwPointsChart.jsx';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
@@ -651,7 +653,7 @@ function LeftToPlayOutsideAfter({ count, leadingSpace = true }) {
   );
 }
 
-/** @param {{ squad: object, onPlayerClick?: (row: object) => void }} */
+/** @param {{ squad: object, onPlayerClick?: (row: object, squad: object) => void }} */
 function SquadLineupPanel({ squad, onPlayerClick }) {
   if (!squad) {
     return <p className="muted muted--tight">No squad data for this team.</p>;
@@ -737,12 +739,19 @@ function SquadLineupPanel({ squad, onPlayerClick }) {
         <PicksTable
           rows={starters}
           autosubInElementIds={autosubInElementIds}
-          onPlayerClick={onPlayerClick}
+          onPlayerClick={
+            onPlayerClick ? (r) => onPlayerClick(r, squad) : undefined
+          }
         />
       </div>
       <h4 className="live-lineup-heading live-lineup-heading--bench">Bench</h4>
       <div className="live-picks-table-wrap live-picks-table-wrap--lineup-portrait">
-        <PicksTable rows={bench} onPlayerClick={onPlayerClick} />
+        <PicksTable
+          rows={bench}
+          onPlayerClick={
+            onPlayerClick ? (r) => onPlayerClick(r, squad) : undefined
+          }
+        />
       </div>
     </>
   );
@@ -756,12 +765,6 @@ function proxyHostLabel() {
   } catch {
     return null;
   }
-}
-
-function isLikelyLocalDev() {
-  if (typeof window === 'undefined') return false;
-  const h = window.location.hostname;
-  return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
 }
 
 /**
@@ -811,8 +814,36 @@ export function LiveScores({
 
   /** FPL element id + labels — opens slide-over season history from `element-summary`. */
   const { openPlayerHistory } = usePlayerHistory();
+  const detailOverlayCtx = usePlayerDetailOverlayOptional();
+
+  const openLineupOrHistory = useCallback(
+    (row, squad) => {
+      if (
+        detailOverlayCtx &&
+        Number.isFinite(Number(row?.element ?? row?.elementId))
+      ) {
+        detailOverlayCtx.openPlayerDetail({
+          element: Number(row.element ?? row.elementId),
+          leagueEntryId:
+            squad?.leagueEntryId != null ? Number(squad.leagueEntryId) : undefined,
+          displayName: row?.displayName,
+          web_name: row?.web_name,
+          teamShort: row?.teamShort,
+        });
+        return;
+      }
+      openPlayerHistory(row);
+    },
+    [detailOverlayCtx, openPlayerHistory],
+  );
 
   const proxyHost = proxyHostLabel();
+  const hasExplicitWorkerUrl =
+    (import.meta.env.VITE_FPL_PROXY_URL ?? '').trim() !== '';
+  const fplFetchBase = fplApiBase();
+  /** Browser will hit FPL directly — needs Worker URL at build time for static hosts. */
+  const showNoProxyBuildError = fplFetchBase === FPL_DIRECT;
+  const usesSameOriginViteProxy = fplFetchBase === '/__fpl';
 
   const allMissingFplId =
     teams?.length > 0 && teams.every((t) => t.fplEntryId == null);
@@ -1166,27 +1197,25 @@ export function LiveScores({
           {projectionsOnly ? 'Projections' : 'Live GW'}
         </h2>
 
-        {!proxyHost ? (
+        {showNoProxyBuildError ? (
           <div className="data-banner data-banner--error" role="alert">
             <strong>No proxy in this JavaScript build.</strong>{' '}
-            {isLikelyLocalDev() ? (
-              <>
-                For <strong>local dev</strong>, create <code>web/.env.local</code> with{' '}
-                <code>
-                  VITE_FPL_PROXY_URL=https://…workers.dev
-                </code>{' '}
-                (same URL as your Cloudflare Worker / GitHub secret). Copy{' '}
-                <code>web/.env.local.example</code> → <code>.env.local</code>, edit the URL, then{' '}
-                <strong>restart</strong> Vite (<code>Ctrl+C</code> and <code>npx vite</code> again).
-              </>
-            ) : (
-              <>
-                <code>VITE_FPL_PROXY_URL</code> was empty at build time, so the browser calls FPL
-                directly and usually gets <em>Failed to fetch</em> on GitHub Pages. Add the secret,
-                then <strong>re-run the deploy workflow</strong>. Check <code>deploy-check.json</code>{' '}
-                — <code>liveProxyConfigured</code> should be <code>true</code>.
-              </>
-            )}
+            <code>VITE_FPL_PROXY_URL</code> was not set for this deploy, so the browser calls FPL
+            directly (<code>{FPL_DIRECT}</code>) and usually hits CORS on static hosting. Add your
+            Cloudflare Worker base URL at <strong>build time</strong> (GitHub secret / CI env). Copy{' '}
+            <code>web/.env.local.example</code> → <code>web/.env.local</code> for local testing, then{' '}
+            <strong>re-run the deploy workflow</strong>. Check <code>deploy-check.json</code> —{' '}
+            <code>liveProxyConfigured</code> should be <code>true</code>.
+          </div>
+        ) : null}
+
+        {import.meta.env.DEV && usesSameOriginViteProxy && !hasExplicitWorkerUrl ? (
+          <div className="data-banner" role="status">
+            <span className="muted">
+              Local dev uses Vite’s same-origin <code>/__fpl</code> proxy —{' '}
+              <code>VITE_FPL_PROXY_URL</code> is optional. For GitHub Pages, set the Worker URL when
+              building (see <code>web/.env.local.example</code>).
+            </span>
           </div>
         ) : null}
 
@@ -1243,18 +1272,20 @@ export function LiveScores({
           <div className="data-banner data-banner--error" role="alert">
             <strong>Could not load live data.</strong> {error}{' '}
             <span className="muted">
-              {proxyHost ? (
+              {hasExplicitWorkerUrl && proxyHost ? (
                 <>
                   The FPL proxy (<code>{proxyHost}</code>) may be unavailable or over its daily
                   request limit (Cloudflare Workers free tier). Wait until after midnight UTC, run{' '}
                   <code>npm run dev:vite</code> locally, or upgrade the Workers plan — see{' '}
                   <code>web/workers/fpl-proxy/README.md</code>.
                 </>
-              ) : isLikelyLocalDev() ? (
+              ) : usesSameOriginViteProxy ? (
                 <>
-                  Restart Vite after adding <code>VITE_FPL_PROXY_URL</code> to{' '}
-                  <code>web/.env.local</code>, or leave that unset so dev uses the built-in{' '}
-                  <code>/__fpl</code> proxy.
+                  If you see HTML (<code>&lt;!doctype</code>…), the request never reached FPL — use{' '}
+                  <code>npm run dev:vite</code> or <code>npx vite preview</code> so{' '}
+                  <code>/__fpl</code> is proxied, not a plain static server. After changing{' '}
+                  <code>.env.local</code>, restart Vite. For static hosting, set{' '}
+                  <code>VITE_FPL_PROXY_URL</code> at build time.
                 </>
               ) : (
                 <>
@@ -1557,7 +1588,7 @@ export function LiveScores({
                         ) : null}
                       </div>
                     </div>
-                    <SquadLineupPanel squad={homeSquad} onPlayerClick={openPlayerHistory} />
+                    <SquadLineupPanel squad={homeSquad} onPlayerClick={openLineupOrHistory} />
                   </div>
                   <div className="live-fixture-divider" aria-hidden="true" />
                   <div
@@ -1592,7 +1623,7 @@ export function LiveScores({
                         ) : null}
                       </div>
                     </div>
-                    <SquadLineupPanel squad={awaySquad} onPlayerClick={openPlayerHistory} />
+                    <SquadLineupPanel squad={awaySquad} onPlayerClick={openLineupOrHistory} />
                     </div>
                   </div>
                 </div>
@@ -1656,7 +1687,7 @@ export function LiveScores({
                   ) : null}
                 </div>
               </div>
-              <SquadLineupPanel squad={squad} onPlayerClick={openPlayerHistory} />
+              <SquadLineupPanel squad={squad} onPlayerClick={openLineupOrHistory} />
             </section>
           );
         })
@@ -1716,7 +1747,7 @@ export function LiveScores({
                   ) : null}
                 </div>
               </div>
-              <SquadLineupPanel squad={squad} onPlayerClick={openPlayerHistory} />
+              <SquadLineupPanel squad={squad} onPlayerClick={openLineupOrHistory} />
             </section>
             );
           })

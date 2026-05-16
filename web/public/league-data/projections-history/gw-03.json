@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 3,
-  "generatedAt": "2026-05-15T21:48:14.396Z",
+  "generatedAt": "2026-05-16T07:11:26.582Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -93,7 +93,7 @@
       "actualXiPts1": 47,
       "actualXiPts2": 42,
       "actualWinner": "home",
-      "xPtsXi1": 33,
+      "xPtsXi1": 33.1,
       "xPtsXi2": 31,
       "xPtsFavorite": "home",
       "xPtsMc": {
@@ -129,9 +129,9 @@
       "xPtsXi2": 29,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 33,
+        "homeWinPct": 34,
         "drawPct": 4,
-        "awayWinPct": 63
+        "awayWinPct": 62
       },
       "projXi1": 42,
       "projXi2": 41,

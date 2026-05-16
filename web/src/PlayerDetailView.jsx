@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { fplElementKnownName, fplElementWebName } from './fplElementNames.js'
 import { PlayerKit } from './PlayerKit.jsx'
 import { TeamAvatar } from './TeamAvatar.jsx'
@@ -17,11 +17,74 @@ import {
   formatHistoryCount,
   formatHistoryDcForRow,
   historyGw,
+  historyOpponentMetaForGw,
   historyPoints,
   normalizeHistoryRows,
 } from './playerGwHistory.js'
 import { useMobileLayout, usePortraitMobile } from './usePortraitMobile.js'
+import './PlayersWorkbench.css'
 import './PlayerDetailView.css'
+
+/** Same URL/size pattern as waiver `enrichElementRow` crests (`NextFixtureBadges`). */
+function oppFixtureCrestUrl(teamCode) {
+  if (teamCode == null) return null
+  const n = Number(teamCode)
+  if (!Number.isFinite(n)) return null
+  return `https://resources.premierleague.com/premierleague/badges/50/t${n}.png`
+}
+
+/** Crest inside waiver fixture chip — green rounded square (home), red circle (away). */
+function HistoryOpponentBadgeCell({ opponents, title: tip }) {
+  if (!Array.isArray(opponents) || opponents.length === 0) {
+    return <span className="players-detail__opp-empty">—</span>
+  }
+  const multi = opponents.length > 1
+  return (
+    <span
+      className={
+        'players-fixtures-badges players-detail__hist-opp-fixtures' +
+        (multi ? ' players-detail__hist-opp-fixtures--multi' : '')
+      }
+      role="list"
+      {...(tip ? { 'aria-label': tip } : { 'aria-hidden': true })}
+    >
+      {opponents.map((o, i) => {
+        const isHome = Boolean(o?.isHome)
+        const crestSrc = oppFixtureCrestUrl(o.code)
+        const abbrev = String(o.short ?? '?').slice(0, 3)
+        const oneTitle = `${isHome ? 'Home' : 'Away'} vs ${o.name}`
+        const key = `${o.short}-${String(i)}`
+        return (
+          <span
+            key={key}
+            className={`players-fixture-badge${
+              isHome ? ' players-fixture-badge--home' : ' players-fixture-badge--away'
+            }`}
+            role="listitem"
+            title={oneTitle}
+            aria-label={oneTitle}
+          >
+            {crestSrc ? (
+              <img
+                src={crestSrc}
+                alt=""
+                className="players-fixture-badge__crest"
+                width={28}
+                height={28}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
+                {abbrev}
+              </span>
+            )}
+          </span>
+        )
+      })}
+    </span>
+  )
+}
 
 /** @param {{ k: string, v: string }[]} pills */
 function WireStatBoxStrip({ pills }) {
@@ -225,6 +288,42 @@ export function PlayerDetailView({
     [primaryPayload],
   )
 
+  const tableScrollRef = useRef(null)
+
+  useLayoutEffect(() => {
+    if (!mobileLayout) return
+    if (loadingPrimary || errorPrimary || !primaryRows.length) return
+    const el = tableScrollRef.current
+    if (!el) return
+
+    let cancelled = false
+    const snapToEnd = () => {
+      if (cancelled) return
+      const node = tableScrollRef.current
+      if (!node) return
+      node.scrollTop = Math.max(0, node.scrollHeight - node.clientHeight)
+    }
+
+    snapToEnd()
+
+    let raf2 = 0
+    const raf1 = requestAnimationFrame(() => {
+      snapToEnd()
+      raf2 = requestAnimationFrame(() => {
+        snapToEnd()
+      })
+    })
+
+    const tIdle = window.setTimeout(snapToEnd, 0)
+
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(raf1)
+      if (raf2) cancelAnimationFrame(raf2)
+      window.clearTimeout(tIdle)
+    }
+  }, [mobileLayout, loadingPrimary, errorPrimary, primaryRows.length, playerId])
+
   const compareActive = benchEl != null && benchId != null
   const compareElementType = benchEl?.element_type ?? elementType
   const primaryOwner = ownerByElementId.get(Number(playerId)) ?? null
@@ -391,7 +490,7 @@ export function PlayerDetailView({
             </span>
           </button>
         ) : null}
-      <div className="players-detail__table-wrap">
+      <div className="players-detail__table-wrap" ref={tableScrollRef}>
         {loadingPrimary ? (
           <p className="muted players-detail__loading">Loading gameweek history…</p>
         ) : errorPrimary ? (
@@ -405,6 +504,11 @@ export function PlayerDetailView({
             <thead>
               <tr>
                 <th scope="col">GW</th>
+                <th
+                  scope="col"
+                  className="players-detail__opp-th"
+                  aria-label="Opponent Premier League club"
+                />
                 <th scope="col">Mins</th>
                 <th scope="col" title="Goals">
                   G
@@ -432,10 +536,25 @@ export function PlayerDetailView({
               {primaryRows.map((h, i) => {
                 const gw = historyGw(h)
                 const pts = historyPoints(h)
+                const oppMeta = historyOpponentMetaForGw(
+                  gw,
+                  playerEl?.team,
+                  plFixtures,
+                  teamById,
+                )
                 return (
                   <tr key={`${gw}-${i}`}>
                     <td className="tabular players-detail__gw">
                       {Number.isFinite(gw) ? gw : '—'}
+                    </td>
+                    <td
+                      className="tabular players-detail__opp-col"
+                      title={oppMeta.title || undefined}
+                    >
+                      <HistoryOpponentBadgeCell
+                        opponents={oppMeta.opponents}
+                        title={oppMeta.title}
+                      />
                     </td>
                     <td className="tabular">{h.minutes ?? '—'}</td>
                     <td className="tabular">

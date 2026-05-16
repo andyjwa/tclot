@@ -25,6 +25,31 @@ function redirectRootToBasePath(base) {
 /** Production / static deploy: subpath on GitHub Pages. Local `vite`/`npm run dev:vite` uses `/` so http://localhost:5173/ and #/players work. */
 const productionBase = process.env.VITE_BASE_PATH || '/TCLOT/'
 
+/** Dev + `vite preview`: Live / ESPN / FotMob same-origin proxies (`fplDraftUrl.js` uses `/__fpl` on localhost). */
+const fplRelatedProxy = {
+  '^/__fpl/draft/': {
+    target: 'https://draft.premierleague.com',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/__fpl\/draft/, '/api'),
+  },
+  '^/__fpl/': {
+    target: 'https://fantasy.premierleague.com',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/__fpl/, '/api'),
+  },
+  '^/__fotmob/': {
+    target: 'https://www.fotmob.com',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/__fotmob/, '/api'),
+  },
+  '^/__espn/': {
+    target: 'https://site.api.espn.com',
+    changeOrigin: true,
+    rewrite: (path) =>
+      path.replace(/^\/__espn/, '/apis/site/v2/sports/soccer/eng.1'),
+  },
+}
+
 export default defineConfig(({ command }) => {
   const base = command === 'serve' ? '/' : productionBase
   return {
@@ -44,29 +69,12 @@ export default defineConfig(({ command }) => {
     open: command === 'serve' ? '/' : '/TCLOT/',
     // Live tab: same-origin `/__fpl/*` when `npm run dev` and VITE_FPL_PROXY_URL is unset
     // (avoids CORS + works without redeploying the Cloudflare worker).
-    proxy: {
-      '^/__fpl/draft/': {
-        target: 'https://draft.premierleague.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/__fpl\/draft/, '/api'),
-      },
-      '^/__fpl/': {
-        target: 'https://fantasy.premierleague.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/__fpl/, '/api'),
-      },
-      '^/__fotmob/': {
-        target: 'https://www.fotmob.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/__fotmob/, '/api'),
-      },
-      '^/__espn/': {
-        target: 'https://site.api.espn.com',
-        changeOrigin: true,
-        rewrite: (path) =>
-          path.replace(/^\/__espn/, '/apis/site/v2/sports/soccer/eng.1'),
-      },
-    },
+    proxy: fplRelatedProxy,
+  },
+  preview: {
+    port: 5175,
+    strictPort: true,
+    proxy: fplRelatedProxy,
   },
   }
 })

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 23,
-  "generatedAt": "2026-05-15T21:48:30.681Z",
+  "generatedAt": "2026-05-16T07:11:42.945Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -97,9 +97,9 @@
       "xPtsXi2": 33.4,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 41,
+        "homeWinPct": 42,
         "drawPct": 3,
-        "awayWinPct": 56
+        "awayWinPct": 55
       },
       "projXi1": 35,
       "projXi2": 36,

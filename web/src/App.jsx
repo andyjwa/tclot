@@ -28,6 +28,7 @@ import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
 import { FplLiveGwTickerBar } from './FplLiveGwTickerBar'
+import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { PlayOffBracket } from './PlayOffBracket'
@@ -970,15 +971,20 @@ function App() {
   const formStripDisplayCount = useFormStripDisplayCount()
   const [colorTheme, setColorTheme] = useState(() => readStoredTheme())
   const [wireDetailOpen, setWireDetailOpen] = useState(false)
+  const [playerDetailOverlayOpen, setPlayerDetailOverlayOpen] = useState(false)
 
   const bottomNavHidden = useAutoHideBottomNav({
-    enabled: dashboardView !== 'more' && !wireDetailOpen,
+    enabled:
+      dashboardView !== 'more' &&
+      !wireDetailOpen &&
+      !playerDetailOverlayOpen,
   })
 
   const fplLogoSrc = `${import.meta.env.BASE_URL}fpl-fantasy-draft-logo.png`
 
   const selectDashboardView = useCallback((view) => {
     setDashboardView(view)
+    setPlayerDetailOverlayOpen(false)
     if (view !== 'players') {
       stripPlayersHash()
       setWireDetailOpen(false)
@@ -1562,6 +1568,16 @@ function App() {
   }
 
   return (
+    <PlayerDetailOverlayProvider
+      dashboardView={dashboardView}
+      teamsForFormSelect={teamsForFormSelect}
+      leagueDataRevision={String(
+        import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
+      ).trim()}
+      logoMap={teamLogoMap}
+      kitIndexByEntry={kitIndexByEntry}
+      onOpenChange={setPlayerDetailOverlayOpen}
+    >
     <PlayerHistoryProvider teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry}>
     <div
       className="app fotmob"
@@ -3051,6 +3067,7 @@ function App() {
       <footer className="page-footer--script">Tery is a Racist</footer>
     </div>
     </PlayerHistoryProvider>
+    </PlayerDetailOverlayProvider>
   )
 }
 

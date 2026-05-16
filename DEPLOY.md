@@ -58,7 +58,13 @@ GitHub Pages cannot call `fantasy.premierleague.com` from the browser (CORS). Th
    Existing site JS **does not** update until a new build runs — `VITE_*` is baked in at build time.
 
 5. Check **`https://YOUR_USER.github.io/YOUR_REPO/deploy-check.json`**: **`liveProxyConfigured`** should be **`true`**.  
-   On **Live**, you should see **“Proxy active in this build”**. If you see **“No proxy in this JavaScript build”**, the last build did not receive the secret.
+   On **FPL Live**, you should **not** see the red banner **“No proxy in this JavaScript build.”** — if it appears, `VITE_FPL_PROXY_URL` was missing at build time.
+
+### CI gate (won’t silently ship a broken Live tab)
+
+On **every** push to `main` / scheduled deploy, **`deploy-github-pages.yml` fails early** unless `VITE_FPL_PROXY_URL` is configured (repository secret or variable, same as above). That stops a Pages build where the bundle would otherwise call `https://fantasy.premierleague.com/api` directly and break with CORS/HTML instead of JSON.
+
+**Demo/fork repos** without a Worker can opt out by setting repository Variable **`FPL_PROXY_OPTIONAL`** to **`true`** (the workflow then skips this check).
 
 Optional: in `web/workers/fpl-proxy/wrangler.toml`, set `[vars] ALLOW_ORIGIN = "https://YOUR_USER.github.io"` to restrict CORS.
 

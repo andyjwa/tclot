@@ -793,6 +793,13 @@
   margin-bottom: 10px;
 }
 
+/* Clear “selected” ring: vivid purple oval (idle tabs stay muted 2px so active doesn’t shift layout). */
+.tile--team-selection .team-selection-submenu__btn {
+  border-width: 2px;
+  border-style: solid;
+  box-sizing: border-box;
+}
+
 .team-selection-submenu {
   display: flex;
   flex-wrap: wrap;
@@ -826,7 +833,8 @@
     background-color 0.12s ease,
     border-color 0.12s ease,
     color 0.12s ease,
-    filter 0.1s ease;
+    filter 0.1s ease,
+    box-shadow 0.12s ease;
 }
 
 .fotmob[data-theme='light'] .team-selection-submenu__btn {
@@ -866,6 +874,13 @@
   opacity: 1;
 }
 
+/* Dark shell: inactive Lineups tab inverts the PL wordmark to white; active resets `filter:none`,
+ * which restores #3D195B on a violet pill — illegible (“blank”). Keep the monochrome mark. */
+.fotmob[data-theme='dark'] .team-selection-submenu__btn--active .team-selection-submenu__pl-logo {
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+}
+
 .team-selection-submenu__btn:hover:not(.team-selection-submenu__btn--active) {
   background: var(--pill-idle-hover-bg);
   border-color: var(--fm-border);
@@ -879,8 +894,14 @@
 
 .team-selection-submenu__btn--active {
   color: var(--pill-active-fg);
-  box-shadow: none;
   text-shadow: none;
+}
+
+.tile--team-selection .team-selection-submenu__btn.team-selection-submenu__btn--active {
+  border-color: var(--tclot-logo-purple);
+  box-shadow:
+    0 0 0 1px rgba(121, 91, 251, 0.45),
+    0 0 0 3px rgba(121, 91, 251, 0.16);
 }
 
 .team-selection-submenu__btn.team-selection-submenu__btn--active {
@@ -912,6 +933,29 @@
   background: color-mix(in srgb, rgba(121, 91, 251, 0.18) 56%, #ffffff);
   color: var(--fm-text-strong);
   border-color: color-mix(in srgb, #795bfb 52%, #d0c4fa);
+}
+
+.fotmob[data-theme='light'] .tile--team-selection .team-selection-submenu__btn.team-selection-submenu__btn--active {
+  border-color: var(--tclot-logo-purple);
+  box-shadow:
+    0 0 0 1px rgba(121, 91, 251, 0.45),
+    0 0 0 3px rgba(121, 91, 251, 0.12);
+}
+
+.fotmob[data-theme='light']
+  .tile--team-selection
+  .team-selection-submenu__btn.team-selection-submenu__btn--active:hover {
+  border-color: var(--tclot-logo-purple);
+  box-shadow:
+    0 0 0 1px rgba(121, 91, 251, 0.5),
+    0 0 0 3px rgba(121, 91, 251, 0.16);
+}
+
+.tile--team-selection .team-selection-submenu__btn.team-selection-submenu__btn--active:hover {
+  border-color: var(--tclot-logo-purple);
+  box-shadow:
+    0 0 0 1px rgba(121, 91, 251, 0.5),
+    0 0 0 3px rgba(121, 91, 251, 0.18);
 }
 
 .dashboard-content {
@@ -7401,25 +7445,41 @@ button.live-player-name--btn:focus-visible {
   inset: 0;
   z-index: 10050;
   pointer-events: none;
+  /*
+   * Portal is outside `.fotmob` — must supply full token set used by Players tab / PlayerDetailView
+   * (otherwise `var(--fm-accent)` pills, `var(--fm-card)` table cells resolve invalid / invisible).
+   */
   --fm-surface: #ffffff;
   --fm-surface-0: #ffffff;
+  --fm-card: #ffffff;
+  --fm-bg: #f2f2f2;
+  --fm-bg-root: #ffffff;
   --fm-text: rgba(51, 51, 51, 0.92);
   --fm-text-strong: #1a1a1a;
   --fm-muted: rgba(0, 0, 0, 0.48);
   --fm-border: #e2e2e2;
   --fm-table-head: #f3f4f6;
   --fm-surface-2: #f7f7f7;
+  --tclot-logo-purple: #795bfb;
+  --fm-pitch: #12a15a;
+  --fm-accent: #12a15a;
 }
 
 body[data-tclot-theme='dark'] .live-player-slide {
   --fm-surface: #1e1e1e;
   --fm-surface-0: #1e1e1e;
+  --fm-card: #1e1e1e;
+  --fm-bg: #121212;
+  --fm-bg-root: #121212;
   --fm-text: rgba(255, 255, 255, 0.87);
   --fm-text-strong: #ffffff;
   --fm-muted: rgba(255, 255, 255, 0.55);
   --fm-border: #2f2f2f;
   --fm-table-head: #252830;
   --fm-surface-2: #252525;
+  --tclot-logo-purple: #795bfb;
+  --fm-pitch: #12a15a;
+  --fm-accent: #12a15a;
 }
 
 .live-player-slide--open {

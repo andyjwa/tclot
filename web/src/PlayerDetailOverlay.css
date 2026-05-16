@@ -1,0 +1,220 @@
+.player-detail-overlay-shell {
+  position: fixed;
+  inset: 0;
+  /* Match portal stacking with `.live-player-slide` in App.css so dashboard / sticky chrome
+     cannot paint above this full-screen modal on mobile. */
+  z-index: 10050;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
+  /* Solid dimmer — the previous ~32% color-mix let the dashboard show through (“ghosted” stack). */
+  background: rgba(0, 0, 0, 0.76);
+  cursor: pointer;
+  /*
+   * Portal mounts outside `.fotmob` — mirror `.live-player-slide` in App.css so every
+   * `var(--fm-*)` in PlayerDetailView / pills resolves (otherwise backgrounds are invalid → transparent).
+   */
+  --fm-surface: #ffffff;
+  --fm-surface-0: #ffffff;
+  --fm-card: #ffffff;
+  --fm-bg: #f2f2f2;
+  --fm-bg-root: #ffffff;
+  --fm-text: rgba(51, 51, 51, 0.92);
+  --fm-text-strong: #1a1a1a;
+  --fm-muted: rgba(0, 0, 0, 0.48);
+  --fm-border: #e2e2e2;
+  --fm-table-head: #f3f4f6;
+  --fm-surface-2: #f7f7f7;
+  --tclot-logo-purple: #795bfb;
+  --fm-pitch: #12a15a;
+  --fm-accent: #12a15a;
+}
+
+body[data-tclot-theme='dark'] .player-detail-overlay-shell {
+  --fm-surface: #1e1e1e;
+  --fm-surface-0: #1e1e1e;
+  --fm-card: #1e1e1e;
+  --fm-bg: #121212;
+  --fm-bg-root: #121212;
+  --fm-text: rgba(255, 255, 255, 0.87);
+  --fm-text-strong: #ffffff;
+  --fm-muted: rgba(255, 255, 255, 0.55);
+  --fm-border: #2f2f2f;
+  --fm-table-head: #252830;
+  --fm-surface-2: #252525;
+  --tclot-logo-purple: #795bfb;
+  --fm-pitch: #12a15a;
+  --fm-accent: #12a15a;
+}
+
+.player-detail-overlay-shell--body {
+  align-items: stretch;
+}
+
+.player-detail-overlay__surface {
+  flex: 1 1 auto;
+  min-height: 0;
+  cursor: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.player-detail-overlay__surface > .players-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--fm-bg-root, var(--fm-surface));
+  border-radius: 12px;
+  margin: 0.35rem;
+  margin-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.18),
+    0 0 0 1px color-mix(in srgb, var(--fm-border) 55%, transparent);
+}
+
+.player-detail-overlay__panel {
+  margin: auto 1rem;
+  max-width: 24rem;
+  padding: 1.25rem;
+  cursor: auto;
+  background: var(--fm-card);
+  border-radius: 12px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 0 0 1px color-mix(in srgb, var(--fm-border) 65%, transparent);
+}
+
+.player-detail-overlay__panel--error {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.player-detail-overlay__btn {
+  padding: 0.45rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+  background: var(--fm-surface-2);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Desktop: wider right sheet hosting wire detail (mirror .live-player-slide in App.css) */
+.live-player-slide__sheet.live-player-slide__sheet--player-detail {
+  width: min(100vw, 42rem);
+}
+
+.live-player-slide__body--player-detail-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.player-detail-overlay__surface--slide {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.player-detail-overlay__surface--slide > .players-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.player-detail-overlay__panel--slide {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 22rem;
+}
+
+/*
+ * Desktop slide portals outside `.fotmob` — match mobile GW table typography/alignment (~42rem wide),
+ * and apply light-theme row tints usually gated by `.fotmob[data-theme='light']`.
+ */
+.live-player-slide__sheet--player-detail .players-detail {
+  min-height: 0;
+}
+
+.live-player-slide__sheet--player-detail .players-detail__table {
+  min-width: 0;
+  width: 100%;
+  table-layout: fixed;
+  --players-detail-head-bg: color-mix(
+    in srgb,
+    rgb(121, 91, 251) 12%,
+    var(--fm-table-head, var(--fm-surface-2))
+  );
+}
+
+body[data-tclot-theme='light'] .live-player-slide__sheet--player-detail .players-detail__table {
+  --players-detail-head-bg: color-mix(
+    in srgb,
+    rgb(121, 91, 251) 8%,
+    var(--fm-table-head, var(--fm-surface-2))
+  );
+}
+
+.live-player-slide__sheet--player-detail .players-detail__table th,
+.live-player-slide__sheet--player-detail .players-detail__table td {
+  padding: 0.38rem 0.28rem;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.live-player-slide__sheet--player-detail .players-detail__table th:first-child,
+.live-player-slide__sheet--player-detail .players-detail__table td:first-child {
+  text-align: center;
+}
+
+.live-player-slide__sheet--player-detail .players-detail__table th:last-child,
+.live-player-slide__sheet--player-detail .players-detail__table td:last-child {
+  text-align: center;
+}
+
+.live-player-slide__sheet--player-detail .players-detail__table thead th {
+  font-size: 0.62rem;
+}
+
+.live-player-slide__sheet--player-detail .players-detail__table thead th,
+.live-player-slide__sheet--player-detail .players-detail__table thead th:first-child {
+  background-color: var(--players-detail-head-bg);
+  background-clip: padding-box;
+}
+
+body[data-tclot-theme='light']
+  .live-player-slide__sheet--player-detail
+  .players-detail__table
+  tbody
+  tr:nth-child(even) {
+  background: rgba(121, 91, 251, 0.045);
+}
+
+body[data-tclot-theme='light']
+  .live-player-slide__sheet--player-detail
+  .players-detail__table
+  tbody
+  tr:nth-child(even)
+  td:first-child {
+  background: color-mix(in srgb, rgba(121, 91, 251, 0.045) 80%, var(--fm-card));
+}
+
+body[data-tclot-theme='light']
+  .live-player-slide__sheet--player-detail
+  .players-detail__compare-pills {
+  background: color-mix(in srgb, rgba(121, 91, 251, 0.05) 35%, #ffffff);
+}

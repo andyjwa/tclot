@@ -130488,7 +130488,7 @@
   {
     "code": 2562257,
     "event": 37,
-    "finished": false,
+    "finished": true,
     "finished_provisional": true,
     "id": 362,
     "kickoff_time": "2026-05-15T19:00:00Z",
@@ -130610,8 +130610,22 @@
       },
       {
         "identifier": "bonus",
-        "a": [],
-        "h": []
+        "a": [
+          {
+            "value": 1,
+            "element": 387
+          }
+        ],
+        "h": [
+          {
+            "value": 3,
+            "element": 64
+          },
+          {
+            "value": 2,
+            "element": 47
+          }
+        ]
       },
       {
         "identifier": "bps",

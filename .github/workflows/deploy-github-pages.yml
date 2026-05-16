@@ -58,6 +58,22 @@ jobs:
             echo "Skipped — not in post-waivers or daily catch-up window (see web/scripts/waiver-refresh-gate.mjs)"
           fi
 
+      # Without this, GH Pages bundles `fplApiBase()` → direct FPL (CORS) and Live/Draft APIs break.
+      - name: Require FPL proxy URL for Pages build
+        if: steps.gate.outputs.proceed == '1'
+        env:
+          VITE_FPL_PROXY_URL: ${{ secrets.VITE_FPL_PROXY_URL || vars.VITE_FPL_PROXY_URL }}
+        run: |
+          if [ "${{ vars.FPL_PROXY_OPTIONAL }}" = "true" ]; then
+            echo "FPL_PROXY_OPTIONAL=true — building without Worker URL (Live tab will not work on Pages)"
+            exit 0
+          fi
+          if [ -z "${VITE_FPL_PROXY_URL:-}" ]; then
+            echo "::error::VITE_FPL_PROXY_URL is not set — GitHub Pages cannot call FPL from the browser (CORS). Add the Cloudflare Worker base URL under Settings → Secrets and variables → Actions (or github-pages Environment) as repository secret **VITE_FPL_PROXY_URL** (no trailing slash). See DEPLOY.md § Live tab proxy. Forks/demo only: create repository Variable **FPL_PROXY_OPTIONAL** = true."
+            exit 1
+          fi
+          echo "VITE_FPL_PROXY_URL configured — baked into this build for FPL Live + draft picks in browser."
+
       # League ID: Repository secret/variable FPL_LEAGUE_ID, OR Environment secret on github-pages
       - name: Fetch real league from FPL API
         if: steps.gate.outputs.proceed == '1'
@@ -98,9 +114,9 @@ jobs:
         run: |
           echo "VITE_BASE_PATH=$VITE_BASE_PATH (relative — use URL with trailing slash: …/repo-name/)"
           if [ -n "$VITE_FPL_PROXY_URL" ]; then
-            echo "VITE_FPL_PROXY_URL is set for Vite (Live tab will use your Worker)"
+            echo "VITE_FPL_PROXY_URL is set for Vite (Live tab + draft API proxy)"
           else
-            echo "::warning::VITE_FPL_PROXY_URL empty — add Repository secret (or Variable) named exactly VITE_FPL_PROXY_URL, or an Environment secret on github-pages, then re-run this workflow."
+            echo "VITE_FPL_PROXY_URL omitted (allowed only when FPL_PROXY_OPTIONAL=true)"
           fi
           echo "VITE_SHOW_DASHBOARD_TRADES=${VITE_SHOW_DASHBOARD_TRADES:-default on} VITE_SHOW_DASHBOARD_HALL=${VITE_SHOW_DASHBOARD_HALL:-default on}"
           if [ -n "${VITE_LEAGUE_TITLE_ABBR:-}" ]; then

@@ -671,6 +671,83 @@
   color: var(--fm-text);
 }
 
+.players-detail__table th.players-detail__opp-th,
+.players-detail__table td.players-detail__opp-col {
+  box-sizing: border-box;
+  width: 4.15rem;
+  max-width: 4.15rem;
+  min-width: 0;
+  padding: 0.2rem 0.08rem !important;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.players-detail__table thead th.players-detail__opp-th {
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Opp column: crests inside waiver-style chips (.players-fixture-* from PlayersWorkbench.css). */
+.players-detail__hist-opp-fixtures.players-fixtures-badges {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.players-detail__table td.players-detail__opp-col .players-detail__hist-opp-fixtures .players-fixture-badge {
+  width: 1.72rem;
+  height: 1.72rem;
+  padding: 0.06rem;
+}
+
+.players-detail__table td.players-detail__opp-col .players-detail__hist-opp-fixtures .players-fixture-badge__crest {
+  width: 1.22rem;
+  height: 1.22rem;
+}
+
+.players-detail__hist-opp-fixtures--multi .players-fixture-badge {
+  width: 1.42rem !important;
+  height: 1.42rem !important;
+}
+
+.players-detail__hist-opp-fixtures--multi .players-fixture-badge__crest {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+.players-detail__hist-opp-fixtures--multi.players-fixtures-badges {
+  gap: 0.22rem;
+}
+
+.players-detail__table td.players-detail__opp-col .players-detail__hist-opp-fixtures .players-fixture-badge__crest--fallback {
+  font-size: 0.58rem;
+  line-height: 1.72rem;
+}
+
+.players-detail__hist-opp-fixtures--multi .players-fixture-badge__crest--fallback {
+  font-size: 0.5rem !important;
+  line-height: 1.42rem !important;
+}
+
+.players-detail__opp-empty {
+  font-size: 0.8125rem;
+  color: var(--fm-muted);
+  font-weight: 400;
+}
+
+.players-detail__table tbody tr:nth-child(odd) td.players-detail__opp-col {
+  background: var(--fm-card);
+}
+
+.players-detail__table tbody tr:nth-child(even) td.players-detail__opp-col {
+  background: color-mix(in srgb, rgba(121, 91, 251, 0.06) 80%, var(--fm-card));
+}
+
+.fotmob[data-theme='light'] .players-detail__table tbody tr:nth-child(even) td.players-detail__opp-col {
+  background: color-mix(in srgb, rgba(121, 91, 251, 0.045) 80%, var(--fm-card));
+}
+
 .players-detail__pts {
   font-weight: 700;
 }
@@ -685,6 +762,39 @@
   .players-detail__toolbar--sticky,
   .players-detail__content > .players-detail__hero {
     flex-shrink: 0;
+  }
+
+  /*
+   * Stat tiles: default layout keeps badges + strip on one flex row, which squeezes the strip on
+   * landscape / mid-width phones (>600px) so the 5th pill clips. Force the strip to its own full
+   * row and share width evenly across pills.
+   */
+  .players-detail__stat-cluster {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+  }
+
+  .players-detail__stat-strip {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: clamp(3px, 1vw, 6px);
+  }
+
+  .players-detail__stat-strip .players-stat-pill {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.3rem clamp(0.1rem, 1.4vw, 0.3rem);
+    box-sizing: border-box;
+  }
+
+  .players-detail__stat-strip .players-stat-pill dt,
+  .players-detail__stat-strip .players-stat-pill dd {
+    text-align: center;
+    max-width: 100%;
   }
 
   .players-detail__table-area:not(.players-detail__table-area--edge-back) .players-detail__table-wrap {
@@ -744,6 +854,38 @@
   .players-detail__table thead th:first-child {
     background-color: var(--players-detail-head-bg);
     background-clip: padding-box;
+  }
+
+  .players-detail__table thead th.players-detail__opp-th {
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+
+  .players-detail__table th.players-detail__opp-th,
+  .players-detail__table td.players-detail__opp-col {
+    width: 3.75rem;
+    max-width: 3.75rem;
+    padding: 0.12rem 0.04rem !important;
+  }
+
+  .players-detail__table td.players-detail__opp-col .players-detail__hist-opp-fixtures .players-fixture-badge {
+    width: clamp(1.42rem, 5.2vmin, 1.72rem);
+    height: clamp(1.42rem, 5.2vmin, 1.72rem);
+  }
+
+  .players-detail__table td.players-detail__opp-col .players-detail__hist-opp-fixtures .players-fixture-badge__crest {
+    width: clamp(1rem, 4vmin, 1.22rem);
+    height: clamp(1rem, 4vmin, 1.22rem);
+  }
+
+  .players-detail__hist-opp-fixtures--multi .players-fixture-badge {
+    width: clamp(1.22rem, 4.6vmin, 1.52rem) !important;
+    height: clamp(1.22rem, 4.6vmin, 1.52rem) !important;
+  }
+
+  .players-detail__hist-opp-fixtures--multi .players-fixture-badge__crest {
+    width: clamp(0.82rem, 3.35vmin, 1.06rem) !important;
+    height: clamp(0.82rem, 3.35vmin, 1.06rem) !important;
   }
 }
 
@@ -813,5 +955,53 @@
     margin-top: 0.02rem;
     font-size: 0.72rem;
     font-weight: 700;
+  }
+}
+
+@media (max-width: 560px) and (orientation: portrait) {
+  .players-detail__table th.players-detail__opp-th,
+  .players-detail__table td.players-detail__opp-col {
+    width: 3.5rem;
+    max-width: 3.5rem;
+    padding: 0.08rem 0.02rem !important;
+  }
+
+  .players-detail__hist-opp-fixtures.players-fixtures-badges {
+    gap: 0.12rem;
+  }
+
+  .players-detail__hist-opp-fixtures--multi.players-fixtures-badges {
+    gap: 0.1rem;
+  }
+
+  .players-detail__table td.players-detail__opp-col .players-detail__hist-opp-fixtures .players-fixture-badge {
+    width: 1.28rem;
+    height: 1.28rem;
+    padding: 0.05rem;
+  }
+
+  .players-detail__table td.players-detail__opp-col .players-detail__hist-opp-fixtures .players-fixture-badge__crest {
+    width: 0.88rem;
+    height: 0.88rem;
+  }
+
+  .players-detail__hist-opp-fixtures--multi .players-fixture-badge {
+    width: 1.06rem !important;
+    height: 1.06rem !important;
+  }
+
+  .players-detail__hist-opp-fixtures--multi .players-fixture-badge__crest {
+    width: 0.72rem !important;
+    height: 0.72rem !important;
+  }
+
+  .players-detail__hist-opp-fixtures .players-fixture-badge__crest--fallback {
+    font-size: 0.5rem !important;
+    line-height: 1.06rem !important;
+  }
+
+  .players-detail__hist-opp-fixtures--multi .players-fixture-badge__crest--fallback {
+    font-size: 0.45rem !important;
+    line-height: 0.9rem !important;
   }
 }
