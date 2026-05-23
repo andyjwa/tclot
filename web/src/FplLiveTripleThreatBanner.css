@@ -1,37 +1,19 @@
 .fpl-live-triple-promo {
-  margin: 0 0 0.55rem;
-  padding: 0 0.05rem;
+  flex-shrink: 0;
   box-sizing: border-box;
-}
-
-.fpl-live-triple-promo--minimized {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 0.45rem;
-}
-
-.fpl-live-triple-promo__expand {
-  margin: 0;
-  padding: 0.32rem 0.65rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--fm-border) 75%, transparent);
-  background: var(--fm-surface-2, #f7f7f7);
-  color: var(--fm-text-strong, #1a1a1a);
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.fpl-live-triple-promo__expand:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 55%, transparent);
-  outline-offset: 2px;
+  /*
+   * Breathable chrome between submenu pills ←→ poster ←→ H2H ticker.
+   * (Ticker has its own padding; generous vertical rhythm avoids the “cramped” stack.)
+   */
+  margin-top: clamp(0.42rem, 1.25vw, 0.72rem);
+  margin-bottom: clamp(0.5rem, 1.65vw, 0.82rem);
+  padding: 0 clamp(0.2rem, 1.75vw, 0.42rem);
 }
 
 .fpl-live-triple-promo__img-wrap {
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow:
     0 4px 18px rgba(0, 0, 0, 0.1),
     0 0 0 1px color-mix(in srgb, var(--fm-border) 55%, transparent);
@@ -42,29 +24,6 @@
   width: 100%;
   height: auto;
   vertical-align: top;
-}
-
-.fpl-live-triple-promo__minimize {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 2;
-  padding: 0.22rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, #fff 40%, transparent);
-  background: color-mix(in srgb, #000 45%, transparent);
-  color: #fff;
-  font: inherit;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.fpl-live-triple-promo__minimize:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
 }
 
 /* Hit area aligned with Meet URL stripe at bottom of artwork (percent-based → responsive). */
