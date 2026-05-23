@@ -27,6 +27,7 @@ import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
+import { FplLiveTripleThreatBanner } from './FplLiveTripleThreatBanner.jsx'
 import { FplLiveGwTickerBar } from './FplLiveGwTickerBar'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
@@ -3020,20 +3021,23 @@ function App() {
                 />
               ) : null}
               {fplLiveTab === 'live' ? (
-                <LiveScores
-                  teams={teamsForFormSelect}
-                  tableRows={tableRows}
-                  matches={matches ?? []}
-                  gameweek={liveGameweek}
-                  onGameweekChange={setLiveGw}
-                  onBootstrapLiveMeta={onBootstrapLiveMeta}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                  leagueId={data?.league?.id ?? null}
-                  waiverOutGwRows={waiverOutGwRows}
-                  fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
-                  compactMobileChrome
-                />
+                <>
+                  <FplLiveTripleThreatBanner />
+                  <LiveScores
+                    teams={teamsForFormSelect}
+                    tableRows={tableRows}
+                    matches={matches ?? []}
+                    gameweek={liveGameweek}
+                    onGameweekChange={setLiveGw}
+                    onBootstrapLiveMeta={onBootstrapLiveMeta}
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                    leagueId={data?.league?.id ?? null}
+                    waiverOutGwRows={waiverOutGwRows}
+                    fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
+                    compactMobileChrome
+                  />
+                </>
               ) : null}
               {fplLiveTab === 'projections' ? (
                 <LiveScores
