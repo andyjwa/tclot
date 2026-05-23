@@ -3000,6 +3000,7 @@ function App() {
                   Projections
                 </button>
               </div>
+              {fplLiveTab === 'live' ? <FplLiveTripleThreatBanner /> : null}
               <FplLiveGwTickerBar
                 teams={teamsForFormSelect}
                 matches={matches ?? []}
@@ -3021,23 +3022,20 @@ function App() {
                 />
               ) : null}
               {fplLiveTab === 'live' ? (
-                <>
-                  <FplLiveTripleThreatBanner />
-                  <LiveScores
-                    teams={teamsForFormSelect}
-                    tableRows={tableRows}
-                    matches={matches ?? []}
-                    gameweek={liveGameweek}
-                    onGameweekChange={setLiveGw}
-                    onBootstrapLiveMeta={onBootstrapLiveMeta}
-                    teamLogoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                    leagueId={data?.league?.id ?? null}
-                    waiverOutGwRows={waiverOutGwRows}
-                    fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
-                    compactMobileChrome
-                  />
-                </>
+                <LiveScores
+                  teams={teamsForFormSelect}
+                  tableRows={tableRows}
+                  matches={matches ?? []}
+                  gameweek={liveGameweek}
+                  onGameweekChange={setLiveGw}
+                  onBootstrapLiveMeta={onBootstrapLiveMeta}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  leagueId={data?.league?.id ?? null}
+                  waiverOutGwRows={waiverOutGwRows}
+                  fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
+                  compactMobileChrome
+                />
               ) : null}
               {fplLiveTab === 'projections' ? (
                 <LiveScores
