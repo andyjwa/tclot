@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-import { tripleThreatPromoIsActive } from './easternWallClockInstant.js'
 import { usePortraitMobile } from './usePortraitMobile.js'
 import './FplLiveTripleThreatBanner.css'
 
@@ -9,19 +7,11 @@ const MEET_HREF =
     ? import.meta.env.VITE_MEET_PROMO_LINK.trim()
     : 'https://meet.google.com/gfh-esfp-xpd'
 
-/** Live GW portrait-only banner; hidden after Eastern tomorrow 11:15 (`tripleThreatPromoIsActive`). */
+/** Live GW portrait-only Triple Threat banner (between pills and ticker when `portrait`). */
 export function FplLiveTripleThreatBanner() {
   const portrait = usePortraitMobile()
-  const [, rerenderExpiry] = useState(0)
 
-  useEffect(() => {
-    const id = window.setInterval(() => rerenderExpiry((n) => n + 1), 30 * 1000)
-    return () => window.clearInterval(id)
-  }, [])
-
-  const active = portrait && tripleThreatPromoIsActive()
-
-  if (!active) return null
+  if (!portrait) return null
 
   const basePrefix = `${import.meta.env.BASE_URL ?? '/'}`.replace(/\/?$/, '/')
   const posterSrc = `${basePrefix}promos/triple-threat-live-gw.png`
