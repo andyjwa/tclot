@@ -13,12 +13,26 @@ import { applyExplanation } from './explainPrediction.js';
 import type { RateBundle } from './simulation.js';
 import { simulatePlayerGameweekPoints, summarizeSamples } from './simulation.js';
 import { poissonTailGe } from './stats.js';
+import {
+  simulateFixtureMatchSamples,
+  type MatchSideEntry,
+} from './matchSimulation.js';
 
 export { DEFAULT_MODEL_CONFIG, type ModelConfig } from './config.js';
 export * from './types.js';
 export * from './odds.js';
 export * from './simulation.js';
 export * from './fplScoring.js';
+export {
+  simulateFixtureMatchSamples,
+  multinomialCounts,
+  type MatchSideEntry,
+} from './matchSimulation.js';
+
+/** When set, skips independent MC and summarizes these samples into `Prediction`. */
+export interface PredictPlayerGameweekOptions {
+  overrideSamples?: number[];
+}
 
 export function buildRateBundle(
   player: Player,
@@ -88,6 +102,7 @@ export function predictPlayerGameweek(
   fixture: Fixture,
   config: ModelConfig = DEFAULT_MODEL_CONFIG,
   rnd: () => number = Math.random,
+  options?: PredictPlayerGameweekOptions,
 ): Prediction {
   const mins = estimateMinutes(player, playerTeam, fixture, config);
   const { lambda: eg, goalProbability } = expectedGoalsRate(
@@ -137,12 +152,15 @@ export function predictPlayerGameweek(
   });
 
   const bundle = buildRateBundle(player, playerTeam, opponent, fixture, config);
-  const samples = simulatePlayerGameweekPoints(
-    player,
-    bundle,
-    config.simulationIterations,
-    rnd,
-  );
+  const samples =
+    options?.overrideSamples != null && options.overrideSamples.length > 0
+      ? options.overrideSamples
+      : simulatePlayerGameweekPoints(
+          player,
+          bundle,
+          config.simulationIterations,
+          rnd,
+        );
   const sum = summarizeSamples(samples);
 
   const pred: Prediction = {
@@ -184,11 +202,78 @@ export function predictForPlayerFromMap(
   teamsById: Map<number, Team>,
   config?: ModelConfig,
   rnd?: () => number,
+  options?: PredictPlayerGameweekOptions,
 ): Prediction {
   const playerTeam = teamsById.get(player.teamId);
   if (!playerTeam) throw new Error('Missing player team in map');
   const opponent = resolveOpponentForPlayer(player, fixture, teamsById);
-  return predictPlayerGameweek(player, playerTeam, opponent, fixture, config, rnd);
+  return predictPlayerGameweek(
+    player,
+    playerTeam,
+    opponent,
+    fixture,
+    config,
+    rnd,
+    options,
+  );
+}
+
+/**
+ * Match-level Monte Carlo for one fixture: pooled team goals/clean sheets and a joint 3/2/1 bonus slate.
+ * Returns one `Prediction` per player in `{ home, away }` order (`homeIds` ∪ `away` order preserved).
+ */
+export function predictMatchFixture(
+  home: Player[],
+  away: Player[],
+  fixture: Fixture,
+  teamsById: Map<number, Team>,
+  config: ModelConfig = DEFAULT_MODEL_CONFIG,
+  rnd: () => number = Math.random,
+): Prediction[] {
+  const ht = teamsById.get(fixture.homeTeamId);
+  const at = teamsById.get(fixture.awayTeamId);
+  if (!ht || !at) {
+    throw new Error('predictMatchFixture: missing homeTeamId or awayTeamId in teamsById map');
+  }
+
+  const homeEntries: MatchSideEntry[] = home.map((p) => ({
+    player: p,
+    bundle: buildRateBundle(p, ht, at, fixture, config),
+  }));
+  const awayEntries: MatchSideEntry[] = away.map((p) => ({
+    player: p,
+    bundle: buildRateBundle(p, at, ht, fixture, config),
+  }));
+
+  const sampleMap = simulateFixtureMatchSamples(
+    homeEntries,
+    awayEntries,
+    config.simulationIterations,
+    rnd,
+  );
+
+  const out: Prediction[] = [];
+  for (const player of home) {
+    const s = sampleMap.get(player.id);
+    if (!s?.length)
+      throw new Error(`predictMatchFixture: missing samples for player ${player.id}`);
+    out.push(
+      predictPlayerGameweek(player, ht, at, fixture, config, rnd, {
+        overrideSamples: s,
+      }),
+    );
+  }
+  for (const player of away) {
+    const s = sampleMap.get(player.id);
+    if (!s?.length)
+      throw new Error(`predictMatchFixture: missing samples for player ${player.id}`);
+    out.push(
+      predictPlayerGameweek(player, at, ht, fixture, config, rnd, {
+        overrideSamples: s,
+      }),
+    );
+  }
+  return out;
 }
 
 export function formatPredictionRecord(p: Prediction, playerName: string) {

@@ -10,9 +10,10 @@ TypeScript package: **transparent**, modular **event-rate → Poisson/Bernoulli 
   **Production odds:** integrate [The Odds API](https://the-odds-api.com/) (`soccer_epl`, markets `h2h`, `totals`, etc.) and map responses into `Fixture` fields.
 - `minutesModel.ts`, `goalModel.ts`, `assistModel.ts`, `cleanSheetModel.ts`, `defensiveContributionModel.ts`, `savesModel.ts`, `cardsModel.ts`, `bonusModel.ts`
 - `fplScoring.ts` — official-style points from sampled outcomes
-- `simulation.ts` — Monte Carlo + optional XI/captain team simulation
+- `simulation.ts` — per-player Monte Carlo + optional XI/captain team sums
+- `matchSimulation.ts` — **fixture-level** pooled goals, CS from conceded totals, joint **3‑2‑1** bonus slate
 - `explainPrediction.ts` — short human-readable lines
-- `index.ts` — `predictPlayerGameweek`, `predictForPlayerFromMap`, `formatPredictionRecord`
+- `index.ts` — `predictPlayerGameweek`, `predictForPlayerFromMap`, **`predictMatchFixture`**, `formatPredictionRecord`
 - `src/mockData.ts` — 5 fake players + 2 teams + 1 fixture for tests/demos
 
 ## Commands
@@ -45,3 +46,9 @@ console.log(formatPredictionRecord(pred, player.name));
 
 - **Draft vs classic:** scoring helpers follow common FPL draft rules (goal points by line; CS; saves/3; DC thresholds from `config`). Adjust `fplScoring.ts` if your league differs.
 - **Accuracy:** prioritises explainability; tune `DEFAULT_MODEL_CONFIG` and team/player inputs from your data pipeline.
+
+## Benchmarks & roadmap (parent app)
+
+Evaluation recipes, parity checks vs public projection sites, and a **data-ingestion checklist** (minutes/availability, team priors, odds, correlations): see **`web/docs/fpl-projections-benchmark-checklist.md`** from the TCLOT repo root.
+
+**Match-level projections** (fixture joint sim + BPS slate vs today’s IID per-player Monte Carlo): **`web/docs/match-level-fpl-projections.md`**.

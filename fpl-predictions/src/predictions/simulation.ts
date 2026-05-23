@@ -21,10 +21,8 @@ export interface RateBundle {
   expectedBonus: number;
 }
 
-function sampleMinutes(
-  bundle: RateBundle,
-  rnd: () => number,
-): number {
+/** Sample minutes for one gameweek from start / bench / DNP mixture. */
+export function sampleMinutesFromBundle(bundle: RateBundle, rnd: () => number): number {
   if (rnd() < bundle.P_start) {
     const u = rnd();
     if (u < 0.55) return 90;
@@ -58,7 +56,7 @@ export function simulatePlayerGameweekPoints(
 ): number[] {
   const samples: number[] = [];
   for (let i = 0; i < iterations; i++) {
-    const minutes = sampleMinutes(bundle, rnd);
+    const minutes = sampleMinutesFromBundle(bundle, rnd);
     const goals = samplePoisson(bundle.lambdaGoals, rnd);
     const assists = samplePoisson(bundle.lambdaAssists, rnd);
     const cleanSheet =

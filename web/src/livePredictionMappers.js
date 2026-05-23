@@ -5,9 +5,22 @@ import {
   buildRateBundle,
   simulatePlayerGameweekPoints,
   predictForPlayerFromMap,
+  predictMatchFixture,
 } from 'fpl-predictions';
 
 const POS_MAP = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
+
+/** Cache keyed by GW + fixture id + matchup + simulationIterations (single heavy run per slate). */
+const matchFixtureProjectionCache = new Map();
+
+/** Clear memoized `predictMatchFixture` results (e.g. after bootstrap swap in tests/hot reload). */
+export function clearMatchFixtureProjectionCache() {
+  matchFixtureProjectionCache.clear();
+}
+
+function matchFixtureProjectionCacheKey(gw, fixtureId, hId, aId, iterations) {
+  return `${gw}|${fixtureId}|${hId}|${aId}|${iterations}`;
+}
 
 function clamp(x, lo, hi) {
   return Math.min(hi, Math.max(lo, x));
@@ -35,6 +48,40 @@ export function pickGwFixtureForTeam(teamId, gwFixtures, gameweek) {
   const undone = list.find((f) => f?.finished !== true);
   if (undone) return undone;
   return list[0];
+}
+
+/**
+ * Approximate XI for classic pre-deadline projections: one GK + 10 outfielders ranked by starts then minutes.
+ * @param {number} teamId — FPL bootstrap `teams[].id`
+ * @param {object} elementById — map bootstrap `elements` keyed by numeric id strings
+ * @returns {object[]} 11 bootstrap element rows or `[]` when data is insufficient
+ */
+export function pickLikelyClassicXiElements(teamId, elementById) {
+  const tid = Number(teamId);
+  if (!Number.isFinite(tid)) return [];
+  const rows = [];
+  const src = elementById ?? {};
+  for (const v of Object.values(src)) {
+    if (!v || v.removed) continue;
+    if (Number(v.team) !== tid) continue;
+    rows.push(v);
+  }
+  if (rows.length < 11) return [];
+  const gks = rows
+    .filter((e) => Number(e.element_type) === 1)
+    .sort((a, b) => (Number(b.minutes) || 0) - (Number(a.minutes) || 0));
+  const gk = gks[0];
+  if (!gk) return [];
+  const outfield = rows
+    .filter((e) => Number(e.element_type) !== 1)
+    .sort((a, b) => {
+      const sb = Number(b.starts) || 0;
+      const sa = Number(a.starts) || 0;
+      if (sb !== sa) return sb - sa;
+      return (Number(b.minutes) || 0) - (Number(a.minutes) || 0);
+    });
+  if (outfield.length < 10) return [];
+  return [gk, ...outfield.slice(0, 10)];
 }
 
 /**
@@ -177,6 +224,54 @@ export function predictedXpForPickRow(row, ctx, teamsById, gameweek, config, sal
     if (!rawFx) return null;
     const predFx = classicFixtureToPredictionFixture(rawFx, gw);
     const rnd = projectionRng(player.id + Number(salt) * 65_521, predFx.id);
+
+    /** Match-level MC when we can reconstruct ~XI for both sides (bonus + correlated goals). */
+    try {
+      const hId = Number(predFx.homeTeamId);
+      const aId = Number(predFx.awayTeamId);
+      if (Number.isFinite(hId) && Number.isFinite(aId)) {
+        const xiH = pickLikelyClassicXiElements(hId, ctx.elementById);
+        const xiA = pickLikelyClassicXiElements(aId, ctx.elementById);
+        if (xiH.length === 11 && xiA.length === 11) {
+          const homePlayers = xiH.map(bootstrapElementToPlayer);
+          const awayPlayers = xiA.map(bootstrapElementToPlayer);
+          const iters = config?.simulationIterations ?? 8000;
+          const ck = matchFixtureProjectionCacheKey(
+            gw,
+            predFx.id,
+            hId,
+            aId,
+            iters,
+          );
+          let matchPreds = matchFixtureProjectionCache.get(ck);
+          if (!matchPreds) {
+            const matchRng = projectionRng(
+              Number(predFx.id) + gw * 997,
+              hId * 7919 + aId,
+            );
+            matchPreds = predictMatchFixture(
+              homePlayers,
+              awayPlayers,
+              predFx,
+              teamsById,
+              config,
+              matchRng,
+            );
+            matchFixtureProjectionCache.set(ck, matchPreds);
+          }
+          const picked = matchPreds.find((p) => p.playerId === pid);
+          if (
+            picked != null &&
+            typeof picked.expectedPoints === 'number' &&
+            Number.isFinite(picked.expectedPoints)
+          )
+            return picked.expectedPoints;
+        }
+      }
+    } catch {
+      /* fall through to marginal predictor */
+    }
+
     return predictForPlayerFromMap(player, predFx, teamsById, config, rnd).expectedPoints;
   } catch {
     return null;
@@ -221,10 +316,20 @@ export function bootstrapTeamToPredictionTeam(bootTeam) {
   };
 }
 
-function injuryDoubtFromElement(el) {
+/**
+ * FPL classic bootstrap often sends `chance_of_playing_this_round: null` for available players.
+ * `Number(null) === 0` would falsely treat them as maximally doubtful and crush xP / minutes.
+ *
+ * @param {object | null | undefined} el — bootstrap-style element (`status`, `chance_of_playing_this_round`)
+ */
+export function injuryDoubtScoreFromClassicElement(el) {
   if (el?.status === 'i') return 3;
-  const c = Number(el.chance_of_playing_this_round);
-  if (Number.isFinite(c) && c < 100) return (100 - c) / 28;
+  const raw = el?.chance_of_playing_this_round;
+  if (raw === null || raw === undefined || raw === '') return 0;
+  const c = Number(raw);
+  if (!Number.isFinite(c)) return 0;
+  if (c < 0 || c > 100) return 0;
+  if (c < 100) return (100 - c) / 28;
   return 0;
 }
 
@@ -269,7 +374,7 @@ export function bootstrapElementToPlayer(el) {
     defensiveActionsPer90: (cbit + tackles * 0.6) / ninety,
     clearancesBlocksInterceptionsTacklesPer90: (cbit + tackles) / ninety,
     ballRecoveriesPer90: rec / ninety,
-    injuryDoubtScore: injuryDoubtFromElement(el),
+    injuryDoubtScore: injuryDoubtScoreFromClassicElement(el),
   };
 }
 
