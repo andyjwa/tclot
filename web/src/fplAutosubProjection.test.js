@@ -203,6 +203,41 @@ test('ESPN xi: 0-min starter does not use SGW live fallback', () => {
   assert.equal(projectedAutoSubs.length, 0);
 });
 
+test('541 SGW unknown role: two 0-min DEF starters do not ping-pong with bench FWD', () => {
+  const sgw = {
+    clubGwFixturesFinished: false,
+    hasGwFixture: true,
+    teamGwFixtureCount: 1,
+    teamSingleFixtureLiveOrDone: true,
+    stillYetToPlayPl: true,
+  };
+  const xiBase = { ...sgw, espnMatchdayRole: 'xi' };
+  const xi = [
+    r(1, 'GKP', 1, 90, xiBase),
+    r(2, 'DEF', 2, 90, xiBase),
+    r(3, 'DEF', 3, 90, xiBase),
+    r(4, 'DEF', 4, 90, xiBase),
+    r(5, 'DEF', 500, 0, { ...sgw }),
+    r(6, 'DEF', 600, 0, { ...sgw }),
+    r(7, 'MID', 7, 90, xiBase),
+    r(8, 'MID', 8, 90, xiBase),
+    r(9, 'MID', 9, 90, xiBase),
+    r(10, 'MID', 10, 90, xiBase),
+    r(11, 'FWD', 11, 90, xiBase),
+  ];
+  const bench = [
+    r(12, 'FWD', 12, 0, {
+      ...sgw,
+    }),
+  ];
+  const { projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  assert.ok(
+    projectedAutoSubs.length < 8,
+    `expected no long swap chain, got ${projectedAutoSubs.length} steps`,
+  );
+  assert.equal(projectedAutoSubs.length, 2);
+});
+
 test('SGW fixture live: 0-min starter projects out for bench pick not yet played (not in squad / DNP live)', () => {
   const xi = [
     r(1, 'GKP', 1, 90, {

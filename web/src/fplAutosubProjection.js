@@ -40,6 +40,12 @@ function isSameDayDnpWhileSingleFixtureLive(r) {
 }
 
 /**
+ * When ESPN role is unknown, `teamSingleFixtureLiveOrDone` can mark every 0-min starter as needing a
+ * “same GW day” autosub swap. Repeated swaps keep `pickPosition ≤ 11` on each row object, so a player
+ * rotated off the XI onto the bench then back on can qualify again every pass → ping-pong with the
+ * first eligible bench swap (up to {@link projectAutosubFromLive}'s loop guard).
+ * Skip that specific fallback once the player has already been swapped **out** of the XI once in
+ * this projection (DNP‑after‑finished / no‑fixture rules still apply).
  * @param {{
  *   minutes: number,
  *   clubGwFixturesFinished?: boolean,
@@ -48,9 +54,11 @@ function isSameDayDnpWhileSingleFixtureLive(r) {
  *   espnMatchdayRole?: 'xi' | 'bench' | 'absent' | null,
  *   teamGwFixtureCount?: number,
  *   teamSingleFixtureLiveOrDone?: boolean,
+ *   element?: number,
  * }} r
+ * @param {ReadonlySet<number> | null} sameDayExcludedElementIds
  */
-function needsXiAutosubFromBench(r) {
+function needsXiAutosubFromBench(r, sameDayExcludedElementIds = null) {
   if (r == null || r.pickPosition == null || r.pickPosition > 11) return false;
   if ((Number(r.minutes) || 0) > 0) return false;
 
@@ -71,7 +79,13 @@ function needsXiAutosubFromBench(r) {
   if (role === 'xi' || role == null) {
     if (isDnpAfterFinished(r)) return true;
     if (isNoFixtureInXi(r)) return true;
-    if (role == null && isSameDayDnpWhileSingleFixtureLive(r)) return true;
+    if (
+      role == null &&
+      isSameDayDnpWhileSingleFixtureLive(r) &&
+      !(sameDayExcludedElementIds != null && sameDayExcludedElementIds.has(Number(r.element)))
+    ) {
+      return true;
+    }
     return false;
   }
 
@@ -144,6 +158,8 @@ export function projectAutosubFromLive(starters, bench) {
   const benchPool = bench
     .slice()
     .sort((a, b) => a.pickPosition - b.pickPosition);
+  /** XI players swapped out earlier in this projection — omit from SGW‑live same‑day heuristic only. */
+  const suppressedSameDayForElementIds = new Set();
   /** @type {{ element_in: number, element_out: number }[]} */
   const projectedAutoSubs = [];
 
@@ -196,7 +212,9 @@ export function projectAutosubFromLive(starters, bench) {
   }
 
   for (let guard = 0; guard < 16; guard++) {
-    const subNeed = xi.filter(needsXiAutosubFromBench);
+    const subNeed = xi.filter((r) =>
+      needsXiAutosubFromBench(r, suppressedSameDayForElementIds),
+    );
     if (!subNeed.length) break;
 
     const gkDnp = subNeed.find((r) => isGkRow(r));
@@ -221,6 +239,8 @@ export function projectAutosubFromLive(starters, bench) {
     const xiIdx = xi.indexOf(out);
     const benchIdx = benchPool.indexOf(cand);
     if (xiIdx < 0 || benchIdx < 0) break;
+
+    suppressedSameDayForElementIds.add(Number(out.element));
 
     projectedAutoSubs.push({
       element_in: cand.element,
