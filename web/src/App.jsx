@@ -186,7 +186,6 @@ const HALL_OF_CHAMPIONS = [
     season: '2025-26',
     team: 'Crouch End Oashisu',
     bannerImage: 'hall-champions/crouch-end-oashisu.png',
-    bannerLayout: 'centerImage',
   },
 ]
 
