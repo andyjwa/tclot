@@ -7303,6 +7303,88 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
   color: var(--fm-loss, #f87171);
 }
 
+/* EPL matchday vs fantasy Starting XI when ESPN confirms both clubs’ Published XIs (Lineups-tab parity; not KO-gated — see LiveScores.jsx) */
+.live-picks-table tbody tr.live-picks-row--mdy-xi {
+  box-shadow: inset 4px 0 0 rgba(5, 150, 105, 0.9);
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-xi .live-player-name,
+.live-picks-table tbody tr.live-picks-row--mdy-xi .live-player-name--btn {
+  color: #047857;
+  font-weight: 600;
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-xi .live-player-opponent {
+  color: color-mix(in srgb, #047857 72%, var(--fm-muted, #71717a));
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-xi {
+  box-shadow: inset 4px 0 0 rgba(74, 222, 128, 0.85);
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-xi .live-player-name,
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-xi .live-player-name--btn {
+  color: #6ee7b7;
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-xi .live-player-opponent {
+  color: color-mix(in srgb, #6ee7b7 65%, var(--fm-muted));
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-bench {
+  box-shadow: inset 4px 0 0 rgba(202, 138, 4, 0.95);
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-bench .live-player-name,
+.live-picks-table tbody tr.live-picks-row--mdy-bench .live-player-name--btn {
+  color: #a16207;
+  font-weight: 600;
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-bench .live-player-opponent {
+  color: color-mix(in srgb, #a16207 72%, var(--fm-muted, #71717a));
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-bench {
+  box-shadow: inset 4px 0 0 rgba(250, 204, 21, 0.88);
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-bench .live-player-name,
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-bench .live-player-name--btn {
+  color: #facc15;
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-bench .live-player-opponent {
+  color: color-mix(in srgb, #facc15 60%, var(--fm-muted));
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-absent {
+  box-shadow: inset 4px 0 0 rgba(220, 38, 38, 0.9);
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-absent .live-player-name,
+.live-picks-table tbody tr.live-picks-row--mdy-absent .live-player-name--btn {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.live-picks-table tbody tr.live-picks-row--mdy-absent .live-player-opponent {
+  color: color-mix(in srgb, #b91c1c 72%, var(--fm-muted, #71717a));
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-absent {
+  box-shadow: inset 4px 0 0 rgba(248, 113, 113, 0.9);
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-absent .live-player-name,
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-absent .live-player-name--btn {
+  color: #fca5a5;
+}
+
+.fotmob[data-theme='dark'] .live-picks-table tbody tr.live-picks-row--mdy-absent .live-player-opponent {
+  color: color-mix(in srgb, #fca5a5 62%, var(--fm-muted));
+}
+
 .live-picks-col-player {
   text-align: left;
 }

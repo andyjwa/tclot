@@ -92,9 +92,35 @@ function KitThumb({ shirtUrl, badgeUrl, teamShort }) {
 }
 
 /**
- * @param {{ rows: object[], autosubInElementIds?: Set<number>, onPlayerClick?: (row: object) => void }} props
+ * Tint Starting XI from ESPN confirmed matchday squads once both clubs have published XIs
+ * (same readiness as the Lineups tab — see {@link computeEspnMatchdayRole}; not KO-gated).
+ * @returns {'' | 'live-picks-row--mdy-xi' | 'live-picks-row--mdy-bench' | 'live-picks-row--mdy-absent'}
  */
-function PicksTable({ rows, autosubInElementIds, onPlayerClick }) {
+function liveStartingXiMatchdayRowClass(row) {
+  if (!row || row.espnMatchdayRole == null) return '';
+  if (row.espnMatchdayRole === 'xi') return 'live-picks-row--mdy-xi';
+  if (row.espnMatchdayRole === 'bench') return 'live-picks-row--mdy-bench';
+  if (row.espnMatchdayRole === 'absent') return 'live-picks-row--mdy-absent';
+  return '';
+}
+
+function liveMatchdayRowTitle(toneClass) {
+  switch (toneClass) {
+    case 'live-picks-row--mdy-xi':
+      return 'In the Premier League starting XI for this match.';
+    case 'live-picks-row--mdy-bench':
+      return 'On the Premier League bench for this match (still in your fantasy XI until autosub/rules apply).';
+    case 'live-picks-row--mdy-absent':
+      return 'Not in the published Premier League squad for this fixture — strongly consider swapping out.';
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * @param {{ rows: object[], autosubInElementIds?: Set<number>, onPlayerClick?: (row: object) => void, toneTable?: 'starting-xi' }} props
+ */
+function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
   const portraitLineup = usePortraitLineupMatch();
   if (!rows.length) return <p className="muted muted--tight">No picks</p>;
   return (
@@ -176,8 +202,15 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick }) {
             const minsTone = livePickMinsCellClass(r);
             const playerColName = r.displayName ?? r.web_name ?? '—';
             const fullLabel = `${playerColName}${r.opponentShortLabel ? ` (${r.opponentShortLabel})` : ''} · #${r.element}${r.teamName ? ` · ${r.teamName}` : ''}`;
+            const mdyToneClass =
+              toneTable === 'starting-xi' ? liveStartingXiMatchdayRowClass(r) : '';
+            const mdyTitle = liveMatchdayRowTitle(mdyToneClass);
             return (
-            <tr key={`${r.pickPosition}-${r.element}`}>
+            <tr
+              key={`${r.pickPosition}-${r.element}`}
+              className={mdyToneClass || undefined}
+              title={mdyTitle}
+            >
               <td className="live-picks-col-player">
                 <div className="live-player-cell">
                   <KitThumb
@@ -739,6 +772,7 @@ function SquadLineupPanel({ squad, onPlayerClick }) {
         <PicksTable
           rows={starters}
           autosubInElementIds={autosubInElementIds}
+          toneTable="starting-xi"
           onPlayerClick={
             onPlayerClick ? (r) => onPlayerClick(r, squad) : undefined
           }
