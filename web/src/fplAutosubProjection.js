@@ -105,6 +105,20 @@ function playedOnBench(r) {
 function benchPlayerEligibleForOut(cand, outAllowsUnplayedBench) {
   if (cand == null) return false;
   if (cand.hasGwFixture === false) return false;
+  /** Not in RL matchday squad → cannot contribute this GW even as a projection. */
+  if (cand.espnMatchdayRole === 'absent') return false;
+  /**
+   * After this pick’s club has finished its GW fixtures, zero minutes ⇒ they did not play.
+   * Prevents prioritising an earlier bench slot that is already confirmed DNP (e.g. a defender
+   * swapped off the XI earlier in the projection) over a usable pick lower on the bench.
+   */
+  if (
+    cand.clubGwFixturesFinished === true &&
+    (Number(cand.minutes) || 0) === 0 &&
+    !playedOnBench(cand)
+  ) {
+    return false;
+  }
   if (playedOnBench(cand)) return true;
   if (outAllowsUnplayedBench && cand.stillYetToPlayPl === true) return true;
   return false;

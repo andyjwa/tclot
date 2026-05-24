@@ -238,6 +238,47 @@ test('541 SGW unknown role: two 0-min DEF starters do not ping-pong with bench F
   assert.equal(projectedAutoSubs.length, 2);
 });
 
+test('bench pool skips absent / finished-GW DNP picks so a lower slot can replace a pending-out starter', () => {
+  const sgwLive = {
+    clubGwFixturesFinished: false,
+    hasGwFixture: true,
+    teamGwFixtureCount: 1,
+    teamSingleFixtureLiveOrDone: true,
+    stillYetToPlayPl: true,
+  };
+  const xiBase = { ...sgwLive, espnMatchdayRole: 'xi' };
+  const xi = [
+    r(1, 'GKP', 1, 90, xiBase),
+    r(2, 'DEF', 2, 90, xiBase),
+    r(3, 'DEF', 3, 90, xiBase),
+    r(4, 'DEF', 4, 90, xiBase),
+    r(5, 'MID', 5, 90, xiBase),
+    r(6, 'MID', 6, 90, xiBase),
+    r(7, 'MID', 7, 90, xiBase),
+    r(8, 'MID', 8, 90, xiBase),
+    r(9, 'FWD', 9, 90, xiBase),
+    r(10, 'FWD', 10, 90, xiBase),
+    r(11, 'FWD', 511, 0, { ...sgwLive }),
+  ];
+  const bench = [
+    r(12, 'FWD', 1200, 0, {
+      hasGwFixture: true,
+      clubGwFixturesFinished: true,
+      stillYetToPlayPl: false,
+      espnMatchdayRole: 'absent',
+    }),
+    r(13, 'MID', 1300, 0, {
+      ...sgwLive,
+    }),
+  ];
+  const { displayStarters, projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  assert.equal(projectedAutoSubs.length, 1);
+  assert.equal(projectedAutoSubs[0].element_out, 511);
+  assert.equal(projectedAutoSubs[0].element_in, 1300);
+  assert.ok(displayStarters.some((x) => x.element === 1300));
+  assert.ok(!displayStarters.some((x) => x.element === 1200));
+});
+
 test('SGW fixture live: 0-min starter projects out for bench pick not yet played (not in squad / DNP live)', () => {
   const xi = [
     r(1, 'GKP', 1, 90, {
