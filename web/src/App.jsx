@@ -144,7 +144,18 @@ function usePortraitTradeTeamAbbrev() {
   return useSyncExternalStore(subscribe, getSnapshot, () => false)
 }
 
-/** Past champions — optional `entryId` (team-logos-web), or `bannerImage` (fills entire banner sheet) */
+/**
+ * Past champions — optional `entryId` (team-logos-web), or `bannerImage`.
+ * Use `bannerLayout: 'centerImage'` when art should stay centred with title above & season below
+ * (`bannerImage`). Otherwise full-bleed cover (titles often baked into the PNG).
+ *
+ * @type {Array<{
+ *   season: string,
+ *   team: string,
+ *   bannerImage?: string,
+ *   bannerLayout?: 'centerImage',
+ * }>}
+ */
 const HALL_OF_CHAMPIONS = [
   {
     season: '2020-21',
@@ -170,6 +181,12 @@ const HALL_OF_CHAMPIONS = [
     season: '2024-25',
     team: 'Soul Ze Moles',
     bannerImage: 'hall-champions/soul-ze-moles.png',
+  },
+  {
+    season: '2025-26',
+    team: 'Crouch End Oashisu',
+    bannerImage: 'hall-champions/crouch-end-oashisu.png',
+    bannerLayout: 'centerImage',
   },
 ]
 
@@ -586,55 +603,93 @@ function HallOfChampions({ logoMap, kitIndexByEntry = {}, tableRows = [] }) {
         </h2>
         <div className="hall-of-champions__rule" aria-hidden="true" />
         <ul className="hall-of-champions__list">
-          {HALL_OF_CHAMPIONS.map((row) => (
-            <li key={row.season} className="hall-champion-banner">
-              <div className="hall-champion-banner__rigging" aria-hidden="true">
-                <div className="hall-champion-banner__rod" />
-                <div className="hall-champion-banner__cords">
-                  <span className="hall-champion-banner__cord" />
-                  <span className="hall-champion-banner__cord" />
-                </div>
-              </div>
-              <div
+          {HALL_OF_CHAMPIONS.map((row) => {
+            const centerImageLayout = row.bannerLayout === 'centerImage'
+            const sheetMods = [
+              'hall-champion-banner__sheet',
+              row.bannerImage && !centerImageLayout
+                ? 'hall-champion-banner__sheet--fullbleed'
+                : null,
+              row.bannerImage && centerImageLayout
+                ? 'hall-champion-banner__sheet--center-image'
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' ')
+            return (
+              <li
+                key={row.season}
                 className={
-                  'hall-champion-banner__sheet' +
-                  (row.bannerImage
-                    ? ' hall-champion-banner__sheet--fullbleed'
-                    : '')
+                  'hall-champion-banner' +
+                  (centerImageLayout ? ' hall-champion-banner--center-image' : '')
                 }
               >
-                {row.bannerImage ? (
-                  <img
-                    className="hall-champion-banner__fullbleed-img"
-                    src={`${import.meta.env.BASE_URL}${row.bannerImage}`}
-                    alt={`${row.team}, ${row.season} season champion`}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : null}
-                <div className="hall-champion-banner__sheet-content">
-                  <p className="hall-champion-banner__team">{row.team}</p>
-                  {row.bannerImage ? (
-                    <div
-                      className="hall-champion-banner__sheet-spacer"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <div className="hall-champion-banner__avatar">
-                      <TeamAvatar
-                        entryId={row.entryId ?? null}
-                        name={row.team}
-                        size="lg"
-                        logoMap={logoMap ?? {}}
-                        kitIndexByEntry={kitIndexByEntry}
-                      />
-                    </div>
-                  )}
-                  <p className="hall-champion-banner__season">{row.season} season</p>
+                <div className="hall-champion-banner__rigging" aria-hidden="true">
+                  <div className="hall-champion-banner__rod" />
+                  <div className="hall-champion-banner__cords">
+                    <span className="hall-champion-banner__cord" />
+                    <span className="hall-champion-banner__cord" />
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+                <div className={sheetMods}>
+                  {row.bannerImage && !centerImageLayout ? (
+                    <img
+                      className="hall-champion-banner__fullbleed-img"
+                      src={`${import.meta.env.BASE_URL}${row.bannerImage}`}
+                      alt={`${row.team}, ${row.season} season champion`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : null}
+                  <div
+                    className={
+                      'hall-champion-banner__sheet-content' +
+                      (centerImageLayout ? ' hall-champion-banner__sheet-content--center-image' : '')
+                    }
+                  >
+                    <p className="hall-champion-banner__team">{row.team}</p>
+                    {row.bannerImage && centerImageLayout ? (
+                      <div className="hall-champion-banner__center-image-wrap">
+                        <img
+                          className="hall-champion-banner__center-image-img"
+                          src={`${import.meta.env.BASE_URL}${row.bannerImage}`}
+                          alt=""
+                          aria-hidden="true"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </div>
+                    ) : row.bannerImage ? (
+                      <div
+                        className="hall-champion-banner__sheet-spacer"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <div className="hall-champion-banner__avatar">
+                        <TeamAvatar
+                          entryId={row.entryId ?? null}
+                          name={row.team}
+                          size="lg"
+                          logoMap={logoMap ?? {}}
+                          kitIndexByEntry={kitIndexByEntry}
+                        />
+                      </div>
+                    )}
+                    <p
+                      className={
+                        'hall-champion-banner__season' +
+                        (centerImageLayout
+                          ? ' hall-champion-banner__season--hall-gold-flat'
+                          : '')
+                      }
+                    >
+                      {centerImageLayout ? row.season : `${row.season} season`}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            )
+          })}
         </ul>
       </section>
       <HistoricStandingsSection />

@@ -9400,6 +9400,69 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   display: none;
 }
 
+/* Centred artwork: image between hall-gold headings (title + season aren’t baked in) */
+.hall-champion-banner--center-image {
+  --hall-banner-min-height: 304px;
+  max-width: 200px;
+}
+
+.hall-champion-banner__sheet--center-image {
+  border-color: rgba(255, 213, 74, 0.35);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 1px rgba(255, 213, 74, 0.12);
+}
+
+.hall-champion-banner__sheet-content--center-image {
+  padding: 11px 7px 12px;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: var(--hall-banner-min-height);
+}
+
+.hall-champion-banner__sheet-content--center-image .hall-champion-banner__team {
+  flex-shrink: 0;
+  margin: 0 0 2px;
+  font-size: clamp(0.7rem, 1.52vw, 0.82rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--hall-gold);
+  letter-spacing: 0.035em;
+  text-transform: none;
+  word-wrap: break-word;
+}
+
+.hall-champion-banner__center-image-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hall-champion-banner__center-image-img {
+  max-width: 100%;
+  max-height: min(168px, 48vw);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.5));
+}
+
+.hall-champion-banner__season--hall-gold-flat {
+  flex-shrink: 0;
+  margin: 6px 0 0;
+  font-size: clamp(0.7rem, 1.5vw, 0.82rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--hall-gold);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
 .hall-champion-banner__sheet--fullbleed .hall-champion-banner__sheet-content {
   padding: 10px 7px 11px;
 }
