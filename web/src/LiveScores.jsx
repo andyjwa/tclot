@@ -92,8 +92,7 @@ function KitThumb({ shirtUrl, badgeUrl, teamShort }) {
 }
 
 /**
- * Tint Starting XI from ESPN confirmed matchday squads once both clubs have published XIs
- * (same readiness as the Lineups tab — see {@link computeEspnMatchdayRole}; not KO-gated).
+ * Resolved ESPN Published XI tone for matchday colouring (pill + row tooltip); used for Starting XI **and Bench** picks.
  * @returns {'' | 'live-picks-row--mdy-xi' | 'live-picks-row--mdy-bench' | 'live-picks-row--mdy-absent'}
  */
 function liveStartingXiMatchdayRowClass(row) {
@@ -109,7 +108,7 @@ function liveMatchdayRowTitle(toneClass) {
     case 'live-picks-row--mdy-xi':
       return 'In the Premier League starting XI for this match.';
     case 'live-picks-row--mdy-bench':
-      return 'On the Premier League bench for this match (still in your fantasy XI until autosub/rules apply).';
+      return 'Listed on the Premier League bench for this fixture.';
     case 'live-picks-row--mdy-absent':
       return 'Not in the published Premier League squad for this fixture — strongly consider swapping out.';
     default:
@@ -117,8 +116,22 @@ function liveMatchdayRowTitle(toneClass) {
   }
 }
 
+/** Map row tone ({@link liveStartingXiMatchdayRowClass}) to pill modifier classes */
+function liveStartingXiMatchdayPillClass(rowToneClass) {
+  switch (rowToneClass) {
+    case 'live-picks-row--mdy-xi':
+      return 'live-player-mdy-pill live-player-mdy-pill--xi';
+    case 'live-picks-row--mdy-bench':
+      return 'live-player-mdy-pill live-player-mdy-pill--bench';
+    case 'live-picks-row--mdy-absent':
+      return 'live-player-mdy-pill live-player-mdy-pill--absent';
+    default:
+      return '';
+  }
+}
+
 /**
- * @param {{ rows: object[], autosubInElementIds?: Set<number>, onPlayerClick?: (row: object) => void, toneTable?: 'starting-xi' }} props
+ * @param {{ rows: object[], autosubInElementIds?: Set<number>, onPlayerClick?: (row: object) => void, toneTable?: 'matchday' }} props
  */
 function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
   const portraitLineup = usePortraitLineupMatch();
@@ -202,15 +215,34 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
             const minsTone = livePickMinsCellClass(r);
             const playerColName = r.displayName ?? r.web_name ?? '—';
             const fullLabel = `${playerColName}${r.opponentShortLabel ? ` (${r.opponentShortLabel})` : ''} · #${r.element}${r.teamName ? ` · ${r.teamName}` : ''}`;
-            const mdyToneClass =
-              toneTable === 'starting-xi' ? liveStartingXiMatchdayRowClass(r) : '';
-            const mdyTitle = liveMatchdayRowTitle(mdyToneClass);
+            const mdyRowTone =
+              toneTable === 'matchday' ? liveStartingXiMatchdayRowClass(r) : '';
+            const mdyTitle = liveMatchdayRowTitle(mdyRowTone);
+            const mdyPillClass = liveStartingXiMatchdayPillClass(mdyRowTone);
+            const nameLabel =
+              mdyPillClass ? (
+                <span className={mdyPillClass}>
+                  {playerColName}
+                  {r.opponentShortLabel ? (
+                    <span className="live-player-opponent">
+                      {' '}
+                      ({r.opponentShortLabel})
+                    </span>
+                  ) : null}
+                </span>
+              ) : (
+                <>
+                  {playerColName}
+                  {r.opponentShortLabel ? (
+                    <span className="live-player-opponent">
+                      {' '}
+                      ({r.opponentShortLabel})
+                    </span>
+                  ) : null}
+                </>
+              );
             return (
-            <tr
-              key={`${r.pickPosition}-${r.element}`}
-              className={mdyToneClass || undefined}
-              title={mdyTitle}
-            >
+            <tr key={`${r.pickPosition}-${r.element}`} title={mdyTitle}>
               <td className="live-picks-col-player">
                 <div className="live-player-cell">
                   <KitThumb
@@ -230,13 +262,7 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
                           title={`${fullLabel} — view season history`}
                           onClick={() => onPlayerClick(r)}
                         >
-                          {playerColName}
-                          {r.opponentShortLabel ? (
-                            <span className="live-player-opponent">
-                              {' '}
-                              ({r.opponentShortLabel})
-                            </span>
-                          ) : null}
+                          {nameLabel}
                         </button>
                       ) : (
                         <div
@@ -246,13 +272,7 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
                           }
                           title={fullLabel}
                         >
-                          {playerColName}
-                          {r.opponentShortLabel ? (
-                            <span className="live-player-opponent">
-                              {' '}
-                              ({r.opponentShortLabel})
-                            </span>
-                          ) : null}
+                          {nameLabel}
                         </div>
                       )}
                       {r.availabilityStatus === 'i' ? (
@@ -772,7 +792,7 @@ function SquadLineupPanel({ squad, onPlayerClick }) {
         <PicksTable
           rows={starters}
           autosubInElementIds={autosubInElementIds}
-          toneTable="starting-xi"
+          toneTable="matchday"
           onPlayerClick={
             onPlayerClick ? (r) => onPlayerClick(r, squad) : undefined
           }
@@ -782,6 +802,7 @@ function SquadLineupPanel({ squad, onPlayerClick }) {
       <div className="live-picks-table-wrap live-picks-table-wrap--lineup-portrait">
         <PicksTable
           rows={bench}
+          toneTable="matchday"
           onPlayerClick={
             onPlayerClick ? (r) => onPlayerClick(r, squad) : undefined
           }
