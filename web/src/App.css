@@ -9400,12 +9400,7 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   display: none;
 }
 
-/* Centred artwork: image between hall-gold headings (title + season aren’t baked in) */
-.hall-champion-banner--center-image {
-  --hall-banner-min-height: 304px;
-  max-width: 200px;
-}
-
+/* Centred artwork: same pennant footprint as siblings; typography matches baked full-bleed (Caveat + hall gold) */
 .hall-champion-banner__sheet--center-image {
   border-color: rgba(255, 213, 74, 0.35);
   box-shadow:
@@ -9414,22 +9409,29 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 .hall-champion-banner__sheet-content--center-image {
-  padding: 11px 7px 12px;
+  padding: 10px 7px 11px;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   min-height: var(--hall-banner-min-height);
 }
 
 .hall-champion-banner__sheet-content--center-image .hall-champion-banner__team {
   flex-shrink: 0;
   margin: 0 0 2px;
-  font-size: clamp(0.7rem, 1.52vw, 0.82rem);
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--hall-gold);
-  letter-spacing: 0.035em;
+  font-family: Caveat, cursive;
+  font-weight: 700;
+  font-size: clamp(1.28rem, 3.6vw, 1.72rem);
+  letter-spacing: 0.015em;
+  line-height: 1.05;
   text-transform: none;
+  color: var(--hall-gold);
   word-wrap: break-word;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  text-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.92),
+    0 0 2px rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .hall-champion-banner__center-image-wrap {
@@ -9443,7 +9445,7 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 
 .hall-champion-banner__center-image-img {
   max-width: 100%;
-  max-height: min(168px, 48vw);
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -9451,16 +9453,20 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.5));
 }
 
-.hall-champion-banner__season--hall-gold-flat {
+.hall-champion-banner__sheet-content--center-image .hall-champion-banner__season {
   flex-shrink: 0;
-  margin: 6px 0 0;
-  font-size: clamp(0.7rem, 1.5vw, 0.82rem);
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--hall-gold);
-  letter-spacing: 0.06em;
+  margin: 8px 0 0;
+  font-family: Caveat, cursive;
+  font-weight: 700;
+  font-size: clamp(1.12rem, 3.1vw, 1.52rem);
+  letter-spacing: 0.015em;
+  line-height: 1.05;
   text-transform: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  color: var(--hall-gold);
+  text-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.92),
+    0 0 2px rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .hall-champion-banner__sheet--fullbleed .hall-champion-banner__sheet-content {

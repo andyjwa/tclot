@@ -617,13 +617,7 @@ function HallOfChampions({ logoMap, kitIndexByEntry = {}, tableRows = [] }) {
               .filter(Boolean)
               .join(' ')
             return (
-              <li
-                key={row.season}
-                className={
-                  'hall-champion-banner' +
-                  (centerImageLayout ? ' hall-champion-banner--center-image' : '')
-                }
-              >
+              <li key={row.season} className="hall-champion-banner">
                 <div className="hall-champion-banner__rigging" aria-hidden="true">
                   <div className="hall-champion-banner__rod" />
                   <div className="hall-champion-banner__cords">
@@ -675,14 +669,7 @@ function HallOfChampions({ logoMap, kitIndexByEntry = {}, tableRows = [] }) {
                         />
                       </div>
                     )}
-                    <p
-                      className={
-                        'hall-champion-banner__season' +
-                        (centerImageLayout
-                          ? ' hall-champion-banner__season--hall-gold-flat'
-                          : '')
-                      }
-                    >
+                    <p className="hall-champion-banner__season">
                       {centerImageLayout ? row.season : `${row.season} season`}
                     </p>
                   </div>
