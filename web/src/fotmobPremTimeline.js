@@ -230,6 +230,9 @@ function firstGivenTokenFits(g, r) {
   if (!g) return !r.fn && !r.kn;
   const fn = r.fn;
   const kn = r.kn;
+  /** ESPN may use initials (“R.” → `r`) while FPL carries the full `first_name`. */
+  if (fn && fn.length > 1 && g.length === 1 && g === fn.slice(0, 1)) return true;
+  if (kn && kn.length > 1 && g.length === 1 && g === kn.slice(0, 1)) return true;
   if (g === fn) return true;
   if (kn && g === kn) return true;
   if (fn) {
@@ -309,6 +312,19 @@ export function matchFplElementId(teamFplId, displayName, elementById) {
     if (!r) return false;
     const toksN = needle.split(/\s+/).filter(Boolean);
     if (toksN.length >= 2 && r.sn) {
+      /**
+       * ESPN often splits hyphenated surnames with spaces (“R. Ait Nouri”), while FPL keeps
+       * `second_name` as “Aït-Nouri”. Match the last **two** tokens when they align after
+       * normalising hyphens to spaces on the FPL side.
+       */
+      if (toksN.length >= 3) {
+        const compound = toksN.slice(-2).join(' ');
+        const snFlat = String(r.sn).replace(/-/g, ' ');
+        const compoundFlat = compound.replace(/-/g, ' ');
+        if (compoundFlat === snFlat || compound === snFlat) {
+          if (firstGivenTokenFits(toksN[0], r)) return true;
+        }
+      }
       if (
         firstWord(r.sn) === toksN[toksN.length - 1] &&
         firstGivenTokenFits(toksN[0], r)

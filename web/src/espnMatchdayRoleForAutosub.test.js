@@ -55,6 +55,33 @@ test('computeEspnMatchdayRole — absent when resolved coverage is high', () => 
   assert.equal(computeEspnMatchdayRole(rows, gwFx, 99999, 14), 'absent');
 });
 
+test('computeEspnMatchdayRole — unknown when any squad row lacks elementId (name coverage gap)', () => {
+  const xi = Array.from({ length: 11 }, (_, i) => ({ elementId: 300 + i }));
+  const bench = [
+    { elementId: 315 },
+    { elementId: null },
+    ...Array.from({ length: 5 }, (_, i) => ({ elementId: 316 + i })),
+  ];
+  const rows = [
+    {
+      fplFixture: { id: 9001, team_h: 14, team_a: 3 },
+      lineups: {
+        home: {
+          confirmed: true,
+          xi,
+          bench,
+        },
+        away: {
+          confirmed: true,
+          xi: Array.from({ length: 11 }, (_, i) => ({ elementId: 400 + i })),
+          bench: Array.from({ length: 7 }, (_, i) => ({ elementId: 420 + i })),
+        },
+      },
+    },
+  ];
+  assert.equal(computeEspnMatchdayRole(rows, gwFx, 99999, 14), null);
+});
+
 test('computeEspnMatchdayRole — unknown when not enough resolved ids', () => {
   const rows = [
     {

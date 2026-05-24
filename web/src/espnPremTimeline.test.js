@@ -184,6 +184,20 @@ test('matchFplElementId — Jair: feed "Jair Paula" vs FPL second_name "Paula da
   assert.equal(matchFplElementId(16, 'Jair Paula', elementById), 510);
 });
 
+test('matchFplElementId — hyphenated surname split across tokens (“R. Ait Nouri” vs Aït-Nouri)', () => {
+  const elementById = {
+    616: {
+      id: 616,
+      team: 20,
+      first_name: 'Rayan',
+      second_name: 'Aït-Nouri',
+      web_name: 'Aït-Nouri',
+    },
+  };
+  assert.equal(matchFplElementId(20, 'R. Ait Nouri', elementById), 616);
+  assert.equal(matchFplElementId(20, 'Rayan Ait Nouri', elementById), 616);
+});
+
 test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Chelsea yellow', async () => {
   const origFetch = globalThis.fetch;
   const calls = [];

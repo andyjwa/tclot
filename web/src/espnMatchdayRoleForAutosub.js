@@ -1,9 +1,9 @@
 import { fixturesForTeamInGw } from './fplBonusFromBps.js';
 
 /**
- * Minimum number of ESPN lineup rows (home or away) with a resolved FPL `elementId` before we
- * treat “not listed on xi or bench” as **absent** (not in the matchday squad). Below this we
- * assume name-matching gaps and return `null` (unknown).
+ * Threshold for strong lineup coverage (@see MIN_RESOLVED_IDS_FOR_ABSENT) alongside **every**
+ * Published XI+bench row resolving to an FPL `elementId` before we infer **absent**; otherwise
+ * unknown (`null`) so ESPN→FPL name gaps never mark a listed player absent.
  */
 const MIN_RESOLVED_IDS_FOR_ABSENT = 16;
 
@@ -20,6 +20,13 @@ const MIN_RESOLVED_IDS_FOR_ABSENT = 16;
  * @param {number | null} teamId — FPL team id from bootstrap
  * @returns {'xi' | 'bench' | 'absent' | null}
  */
+function lineupSlotHasFplId(p) {
+  const raw = p?.elementId;
+  /** `Number(null) === 0` — exclude nullish so unresolved rows aren't treated as element 0. */
+  if (raw == null || raw === '') return false;
+  return Number.isFinite(Number(raw));
+}
+
 export function computeEspnMatchdayRole(espnPremRows, gwFixtures, elementId, teamId) {
   const eid = Number(elementId);
   const tid = Number(teamId);
@@ -40,13 +47,27 @@ export function computeEspnMatchdayRole(espnPremRows, gwFixtures, elementId, tea
 
   const xi = Array.isArray(side.xi) ? side.xi : [];
   const bench = Array.isArray(side.bench) ? side.bench : [];
+  /** Every published squad slot — used to detect unresolved ESPN→FPL name rows. */
+  const squad = [...xi, ...bench];
 
-  if (xi.some((p) => Number(p?.elementId) === eid)) return 'xi';
-  if (bench.some((p) => Number(p?.elementId) === eid)) return 'bench';
+  if (
+    xi.some((p) => lineupSlotHasFplId(p) && Number(p.elementId) === eid)
+  )
+    return 'xi';
+  if (
+    bench.some((p) => lineupSlotHasFplId(p) && Number(p.elementId) === eid)
+  )
+    return 'bench';
 
-  const resolved = [...xi, ...bench].filter((p) =>
-    Number.isFinite(Number(p?.elementId))
-  ).length;
-  if (resolved >= MIN_RESOLVED_IDS_FOR_ABSENT) return 'absent';
+  const resolved = squad.filter((p) => lineupSlotHasFplId(p)).length;
+  /** If any roster row lacks an element id, players not matched by id might still sit in those rows. */
+  const unresolvedSlots = squad.length - resolved;
+
+  if (
+    resolved >= MIN_RESOLVED_IDS_FOR_ABSENT &&
+    unresolvedSlots === 0
+  )
+    return 'absent';
+
   return null;
 }
