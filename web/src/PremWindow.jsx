@@ -683,6 +683,7 @@ export function PremWindow({
   const {
     loading: liveLoading,
     error: liveError,
+    fixturesDegradedNotice: liveFixturesDegradedNotice,
     events,
     squads,
     contributionLiveContext,
@@ -842,6 +843,11 @@ export function PremWindow({
         {liveError ? (
           <div className="data-banner data-banner--error" role="alert">
             <strong>Could not load live FPL context.</strong> {liveError}
+          </div>
+        ) : null}
+        {!liveError && liveFixturesDegradedNotice ? (
+          <div className="data-banner" role="status">
+            <strong>Limited fixture data.</strong> {liveFixturesDegradedNotice}
           </div>
         ) : null}
         {espnWindowError ? (

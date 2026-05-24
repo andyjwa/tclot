@@ -359,6 +359,8 @@ export function useLiveScores({
   const [squads, setSquads] = useState([]);
   /** For player-contribution deltas: full live rows + bootstrap maps */
   const [contributionLiveContext, setContributionLiveContext] = useState(null);
+  /** Classic `fantasy.premierleague.com/api/fixtures` failed; draft/live+picks path still succeeds. */
+  const [fixturesDegradedNotice, setFixturesDegradedNotice] = useState(null);
 
   /** Parent passes a new `teams` array each render; ref avoids infinite load loops. */
   const teamsRef = useRef(teams);
@@ -394,6 +396,7 @@ export function useLiveScores({
 
     setLoading(true);
     setError(null);
+    setFixturesDegradedNotice(null);
 
     try {
       const bootUrl = draftResourceUrl('bootstrap-static');
@@ -447,12 +450,26 @@ export function useLiveScores({
       }
 
       const fxUrl = classicResourceUrl(`fixtures?event=${gw}`);
-      const fixturesPayload = await fetchFplJsonCached(fxUrl, {
-        label: 'classic fixtures',
-      });
-      const gwFixtures = Array.isArray(fixturesPayload)
-        ? fixturesPayload.filter((f) => Number(f.event) === gw)
-        : [];
+      let gwFixtures = [];
+      try {
+        const fixturesPayload = await fetchFplJsonCached(fxUrl, {
+          label: 'classic fixtures',
+        });
+        gwFixtures = Array.isArray(fixturesPayload)
+          ? fixturesPayload.filter((f) => Number(f.event) === gw)
+          : [];
+      } catch (fixtureErr) {
+        const msg = fixtureErr?.message || String(fixtureErr);
+        gwFixtures = [];
+        const is503 = /\b503\b/.test(msg);
+        if (loadGen === loadGenerationRef.current) {
+          setFixturesDegradedNotice(
+            is503
+              ? 'FPL’s classic fixtures API is returning HTTP 503 (often “The game is being updated.” during maintenance). Draft lineups and live points still load below; provisional bonus, opponent labels, Premier window / ESPN bridge, and some “played / yet to play” hints may be wrong until classics respond again.'
+              : `Classic fixtures failed (${msg}). Draft lineups and live points still load; fixture-dependent details may be wrong until this succeeds.`,
+          );
+        }
+      }
 
       const provisionalByElement = computeProvisionalGwBonusByElementId(
         elements,
@@ -616,6 +633,7 @@ export function useLiveScores({
       setLastUpdated(new Date().toISOString());
     } catch (e) {
       if (loadGen === loadGenerationRef.current) {
+        setFixturesDegradedNotice(null);
         setError(e?.message || String(e));
         setSquads([]);
         setContributionLiveContext(null);
@@ -668,6 +686,7 @@ export function useLiveScores({
   return {
     loading,
     error,
+    fixturesDegradedNotice,
     refresh,
     lastUpdated,
     events,

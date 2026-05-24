@@ -1,4 +1,5 @@
-import { usePortraitMobile } from './usePortraitMobile.js'
+import { useCallback, useState } from 'react'
+import { useMobileLayout } from './usePortraitMobile.js'
 import './FplLiveTripleThreatBanner.css'
 
 const MEET_HREF =
@@ -7,11 +8,27 @@ const MEET_HREF =
     ? import.meta.env.VITE_MEET_PROMO_LINK.trim()
     : 'https://meet.google.com/gfh-esfp-xpd'
 
-/** Live GW portrait-only Triple Threat banner (between pills and ticker when `portrait`). */
-export function FplLiveTripleThreatBanner() {
-  const portrait = usePortraitMobile()
+const DISMISS_SESSION_KEY = 'tclot:fpl-live-triple-promo:dismissed'
 
-  if (!portrait) return null
+/** Triple Threat Meet promo banner (between FPL Live pills and H2H ticker). Shown at all breakpoints. */
+export function FplLiveTripleThreatBanner() {
+  const mobileLayout = useMobileLayout()
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof sessionStorage === 'undefined') return false
+    return sessionStorage.getItem(DISMISS_SESSION_KEY) === '1'
+  })
+
+  const onDismiss = useCallback(() => {
+    try {
+      sessionStorage.setItem(DISMISS_SESSION_KEY, '1')
+    } catch {
+      /* private mode etc. */
+    }
+    setDismissed(true)
+  }, [])
+
+  /* Narrow layout: honor hide-until-next-tab session flag. Wide desktop still shows promo. */
+  if (mobileLayout && dismissed) return null
 
   const basePrefix = `${import.meta.env.BASE_URL ?? '/'}`.replace(/\/?$/, '/')
   const posterSrc = `${basePrefix}promos/triple-threat-live-gw.png`
@@ -23,6 +40,18 @@ export function FplLiveTripleThreatBanner() {
           Triple Threat Match championship poster — join Google Meet from the hotspot at the bottom
         </h2>
         <img className="fpl-live-triple-promo__img" src={posterSrc} alt="" />
+        {mobileLayout ? (
+          <button
+            type="button"
+            className="fpl-live-triple-promo__dismiss"
+            onClick={onDismiss}
+            aria-label="Hide Triple Threat banner until you open a new browser tab"
+          >
+            <span className="fpl-live-triple-promo__dismiss-x" aria-hidden>
+              ×
+            </span>
+          </button>
+        ) : null}
         <a
           className="fpl-live-triple-promo__meet"
           href={MEET_HREF}

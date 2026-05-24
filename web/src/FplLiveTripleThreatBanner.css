@@ -14,6 +14,8 @@
   position: relative;
   overflow: hidden;
   border-radius: 12px;
+  max-width: min(560px, 100%);
+  margin-inline: auto;
   box-shadow:
     0 4px 18px rgba(0, 0, 0, 0.1),
     0 0 0 1px color-mix(in srgb, var(--fm-border) 55%, transparent);
@@ -39,6 +41,61 @@
 .fpl-live-triple-promo__meet:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 75%, transparent);
   outline-offset: -2px;
+}
+
+/* Mobile / narrow chrome (≤1080px match app shell): prominent close — top-right. */
+.fpl-live-triple-promo__dismiss {
+  position: absolute;
+  top: clamp(6px, 2vw, 10px);
+  right: clamp(6px, 2vw, 10px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(38px, 10vw, 44px);
+  height: clamp(38px, 10vw, 44px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, rgba(0, 0, 0, 0.35));
+  background: rgba(255, 255, 255, 0.97);
+  color: #1a1a1c;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fotmob[data-theme='dark'] .fpl-live-triple-promo__dismiss {
+  background: rgba(30, 30, 34, 0.95);
+  border-color: color-mix(in srgb, #ffffff 35%, rgba(255, 255, 255, 0.12));
+  color: #fafafa;
+  box-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.fpl-live-triple-promo__dismiss:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fpl-live-triple-promo__dismiss:active {
+    transform: none;
+  }
+}
+
+.fpl-live-triple-promo__dismiss-x {
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: -0.06em;
+}
+
+.fpl-live-triple-promo__dismiss:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 75%, transparent);
+  outline-offset: 2px;
 }
 
 .fpl-live-triple-promo__sr-only {

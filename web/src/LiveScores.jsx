@@ -788,7 +788,7 @@ export function LiveScores({
   /** Mobile app shell: hide tile h2; GW toolbar sticks below section sub-pills. */
   compactMobileChrome = false,
 }) {
-  const { loading, error, refresh, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
+  const { loading, error, fixturesDegradedNotice, refresh, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
       teams,
       gameweek,
@@ -1294,6 +1294,11 @@ export function LiveScores({
                 </>
               )}
             </span>
+          </div>
+        ) : null}
+        {!error && fixturesDegradedNotice ? (
+          <div className="data-banner" role="status">
+            <strong>Limited fixture data.</strong> {fixturesDegradedNotice}
           </div>
         ) : null}
       </section>
