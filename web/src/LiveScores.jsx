@@ -380,7 +380,16 @@ function teamNameForEntry(teams, leagueEntryId) {
  * Winner-first score in each chip (e.g. 34–21). For draws, home tile score first (same order as FPL row).
  * Uses live GW XI totals when this row is the active gameweek pairing.
  */
-function seasonH2hBetween(matches, homeId, awayId, gameweek, liveHomePts, liveAwayPts) {
+function seasonH2hBetween(
+  matches,
+  homeId,
+  awayId,
+  gameweek,
+  liveHomePts,
+  liveAwayPts,
+  /** When false and this row uses live subs, a 0–0 score is omitted (unsettled GW, not a real draw). */
+  selectedGwFinished,
+) {
   const h = Number(homeId);
   const a = Number(awayId);
   const gwNum = Number(gameweek);
@@ -399,6 +408,9 @@ function seasonH2hBetween(matches, homeId, awayId, gameweek, liveHomePts, liveAw
     if (Number.isFinite(ev) && ev === gwNum && liveHomePts != null && liveAwayPts != null) {
       hp = liveHomePts;
       ap = liveAwayPts;
+      if (hp === 0 && ap === 0 && !selectedGwFinished) {
+        continue;
+      }
     } else {
       const p1 = Number(m.league_entry_1_points);
       const p2 = Number(m.league_entry_2_points);
@@ -423,7 +435,7 @@ function seasonH2hBetween(matches, homeId, awayId, gameweek, liveHomePts, liveAw
 }
 
 /**
- * @param {{ homeId: number, awayId: number, homeName: string, awayName: string, matches: object[], gameweek: number, liveHomePts: number | null | undefined, liveAwayPts: number | null | undefined, teamLogoMap: object, kitIndexByEntry?: object }} props
+ * @param {{ homeId: number, awayId: number, homeName: string, awayName: string, matches: object[], gameweek: number, liveHomePts: number | null | undefined, liveAwayPts: number | null | undefined, selectedGwFinished: boolean, teamLogoMap: object, kitIndexByEntry?: object }} props
  */
 function LiveFixtureSeasonH2h({
   homeId,
@@ -434,13 +446,30 @@ function LiveFixtureSeasonH2h({
   gameweek,
   liveHomePts,
   liveAwayPts,
+  selectedGwFinished,
   teamLogoMap,
   kitIndexByEntry,
 }) {
   const { homeWins, awayWins, draws } = useMemo(
     () =>
-      seasonH2hBetween(matches, homeId, awayId, gameweek, liveHomePts, liveAwayPts),
-    [matches, homeId, awayId, gameweek, liveHomePts, liveAwayPts],
+      seasonH2hBetween(
+        matches,
+        homeId,
+        awayId,
+        gameweek,
+        liveHomePts,
+        liveAwayPts,
+        selectedGwFinished,
+      ),
+    [
+      matches,
+      homeId,
+      awayId,
+      gameweek,
+      liveHomePts,
+      liveAwayPts,
+      selectedGwFinished,
+    ],
   );
   const hasAny = homeWins.length + awayWins.length + draws.length > 0;
 
@@ -1612,6 +1641,7 @@ export function LiveScores({
                       gameweek={gameweek}
                       liveHomePts={homeLive}
                       liveAwayPts={awayLive}
+                      selectedGwFinished={Boolean(selectedGwOption?.finished)}
                       teamLogoMap={teamLogoMap}
                       kitIndexByEntry={kitIndexByEntry}
                     />
