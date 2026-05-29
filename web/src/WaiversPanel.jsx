@@ -327,9 +327,6 @@ function WeeklyWaiversGlance({ groups, teamLogoMap, kitIndexByEntry }) {
                       pos={m.pickedPos}
                       dir="in"
                     />
-                    <span className="waivers-swap__arrow" aria-hidden="true">
-                      ⇄
-                    </span>
                     <WvPlayerCell
                       element={m.element_out}
                       name={m.droppedName}
@@ -408,9 +405,6 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
                       pos={m.pickedPos}
                       dir="in"
                     />
-                    <span className="waivers-swap__arrow" aria-hidden="true">
-                      ⇄
-                    </span>
                     <WvPlayerCell
                       element={m.element_out}
                       name={m.droppedName}
