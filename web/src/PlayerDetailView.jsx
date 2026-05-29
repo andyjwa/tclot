@@ -39,8 +39,13 @@ function deriveXiKind(el) {
  * agent OR when rosters haven't loaded yet (the hero falls back to the
  * Free agent dot in that case — same as the locked Mockup).
  *
+ * `leagueEntryId` is passed straight through so the hero can render
+ * the manager's fantasy badge via {@link TeamAvatar}; `code` keeps a
+ * short text fallback ready for callers that need it (the hero itself
+ * no longer renders it — see `PlayerDetailHero.jsx`).
+ *
  * @param {{ leagueEntryId: number, teamName: string } | null} owner
- * @returns {{ code: string, name: string } | null}
+ * @returns {{ leagueEntryId: number | null, code: string, name: string } | null}
  */
 function buildOwnerLabel(owner) {
   if (!owner?.teamName) return null
@@ -51,7 +56,11 @@ function buildOwnerLabel(owner) {
     .map((p) => p.charAt(0).toUpperCase())
     .join('')
     .slice(0, 3)
-  return { code: initials || '?', name: owner.teamName }
+  return {
+    leagueEntryId: owner.leagueEntryId ?? null,
+    code: initials || '?',
+    name: owner.teamName,
+  }
 }
 
 /**
@@ -284,17 +293,15 @@ export function PlayerDetailView({
         </div>
       ) : null}
 
-      {compareOpen ? null : (
-        <PlayerDetailHero
-          el={playerEl}
-          team={team}
-          ownerLabel={ownerLabel}
-          xiKind={xiKind}
-          portrait={portrait}
-          onCompareClick={() => setCompareOpen(true)}
-          compareDisabled={false}
-        />
-      )}
+      <PlayerDetailHero
+        el={playerEl}
+        team={team}
+        ownerLabel={ownerLabel}
+        xiKind={xiKind}
+        portrait={portrait}
+        logoMap={logoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
 
       {compareOpen ? (
         <PlayerCompareView

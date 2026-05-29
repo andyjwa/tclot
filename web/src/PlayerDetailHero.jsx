@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { fplElementFullName, fplElementWebName } from './fplElementNames.js'
 import { POS_LABEL } from './playersWireList.js'
+import { TeamAvatar } from './TeamAvatar'
 
 /**
  * Premier League transparent club crest, retina variant for crisp
@@ -65,9 +66,13 @@ function CrestImg({ url, fallback, className = '' }) {
 
 /**
  * Desktop hero — 120 px crest with XI status pill stacked under it,
- * meta row + name + owner row in the body, single Compare chip on the
- * right. 1:1 port of `PlayerDetailDesktop` hero from
- * `web/src/Mockup.jsx` (~line 4568).
+ * meta row + name + owner row in the body. The owner row's "On
+ * {crest} {team}" line renders the manager's fantasy team badge via
+ * {@link TeamAvatar} (logos under `team-logos-web/`), falling back to
+ * its kit silhouette + 3-letter shortcode when no custom logo is
+ * shipped for the league entry. 1:1 port of `PlayerDetailDesktop`
+ * hero from `web/src/Mockup.jsx` (~line 4568), minus the legacy
+ * Compare chip which was removed across the site.
  *
  * @param {object} props
  */
@@ -76,8 +81,8 @@ function PlayerDetailHeroDesktop({
   team,
   ownerLabel,
   xiKind,
-  onCompareClick,
-  compareDisabled = false,
+  logoMap,
+  kitIndexByEntry,
 }) {
   const badgeUrl = plBadgeUrl(team?.code)
   const posLabel = POS_LABEL[el?.element_type] ?? '?'
@@ -86,7 +91,7 @@ function PlayerDetailHeroDesktop({
   const xiSuffix = xiClassSuffix(xiKind)
   const shirtRaw = Number(el?.squad_number)
   const shirtLabel = Number.isFinite(shirtRaw) && shirtRaw > 0 ? `Shirt #${shirtRaw}` : null
-  const ownerCode = ownerLabel?.code ?? null
+  const ownerLeagueEntryId = ownerLabel?.leagueEntryId ?? null
   const ownerName = ownerLabel?.name ?? null
   return (
     <div className="pdetail__hero">
@@ -118,7 +123,13 @@ function PlayerDetailHeroDesktop({
             <>
               <span>On</span>
               <span className="pdetail__hero-owner-crest" aria-hidden>
-                {ownerCode ?? '?'}
+                <TeamAvatar
+                  entryId={ownerLeagueEntryId}
+                  name={ownerName}
+                  size="sm"
+                  logoMap={logoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
               </span>
               <span className="pdetail__hero-owner-name">{ownerName}</span>
               <span className="pdetail__hero-owner-status">· Starting XI</span>
@@ -134,26 +145,18 @@ function PlayerDetailHeroDesktop({
           )}
         </div>
       </div>
-
-      <div className="pdetail__hero-actions">
-        <button
-          type="button"
-          className="pdetail__btn"
-          onClick={onCompareClick}
-          disabled={compareDisabled}
-          title={compareDisabled ? 'Compare unavailable' : 'Compare with another player'}
-        >
-          <span>Compare</span>
-        </button>
-      </div>
     </div>
   )
 }
 
 /**
- * Portrait hero — back chevron + title strip, then 56 px crest hero with
- * XI/BN/OUT pill on the right, owner strip, Compare chip. 1:1 port of
- * `PlayerDetailPortrait` hero from `web/src/Mockup.jsx` (~line 4661).
+ * Portrait hero — 56 px crest with XI/BN/OUT pill on the right, then
+ * the owner strip ("On {fantasy badge} {team name}"). The Back
+ * chevron + title strip is rendered at the `PlayerDetailView` level
+ * so it shows for every mobile-layout width, not just narrow phones.
+ * 1:1 port of `PlayerDetailPortrait` hero from `web/src/Mockup.jsx`
+ * (~line 4661), minus the legacy Compare chip which was removed
+ * across the site.
  *
  * @param {object} props
  */
@@ -162,15 +165,15 @@ function PlayerDetailHeroPortrait({
   team,
   ownerLabel,
   xiKind,
-  onCompareClick,
-  compareDisabled = false,
+  logoMap,
+  kitIndexByEntry,
 }) {
   const badgeUrl = plBadgeUrl(team?.code)
   const posLabel = POS_LABEL[el?.element_type] ?? '?'
   const webName = fplElementWebName(el, el?.id)
   const fullName = fplElementFullName(el, el?.id)
   const xiSuffix = xiClassSuffix(xiKind)
-  const ownerCode = ownerLabel?.code ?? null
+  const ownerLeagueEntryId = ownerLabel?.leagueEntryId ?? null
   const ownerName = ownerLabel?.name ?? null
   return (
     <div className="pdetail-p__chrome">
@@ -199,7 +202,13 @@ function PlayerDetailHeroPortrait({
           <>
             <span>On</span>
             <span className="pdetail-p__owner-crest" aria-hidden>
-              {ownerCode ?? '?'}
+              <TeamAvatar
+                entryId={ownerLeagueEntryId}
+                name={ownerName}
+                size="sm"
+                logoMap={logoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
             </span>
             <span className="pdetail-p__owner-name">{ownerName}</span>
           </>
@@ -209,18 +218,6 @@ function PlayerDetailHeroPortrait({
             <span>Free agent</span>
           </>
         )}
-      </div>
-
-      <div className="pdetail-p__actions">
-        <button
-          type="button"
-          className="pdetail__btn pdetail-p__btn"
-          onClick={onCompareClick}
-          disabled={compareDisabled}
-          title={compareDisabled ? 'Compare unavailable' : 'Compare with another player'}
-        >
-          <span>Compare</span>
-        </button>
       </div>
     </div>
   )
@@ -236,11 +233,11 @@ function PlayerDetailHeroPortrait({
  * @param {{
  *   el: object,
  *   team: object | null | undefined,
- *   ownerLabel: { code: string, name: string } | null,
+ *   ownerLabel: { leagueEntryId: number | null, code: string, name: string } | null,
  *   xiKind: 'xi' | 'bench' | 'absent',
- *   onCompareClick: () => void,
  *   portrait: boolean,
- *   compareDisabled?: boolean,
+ *   logoMap?: Record<string, string>,
+ *   kitIndexByEntry?: Record<number, number>,
  * }} props
  */
 export function PlayerDetailHero({
@@ -248,9 +245,9 @@ export function PlayerDetailHero({
   team,
   ownerLabel,
   xiKind,
-  onCompareClick,
   portrait,
-  compareDisabled = false,
+  logoMap,
+  kitIndexByEntry,
 }) {
   if (portrait) {
     return (
@@ -259,8 +256,8 @@ export function PlayerDetailHero({
         team={team}
         ownerLabel={ownerLabel}
         xiKind={xiKind}
-        onCompareClick={onCompareClick}
-        compareDisabled={compareDisabled}
+        logoMap={logoMap}
+        kitIndexByEntry={kitIndexByEntry}
       />
     )
   }
@@ -270,8 +267,8 @@ export function PlayerDetailHero({
       team={team}
       ownerLabel={ownerLabel}
       xiKind={xiKind}
-      onCompareClick={onCompareClick}
-      compareDisabled={compareDisabled}
+      logoMap={logoMap}
+      kitIndexByEntry={kitIndexByEntry}
     />
   )
 }
