@@ -224,7 +224,7 @@ export function LeagueInfoModal({
             <div className="li-hero li-hero--banner">
               <img
                 className="li-hero__banner"
-                src="/brand/tclot-header.jpg"
+                src={`${import.meta.env.BASE_URL}brand/tclot-header.jpg`}
                 alt="TCLOT — Tri-Continental League of Titans"
                 id="league-info-modal-title"
               />
@@ -349,7 +349,6 @@ export function LeagueInfoModal({
               id="li-tabpanel-terminology"
               aria-labelledby="li-tab-terminology"
             >
-              <div className="li-card__eyebrow">TCLOT Terminology</div>
               <dl className="li-terms">
                 {TCLOT_TERMS.map((t) => (
                   <div className="li-term" key={t.term}>
