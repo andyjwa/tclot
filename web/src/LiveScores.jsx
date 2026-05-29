@@ -861,20 +861,22 @@ function LiveLastDot({ row, gwStandingsFrozen, gameweek, teams }) {
  * rank 4 and rank 5, hero/villain row tints). Renders two variants:
  *
  *   • mobile (`mobile === true`) — `.standings-table--variant-c-mobile`
- *     5-column layout (#, Team, For, PTS, Last) sized to fit a 390px
+ *     5-column layout (#, Team, For, PTS, GW{n}) sized to fit a 390px
  *     viewport without horizontal scroll. Team names collapse to the
  *     first word via {@link firstWord}.
  *
  *   • desktop — `.standings-table--variant-c .standings-table--sidebar`
  *     11-column layout (#, Team, PL, W, D, L, For, Faced, GD, PTS,
- *     Last), full team names, same column widths as the production
+ *     GW{n}), full team names, same column widths as the production
  *     Standings table.
  *
- * Both variants drop the legacy `Last 5` 5-dot column and rename `GW`
- * to `LAST` (single dot rendered by {@link LiveLastDot}). PTS is
- * rendered via the shared `<PointsCell size="md" />` so violet PTS
- * styling stays unified across Live Table, Standings, CofC, and the
- * algorithm leaderboard.
+ * Both variants drop the legacy `Last 5` 5-dot column. The final
+ * column is a single H2H-result dot (rendered by {@link LiveLastDot})
+ * headed with the current gameweek number (e.g. `GW 38`) so the
+ * column self-identifies as "this GW's H2H result" without a separate
+ * pill above the tile. PTS is rendered via the shared `<PointsCell
+ * size="md" />` so violet PTS styling stays unified across Live Table,
+ * Standings, CofC, and the algorithm leaderboard.
  */
 function LiveStandingsTable({
   liveStandingsRows,
@@ -908,7 +910,7 @@ function LiveStandingsTable({
                 className="col-last"
                 title={lastTitle}
               >
-                Last
+                GW {gameweek}
               </th>
             </tr>
           </thead>
@@ -1055,7 +1057,7 @@ function LiveStandingsTable({
               className="col-last"
               title={lastTitle}
             >
-              Last
+              GW {gameweek}
             </th>
           </tr>
         </thead>
@@ -1975,7 +1977,6 @@ export function LiveScores({
           <h2 id="live-standings-heading" className="tile-title tile-title--sm">
             Live Table
           </h2>
-          <span className="league-pill league-pill--sm">GW {gameweek}</span>
         </div>
         {!tableRows?.length ? (
           <p className="muted muted--tight">No standings data.</p>
