@@ -77,14 +77,6 @@ export function StandingsScheduleSubview({
     return m
   }, [teamsForFormSelect, tableRows, leagueEntries])
 
-  const rankByEntryId = useMemo(() => {
-    const m = new Map()
-    for (const r of tableRows || []) {
-      if (r?.league_entry != null && r.rank != null) m.set(r.league_entry, r.rank)
-    }
-    return m
-  }, [tableRows])
-
   const allGwGroups = useMemo(
     () => groupScheduleByGw(matches, idToName),
     [matches, idToName],
@@ -181,7 +173,6 @@ export function StandingsScheduleSubview({
       {teamFilter === 'all' ? (
         <AllTeamsScheduleList
           groups={filteredAllGroups}
-          rankByEntryId={rankByEntryId}
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
           teamsForFormSelect={teamsForFormSelect}
@@ -201,7 +192,6 @@ export function StandingsScheduleSubview({
 
 function AllTeamsScheduleList({
   groups = [],
-  rankByEntryId,
   teamLogoMap,
   kitIndexByEntry,
   teamsForFormSelect = [],
@@ -257,7 +247,6 @@ function AllTeamsScheduleList({
               <ScheduleFixtureItem
                 key={`${fx.event}-${fx.homeId}-${fx.awayId}-${i}`}
                 fx={fx}
-                rankByEntryId={rankByEntryId}
                 teamLogoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
                 fplEntryByLeagueId={fplEntryByLeagueId}
@@ -277,10 +266,18 @@ function AllTeamsScheduleList({
  * Single fixture row — finished GW fixtures render as an expandable
  * accordion (click to reveal the player-by-player FPL breakdown via
  * {@link LiveExpandedFixture}). Upcoming fixtures stay inert.
+ *
+ * Row layout (1fr · auto · 1fr grid):
+ *   home: avatar · name        score / vs         away: name · avatar
+ *
+ * The chevron (when the row is expandable) is rendered as a row-level
+ * absolutely-positioned sibling rather than living inside the away side
+ * so both 1fr columns stay equally wide — otherwise the chev's ~22px
+ * width gets stolen from the away name column and the team name
+ * truncates on mobile (was rendering "Hack..." instead of "Hackney").
  */
 function ScheduleFixtureItem({
   fx,
-  rankByEntryId,
   teamLogoMap,
   kitIndexByEntry,
   fplEntryByLeagueId,
@@ -288,8 +285,6 @@ function ScheduleFixtureItem({
   expanded,
   onToggle,
 }) {
-  const homeRank = rankByEntryId.get(fx.homeId)
-  const awayRank = rankByEntryId.get(fx.awayId)
   const homeWin =
     fx.finished && fx.homePts != null && fx.awayPts != null && fx.homePts > fx.awayPts
   const awayWin =
@@ -323,9 +318,6 @@ function ScheduleFixtureItem({
             {firstWord(fx.homeName)}
           </span>
         </span>
-        {homeRank != null ? (
-          <span className="standings-schedule__fixture-rank muted">({homeRank})</span>
-        ) : null}
       </span>
       {fx.finished && fx.homePts != null && fx.awayPts != null ? (
         <span className="standings-schedule__fixture-mid tabular">
@@ -355,9 +347,6 @@ function ScheduleFixtureItem({
         </span>
       )}
       <span className="standings-schedule__fixture-side standings-schedule__fixture-side--away">
-        {awayRank != null ? (
-          <span className="standings-schedule__fixture-rank muted">({awayRank})</span>
-        ) : null}
         <span
           className={
             'standings-schedule__fixture-name' +
@@ -380,18 +369,18 @@ function ScheduleFixtureItem({
           logoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
         />
-        {expandable ? (
-          <span
-            className={
-              'standings-schedule__fixture-chev' +
-              (expanded ? ' standings-schedule__fixture-chev--open' : '')
-            }
-            aria-hidden="true"
-          >
-            ▸
-          </span>
-        ) : null}
       </span>
+      {expandable ? (
+        <span
+          className={
+            'standings-schedule__fixture-chev' +
+            (expanded ? ' standings-schedule__fixture-chev--open' : '')
+          }
+          aria-hidden="true"
+        >
+          ▸
+        </span>
+      ) : null}
     </>
   )
 
