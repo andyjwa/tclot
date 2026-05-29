@@ -175,7 +175,7 @@ function TitleScene() {
     <g className="eos-splash__scene eos-splash__scene--title">
       <image
         className="eos-splash__title-banner"
-        href="/brand/tclot-header.jpg"
+        href={`${import.meta.env.BASE_URL}brand/tclot-header.jpg`}
         x={TITLE_BANNER_X}
         y={TITLE_BANNER_Y}
         width={TITLE_BANNER_W}
@@ -919,7 +919,7 @@ function BathroomScene() {
           fill="#1a1426"
         />
         <image
-          href="/brand/tery-poster.png"
+          href={`${import.meta.env.BASE_URL}brand/tery-poster.png`}
           x={POSTER_X}
           y={POSTER_Y}
           width={POSTER_W}
@@ -1029,7 +1029,7 @@ function BathroomScene() {
       >
         <image
           className="eos-splash__tery-avatar"
-          href="/brand/tery-avatar.png"
+          href={`${import.meta.env.BASE_URL}brand/tery-avatar.png`}
           x={TERY_FINAL_X - TERY_AVATAR_W / 2}
           y={TERY_FINAL_Y - TERY_AVATAR_H / 2}
           width={TERY_AVATAR_W}
@@ -1141,7 +1141,7 @@ function OutroScene() {
             <circle cx={cx} cy={cy} r={r} fill="#2a2a2a" />
             {hasLogo ? (
               <image
-                href={`/team-logos-web/${id}.png`}
+                href={`${import.meta.env.BASE_URL}team-logos-web/${id}.png`}
                 x={cx - r}
                 y={cy - r}
                 width={r * 2}
