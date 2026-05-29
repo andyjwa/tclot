@@ -1086,11 +1086,13 @@ function BramptonScene() {
  *
  * The final tableau of the cinematic. After the bathroom dissolves on
  * its half-done puzzle, this scene fades up onto a black-purple field
- * with a celebratory headline and a 3×3 grid of all nine TCLOT
+ * with a celebratory headline and a 4×2 grid of the eight TCLOT
  * fantasy team badges (the manager team-logos shipped under
- * `/team-logos-web/`). Each badge pops in via a per-tile staggered
- * keyframe so the grid populates from top-left to bottom-right
- * rather than appearing all at once.                                  */
+ * `/team-logos-web/`). Tiles whose `league_entry.id` is missing from
+ * `OUTRO_BADGES_WITH_LOGO` fall back to the manager's surname
+ * rendered as centred text in the same circular frame. Each tile pops
+ * in via a per-tile staggered keyframe so the grid populates from
+ * top-left to bottom-right rather than appearing all at once.        */
 /* ------------------------------------------------------------------ */
 function OutroScene() {
   return (
@@ -1106,19 +1108,20 @@ function OutroScene() {
         See ya next season!
       </text>
 
-      {OUTRO_BADGES.map((id, i) => {
+      {OUTRO_BADGES.map(({ id, surname }, i) => {
         const col = i % OUTRO_GRID_COLS;
         const row = Math.floor(i / OUTRO_GRID_COLS);
         const cx =
           OUTRO_GRID_X +
-          col * (OUTRO_BADGE_DIAMETER + OUTRO_BADGE_GAP) +
-          OUTRO_BADGE_DIAMETER / 2;
+          col * (OUTRO_BADGE_SIZE + OUTRO_BADGE_GAP) +
+          OUTRO_BADGE_SIZE / 2;
         const cy =
           OUTRO_GRID_Y +
-          row * (OUTRO_BADGE_DIAMETER + OUTRO_BADGE_GAP) +
-          OUTRO_BADGE_DIAMETER / 2;
-        const r = OUTRO_BADGE_DIAMETER / 2;
+          row * (OUTRO_BADGE_SIZE + OUTRO_BADGE_GAP) +
+          OUTRO_BADGE_SIZE / 2;
+        const r = OUTRO_BADGE_SIZE / 2;
         const clipId = `eos-outro-badge-clip-${i}`;
+        const hasLogo = OUTRO_BADGES_WITH_LOGO.has(id);
         return (
           <g
             key={`outro-badge-${id}`}
@@ -1136,15 +1139,26 @@ function OutroScene() {
                 logos read consistently against the deep-purple outro
                 field. */}
             <circle cx={cx} cy={cy} r={r} fill="#2a2a2a" />
-            <image
-              href={`/team-logos-web/${id}.png`}
-              x={cx - r}
-              y={cy - r}
-              width={r * 2}
-              height={r * 2}
-              clipPath={`url(#${clipId})`}
-              preserveAspectRatio="xMidYMid slice"
-            />
+            {hasLogo ? (
+              <image
+                href={`/team-logos-web/${id}.png`}
+                x={cx - r}
+                y={cy - r}
+                width={r * 2}
+                height={r * 2}
+                clipPath={`url(#${clipId})`}
+                preserveAspectRatio="xMidYMid slice"
+              />
+            ) : (
+              <text
+                x={cx}
+                y={cy + 8}
+                textAnchor="middle"
+                className="eos-splash__outro-badge-fallback"
+              >
+                {surname}
+              </text>
+            )}
             {/* Thin light ring on top — mirrors the
                 `.team-avatar-frame { border: 1px solid rgba(255, 255,
                 255, 0.1); }` rule used on every TeamAvatar across the
@@ -1706,10 +1720,14 @@ const OUTRO_BADGES = [
 
 /** League-entry IDs that have an actual badge file under
  * `web/public/team-logos-web/`. Used to gate `<image>` rendering so
- * tiles with missing artwork don't show a broken-image icon. Update
- * this set when a new badge PNG is added under `web/public/team-logos/`
- * (the build step rasterises it into `team-logos-web/`). */
-const OUTRO_BADGES_WITH_LOGO = new Set([26587, 27370, 39219]);
+ * tiles with missing artwork don't show a broken-image icon — tiles
+ * without a logo fall back to the manager's surname rendered as
+ * centred text inside the same circular frame. Update this set when a
+ * new badge PNG is added under `web/public/team-logos/` (the build
+ * step rasterises it into `team-logos-web/`). */
+const OUTRO_BADGES_WITH_LOGO = new Set([
+  26587, 26675, 27370, 31076, 39078, 39219, 40206, 72086,
+]);
 
 const OUTRO_TITLE_Y = 110;
 const OUTRO_GRID_COLS = 4;
