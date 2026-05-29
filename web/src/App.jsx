@@ -1771,6 +1771,12 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
       aria-labelledby="heritage-cofc-heading"
     >
       <div className="heritage-cofc__head">
+        <h2
+          id="heritage-cofc-heading"
+          className="tile-title tile-title--sm heritage-cofc__title"
+        >
+          {view === 'live' ? 'All Time Standings' : 'Algorithm Table'}
+        </h2>
         <div
           className="subnav heritage-cofc__viewtoggle"
           role="tablist"
@@ -1795,14 +1801,6 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
             Algorithm
           </button>
         </div>
-      </div>
-      <div className="heritage-cofc__headingrow">
-        <h2
-          id="heritage-cofc-heading"
-          className="tile-title tile-title--sm heritage-cofc__title"
-        >
-          {view === 'live' ? 'Live Table: All Time' : 'Algorithm Table'}
-        </h2>
       </div>
       {view === 'live' ? (
         <CofcLiveTable rows={liveRows} fullNameMap={fullNameMap} />
@@ -2162,7 +2160,7 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
  * mobile-defaults-to-Live behaviour from PR #1 is intentionally dropped — users who
  * want Live as their landing page can pick it in Settings. */
 function initialDashboardViewForViewport() {
-  if (typeof window === 'undefined') return 'standings'
+  if (typeof window === 'undefined') return 'fplLive'
   if (parsePlayersHash()) return /** @type {const} */ ('players')
   return readStoredDefaultTab()
 }
@@ -2298,7 +2296,7 @@ function App() {
     /** @type {'waivers' | 'trades' | 'draft'} */ ('waivers'),
   )
   const [fplLiveTab, setFplLiveTab] = useState(
-    /** @type {'squads' | 'live' | 'vibes'} */ ('live'),
+    /** @type {'squads' | 'live' | 'vibes'} */ ('vibes'),
   )
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)

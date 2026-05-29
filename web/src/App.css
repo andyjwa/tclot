@@ -16045,14 +16045,14 @@ button.live-xp__player-name:focus-visible {
 
 .heritage-cofc__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
+  margin-bottom: 12px;
 }
 
 .heritage-cofc__viewtoggle {
-  align-self: center;
   flex-wrap: nowrap;
 }
 

@@ -14,7 +14,7 @@ export const DEFAULT_TAB_OPTIONS = /** @type {const} */ ([
 ])
 
 export const DEFAULT_TAB_STORAGE_KEY = 'tclot:settings:default-tab'
-export const DEFAULT_TAB_FALLBACK = 'standings'
+export const DEFAULT_TAB_FALLBACK = 'fplLive'
 
 const VALID_TAB_IDS = new Set(DEFAULT_TAB_OPTIONS.map((o) => o.id))
 
