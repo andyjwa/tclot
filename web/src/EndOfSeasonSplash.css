@@ -170,21 +170,23 @@
 
 /* ------------------------------------------------------------------ */
 /* Static (non-playing) and reduced-motion fallback — defaults to the
- * BATHROOM TABLEAU. Viewers who have hit the session cap (or have
- * prefers-reduced-motion: reduce on) land on Tery sitting in front of
- * the assembled bathroom puzzle (pieces in slots, no captions). The
- * earlier scenes are hidden by default and only become visible during
- * their cinematic windows when `.eos-splash--playing` is set. */
+ * TITLE CARD. Viewers who have hit the session cap (or have
+ * prefers-reduced-motion: reduce on) land on the TCLOT brand banner
+ * plus the END OF SEASON tagline stack, so the tab opens on a
+ * presentable cover image rather than the bathroom punishment scene.
+ * The other four scenes (club / brampton / bathroom / outro) are
+ * hidden by default and only become visible during their cinematic
+ * windows when `.eos-splash--playing` is set. */
 /* ------------------------------------------------------------------ */
 
-.eos-splash__scene--title,
 .eos-splash__scene--club,
 .eos-splash__scene--brampton,
+.eos-splash__scene--bathroom,
 .eos-splash__scene--outro {
   opacity: 0;
 }
 
-.eos-splash__scene--bathroom {
+.eos-splash__scene--title {
   opacity: 1;
 }
 

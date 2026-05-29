@@ -5,8 +5,8 @@ import './EndOfSeasonSplash.css';
 /**
  * Per-tab session cap on how many times the End-of-Season cinematic plays
  * back automatically. After the cap is reached the splash still shows, but
- * as a static final-state tableau (Tery sat in front of the assembled
- * bathroom puzzle) — the user can still hit Replay manually.
+ * as a static title card (TCLOT brand banner + END OF SEASON tagline
+ * stack) — the user can still hit Replay manually.
  */
 const SESSION_PLAY_KEY = 'tclot:eos:plays:v1';
 const SESSION_PLAY_CAP = 2;
@@ -47,8 +47,8 @@ const SESSION_PLAY_CAP = 2;
  *
  * The cinematic auto-plays up to SESSION_PLAY_CAP times per browser
  * tab, with manual Replay always available, and respects
- * `prefers-reduced-motion: reduce` by snapping to the final-state
- * tableau (Tery seated, puzzle assembled, captions visible). Trigger /
+ * `prefers-reduced-motion: reduce` by snapping to the static title
+ * card (TCLOT brand banner + END OF SEASON tagline stack). Trigger /
  * mount lives in LiveScores.jsx — production trigger is "season
  * complete" (`liveStatus.status === 'idle' && nextGw == null`),
  * previewable any time via the `?eosSplash=1` URL flag.
