@@ -13,7 +13,9 @@
   --fm-win: #34d399;
   --fm-draw: #9ca3af;
   --fm-loss: #f87171;
-  /* W/L circles — darker than --fm-loss (score pills, errors) */
+  /* W/L circles — mirrors --fm-loss in light theme (see counterpart
+   * comment below); kept slightly more saturated in dark theme so the
+   * dots pop on the dark surface. */
   --fm-loss-dot: #ef4444;
   --fm-row-hi: #2a2a2a;
   /* TCLOT brand violet — matches saturated pixels in public/tclot-header-brand.png (~#795bfb) */
@@ -151,7 +153,12 @@
   --fm-win: #059669;
   --fm-draw: #6b7280;
   --fm-loss: #dc2626;
-  --fm-loss-dot: #b91c1c;
+  /* W/L circles — historically darker than --fm-loss for stronger
+   * presence on score pills, but the deeper crimson read as a
+   * black smudge at the new condensed dot sizes (14px / 16px) on a
+   * white background, so we now mirror --fm-loss for a clean,
+   * unambiguous red. */
+  --fm-loss-dot: #dc2626;
   --fm-row-hi: #efefef;
   --tclot-logo-purple: #795bfb;
   --fm-dashboard-nav-active-bg: linear-gradient(
@@ -13278,17 +13285,18 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Form dots inside the hero — plain colored circles matching the
- * condensed-row palette (W = green, D = grey, L = red). Slightly
- * larger than the 5px mobile-row dots so the hero retains visual
- * weight, but no W/L letter inside and `border-radius: 50%` for a
- * true circle (the base `.form-dot` defaults to a rounded-square
- * chip with the result glyph inside). */
+ * condensed-row palette (W = green, D = grey, L = red). Sized large
+ * enough that the colour reads clearly at a glance (small 8–11px
+ * dots tended to mute the red/green into "muddy / black-ish"
+ * smears); no W/L letter inside and `border-radius: 50%` for a true
+ * circle (the base `.form-dot` defaults to a rounded-square chip
+ * with the result glyph inside). */
 .standings-hero-card__sub .form-circles {
-  gap: 4px;
+  gap: 6px;
 }
 .standings-hero-card__sub .form-dot {
-  width: 11px;
-  height: 11px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   font-size: 0;
   line-height: 0;
@@ -13614,18 +13622,21 @@ button.live-xp__player-name:focus-visible {
     font-weight: 700;
   }
 
-  /* Desktop condensed-row form dots — 8px plain circles matching the
-   * mobile + hero styling (no W/L letter inside). Defeats the legacy
-   * `.standings-table--sidebar .form-dot { width: 22px; height: 22px;
-   * border-radius: 6px; font-size: 0.54rem }` rule with a chained
-   * 3-class selector (0,3,0 > 0,2,0). */
+  /* Desktop condensed-row form dots — plain colored circles matching
+   * the mobile + hero styling (no W/L letter inside). Sized to read
+   * clearly at a glance: the previous 8px dots desaturated visibly
+   * (red/green muted to a near-black smear), so we bump to 14px with
+   * a 5px gap so the colour signal is unambiguous. Defeats the
+   * legacy `.standings-table--sidebar .form-dot { width: 22px;
+   * height: 22px; border-radius: 6px; font-size: 0.54rem }` rule
+   * with a chained 3-class selector (0,3,0 > 0,2,0). */
   .standings-table--variant-c.standings-table--sidebar .form-circles {
-    gap: 3px;
+    gap: 5px;
     justify-content: center;
   }
   .standings-table--variant-c.standings-table--sidebar .form-dot {
-    width: 8px;
-    height: 8px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     font-size: 0;
     line-height: 0;
