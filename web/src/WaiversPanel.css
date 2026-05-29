@@ -59,26 +59,22 @@
 .waivers-dir--in { color: var(--data-positive); }
 .waivers-dir--out { color: var(--data-negative); }
 
-/* single-letter position chip beside the player name (Players-Wire style) */
+/* Single-letter position label beside the player name. Renders as a
+ * colour-coded letter (G / D / M / F) — no pill chrome — so the row
+ * reads as plain text and the player name stays the dominant visual
+ * element of each swap cell. */
 .waivers-pos-chip {
-  display: inline-grid;
-  place-items: center;
   flex: 0 0 auto;
-  width: 17px;
-  height: 17px;
-  border-radius: 4px;
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
 }
-.waivers-pos-chip--GKP { color: #f59e0b; border-color: color-mix(in srgb, #f59e0b 38%, var(--border)); }
-.waivers-pos-chip--DEF { color: #22d3ee; border-color: color-mix(in srgb, #22d3ee 38%, var(--border)); }
-.waivers-pos-chip--MID { color: #c4b5fd; border-color: color-mix(in srgb, #a78bfa 38%, var(--border)); }
-.waivers-pos-chip--FWD { color: #fca5a5; border-color: color-mix(in srgb, #ef4444 38%, var(--border)); }
+.waivers-pos-chip--GKP { color: #f59e0b; }
+.waivers-pos-chip--DEF { color: #22d3ee; }
+.waivers-pos-chip--MID { color: #c4b5fd; }
+.waivers-pos-chip--FWD { color: #fca5a5; }
 [data-theme='light'] .waivers-pos-chip--GKP { color: #b45309; }
 [data-theme='light'] .waivers-pos-chip--DEF { color: #0e7490; }
 [data-theme='light'] .waivers-pos-chip--MID { color: #6d28d9; }
@@ -407,15 +403,23 @@
   padding: var(--space-2);
   border-radius: var(--r-sm);
   background: var(--surface-2);
-  position: relative;
+}
+/* Free-agency rows extend the grid with a trailing `auto` column so
+ * the coloured FA pill sits inline on the same row as the two player
+ * cells (was previously absolutely positioned and floated above the
+ * row, which looked detached on narrow viewports). */
+.waivers-swap:has(.waivers-fa-chip) {
+  grid-template-columns: 1fr 1fr auto;
 }
 /* Dense 2-col swap inside mobile tiles: tighten the player cells so real
- * (longer) player names keep more room before truncating. */
+ * (longer) player names keep more room before truncating, and drop the
+ * name down a size step so two players + arrows + position letters
+ * comfortably co-exist on one row at 360px viewports. */
 .waivers-swap .waivers-player { gap: var(--space-1); }
+.waivers-swap .waivers-player__name { font-size: var(--text-sm); }
 .waivers-fa-chip {
-  position: absolute;
-  top: -7px;
-  right: 8px;
+  justify-self: end;
+  align-self: center;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.04em;
