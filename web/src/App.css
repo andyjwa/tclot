@@ -2904,6 +2904,18 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Live Table — purpose-built to fit the FPL Live tile at every
+ * breakpoint (mobile variant targets 360px viewports, desktop variant
+ * lives in the sidebar). Disable horizontal scroll so the tile never
+ * grows beyond its parent and never renders a scroll thumb under the
+ * H2H-result column. The variant-c mobile rules already cap the table
+ * at `width: 100%`, so this just suppresses the unused scroll affordance
+ * the shared `.table-scroll` / `--standings-open` wrappers would
+ * otherwise enable. */
+.table-scroll--live {
+  overflow-x: hidden;
+}
+
 .standings-table--sidebar {
   font-size: 0.8rem;
   /* Reserve the same width as label column + gap + arrow so th/td align */

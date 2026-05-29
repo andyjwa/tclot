@@ -893,7 +893,7 @@ function LiveStandingsTable({
 
   if (mobile) {
     return (
-      <div className="table-scroll table-scroll--standings-open">
+      <div className="table-scroll table-scroll--standings-open table-scroll--live">
         <table
           className="standings-table standings-table--variant-c standings-table--variant-c-mobile standings-table--live-mobile"
           role="table"
@@ -985,7 +985,7 @@ function LiveStandingsTable({
   }
 
   return (
-    <div className="table-scroll table-scroll--standings-open">
+    <div className="table-scroll table-scroll--standings-open table-scroll--live">
       <table
         className="standings-table standings-table--sidebar standings-table--live"
         role="table"
