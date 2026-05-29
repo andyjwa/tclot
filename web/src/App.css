@@ -12668,7 +12668,7 @@ button.live-xp__player-name:focus-visible {
 .live-contrib__filter-foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-1) 0;
   border-top: 1px solid var(--border);
@@ -12678,6 +12678,15 @@ button.live-xp__player-name:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+/* Per-section bulk row — sits flush under the last filter row in its
+ * section so each section (Event kind, Team) carries its own
+ * independent Select all / Clear all pair. Aligned to the same left
+ * edge as the section heading and checkbox labels above so the row
+ * reads as part of the section, not the modal footer. */
+.live-contrib__filter-bulk--section {
+  padding: 4px var(--space-2) 0;
+  margin-top: 2px;
 }
 .live-contrib__filter-bulk-sep {
   color: var(--text-muted);

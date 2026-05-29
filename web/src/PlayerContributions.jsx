@@ -850,13 +850,19 @@ export function PlayerContributions({
     });
   }, []);
 
-  const draftSelectAll = useCallback(() => {
+  const draftSelectAllKinds = useCallback(() => {
     setDraftKinds(new Set(CONTRIB_KIND_FILTER_IDS));
+  }, []);
+
+  const draftClearAllKinds = useCallback(() => {
+    setDraftKinds(new Set());
+  }, []);
+
+  const draftSelectAllTeams = useCallback(() => {
     setDraftTeams(new Set(fantasyTeamOptions.map((t) => t.id)));
   }, [fantasyTeamOptions]);
 
-  const draftClearAll = useCallback(() => {
-    setDraftKinds(new Set());
+  const draftClearAllTeams = useCallback(() => {
     setDraftTeams(new Set());
   }, []);
 
@@ -941,6 +947,23 @@ export function PlayerContributions({
                   </label>
                 );
               })}
+              <span className="live-contrib__filter-bulk live-contrib__filter-bulk--section">
+                <button
+                  type="button"
+                  className="live-contrib__filter-bulk-btn"
+                  onClick={draftSelectAllKinds}
+                >
+                  Select all
+                </button>
+                <span className="live-contrib__filter-bulk-sep" aria-hidden>·</span>
+                <button
+                  type="button"
+                  className="live-contrib__filter-bulk-btn"
+                  onClick={draftClearAllKinds}
+                >
+                  Clear all
+                </button>
+              </span>
             </div>
             {fantasyTeamOptions.length ? (
               <div className="live-contrib__filter-section">
@@ -973,26 +996,26 @@ export function PlayerContributions({
                     </label>
                   );
                 })}
+                <span className="live-contrib__filter-bulk live-contrib__filter-bulk--section">
+                  <button
+                    type="button"
+                    className="live-contrib__filter-bulk-btn"
+                    onClick={draftSelectAllTeams}
+                  >
+                    Select all
+                  </button>
+                  <span className="live-contrib__filter-bulk-sep" aria-hidden>·</span>
+                  <button
+                    type="button"
+                    className="live-contrib__filter-bulk-btn"
+                    onClick={draftClearAllTeams}
+                  >
+                    Clear all
+                  </button>
+                </span>
               </div>
             ) : null}
             <div className="live-contrib__filter-foot">
-              <span className="live-contrib__filter-bulk">
-                <button
-                  type="button"
-                  className="live-contrib__filter-bulk-btn"
-                  onClick={draftSelectAll}
-                >
-                  Select all
-                </button>
-                <span className="live-contrib__filter-bulk-sep" aria-hidden>·</span>
-                <button
-                  type="button"
-                  className="live-contrib__filter-bulk-btn"
-                  onClick={draftClearAll}
-                >
-                  Clear all
-                </button>
-              </span>
               <button
                 type="button"
                 className="live-contrib__filter-apply"
