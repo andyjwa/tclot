@@ -1,0 +1,822 @@
+/* ------------------------------------------------------------------ */
+/* EndOfSeasonSplash — three-act cinematic banner that plays on the live
+ * scores page once the FPL season is complete (`liveStatus.status ===
+ * 'idle'` AND `nextGw == null`). Same overall presentation chrome as
+ * GuardOfHonourSplash (single inline 1024×576 SVG, full-width banner
+ * with the gold-tinted halo, dismiss X + replay button stacked top-
+ * right, session cap on auto-playback) — only the in-SVG choreography
+ * is unique to this splash.
+ *
+ * The three scenes are rendered as sibling <g> wrappers inside a SINGLE
+ * inline SVG, with their own outer-opacity keyframes gating which scene
+ * is visible at a time. Inside each scene, the same per-element
+ * `--enter-dx/--enter-dy/--w1-dx/--w1-dy/...` translate-from-waypoint
+ * convention used by `goh-opp-enter` / `goh-higman-weave` choreographs
+ * the action, so the implementation pattern is identical to the GoH —
+ * only the geometry, colour palette, and theming change.            */
+/* ------------------------------------------------------------------ */
+
+.eos-splash {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: min(960px, 100%);
+  margin: clamp(0.5rem, 1.8vw, 0.9rem) auto;
+  border-radius: 14px;
+  overflow: hidden;
+  /* Deep purple/black so the disco lights in scene 2 read against a
+   * club-y backdrop, and the bathroom tiles in scene 3 sit on a
+   * shadowed off-floor plane. Title scene logo image carries its own
+   * white background, so the deep base only matters once we cross-fade
+   * out of scene 1. */
+  background: #0e0a1c;
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.22),
+    0 0 0 1px color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, transparent);
+  /* Same gold "this is a special moment" halo as the GoH so the two
+   * cinematics feel like a matched set. */
+  outline: 1px solid color-mix(in srgb, #ffd166 35%, transparent);
+  outline-offset: -1px;
+}
+
+.eos-splash__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
+}
+
+/* ------------------------------------------------------------------ */
+/* Typography — three roles share styling with their GoH equivalents
+ * so the two splashes feel like the same family.                    */
+/* ------------------------------------------------------------------ */
+
+.eos-splash__label {
+  font-family: inherit;
+  font-size: clamp(8px, 1.5vw, 11px);
+  font-weight: 700;
+  fill: #ffffff;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.7);
+  stroke-width: clamp(0.6px, 0.13vw, 1px);
+  letter-spacing: 0.01em;
+}
+
+/* Tery — gets the same standout treatment Higman gets in the GoH so
+ * the named loser dot pops against the bathroom tiles. */
+.eos-splash__label--tery {
+  font-size: clamp(10px, 2vw, 14px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  fill: #ffe2e2;
+  stroke: rgba(60, 0, 0, 0.85);
+  stroke-width: clamp(0.8px, 0.16vw, 1.25px);
+}
+
+/* Title-scene tagline lines — large, gold-tinted, white-on-purple. */
+.eos-splash__title-eyebrow {
+  font-family: inherit;
+  font-size: clamp(11px, 2.4vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  fill: #ffd166;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.7);
+  stroke-width: clamp(0.7px, 0.14vw, 1.1px);
+}
+
+.eos-splash__title-headline {
+  font-family: inherit;
+  font-size: clamp(14px, 3vw, 24px);
+  font-weight: 800;
+  fill: #ffffff;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.65);
+  stroke-width: clamp(0.7px, 0.14vw, 1.1px);
+  letter-spacing: 0.01em;
+}
+
+.eos-splash__title-sub {
+  font-family: inherit;
+  /* Lower bound nudged from 10px → 8.5px (and the vw mid-point from
+   * 2vw → 1.85vw) so the longer "Let's check in on our League Champion
+   * and League Loser..." sub-line stays comfortably on one line at
+   * portrait-mobile widths (≤360px). The desktop upper bound is
+   * unchanged at 16px so the title still reads big on wide screens. */
+  font-size: clamp(8.5px, 1.85vw, 16px);
+  font-weight: 600;
+  fill: #d8c8ff;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: clamp(0.6px, 0.12vw, 0.9px);
+  letter-spacing: 0.04em;
+}
+
+/* Higman's speech-bubble dialogue lines. Dark fill on the white bubble
+ * background, slightly tracked-out so the two-line order reads as
+ * stylised "subtitle text" rather than body copy. */
+.eos-splash__bubble-text {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  fill: #1a1a26;
+  letter-spacing: 0.01em;
+}
+
+/* "Meanwhile, in Brampton..." interstitial line. Italicised + tracked-
+ * out so the three-second card reads like a film-cut chapter break
+ * rather than body copy. Sized via clamp() to roughly match the GoH
+ * eyebrow line at portrait-mobile widths and grow on desktop. */
+.eos-splash__brampton-line {
+  font-family: inherit;
+  font-size: clamp(20px, 4.4vw, 44px);
+  font-style: italic;
+  font-weight: 600;
+  fill: #f4eaff;
+  letter-spacing: 0.04em;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 0.6px;
+}
+
+/* Outro headline — "See ya next season!" Sized larger than the
+ * Brampton card line; bold + slightly tracked-in so the message lands
+ * over the badge grid below. */
+.eos-splash__outro-title {
+  font-family: inherit;
+  font-size: clamp(26px, 5.4vw, 56px);
+  font-weight: 800;
+  fill: #ffffff;
+  letter-spacing: 0.02em;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.5);
+  stroke-width: 0.8px;
+}
+
+/* Manager surname fallback rendered inside an outro tile when no
+ * custom badge image has been uploaded for that league_entry. Sized
+ * to fit comfortably inside the 130×130 tile and tracked-in slightly
+ * so longer surnames (e.g. "Mottershead") still read clearly. */
+.eos-splash__outro-badge-fallback {
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  fill: #f4eaff;
+  letter-spacing: 0.01em;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 0.8px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Static (non-playing) and reduced-motion fallback — defaults to the
+ * BATHROOM TABLEAU. Viewers who have hit the session cap (or have
+ * prefers-reduced-motion: reduce on) land on Tery sitting in front of
+ * the assembled bathroom puzzle (pieces in slots, no captions). The
+ * earlier scenes are hidden by default and only become visible during
+ * their cinematic windows when `.eos-splash--playing` is set. */
+/* ------------------------------------------------------------------ */
+
+.eos-splash__scene--title,
+.eos-splash__scene--club,
+.eos-splash__scene--brampton,
+.eos-splash__scene--outro {
+  opacity: 0;
+}
+
+.eos-splash__scene--bathroom {
+  opacity: 1;
+}
+
+/* Outro badges hidden by default — only pop in once their staggered
+ * keyframe fires during scene-4 playback. */
+.eos-splash__outro-badge {
+  opacity: 0;
+}
+
+/* Per-piece scatter offset is consumed by the playing-state keyframe
+ * to translate each piece in from its initial scattered position. In
+ * the static / reduced-motion tableau pieces sit in their final slots
+ * (translate(0, 0)), so the puzzle reads as fully assembled. */
+.eos-splash__puzzle-piece {
+  transform: translate(0, 0);
+}
+
+/* Champagne pop spray hidden by default — only fires during scene 2
+ * playback when Higman takes his seat. */
+.eos-splash__champagne-pop {
+  opacity: 0;
+}
+
+/* Handshake glyph hidden by default — only fires for ~1.5s while
+ * Higman pauses next to Arteta on the way into the VIP. */
+.eos-splash__handshake {
+  opacity: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dismiss + Replay buttons — IDENTICAL chrome to the GoH so the two
+ * splashes share a control affordance vocabulary. The `calc()` rule
+ * for the replay button's `top` keeps it stacked beneath the dismiss X
+ * even as `clamp()` scales the controls on portrait mobile.          */
+/* ------------------------------------------------------------------ */
+
+.eos-splash__dismiss {
+  position: absolute;
+  top: clamp(6px, 1.5vw, 10px);
+  right: clamp(6px, 1.5vw, 10px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(34px, 8vw, 40px);
+  height: clamp(34px, 8vw, 40px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, rgba(0, 0, 0, 0.4));
+  background: rgba(255, 255, 255, 0.96);
+  color: #1a1a1c;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fotmob[data-theme='dark'] .eos-splash__dismiss {
+  background: rgba(30, 30, 34, 0.95);
+  border-color: color-mix(in srgb, #ffffff 35%, rgba(255, 255, 255, 0.12));
+  color: #fafafa;
+}
+
+.eos-splash__dismiss:active {
+  transform: scale(0.96);
+}
+
+.eos-splash__dismiss-x {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: -0.06em;
+}
+
+.eos-splash__dismiss:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 75%, transparent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eos-splash__dismiss:active {
+    transform: none;
+  }
+}
+
+.eos-splash__replay {
+  position: absolute;
+  top: calc(clamp(6px, 1.5vw, 10px) + clamp(34px, 8vw, 40px) + 6px);
+  right: clamp(6px, 1.5vw, 10px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(30px, 7vw, 34px);
+  height: clamp(30px, 7vw, 34px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, rgba(0, 0, 0, 0.4));
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a1c;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+
+/* When the splash is mounted standalone (no dismiss handler — e.g. the
+ * "Vibes" sub-tab), the dismiss × isn't rendered above this button.
+ * Slide the replay button up to where the dismiss would have sat so
+ * there isn't an awkward empty slot in the top-right corner. */
+.eos-splash--no-dismiss .eos-splash__replay {
+  top: clamp(6px, 1.5vw, 10px);
+}
+
+.fotmob[data-theme='dark'] .eos-splash__replay {
+  background: rgba(30, 30, 34, 0.92);
+  border-color: color-mix(in srgb, #ffffff 35%, rgba(255, 255, 255, 0.12));
+  color: #fafafa;
+}
+
+.eos-splash__replay:hover {
+  background: rgba(255, 255, 255, 1);
+}
+.fotmob[data-theme='dark'] .eos-splash__replay:hover {
+  background: rgba(45, 45, 50, 1);
+}
+
+.eos-splash__replay:active {
+  transform: scale(0.94);
+}
+.eos-splash__replay:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 75%, transparent);
+  outline-offset: 2px;
+}
+
+.eos-splash__replay-icon {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  display: block;
+  transform: translateY(-1px);
+}
+
+/* ------------------------------------------------------------------ */
+/* Three-act timeline. All keyframe-driven motion is scoped under
+ * `.eos-splash--playing` so:
+ *   - The post-session-cap static render shows the final-frame
+ *     tableau of scene 3 (Tery + assembled puzzle + caption),
+ *   - `prefers-reduced-motion: reduce` users get the same final-frame
+ *     tableau (overridden at the bottom of this block),
+ *   - A React `key`-based replay (dismount + remount of the SVG inside
+ *     the playing root) restarts every CSS animation from t=0.
+ *
+ * Whole-cinematic timeline ≈ 46s:
+ *
+ *   ACT 1 — Title (≈0–7s)
+ *     0.0s+        TCLOT brand banner image fades in
+ *     1.5–3.8s     three tagline lines stagger in (eyebrow / headline /
+ *                  sub) with --i 0/1/2 driving 0.7s spacing
+ *     6.0–7.0s     scene cross-fades out
+ *
+ *   ACT 2 — Nightclub (≈7–25s)
+ *     7.0–8.0s     scene fades in; disco lights spin up; six dancing
+ *                  dots pulse; three VIP dots idle on the couch
+ *     8.0–10.0s    Higman walks on from off-screen left, arrives on
+ *                  dance floor centre
+ *     10–18s       Higman dances through three on-floor waypoints
+ *     18–20s       Higman approaches the velvet rope
+ *     20–22s       Higman steps inside the VIP enclosure and seats
+ *                  himself among the three VIP dots
+ *     22–24s       champagne bottle pops + spray glyph
+ *     24–25s       scene cross-fades out
+ *
+ *   ACT 3 — Bathroom puzzle (≈25–46s)
+ *     25–26s       bathroom + room fixtures fade in
+ *     26–28s       Tery enters from the door, walks to the puzzle
+ *     28–29s       Tery sits down (radius shrinks slightly) + puzzle
+ *                  frame fades in + "THE PUNISHMENT" caption stack
+ *                  fades in
+ *     29–43.4s     12 puzzle pieces snap in one by one (1.2s stagger,
+ *                  each piece's translate-from-scatter takes 1s)
+ *     43.4–46s     final tableau holds — Tery + assembled puzzle +
+ *                  caption visible until the SVG remounts on replay
+ */
+/* ------------------------------------------------------------------ */
+
+/* Scene gates ------------------------------------------------------- */
+
+@keyframes eos-title-fade {
+  0%   { opacity: 0; }
+  6%   { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes eos-club-fade {
+  0%   { opacity: 0; }
+  6%   { opacity: 1; }
+  94%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* "Meanwhile, in Brampton..." interstitial — sits between the club and
+ * the bathroom. Short scene (3s) with a dramatic dark-card text reveal
+ * that lets the cinematic breathe before snapping into the punishment
+ * tableau. Fade-in 0-25%, hold 25-80%, fade-out 80-100%. */
+@keyframes eos-brampton-fade {
+  0%   { opacity: 0; }
+  25%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Outro scene gate — fade in over the first 10% of the scene, hold for
+ * the rest. Outro is the final tableau so it stays visible at full
+ * opacity until the cinematic ends (no fade-out tail). */
+@keyframes eos-outro-fade {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* Bathroom scene now fades OUT at the end, so the cinematic gracefully
+ * dissolves the half-done puzzle tableau before the outro scene fades
+ * in. The hold ends at 80% (= 16s of the 20s scene = ~45s cinematic
+ * time), which is the moment the LAST snapping piece (#23) has just
+ * slotted in; the remaining 24 pieces stay in their backwards-filled
+ * scatter positions throughout, so the fade-out reveals "half placed,
+ * half scattered around Tery" before the outro scene takes over. */
+@keyframes eos-bath-fade {
+  0%   { opacity: 0; }
+  5%   { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.eos-splash--playing .eos-splash__scene--title {
+  animation: eos-title-fade 9s ease-out 0s both;
+}
+
+.eos-splash--playing .eos-splash__scene--club {
+  animation: eos-club-fade 18s ease-out 8s both;
+}
+
+.eos-splash--playing .eos-splash__scene--brampton {
+  animation: eos-brampton-fade 3s ease-out 26s both;
+}
+
+.eos-splash--playing .eos-splash__scene--bathroom {
+  animation: eos-bath-fade 20s ease-out 29s both;
+}
+
+.eos-splash--playing .eos-splash__scene--outro {
+  animation: eos-outro-fade 14s ease-out 49s both;
+}
+
+/* ACT 1 — Title scene ---------------------------------------------- */
+
+@keyframes eos-title-line-in {
+  0% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes eos-title-banner-in {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.eos-splash--playing .eos-splash__title-banner {
+  animation: eos-title-banner-in 1.8s ease-out 0.2s both;
+  transform-origin: 50% 50%;
+}
+
+/* Tagline lines stagger in 0.9s apart with a 1.4s per-line fade — slower
+ * than the previous 0.7s/0.9s rhythm so each tagline has time to read
+ * before the next one arrives. With the 9s scene window:
+ *   - i=0 fades in 1.5–2.9s
+ *   - i=1 fades in 2.4–3.8s
+ *   - i=2 fades in 3.3–4.7s
+ *   - hold 4.7–7.92s (~3.2s reading time on the full title stack)
+ *   - cross-fade out 7.92–9s
+ * Up from ~2.2s of pre-cross-fade hold in the previous 7s scene. */
+.eos-splash--playing .eos-splash__title-line {
+  animation: eos-title-line-in 1.4s cubic-bezier(0.25, 1, 0.5, 1)
+    calc(1.5s + var(--i, 0) * 0.9s) both;
+}
+
+/* ACT 2 — Nightclub scene ------------------------------------------ */
+
+/* Disco light cones flicker through magenta / cyan / yellow with a
+ * staggered phase per cone so the floor reads as flashing rather than
+ * pulsing in lockstep. Beam fade is also rolled in here so the cones
+ * don't blast on at full opacity at scene-fade-in. */
+@keyframes eos-disco-cycle {
+  0%   { fill: #ff3ec8; opacity: 0.18; }
+  20%  { fill: #ff3ec8; opacity: 0.65; }
+  40%  { fill: #3ec8ff; opacity: 0.65; }
+  60%  { fill: #3ec8ff; opacity: 0.2; }
+  80%  { fill: #ffd166; opacity: 0.6; }
+  100% { fill: #ff3ec8; opacity: 0.18; }
+}
+
+.eos-splash--playing .eos-splash__disco-beam {
+  animation: eos-disco-cycle 2.6s linear
+    calc(8.5s + var(--i, 0) * 0.32s) infinite;
+}
+
+/* Disco ball — slow rotation ON ITS OWN AXIS via the inner spin
+ * wrapper. The shimmer overlay (lighter circle on top) gets a faint
+ * opacity wobble in sync. */
+@keyframes eos-disco-ball-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.eos-splash--playing .eos-splash__disco-ball-spin {
+  animation: eos-disco-ball-spin 6s linear 8.5s infinite;
+  /* Pivots around the SVG (0,0) of the inner group; the JSX wrapper
+   * places the group at the disco-ball centre. */
+  transform-origin: 0 0;
+}
+
+/* Six on-floor dancing dots — each child wraps a dot whose JSX-injected
+ * `--bob-dx` / `--bob-dy` describe a small cyclical jiggle (a 4–6 px
+ * amplitude in the viewBox), and `--i` staggers the bob phase per
+ * dot. */
+@keyframes eos-dancer-bob {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(var(--bob-dx, 3px), calc(-1 * var(--bob-dy, 4px))); }
+  50%      { transform: translate(0, calc(-1 * var(--bob-dy, 4px))); }
+  75%      { transform: translate(calc(-1 * var(--bob-dx, 3px)), calc(-1 * var(--bob-dy, 4px))); }
+}
+
+.eos-splash--playing .eos-splash__dancer {
+  animation: eos-dancer-bob 0.55s ease-in-out
+    calc(9s + var(--i, 0) * 0.11s) infinite;
+}
+
+/* VIP-section dots — slower, looser idle bob so the long-haired
+ * hangers-on read as "lounging" rather than "raving" like the floor
+ * dancers. */
+.eos-splash--playing .eos-splash__vip-dot {
+  animation: eos-dancer-bob 1.2s ease-in-out
+    calc(9s + var(--i, 0) * 0.27s) infinite;
+}
+
+/* Higman's nightclub journey — six waypoints from off-screen left to
+ * his final spot on the VIP couch, each consumed as a translate from
+ * the FINAL position back to the waypoint. Identical pattern to
+ * `goh-higman-weave` in GuardOfHonourSplash.css. Opacity is pinned to
+ * 1 at every waypoint so any future mid-arc opacity tweak doesn't
+ * leak through interpolation. */
+@keyframes eos-higman-stroll {
+  0% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 0;
+  }
+  3% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 1;
+  }
+  8% {
+    /* W0 — at the bar, customer side. */
+    transform: translate(var(--w0-dx, 0), var(--w0-dy, 0));
+    opacity: 1;
+  }
+  26% {
+    /* Hold at the bar (~2.88s pause) — eos-speech-bubble-pop overlays a
+     * matching multi-second speech bubble during this window so Higman
+     * has time to order his drink AND for the viewer to read the line
+     * "One Blackcurrant & Soda please fella, we're celebrating" at a
+     * comfortable pace before he wanders onto the dance floor. */
+    transform: translate(var(--w0-dx, 0), var(--w0-dy, 0));
+    opacity: 1;
+  }
+  35% {
+    transform: translate(var(--w1-dx, 0), var(--w1-dy, 0));
+    opacity: 1;
+  }
+  47% {
+    transform: translate(var(--w2-dx, 0), var(--w2-dy, 0));
+    opacity: 1;
+  }
+  60% {
+    transform: translate(var(--w3-dx, 0), var(--w3-dy, 0));
+    opacity: 1;
+  }
+  73% {
+    transform: translate(var(--w4-dx, 0), var(--w4-dy, 0));
+    opacity: 1;
+  }
+  85% {
+    transform: translate(var(--w5-dx, 0), var(--w5-dy, 0));
+    opacity: 1;
+  }
+  92% {
+    /* Hold at the handshake waypoint so Higman pauses next to Arteta
+     * for a beat before continuing on to his seat. The
+     * `eos-handshake-pop` overlay is timed to fade in during this
+     * pause so the gag lands while he's actually standing there. */
+    transform: translate(var(--w5-dx, 0), var(--w5-dy, 0));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+/* Higman runs his stroll across 16s, 9s after t=0 (1s after scene 2
+ * fades in), and arrives on the couch at t=25s — just before champagne
+ * pops at t=23 and the scene fades out at t=25. */
+.eos-splash--playing .eos-splash__higman {
+  animation: eos-higman-stroll 16s cubic-bezier(0.3, 0.9, 0.55, 1) 9s both;
+}
+
+/* Higman's perpetual bob + champion-ring pulse, ported verbatim from
+ * the GoH so he reads as the "overly-animated" champion dot here too.
+ * Both run on the inner wrapper so they compose with the outer stroll
+ * translate cleanly. */
+@keyframes eos-higman-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+.eos-splash--playing .eos-splash__higman-bob {
+  animation: eos-higman-bob 0.65s ease-in-out 9s infinite;
+}
+
+/* Higman's speech bubble — only visible while he's paused at the bar
+ * (W0 hold, ~8-26% of the 16s stroll = cinematic seconds ~10.3-13.2,
+ * giving ~2.4s of "fully readable" hold + ~0.5s of pop-in/out fades on
+ * either side for ~3s of total visible window). Default opacity is 0
+ * (set on the static rule below) so the bubble never appears outside
+ * playback. Scales subtly for a cartoony "appears-with-a-pop" feel.
+ * The transform-origin is anchored to the tail tip (bottom-left of the
+ * bubble path) so the pop reads as springing FROM Higman rather than
+ * scaling around the bubble's geometric centre. */
+@keyframes eos-speech-bubble-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  6%   { opacity: 0; transform: scale(0.6); }
+  10%  { opacity: 1; transform: scale(1.05); }
+  13%  { opacity: 1; transform: scale(1); }
+  24%  { opacity: 1; transform: scale(1); }
+  27%  { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+
+.eos-splash__speech-bubble {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 14px 100%;
+}
+
+.eos-splash--playing .eos-splash__speech-bubble {
+  animation: eos-speech-bubble-pop 16s ease-out 9s both;
+}
+
+/* Champagne pop spray — a small "fanned" path appears at t=23.4s when
+ * Higman takes his seat, fades out by t=25s as the scene cross-fades.
+ * Multiple sprays are staggered via `--i` so two corks pop one after
+ * the other rather than simultaneously. */
+@keyframes eos-champagne-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  20%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.eos-splash--playing .eos-splash__champagne-pop {
+  animation: eos-champagne-pop 1.8s ease-out
+    calc(23s + var(--i, 0) * 0.4s) both;
+  transform-origin: var(--pop-origin-x, 0px) var(--pop-origin-y, 0px);
+}
+
+/* Handshake pop — brief gold-spark + arms-meeting overlay between
+ * Arteta and Higman during Higman's pause at the W5 waypoint
+ * (cinematic seconds 21.6–22.7, i.e. 85–92% of the 16s stroll that
+ * starts at t=9s). The transform-origin is pinned to the handshake
+ * midpoint so the scale wobble reads as a "shake" centred between the
+ * two dots rather than drifting off to a corner. */
+@keyframes eos-handshake-pop {
+  0%   { opacity: 0; transform: scale(0.5); }
+  20%  { opacity: 1; transform: scale(1.15); }
+  60%  { opacity: 1; transform: scale(1); }
+  85%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 0; transform: scale(0.9); }
+}
+
+.eos-splash--playing .eos-splash__handshake {
+  animation: eos-handshake-pop 1.7s ease-out 22.5s both;
+  transform-origin: var(--shake-x, 0px) var(--shake-y, 0px);
+}
+
+/* ACT 3 — Bathroom puzzle scene ------------------------------------ */
+
+/* Tery walks in from the door (top of room), pauses at standing
+ * waypoint, then sits down at his final position (radius shrinks 10%
+ * via JSX so the dot reads as "kneeling"). Same translate-from-
+ * waypoint convention every other dot uses. */
+@keyframes eos-tery-walk {
+  0% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 0;
+  }
+  6% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 1;
+  }
+  60% {
+    transform: translate(var(--stand-dx, 0), var(--stand-dy, 0));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+/* Walk-in spans 30-33s of the cinematic (1s after the bathroom scene
+ * fades in at t=29s); Tery is seated at his final spot for the rest of
+ * the bath window (33-49s). */
+.eos-splash--playing .eos-splash__tery {
+  animation: eos-tery-walk 3s cubic-bezier(0.3, 0.9, 0.55, 1) 30s both;
+}
+
+/* Puzzle frame + the eyebrow/sub caption stack fade in together at
+ * t=32s so the punchline lands the moment Tery sits down. */
+@keyframes eos-bath-fade-element {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.eos-splash--playing .eos-splash__puzzle-frame {
+  animation: eos-bath-fade-element 1s ease-out 32s both;
+}
+
+/* Puzzle pieces — half-done tableau.
+ *
+ * Each piece is rendered at its FINAL slot position; the per-piece
+ * `--scatter-dx/--scatter-dy` carry its scatter offset around Tery
+ * (Vogel sunflower spiral, see `puzzleScatter` in the JSX). The 0%
+ * keyframe leaves the piece AT its scatter position with opacity 0.92,
+ * and `animation-fill-mode: both` means that BEFORE each piece's
+ * staggered start time, the piece sits visibly at scatter. Pieces
+ * whose staggered start never falls inside the scene's playing window
+ * (i ≥ ~24, since 33s + 24 × 0.5s = 45s = scene fade-out start) never
+ * snap and remain at their scatter positions for the entire scene —
+ * the visual that's left at fade-out is roughly "half-done puzzle,
+ * the rest of the pieces still strewn around Tery". The bathroom
+ * scene's own opacity gate (0 outside scene 3, 1 during the playing
+ * hold, 0 again as the fade-out completes) hides the scattered pieces
+ * outside the scene window so they don't bleed into the surrounding
+ * scenes.
+ *
+ * Stagger is 0.5s/piece and per-piece snap duration is 0.7s, giving a
+ * deliberate "putting a puzzle together over time" cadence over the
+ * ~12s active snap window from t=33s to t≈45.2s, just before the
+ * scene fades. */
+@keyframes eos-puzzle-snap {
+  0% {
+    transform: translate(var(--scatter-dx, 0), var(--scatter-dy, 0));
+    opacity: 0.92;
+  }
+  85% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+.eos-splash--playing .eos-splash__puzzle-piece {
+  animation: eos-puzzle-snap 0.7s cubic-bezier(0.4, 0.9, 0.6, 1)
+    calc(33s + var(--i, 0) * 0.5s) both;
+}
+
+/* ------------------------------------------------------------------ */
+/* SCENE 4 — Outro: badge grid pop-in.
+ *
+ * The 8 fantasy badges fan into the grid one-by-one starting at
+ * cinematic t=49.6s (~0.6s into the 14s outro window, so the headline
+ * has a moment to settle in first). Stagger is 0.18s/badge — over 8
+ * tiles that's 8 × 0.18 = 1.44s for the full grid to populate, which
+ * comfortably finishes well inside the outro window so the assembled
+ * grid sits and reads for the remainder of the scene.
+ *
+ * Animates from a slight-down, slight-scaled-down state to natural,
+ * matching the cartoony pop language used elsewhere in this splash
+ * (champagne pop, handshake glyph, speech bubble). */
+@keyframes eos-outro-badge-pop {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.85); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.eos-splash--playing .eos-splash__outro-badge {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: eos-outro-badge-pop 0.85s cubic-bezier(0.3, 1.2, 0.4, 1)
+    calc(49.6s + var(--i, 0) * 0.18s) both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced-motion fallback. Force every animated descendant of the
+ * playing root back to its final-state default (no transforms, no
+ * opacity ramps) so the splash reads as the same static tableau a
+ * post-session-cap viewer would see — Tery sitting in front of the
+ * fully assembled bathroom puzzle. Title and nightclub scenes are
+ * effectively skipped in this mode (their default opacity is 0).    */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .eos-splash--playing,
+  .eos-splash--playing * {
+    animation: none !important;
+  }
+}

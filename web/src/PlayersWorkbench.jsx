@@ -14,12 +14,12 @@ import {
 import { PlayerKit } from './PlayerKit.jsx'
 import { TeamAvatar } from './TeamAvatar.jsx'
 import { fplShirtImageUrl } from './fplShirtUrl'
-import { parsePlayersHash, pushPlayersHash, replacePlayersHash } from './playerRoutes.js'
-import { PlayerDetailView } from './PlayerDetailView.jsx'
-import { loadLeagueFixtures } from './playerGwHistory.js'
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
+import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx'
 import {
   POS_FILTER_ALL,
   POS_LABEL,
+  PORTRAIT_POS_LABEL_SINGLE,
   buildNextFixturesByTeam,
   buildOwnerByElementFromElementStatus,
   compareWireElements,
@@ -35,30 +35,19 @@ import {
   wireColumnIsGroupStart,
   wireColumnToSortKey,
   wireStatsMapFromPayload,
+  wireStatToneClass,
   wireTableGridTemplate,
+  WIRE_MAX_STAT_COLUMNS,
   WIRE_STAT_CATALOG,
-  WIRE_POSITION_PILLS,
   writeWireStatSelection,
 } from './playersWireList.js'
 import './PlayersWorkbench.css'
-import {
-  FantasyTeamPill,
-  PositionFilterPill,
-  StatsColumnsPill,
-  PillClearButton,
-} from './playersFilterPills.jsx'
 import { usePortraitMobile, useMobileLayout } from './usePortraitMobile.js'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
 import {
-  buildCompareOptionLabel,
   fetchBootstrapDraft,
   fetchLeagueJsonFile,
-  PLAYERS_LEAGUE_DATA_BASE,
-  rosterIdsForLeagueEntry,
-  suggestBenchTarget,
 } from './playersBenchShared.js'
-
-const DATA_BASE = PLAYERS_LEAGUE_DATA_BASE
 
 const WIRE_STATS_SESSION_PREFIX = 'tclot-player-wire-stats-gw-'
 
@@ -90,173 +79,478 @@ function writeWireStatsSession(gw, map) {
   }
 }
 
-/** @param {object} el bootstrap element */
+/**
+ * Phase-2 availability mark: 🚑 ambulance for injured OR doubtful, red dot
+ * for suspended, nothing for available.
+ *
+ * @param {object} el bootstrap element
+ */
 function playerAvailabilityMark(el) {
   const status = el?.status != null ? String(el.status) : 'a'
   const news = typeof el?.news === 'string' ? el.news.trim() : ''
   if (status === 'i') {
-    return { emoji: '🚑', label: 'Injured', title: news || 'Injured' }
+    return { kind: 'emoji', emoji: '🚑', label: 'Injured', title: news || 'Injured' }
   }
   if (status === 'd') {
     const chance = el?.chance_of_playing_next_round
     const chanceLabel =
       chance != null && Number.isFinite(Number(chance)) ? `${chance}% chance` : ''
     return {
-      emoji: '⚠️',
+      kind: 'emoji',
+      emoji: '🚑',
       label: 'Doubtful',
       title: news || chanceLabel || 'Doubtful',
     }
   }
   if (status === 's') {
-    return { emoji: '🟥', label: 'Suspended', title: news || 'Suspended' }
+    return { kind: 'dot', label: 'Suspended', title: news || 'Suspended' }
   }
   return null
 }
 
-function PlayerAvailabilityMark({ el }) {
+/**
+ * Trailing inline indicator cluster rendered after the player name (right edge
+ * of the Player cell). Up to two items: an ownership signal (owner avatar OR
+ * green FA dot) plus an availability signal (🚑 OR red suspended dot). Mutually
+ * exclusive on ownership; stacking allowed across the two axes.
+ *
+ * @param {{
+ *   el: object,
+ *   owner: { leagueEntryId: number, teamName: string } | null | undefined,
+ *   rostersHealthy: boolean,
+ *   logoMap: Record<string, string>,
+ *   kitIndexByEntry: Record<number, number>,
+ * }} props
+ */
+function PlayerInlineIndicators({ el, owner, rostersHealthy, logoMap, kitIndexByEntry }) {
   const mark = playerAvailabilityMark(el)
-  if (!mark) return null
+  const showOwner = rostersHealthy && owner
+  const showFa = rostersHealthy && !owner
+  if (!mark && !showOwner && !showFa) return null
   return (
-    <span
-      className="players-availability-mark"
-      title={mark.title}
-      aria-label={mark.label}
-      role="img"
-    >
-      {mark.emoji}
+    <span className="players-table__name-indicators" aria-hidden={false}>
+      {showOwner ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--owner"
+          title={`Owned by ${owner.teamName}`}
+          aria-label={`Owned by ${owner.teamName}`}
+        >
+          <TeamAvatar
+            entryId={owner.leagueEntryId}
+            name={owner.teamName}
+            size="sm"
+            logoMap={logoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            badgeFallback
+          />
+        </span>
+      ) : null}
+      {showFa ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--fa"
+          title="Free agent"
+          aria-label="Free agent"
+          role="img"
+        />
+      ) : null}
+      {mark && mark.kind === 'emoji' ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--injury"
+          title={mark.title}
+          aria-label={mark.label}
+          role="img"
+        >
+          {mark.emoji}
+        </span>
+      ) : null}
+      {mark && mark.kind === 'dot' ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--sus"
+          title={mark.title}
+          aria-label={mark.label}
+          role="img"
+        />
+      ) : null}
     </span>
   )
 }
 
-function plClubBadgeUrl(code) {
-  return code != null
-    ? `https://resources.premierleague.com/premierleague/badges/50/t${code}.png`
-    : null
+/**
+ * @param {{ pos: 'GKP'|'DEF'|'MID'|'FWD'|string }} props
+ */
+function PositionChip({ pos }) {
+  if (!pos) return null
+  return <span className={`position-chip position-chip--${pos}`}>{pos}</span>
+}
+
+const PORTRAIT_POSITION_OPTIONS = [
+  { id: '1', label: 'GK' },
+  { id: '2', label: 'DEF' },
+  { id: '3', label: 'MID' },
+  { id: '4', label: 'FWD' },
+]
+
+/**
+ * Caret SVG used for the portrait multi-select pill triggers.
+ */
+function PortraitPillCaret({ open = false }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={`players-portrait-pill__caret${open ? ' players-portrait-pill__caret--open' : ''}`}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
 }
 
 /**
+ * Generic multi-select dropdown pill (portrait). Used for Position and Stats.
+ * For grouped sections (e.g. Club), use `MultiSelectGroupedDropdownPill` below.
+ *
  * @param {{
- *   clubFilter: number | 'all',
- *   clubOptions: object[],
- *   onSelect: (id: number | 'all') => void,
+ *   label: string,
+ *   options: { id: string|number, label: string, disabled?: boolean, hint?: string }[],
+ *   selectedIds: Array<string|number>,
+ *   onSelectionChange: (next: Array<string|number>) => void,
+ *   minSelection?: number,
+ *   maxSelection?: number,
+ *   allLabel?: string,
+ *   summaryLabel?: (count: number, total: number) => string,
  * }} props
  */
-function ClubFilterPill({ clubFilter, clubOptions, onSelect, compact = false }) {
+function MultiSelectDropdownPill({
+  label,
+  options,
+  selectedIds,
+  onSelectionChange,
+  minSelection = 0,
+  maxSelection,
+  allLabel = 'All',
+  summaryLabel,
+}) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
-
-  const selectedTeam =
-    clubFilter === 'all'
-      ? null
-      : clubOptions.find((t) => Number(t.id) === Number(clubFilter)) ?? null
-
-  const selectedBadgeUrl = plClubBadgeUrl(selectedTeam?.code)
-  const selectedLabel = selectedTeam
-    ? String(selectedTeam.short_name ?? selectedTeam.name ?? 'Club')
-    : 'Club'
-
   const dismiss = useCallback(() => setOpen(false), [])
   usePillMenuDismiss(rootRef, open, dismiss)
 
-  const pick = (id) => {
-    onSelect(id)
-    setOpen(false)
+  const selectedSet = useMemo(
+    () => new Set(selectedIds.map((id) => String(id))),
+    [selectedIds],
+  )
+  const allCount = options.length
+  const selectedCount = options.filter((o) => selectedSet.has(String(o.id))).length
+  const isAll = selectedCount === allCount
+  const isActive = !isAll
+  const atMax = typeof maxSelection === 'number' && selectedCount >= maxSelection
+
+  const value = isAll
+    ? allLabel
+    : summaryLabel
+      ? summaryLabel(selectedCount, allCount)
+      : String(selectedCount)
+
+  const toggleOne = (optId) => {
+    const key = String(optId)
+    const next = new Set(selectedSet)
+    if (next.has(key)) {
+      if (next.size <= minSelection) return
+      next.delete(key)
+    } else {
+      if (atMax) return
+      next.add(key)
+    }
+    const ordered = options
+      .map((o) => String(o.id))
+      .filter((id) => next.has(id))
+    onSelectionChange(ordered)
   }
 
-  const isActive = clubFilter !== 'all'
-  const badgeOnly = compact && isActive
+  const toggleAll = () => {
+    if (isAll) {
+      // Selecting "All" when already all-selected is a no-op (keeps everything on).
+      // Tapping "All" when partial selection → select everything.
+      return
+    }
+    onSelectionChange(options.map((o) => String(o.id)))
+  }
 
   return (
+    <div className="players-portrait-pill" ref={rootRef}>
+      <button
+        type="button"
+        className={`players-portrait-pill__btn${
+          isActive ? ' players-portrait-pill__btn--active' : ''
+        }${open ? ' players-portrait-pill__btn--open' : ''}`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`${label}: ${value}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="players-portrait-pill__label">{label}</span>
+        <span className="players-portrait-pill__sep" aria-hidden>·</span>
+        <span className="players-portrait-pill__value">{value}</span>
+        <PortraitPillCaret open={open} />
+      </button>
+      {open ? (
+        <div
+          className="players-portrait-pill__pop"
+          role="dialog"
+          aria-label={`${label} options`}
+        >
+          <label className="players-portrait-pill__item">
+            <input
+              type="checkbox"
+              className="players-portrait-pill__check"
+              checked={isAll}
+              onChange={toggleAll}
+            />
+            <span>All {label.toLowerCase()}</span>
+          </label>
+          <div className="players-portrait-pill__divider" aria-hidden />
+          {options.map((opt) => {
+            const checked = selectedSet.has(String(opt.id))
+            const lockedMin = checked && selectedCount <= minSelection
+            const blocked = !checked && atMax
+            const disabled = Boolean(opt.disabled) || lockedMin || blocked
+            return (
+              <label
+                key={opt.id}
+                className={`players-portrait-pill__item${
+                  disabled ? ' players-portrait-pill__item--disabled' : ''
+                }${checked ? ' players-portrait-pill__item--checked' : ''}`}
+                title={
+                  opt.hint ??
+                  (blocked && typeof maxSelection === 'number'
+                    ? `Deselect another first (${maxSelection} max)`
+                    : undefined)
+                }
+              >
+                <input
+                  type="checkbox"
+                  className="players-portrait-pill__check"
+                  checked={checked}
+                  disabled={Boolean(opt.disabled) || (blocked && !checked)}
+                  onChange={() => toggleOne(opt.id)}
+                />
+                <span>{opt.label}</span>
+                {opt.hint ? (
+                  <span className="players-portrait-pill__hint">{opt.hint}</span>
+                ) : null}
+              </label>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * Multi-select dropdown pill with two grouped sections (used for Club: PL clubs + fantasy teams).
+ *
+ * @param {{
+ *   label: string,
+ *   sections: { id: string, label: string, options: { id: string|number, label: string }[], selectedIds: Array<string|number>, onSelectionChange: (next: Array<string|number>) => void }[],
+ *   allLabel?: string,
+ * }} props
+ */
+function MultiSelectGroupedDropdownPill({ label, sections, allLabel = 'All' }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  const dismiss = useCallback(() => setOpen(false), [])
+  usePillMenuDismiss(rootRef, open, dismiss)
+
+  const sectionSummaries = sections.map((s) => {
+    const set = new Set(s.selectedIds.map((id) => String(id)))
+    const total = s.options.length
+    const selected = s.options.filter((o) => set.has(String(o.id))).length
+    return { id: s.id, set, total, selected }
+  })
+
+  const totalOptions = sectionSummaries.reduce((acc, s) => acc + s.total, 0)
+  const totalSelected = sectionSummaries.reduce((acc, s) => acc + s.selected, 0)
+  const isAll = totalSelected === totalOptions
+  const isActive = !isAll
+  const value = isAll ? allLabel : String(totalSelected)
+
+  const toggleOption = (sectionIdx, optId) => {
+    const s = sections[sectionIdx]
+    const set = new Set(s.selectedIds.map((id) => String(id)))
+    const key = String(optId)
+    if (set.has(key)) set.delete(key)
+    else set.add(key)
+    const ordered = s.options
+      .map((o) => String(o.id))
+      .filter((id) => set.has(id))
+    s.onSelectionChange(ordered)
+  }
+
+  const toggleSectionAll = (sectionIdx) => {
+    const s = sections[sectionIdx]
+    const summary = sectionSummaries[sectionIdx]
+    if (summary.selected === summary.total) {
+      // Tapping "All {section}" when full → clear that section.
+      s.onSelectionChange([])
+    } else {
+      s.onSelectionChange(s.options.map((o) => String(o.id)))
+    }
+  }
+
+  return (
+    <div className="players-portrait-pill" ref={rootRef}>
+      <button
+        type="button"
+        className={`players-portrait-pill__btn${
+          isActive ? ' players-portrait-pill__btn--active' : ''
+        }${open ? ' players-portrait-pill__btn--open' : ''}`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`${label}: ${value}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="players-portrait-pill__label">{label}</span>
+        <span className="players-portrait-pill__sep" aria-hidden>·</span>
+        <span className="players-portrait-pill__value">{value}</span>
+        <PortraitPillCaret open={open} />
+      </button>
+      {open ? (
+        <div
+          className="players-portrait-pill__pop players-portrait-pill__pop--grouped"
+          role="dialog"
+          aria-label={`${label} options`}
+        >
+          {sections.map((s, sIdx) => {
+            const summary = sectionSummaries[sIdx]
+            if (s.options.length === 0) return null
+            const allOn = summary.selected === summary.total
+            return (
+              <section key={s.id} className="players-portrait-pill__section">
+                <header className="players-portrait-pill__section-head">
+                  <span className="players-portrait-pill__section-label">{s.label}</span>
+                  <button
+                    type="button"
+                    className="players-portrait-pill__section-toggle"
+                    onClick={() => toggleSectionAll(sIdx)}
+                  >
+                    {allOn ? 'Clear' : 'All'}
+                  </button>
+                </header>
+                {s.options.map((opt) => {
+                  const checked = summary.set.has(String(opt.id))
+                  return (
+                    <label
+                      key={opt.id}
+                      className={`players-portrait-pill__item${
+                        checked ? ' players-portrait-pill__item--checked' : ''
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="players-portrait-pill__check"
+                        checked={checked}
+                        onChange={() => toggleOption(sIdx, opt.id)}
+                      />
+                      <span>{opt.label}</span>
+                    </label>
+                  )
+                })}
+              </section>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * Wire / Owned segmented toggle (portrait). Binary either/or replacing the
+ * Owned filter pill + Include-drafted toggle.
+ *
+ * @param {{ value: 'wire' | 'owned', onChange: (next: 'wire' | 'owned') => void, disabled?: boolean }} props
+ */
+function WireOwnedSegmentedToggle({ value, onChange, disabled = false }) {
+  return (
     <div
-      className={`players-club-pill${badgeOnly ? ' players-club-pill--badge-only' : ''}`}
-      ref={rootRef}
+      className={`players-portrait-segment${disabled ? ' players-portrait-segment--disabled' : ''}`}
+      role="group"
+      aria-label="Player ownership filter"
     >
       <button
         type="button"
-        className={`team-selection-submenu__btn players-club-pill__btn${
-          clubFilter !== 'all' ? ' team-selection-submenu__btn--active' : ''
-        }${open ? ' players-menu-pill__btn--open' : ''}`}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={
-          clubFilter === 'all'
-            ? 'Filter by club'
-            : `Club filter: ${selectedLabel}`
-        }
-        onClick={() => setOpen((v) => !v)}
+        className={`players-portrait-segment__btn${
+          value === 'wire' ? ' players-portrait-segment__btn--active' : ''
+        }`}
+        aria-pressed={value === 'wire'}
+        disabled={disabled}
+        onClick={() => onChange('wire')}
       >
-        {selectedBadgeUrl ? (
-          <img
-            src={selectedBadgeUrl}
-            alt=""
-            className="players-club-pill__badge"
-            width={18}
-            height={18}
-            loading="lazy"
-          />
-        ) : null}
-        <span className="players-club-pill__label">{selectedLabel}</span>
-        {clubFilter !== 'all' ? (
-          <PillClearButton
-            label="Show all clubs"
-            onClear={() => onSelect('all')}
-          />
-        ) : null}
-        <span className="players-menu-pill__chev" aria-hidden>
-          ▾
-        </span>
+        Wire
       </button>
-      {open ? (
-        <ul className="players-menu-pill__menu" role="listbox" aria-label="Clubs">
-          <li role="presentation">
-            <button
-              type="button"
-              role="option"
-              aria-selected={clubFilter === 'all'}
-              className={`players-menu-pill__option${
-                clubFilter === 'all' ? ' players-menu-pill__option--active' : ''
-              }`}
-              onClick={() => pick('all')}
-            >
-              <span className="players-menu-pill__option-text">All clubs</span>
-            </button>
-          </li>
-          {clubOptions.map((t) => {
-            const tid = Number(t.id)
-            const active = Number(clubFilter) === tid
-            const badge = plClubBadgeUrl(t.code)
-            const short = String(t.short_name ?? t.name ?? '?')
-            return (
-              <li key={t.id} role="presentation">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={active}
-                  className={`players-menu-pill__option${
-                    active ? ' players-menu-pill__option--active' : ''
-                  }`}
-                  onClick={() => pick(tid)}
-                >
-                  {badge ? (
-                    <img
-                      src={badge}
-                      alt=""
-                      className="players-club-pill__badge"
-                      width={20}
-                      height={20}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <span className="players-club-pill__badge-fallback">{short.slice(0, 3)}</span>
-                  )}
-                  <span className="players-menu-pill__option-text">{short}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      ) : null}
+      <button
+        type="button"
+        className={`players-portrait-segment__btn${
+          value === 'owned' ? ' players-portrait-segment__btn--active' : ''
+        }`}
+        aria-pressed={value === 'owned'}
+        disabled={disabled}
+        onClick={() => onChange('owned')}
+      >
+        Owned
+      </button>
     </div>
+  )
+}
+
+/**
+ * Stats column multi-select dropdown — portrait variant. Wraps the same
+ * `MultiSelectDropdownPill` pattern around the existing
+ * position-aware stat catalog so the trigger chrome matches the other
+ * portrait pills (Position, Club).
+ *
+ * @param {{
+ *   selectedIds: string[],
+ *   onChange: (ids: string[]) => void,
+ *   positionFilter: import('./playersWireList.js').PositionFilterId,
+ *   maxStatColumns: number,
+ * }} props
+ */
+function PortraitStatsDropdownPill({
+  selectedIds,
+  onChange,
+  positionFilter,
+  maxStatColumns,
+}) {
+  const options = useMemo(() => {
+    const list = []
+    for (const stat of Object.values(WIRE_STAT_CATALOG)) {
+      if (stat.id === 'pos') continue
+      if (stat.hideWhenPos?.length && positionFilter !== POS_FILTER_ALL) {
+        if (stat.hideWhenPos.includes(positionFilter)) continue
+      }
+      list.push({ id: stat.id, label: stat.label })
+    }
+    return list
+  }, [positionFilter])
+
+  return (
+    <MultiSelectDropdownPill
+      label="Stats"
+      options={options}
+      selectedIds={selectedIds}
+      onSelectionChange={onChange}
+      minSelection={1}
+      maxSelection={maxStatColumns}
+      allLabel={String(selectedIds.length)}
+      summaryLabel={(count) => String(count)}
+    />
   )
 }
 
@@ -302,6 +596,245 @@ function NextFixtureBadges({ fixtures, nextOnly = false }) {
   )
 }
 
+/**
+ * Portrait Variant I tile list — replaces the desktop table grid on
+ * `@media (max-width: 600px)` with a flat tile-based list. Each tile uses a
+ * 2-column grid: left = identity (crest + name + position single letter +
+ * owner avatar + ailments + Next-3 fixtures), right = fixed 168px N-track
+ * grid of stat values aligned under a persistent column header.
+ *
+ * The header + tile right-column tracks share the same `repeat(N, 1fr)`
+ * template so PTS / G / A / DC values stay column-aligned across tiles
+ * regardless of how the left column wraps.
+ */
+function PortraitWireTileList({
+  outfieldList,
+  visibleCols,
+  teamById,
+  ownerByElementId,
+  summaryByElement,
+  summaryLoading,
+  nextFixturesByTeam,
+  rostersHealthy,
+  logoMap,
+  kitIndexByEntry,
+  activeSortColId,
+  sortDir,
+  onColumnSort,
+  playerDetailOverlay,
+  openPlayerDetail,
+}) {
+  // Pts + selected stats (player + next3 are rendered in the tile's left
+  // column, not the right). 'pos' is already excluded from `visibleCols`
+  // by `visibleWireColumns` (it lives in the tile sub-row instead).
+  const rightCols = visibleCols.filter(
+    (c) => c.id !== 'player' && c.id !== 'next3',
+  )
+  const rightTracks = `repeat(${Math.max(rightCols.length, 1)}, 1fr)`
+  const tappable = Boolean(playerDetailOverlay)
+
+  return (
+    <div className="players-wire-tile-list" role="list" aria-label="Waiver wire players">
+      <div
+        className="players-wire-tile-colhead"
+        role="row"
+        aria-label="Stat columns"
+      >
+        <span className="players-wire-tile-colhead__spacer" aria-hidden />
+        <div
+          className="players-wire-tile-colhead__cols"
+          style={{ gridTemplateColumns: rightTracks }}
+        >
+          {rightCols.map((col) => {
+            const colSortKey = wireColumnToSortKey(col.id)
+            const isActive = col.id === activeSortColId
+            const ariaSort = isActive
+              ? sortDir === 'asc'
+                ? 'ascending'
+                : 'descending'
+              : colSortKey
+                ? 'none'
+                : undefined
+            const cellClass = `players-wire-tile-colhead__cell${
+              isActive ? ' players-wire-tile-colhead__cell--sorted' : ''
+            }`
+            if (!colSortKey) {
+              return (
+                <span
+                  key={col.id}
+                  className={cellClass}
+                  role="columnheader"
+                  title={col.title}
+                >
+                  {col.label}
+                </span>
+              )
+            }
+            return (
+              <button
+                key={col.id}
+                type="button"
+                className={`${cellClass} players-wire-tile-colhead__btn`}
+                role="columnheader"
+                aria-sort={ariaSort}
+                title={col.title ? `${col.title} · tap to sort` : 'Tap to sort'}
+                onClick={() => onColumnSort(col.id)}
+              >
+                <span className="players-wire-tile-colhead__label">{col.label}</span>
+                {isActive ? (
+                  <span className="players-wire-tile-colhead__arrow" aria-hidden>
+                    {sortDir === 'asc' ? '↑' : '↓'}
+                  </span>
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {outfieldList.map((el) => {
+        const row = enrichElementRow(el, teamById)
+        const elId = Number(el.id)
+        const summary = summaryByElement.get(elId)
+        const nextFixtures = nextFixturesByTeam.get(Number(el.team)) ?? []
+        const displayName = fplElementDisplayName(el, el.id)
+        const owner = ownerByElementId.get(elId)
+        const posLetter = PORTRAIT_POS_LABEL_SINGLE[el.element_type] ?? '?'
+
+        return (
+          <div
+            key={el.id}
+            className={`players-wire-tile${tappable ? ' players-wire-tile--tappable' : ''}`}
+            role="listitem"
+            tabIndex={tappable ? 0 : undefined}
+            onClick={
+              tappable
+                ? (e) => {
+                    if (e.target.closest('button, a')) return
+                    openPlayerDetail(el)
+                  }
+                : undefined
+            }
+            onKeyDown={
+              tappable
+                ? (e) => {
+                    if (e.target !== e.currentTarget) return
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      openPlayerDetail(el)
+                    }
+                  }
+                : undefined
+            }
+          >
+            <div className="players-wire-tile__left">
+              <div className="players-wire-tile__id-row">
+                <span className="players-wire-tile__kit">
+                  <PlayerKit badgeUrl={row.badgeUrl} teamShort={row.teamShort} />
+                </span>
+                <ClickablePlayerName
+                  element={el.id}
+                  displayName={displayName}
+                  web_name={el.web_name}
+                  teamShort={row.teamShort}
+                  className="players-wire-tile__name"
+                >
+                  {displayName}
+                </ClickablePlayerName>
+                <span
+                  className="players-wire-tile__pos-chip"
+                  aria-label={`Position ${posLetter}`}
+                  title={`Position ${posLetter}`}
+                >
+                  {posLetter}
+                </span>
+              </div>
+              {/* Single sub-row: owner avatar (when present) + injury dots +
+               * Next-3 fixtures. Position moved up next to the name; the
+               * previous standalone position/owner row was collapsed. */}
+              <div className="players-wire-tile__sub-row">
+                <PlayerInlineIndicators
+                  el={el}
+                  owner={null}
+                  rostersHealthy={false}
+                  logoMap={logoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span className="players-wire-tile__fixtures">
+                  <NextFixtureBadges fixtures={nextFixtures} />
+                </span>
+                {rostersHealthy && owner ? (
+                  <span
+                    className="players-wire-tile__owner"
+                    title={`Owned by ${owner.teamName}`}
+                    aria-label={`Owned by ${owner.teamName}`}
+                  >
+                    <TeamAvatar
+                      entryId={owner.leagueEntryId}
+                      name={owner.teamName}
+                      size="sm"
+                      logoMap={logoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                      badgeFallback
+                    />
+                  </span>
+                ) : null}
+              </div>
+            </div>
+            <div
+              className="players-wire-tile__right"
+              style={{ gridTemplateColumns: rightTracks }}
+            >
+              {rightCols.map((col) => {
+                const isActive = col.id === activeSortColId
+                if (col.id === 'pts') {
+                  const pts = Number.isFinite(Number(el.total_points))
+                    ? el.total_points
+                    : '—'
+                  return (
+                    <span
+                      key={col.id}
+                      className={`players-wire-tile__stat players-wire-tile__stat--pts${
+                        isActive ? ' players-wire-tile__stat--sorted' : ''
+                      }`}
+                      role="cell"
+                    >
+                      {pts}
+                    </span>
+                  )
+                }
+                if (WIRE_STAT_CATALOG[col.id]) {
+                  const statDef = WIRE_STAT_CATALOG[col.id]
+                  const value = formatWireStatValue(
+                    col.id,
+                    el,
+                    summary,
+                    summaryLoading,
+                  )
+                  const tone = wireStatToneClass(value)
+                  return (
+                    <span
+                      key={col.id}
+                      className={`players-wire-tile__stat${
+                        tone ? ` ${tone}` : ''
+                      }${isActive ? ' players-wire-tile__stat--sorted' : ''}`}
+                      role="cell"
+                      title={statDef.title}
+                    >
+                      {value}
+                    </span>
+                  )
+                }
+                return null
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function enrichElementRow(el, teamByCode) {
   const tm = el ? teamByCode.get(el.team) : null
   const shirtUrl = fplShirtImageUrl(tm?.code, el?.element_type)
@@ -332,7 +865,8 @@ function wireCellClass(colId, activeSortColId, extra = '', groupStart = false) {
 }
 
 /**
- * Waiver-wire browser + full-screen player detail (mobile portrait first).
+ * Waiver-wire browser. Player detail opens via the shared full-screen
+ * `PlayerDetailOverlay` (same path as Live / Compare flows).
  *
  * @param {{
  *   leagueEntries: object[],
@@ -340,7 +874,6 @@ function wireCellClass(colId, activeSortColId, extra = '', groupStart = false) {
  *   leagueDataRevision?: string,
  *   logoMap?: Record<string, string>,
  *   kitIndexByEntry?: Record<number, number>,
- *   onDetailOpenChange?: (open: boolean) => void,
  * }} props
  */
 export function PlayersWorkbench({
@@ -349,7 +882,6 @@ export function PlayersWorkbench({
   leagueDataRevision = '',
   logoMap = {},
   kitIndexByEntry = {},
-  onDetailOpenChange,
 }) {
   const portrait = usePortraitMobile()
   const mobileLayout = useMobileLayout()
@@ -362,12 +894,7 @@ export function PlayersWorkbench({
   const [ownedIds, setOwnedIds] = useState(() => new Set())
   const [rostersHealthy, setRostersHealthy] = useState(false)
 
-  const [availableOnly, setAvailableOnly] = useState(true)
   const [search, setSearch] = useState('')
-  /** @type {[import('./playersWireList.js').PositionFilterId, (v: import('./playersWireList.js').PositionFilterId)=>void]} */
-  const [positionFilter, setPositionFilter] = useState(POS_FILTER_ALL)
-  /** @type {[number|'all', (v: number|'all')=>void]} */
-  const [clubFilter, setClubFilter] = useState('all')
   /** @type {[import('./playersWireList.js').WireSortKey, (v: import('./playersWireList.js').WireSortKey)=>void]} */
   const [sortKey, setSortKey] = useState('total_points')
   /** @type {[import('./playersWireList.js').WireSortDir, (v: import('./playersWireList.js').WireSortDir)=>void]} */
@@ -375,22 +902,32 @@ export function PlayersWorkbench({
   /** element id → { defConHits, gamesPlayed, sixtyPlus } from element-summary */
   const [summaryByElement, setSummaryByElement] = useState(() => new Map())
   const [summaryLoading, setSummaryLoading] = useState(false)
-  /** @type {[number|null, (id: number|null)=>void]} */
-  const [myTeamLeagueEntryId, setMyTeamLeagueEntryId] = useState(null)
-  /** @type {[import('./playersFilterPills.jsx').CompareClubSource | null, (v: import('./playersFilterPills.jsx').CompareClubSource | null) => void]} */
-  const [compareSource, setCompareSource] = useState(null)
-  /** @type {[number|null, (id: number|null)=>void]} */
-  const [detailPlayerId, setDetailPlayerId] = useState(null)
-  const [benchId, setBenchId] = useState(null)
   /** @type {[string[], (ids: string[]) => void]} */
   const [selectedStatIds, setSelectedStatIds] = useState(() =>
     readWireStatSelection(POS_FILTER_ALL),
   )
-  /** @type {[object[] | null, (v: object[] | null) => void]} */
-  const [plFixtures, setPlFixtures] = useState(null)
-  const hydratedFromUrlRef = useRef(false)
-  /** True when detail was opened via `pushPlayersHash` (list entry exists behind detail). */
-  const detailHistoryPushedRef = useRef(false)
+
+  /* ============================================================
+   * Shared multi-select toolbar state — drives both the portrait
+   * (≤600px) and desktop toolbars. For the Club + Fantasy
+   * multi-selects, `null` is the "uninitialized, everything on"
+   * sentinel — the option list isn't available until bootstrap +
+   * leagueEntries arrive. As soon as the user makes any change,
+   * the value flips to an explicit `number[]`.
+   * ============================================================ */
+  /** @type {[string[], (ids: string[]) => void]} */
+  const [selectedPositions, setSelectedPositions] = useState(() => [
+    '1', '2', '3', '4',
+  ])
+  /** @type {[number[] | null, (ids: number[] | null) => void]} */
+  const [selectedPlClubs, setSelectedPlClubs] = useState(null)
+  /** @type {[number[] | null, (ids: number[] | null) => void]} */
+  const [selectedFantasyTeams, setSelectedFantasyTeams] = useState(null)
+  /** @type {['wire' | 'owned', (v: 'wire' | 'owned') => void]} */
+  const [wireOwnedMode, setWireOwnedMode] = useState('wire')
+
+  /** Player detail launches via the shared overlay (no inline view). */
+  const playerDetailOverlay = usePlayerDetailOverlayOptional()
 
   const elemsById = useMemo(() => {
     const m = new Map()
@@ -410,52 +947,47 @@ export function PlayersWorkbench({
     return m
   }, [bootstrap])
 
-  /** Every squad element rostered league-wide */
-  const rosterIdsForMine = useMemo(() => {
-    if (myTeamLeagueEntryId == null) return new Set()
-    const s = new Set()
-    for (const [pid, owner] of ownerByElementId) {
-      if (Number(owner.leagueEntryId) === Number(myTeamLeagueEntryId)) {
-        s.add(Number(pid))
-      }
-    }
-    return s
-  }, [myTeamLeagueEntryId, ownerByElementId])
-
   const nextFixturesByTeam = useMemo(() => {
     if (!bootstrap) return new Map()
     return buildNextFixturesByTeam(bootstrap, teamById, 3)
   }, [bootstrap, teamById])
 
+  /**
+   * Effective position filter — drives column visibility + Stats picker.
+   * Derived from `selectedPositions` (multi-select): if exactly one
+   * position is selected, treat it as a per-position filter; otherwise
+   * collapse to 'all' (mixed selection → All-style columns).
+   */
+  const effectivePositionFilter = useMemo(() => {
+    if (selectedPositions.length === 1) return selectedPositions[0]
+    return POS_FILTER_ALL
+  }, [selectedPositions])
+
   const visibleCols = useMemo(
-    () => visibleWireColumns(positionFilter, selectedStatIds, { portrait }),
-    [positionFilter, selectedStatIds, portrait],
+    () => visibleWireColumns(effectivePositionFilter, selectedStatIds, { portrait }),
+    [effectivePositionFilter, selectedStatIds, portrait],
   )
   const tableGridTemplate = useMemo(
     () => wireTableGridTemplate(visibleCols),
     [visibleCols],
   )
-  const statColumnMax = portrait ? portraitMaxStatColumns(positionFilter) : undefined
+  const statColumnMax = portrait ? portraitMaxStatColumns(effectivePositionFilter) : undefined
   const handleStatSelectionChange = useCallback(
     (ids) => {
       const next = statColumnMax ? ids.slice(0, statColumnMax) : ids
       setSelectedStatIds(next)
-      writeWireStatSelection(positionFilter, next)
+      writeWireStatSelection(effectivePositionFilter, next)
     },
-    [positionFilter, statColumnMax],
+    [effectivePositionFilter, statColumnMax],
   )
 
   useEffect(() => {
-    onDetailOpenChange?.(detailPlayerId != null)
-  }, [detailPlayerId, onDetailOpenChange])
-
-  useEffect(() => {
     if (portrait) {
-      setSelectedStatIds(portraitDefaultWireStatIdsForPosition(positionFilter))
+      setSelectedStatIds(portraitDefaultWireStatIdsForPosition(effectivePositionFilter))
       return
     }
-    setSelectedStatIds(readWireStatSelection(positionFilter))
-  }, [positionFilter, portrait])
+    setSelectedStatIds(readWireStatSelection(effectivePositionFilter))
+  }, [effectivePositionFilter, portrait])
 
   const clubOptions = useMemo(() => {
     if (!bootstrap?.teams?.length) return []
@@ -463,6 +995,29 @@ export function PlayersWorkbench({
       String(a.short_name || a.name).localeCompare(String(b.short_name || b.name)),
     )
   }, [bootstrap])
+
+  /* Multi-select effective lists.
+   * `selectedPlClubs` / `selectedFantasyTeams` default to `null` meaning
+   * "user hasn't customized, treat as all-on". We materialize the full
+   * id lists here once option data exists so the dropdown UI can show
+   * "All …" checked correctly and the filter logic has a concrete set. */
+  const effectivePlClubs = useMemo(() => {
+    if (selectedPlClubs != null) return selectedPlClubs
+    return clubOptions.map((t) => Number(t.id))
+  }, [selectedPlClubs, clubOptions])
+
+  const fantasyEntryIds = useMemo(
+    () =>
+      leagueEntries
+        .map((e) => Number(e?.id))
+        .filter((n) => Number.isFinite(n)),
+    [leagueEntries],
+  )
+
+  const effectiveFantasyTeams = useMemo(() => {
+    if (selectedFantasyTeams != null) return selectedFantasyTeams
+    return fantasyEntryIds
+  }, [selectedFantasyTeams, fantasyEntryIds])
 
   const nextFixtureSortKey = useCallback(
     (el) => {
@@ -510,12 +1065,45 @@ export function PlayersWorkbench({
   const outfieldList = useMemo(() => {
     if (!bootstrap?.elements?.length) return []
     let list = [...bootstrap.elements]
-    if (positionFilter !== POS_FILTER_ALL) {
-      list = list.filter((el) => String(el.element_type) === positionFilter)
+
+    // Multi-select filters apply on both portrait + desktop. Empty arrays
+    // mean "nothing checked" and produce zero matches (empty state).
+    const posSet = new Set(selectedPositions.map(String))
+    list = list.filter((el) => posSet.has(String(el.element_type)))
+
+    // PL clubs: pre-init (null) is treated as "all on" by the effective
+    // list, so no extra branch needed.
+    if (selectedPlClubs != null) {
+      const plSet = new Set(selectedPlClubs.map(Number))
+      list = list.filter((el) => plSet.has(Number(el.team)))
     }
-    if (clubFilter !== 'all') {
-      list = list.filter((el) => Number(el.team) === Number(clubFilter))
+
+    if (rostersHealthy && selectedFantasyTeams != null) {
+      const fantasySet = new Set(selectedFantasyTeams.map(Number))
+      const allFantasyOn =
+        fantasyEntryIds.length > 0 &&
+        fantasyEntryIds.every((id) => fantasySet.has(id))
+      if (!allFantasyOn) {
+        list = list.filter((el) => {
+          const owner = ownerByElementId.get(Number(el.id))
+          if (!owner) {
+            // Free agents only included if "Wire" mode is selected; in
+            // "Owned" mode FAs are excluded by the wire-owned filter below.
+            return wireOwnedMode === 'wire'
+          }
+          return fantasySet.has(Number(owner.leagueEntryId))
+        })
+      }
     }
+
+    if (rostersHealthy) {
+      if (wireOwnedMode === 'wire') {
+        list = list.filter((el) => !ownedIds.has(Number(el.id)))
+      } else {
+        list = list.filter((el) => ownedIds.has(Number(el.id)))
+      }
+    }
+
     const q = search.trim().toLowerCase()
     if (q) {
       list = list.filter((el) => {
@@ -524,15 +1112,7 @@ export function PlayersWorkbench({
         return known.includes(q) || web.includes(q)
       })
     }
-    if (availableOnly && rostersHealthy) {
-      if (myTeamLeagueEntryId != null) {
-        list = list.filter((el) => !rosterIdsForMine.has(Number(el.id)))
-      } else {
-        list = list.filter((el) => !ownedIds.has(Number(el.id)))
-      }
-    } else if (myTeamLeagueEntryId != null && rostersHealthy) {
-      list = list.filter((el) => rosterIdsForMine.has(Number(el.id)))
-    }
+
     list.sort((a, b) =>
       compareWireElements(a, b, effectiveSortKey, sortDir, {
         extraFor: summaryExtraFor,
@@ -543,13 +1123,14 @@ export function PlayersWorkbench({
   }, [
     bootstrap,
     search,
-    availableOnly,
     rostersHealthy,
     ownedIds,
-    rosterIdsForMine,
-    myTeamLeagueEntryId,
-    positionFilter,
-    clubFilter,
+    ownerByElementId,
+    selectedPositions,
+    selectedPlClubs,
+    selectedFantasyTeams,
+    fantasyEntryIds,
+    wireOwnedMode,
     effectiveSortKey,
     sortDir,
     summaryExtraFor,
@@ -613,16 +1194,6 @@ export function PlayersWorkbench({
 
   useEffect(() => {
     let cancel = false
-    void loadLeagueFixtures(DATA_BASE).then((rows) => {
-      if (!cancel) setPlFixtures(rows)
-    })
-    return () => {
-      cancel = true
-    }
-  }, [leagueDataRevision])
-
-  useEffect(() => {
-    let cancel = false
     ;(async () => {
       try {
         setSquadsErr(null)
@@ -656,275 +1227,119 @@ export function PlayersWorkbench({
     }
   }, [teamsForFormSelect, leagueDataRevision])
 
-  /** Hydrate from URL once bootstrap + IDs are ready (avoids clobbering `#/players?…` before load). */
-  useEffect(() => {
-    if (!bootstrap || elemsById.size === 0 || hydratedFromUrlRef.current) return
-    const parsed = parsePlayersHash()
-    if (
-      parsed == null ||
-      (parsed.waiver == null &&
-        parsed.bench == null &&
-        parsed.teamId == null &&
-        parsed.plClubId == null)
-    ) {
-      hydratedFromUrlRef.current = true
-      return
-    }
-    hydratedFromUrlRef.current = true
-    queueMicrotask(() => {
-      const { waiver, bench, teamId, plClubId } = parsed
-
-      if (
-        teamId != null &&
-        teamsForFormSelect.some((x) => Number(x.id) === Number(teamId))
-      ) {
-        setMyTeamLeagueEntryId(Number(teamId))
-        setCompareSource({ kind: 'fantasy', id: Number(teamId) })
-      } else if (
-        plClubId != null &&
-        bootstrap?.teams?.some((x) => Number(x.id) === Number(plClubId))
-      ) {
-        setCompareSource({ kind: 'pl-club', id: Number(plClubId) })
-      }
-
-      const waiverNum =
-        waiver != null && elemsById.has(Number(waiver)) ? Number(waiver) : null
-      const sourceRosterIds =
-        teamId != null
-          ? rosterIdsForLeagueEntry(Number(teamId), ownerByElementId)
-          : new Set()
-      let nextBench =
-        waiverNum != null && teamId != null
-          ? suggestBenchTarget([...sourceRosterIds], elemsById, elemsById.get(waiverNum))
-          : null
-      if (
-        waiverNum != null &&
-        bench != null &&
-        elemsById.has(Number(bench))
-      ) {
-        const bb = elemsById.get(Number(bench))
-        const ww = elemsById.get(waiverNum)
-        if (bb && ww && bb.element_type === ww.element_type) nextBench = Number(bench)
-      }
-
-      if (waiverNum != null) {
-        setDetailPlayerId(waiverNum)
-        setBenchId(nextBench)
-      }
-    })
-  }, [teamsForFormSelect, elemsById, bootstrap, ownerByElementId])
-
-  useEffect(() => {
-    const onPop = () => {
-      const parsed = parsePlayersHash()
-      if (!parsed || parsed.waiver == null) {
-        detailHistoryPushedRef.current = false
-        setDetailPlayerId(null)
-        setBenchId(null)
-        setCompareSource(null)
-        return
-      }
-      detailHistoryPushedRef.current = true
-      if (elemsById.has(Number(parsed.waiver))) {
-        setDetailPlayerId(Number(parsed.waiver))
-        setBenchId(parsed.bench)
-      }
-      if (
-        parsed.teamId != null &&
-        teamsForFormSelect.some((x) => Number(x.id) === Number(parsed.teamId))
-      ) {
-        setCompareSource({ kind: 'fantasy', id: Number(parsed.teamId) })
-        setMyTeamLeagueEntryId(Number(parsed.teamId))
-      } else if (
-        parsed.plClubId != null &&
-        bootstrap?.teams?.some((x) => Number(x.id) === Number(parsed.plClubId))
-      ) {
-        setCompareSource({ kind: 'pl-club', id: Number(parsed.plClubId) })
-      } else {
-        setCompareSource(null)
-      }
-    }
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [elemsById, teamsForFormSelect, bootstrap])
-
-  useEffect(() => {
-    if (!bootstrap) return
-    const slice = {
-      waiver: detailPlayerId,
-      bench: detailPlayerId != null ? benchId : null,
-    }
-    if (detailPlayerId != null && compareSource) {
-      if (compareSource.kind === 'fantasy') {
-        slice.teamId = compareSource.id
-      } else {
-        slice.plClubId = compareSource.id
-      }
-    } else {
-      slice.teamId = myTeamLeagueEntryId
-    }
-    replacePlayersHash(slice)
-  }, [bootstrap, detailPlayerId, benchId, compareSource, myTeamLeagueEntryId])
-
-  const detailPlayerEl = detailPlayerId != null ? elemsById.get(detailPlayerId) : null
-  const benchEl = benchId != null ? elemsById.get(benchId) : null
-
-  const compareSearchOptions = useMemo(() => {
-    const w = detailPlayerEl
-    if (!w?.element_type) return []
-    const out = []
-    const waiverId = Number(w.id)
-
-    for (const el of bootstrap?.elements ?? []) {
-      if (el.element_type !== w.element_type) continue
-      if (Number(el.id) === waiverId) continue
-      out.push({
-        id: Number(el.id),
-        label: buildCompareOptionLabel(el, w.element_type, teamById, true),
-      })
-    }
-
-    out.sort(
-      (a, b) =>
-        (Number(elemsById.get(b.id)?.total_points) || 0) -
-        (Number(elemsById.get(a.id)?.total_points) || 0),
-    )
-    return out
-  }, [detailPlayerEl, elemsById, bootstrap, teamById])
-
-  const compareSquadOptions = useMemo(() => {
-    const w = detailPlayerEl
-    if (!w?.element_type || !compareSource) return []
-    const out = []
-
-    if (compareSource.kind === 'fantasy') {
-      const rosterIds = rosterIdsForLeagueEntry(compareSource.id, ownerByElementId)
-      for (const pid of rosterIds) {
-        const el = elemsById.get(Number(pid))
-        if (!el || el.element_type !== w.element_type) continue
-        out.push({
-          id: Number(pid),
-          label: buildCompareOptionLabel(el, w.element_type, teamById),
-        })
-      }
-    } else {
-      for (const el of bootstrap?.elements ?? []) {
-        if (Number(el.team) !== Number(compareSource.id)) continue
-        if (el.element_type !== w.element_type) continue
-        out.push({
-          id: Number(el.id),
-          label: buildCompareOptionLabel(el, w.element_type, teamById),
-        })
-      }
-    }
-
-    out.sort(
-      (a, b) =>
-        (Number(elemsById.get(b.id)?.total_points) || 0) -
-        (Number(elemsById.get(a.id)?.total_points) || 0),
-    )
-    return out
-  }, [detailPlayerEl, compareSource, ownerByElementId, elemsById, bootstrap, teamById])
-
-  const handleSearchBenchSelect = useCallback((id) => {
-    if (id != null) {
-      setCompareSource(null)
-    }
-    setBenchId(id)
-  }, [])
-
-  const openDetailFor = useCallback(
+  /** Open the full-screen `PlayerDetailOverlay`. */
+  const openPlayerDetail = useCallback(
     (el) => {
-      const id = Number(el.id)
-      const nextSource =
-        myTeamLeagueEntryId != null
-          ? { kind: 'fantasy', id: Number(myTeamLeagueEntryId) }
-          : null
-      const rosterIds =
-        nextSource?.kind === 'fantasy'
-          ? rosterIdsForLeagueEntry(nextSource.id, ownerByElementId)
-          : new Set()
-      const pick =
-        nextSource != null
-          ? suggestBenchTarget([...rosterIds], elemsById, el)
-          : null
-      setCompareSource(nextSource)
-      setDetailPlayerId(id)
-      setBenchId(pick)
-      const hashSlice = { waiver: id, bench: pick }
-      if (nextSource?.kind === 'fantasy') {
-        hashSlice.teamId = nextSource.id
-      }
-      detailHistoryPushedRef.current = pushPlayersHash(hashSlice)
+      if (!playerDetailOverlay) return
+      const id = Number(el?.id)
+      if (!Number.isFinite(id)) return
+      const payload = { element: id }
+      const team = teamById.get(Number(el?.team))
+      if (team?.short_name) payload.teamShort = team.short_name
+      const display = fplElementDisplayName(el, id)
+      if (display) payload.displayName = display
+      if (el?.web_name) payload.web_name = el.web_name
+      playerDetailOverlay.openPlayerDetail(payload)
     },
-    [elemsById, ownerByElementId, myTeamLeagueEntryId],
+    [playerDetailOverlay, teamById],
   )
 
-  const closeDetail = useCallback(() => {
-    const hadHistoryEntry = detailHistoryPushedRef.current
-    detailHistoryPushedRef.current = false
-    setDetailPlayerId(null)
-    setBenchId(null)
-    setCompareSource(null)
-    if (hadHistoryEntry) {
-      window.history.back()
-    }
-  }, [])
+  const searchPlaceholder = portrait ? 'Search players' : '👀 Search players, clubs, owners…'
 
-  useEffect(() => {
-    if (detailPlayerId == null || !detailPlayerEl) return
-    const squadIds = new Set(compareSquadOptions.map((o) => o.id))
-    const searchIds = new Set(compareSearchOptions.map((o) => o.id))
-    const validIds = compareSource ? squadIds : searchIds
-    if (benchId != null && !validIds.has(benchId)) {
-      setBenchId(null)
-      return
-    }
-    if (compareSource?.kind === 'fantasy' && benchId == null) {
-      const rosterIds = rosterIdsForLeagueEntry(compareSource.id, ownerByElementId)
-      const pick = suggestBenchTarget([...rosterIds], elemsById, detailPlayerEl)
-      setBenchId(pick)
-    }
-  }, [
-    compareSource,
-    compareSquadOptions,
-    compareSearchOptions,
-    ownerByElementId,
-    detailPlayerId,
-    detailPlayerEl,
-    benchId,
-    elemsById,
-  ])
+  const searchSvg = (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="players-bench-search-field__icon"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+  )
+
+  const searchField = (
+    <label className="players-bench-search-field">
+      {searchSvg}
+      <input
+        type="search"
+        placeholder={searchPlaceholder}
+        className="players-bench-search"
+        enterKeyHint="search"
+        aria-label="Search players"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </label>
+  )
+
+  const wireOwnedSegmented = (
+    <WireOwnedSegmentedToggle
+      value={wireOwnedMode}
+      onChange={setWireOwnedMode}
+      disabled={!rostersHealthy}
+    />
+  )
+
+  const positionPill = (
+    <MultiSelectDropdownPill
+      label="Position"
+      options={PORTRAIT_POSITION_OPTIONS}
+      selectedIds={selectedPositions}
+      onSelectionChange={(ids) => setSelectedPositions(ids.map(String))}
+      allLabel="All"
+    />
+  )
+
+  const clubPill = (
+    <MultiSelectGroupedDropdownPill
+      label="Club"
+      allLabel="All"
+      sections={[
+        {
+          id: 'pl',
+          label: 'Premier League',
+          options: clubOptions.map((t) => ({
+            id: Number(t.id),
+            label: String(t.short_name ?? t.name ?? '?'),
+          })),
+          selectedIds: effectivePlClubs,
+          onSelectionChange: (ids) => setSelectedPlClubs(ids.map(Number)),
+        },
+        {
+          id: 'fantasy',
+          label: 'Fantasy teams',
+          options: leagueEntries
+            .filter((e) => Number.isFinite(Number(e?.id)))
+            .map((e) => ({
+              id: Number(e.id),
+              label: String(e?.teamName ?? `Team ${e?.id}`),
+            })),
+          selectedIds: effectiveFantasyTeams,
+          onSelectionChange: (ids) => setSelectedFantasyTeams(ids.map(Number)),
+        },
+      ]}
+    />
+  )
+
+  const statsPill = (
+    <PortraitStatsDropdownPill
+      selectedIds={selectedStatIds}
+      onChange={handleStatSelectionChange}
+      positionFilter={effectivePositionFilter}
+      maxStatColumns={statColumnMax ?? WIRE_MAX_STAT_COLUMNS}
+    />
+  )
 
   return (
     <section
-      className={`tile tile--standings players-bench-tile${portrait && detailPlayerId == null ? ' players-bench-tile--portrait-list' : ''}${detailPlayerId != null ? ' players-bench-tile--detail' : ''}`}
-      aria-label={detailPlayerId != null ? 'Player detail' : 'Players wire list'}
+      className={`tile tile--standings players-bench-tile${portrait ? ' players-bench-tile--portrait-list' : ''}`}
+      aria-label="Players wire list"
     >
-      {detailPlayerId != null && detailPlayerEl ? (
-        <PlayerDetailView
-          playerId={detailPlayerId}
-          benchId={benchId}
-          onBenchChange={setBenchId}
-          onBack={closeDetail}
-          playerEl={detailPlayerEl}
-          benchEl={benchEl}
-          teamById={teamById}
-          teamsForFormSelect={teamsForFormSelect}
-          plClubs={clubOptions}
-          compareSource={compareSource}
-          onCompareSourceChange={setCompareSource}
-          compareSearchOptions={compareSearchOptions}
-          compareSquadOptions={compareSquadOptions}
-          onSearchBenchSelect={handleSearchBenchSelect}
-          logoMap={logoMap}
-          kitIndexByEntry={kitIndexByEntry}
-          ownerByElementId={ownerByElementId}
-          rostersHealthy={rostersHealthy}
-          plFixtures={plFixtures}
-        />
-      ) : (
-        <>
       {squadsErr ? (
         <p className="players-bench-banner" role="alert">
           Could not load player data. {squadsErr}
@@ -932,325 +1347,314 @@ export function PlayersWorkbench({
       ) : null}
 
       <div className="players-bench-chrome section-chrome section-chrome--sticky">
-      <div className="team-selection-submenu players-bench-pos-filter">
-        <div className="players-bench-filter-pills">
-          {portrait ? (
-            <PositionFilterPill
-              positionFilter={positionFilter}
-              onSelect={setPositionFilter}
-              compact={portrait}
-            />
-          ) : (
-            <div className="players-bench-pos-tabs" role="tablist" aria-label="Filter by position">
-              {WIRE_POSITION_PILLS.map((pill) => {
-                const active = positionFilter === pill.id
-                return (
-                  <button
-                    key={pill.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    className={`team-selection-submenu__btn${
-                      active ? ' team-selection-submenu__btn--active' : ''
-                    }`}
-                    onClick={() => setPositionFilter(pill.id)}
-                  >
-                    {pill.label}
-                  </button>
-                )
-              })}
+        {portrait ? (
+          <>
+            {/* Portrait header — just the "Players" title. */}
+            <div className="players-bench-header">
+              <div className="players-bench-header__titles">
+                <h2 className="players-bench-header__title">Players</h2>
+              </div>
             </div>
-          )}
-          <ClubFilterPill
-            clubFilter={clubFilter}
-            clubOptions={clubOptions}
-            onSelect={setClubFilter}
-            compact={portrait}
-          />
-          <FantasyTeamPill
-            teams={teamsForFormSelect}
-            selectedId={myTeamLeagueEntryId}
-            onSelect={setMyTeamLeagueEntryId}
-            logoMap={logoMap}
-            kitIndexByEntry={kitIndexByEntry}
-            compact={portrait}
-          />
-          <StatsColumnsPill
-            selectedIds={selectedStatIds}
-            onChange={handleStatSelectionChange}
-            positionFilter={positionFilter}
-            maxStatColumns={statColumnMax ?? 8}
-            compact={portrait}
-          />
-        </div>
-        <div className="players-bench-toolbar-tail">
-          <label className="players-bench-field players-bench-field--search">
-            <input
-              type="search"
-              placeholder="👀 …"
-              className="players-bench-search"
-              enterKeyHint="search"
-              aria-label="Search players"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
-          <label
-            className={`players-bench-toggle${!rostersHealthy ? ' players-bench-toggle--disabled' : ''}`}
-          >
-            <input
-              type="checkbox"
-              className="players-bench-toggle__input"
-              role="switch"
-              checked={availableOnly}
-              disabled={!rostersHealthy}
-              onChange={(ev) => setAvailableOnly(ev.target.checked)}
-            />
-            <span className="players-bench-toggle__track" aria-hidden="true">
-              <span className="players-bench-toggle__thumb" />
-            </span>
-            <span className="players-bench-toggle__label">
-              {portrait ? 'Avail.' : 'Available only'}
-              {!rostersHealthy ? (portrait ? '' : ' (needs rosters)') : ''}
-            </span>
-          </label>
-        </div>
-      </div>
+
+            {/* Portrait toolbar — Row 1: search bar + Wire/Owned segmented toggle */}
+            <div className="players-bench-search-row players-bench-search-row--portrait">
+              {searchField}
+              {wireOwnedSegmented}
+            </div>
+
+            {/* Portrait toolbar — Row 2: filter pills (Position / Club / Stats) */}
+            <div
+              className="players-bench-filters players-bench-filters--portrait"
+              role="toolbar"
+              aria-label="Player filters"
+            >
+              {positionPill}
+              {clubPill}
+              {statsPill}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Desktop header — title (left) + search (flex-grow) + Wire/Owned (right). */}
+            <div className="players-bench-header">
+              <div className="players-bench-header__titles">
+                <h2 className="players-bench-header__title">Players</h2>
+              </div>
+              {searchField}
+              {wireOwnedSegmented}
+            </div>
+
+            {/* Desktop toolbar — Position · Club · Stats multi-select pills. Sort
+             * is driven by column-header clicks on the table; the standalone
+             * Sort pill + Owned pill + Include-drafted toggle have been retired
+             * in favor of the multi-select + Wire/Owned semantics. */}
+            <div
+              className="players-bench-filters players-bench-filters--desktop"
+              role="toolbar"
+              aria-label="Player filters"
+            >
+              {positionPill}
+              {clubPill}
+              {statsPill}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="players-table-scroll">
-        <div
-          className={`players-table players-table--wide${portrait ? ' players-table--portrait' : ''}`}
-          role="table"
-          aria-label="Waiver wire players"
-          style={{ '--wire-cols': tableGridTemplate }}
-        >
-          <div className="players-table__head" role="rowgroup">
-            <div className="players-table__head-row" role="row">
-            {visibleCols.map((col, colIndex) => {
-              const colSortKey = wireColumnToSortKey(col.id)
-              const isActive = col.id === activeSortColId
-              const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
-              const ariaSort = isActive
-                ? sortDir === 'asc'
-                  ? 'ascending'
-                  : 'descending'
-                : colSortKey
-                  ? 'none'
-                  : undefined
-              const thClass = [
-                'players-table__th',
-                col.id === 'player' ? 'players-table__th--player' : '',
-                col.id === 'detail' ? 'players-table__th--detail' : '',
-                col.id === 'pts' ? 'players-table__th--pts' : '',
-                col.id === 'next3' ? 'players-table__th--next3' : '',
-                isActive ? ' players-table__th--sorted' : '',
-                groupStart ? 'players-table__col--group-start' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')
+        {portrait ? (
+          <PortraitWireTileList
+            outfieldList={bootstrap ? outfieldList : []}
+            visibleCols={visibleCols}
+            teamById={teamById}
+            ownerByElementId={ownerByElementId}
+            summaryByElement={summaryByElement}
+            summaryLoading={summaryLoading}
+            nextFixturesByTeam={nextFixturesByTeam}
+            rostersHealthy={rostersHealthy}
+            logoMap={logoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            activeSortColId={activeSortColId}
+            sortDir={sortDir}
+            onColumnSort={handleColumnSort}
+            playerDetailOverlay={playerDetailOverlay}
+            openPlayerDetail={openPlayerDetail}
+          />
+        ) : (
+          <div
+            className="players-table players-table--wide"
+            role="table"
+            aria-label="Waiver wire players"
+            style={{ '--wire-cols': tableGridTemplate }}
+          >
+            <div className="players-table__head" role="rowgroup">
+              <div className="players-table__head-row" role="row">
+              {visibleCols.map((col, colIndex) => {
+                const colSortKey = wireColumnToSortKey(col.id)
+                const isActive = col.id === activeSortColId
+                const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
+                const ariaSort = isActive
+                  ? sortDir === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : colSortKey
+                    ? 'none'
+                    : undefined
+                const thClass = [
+                  'players-table__th',
+                  col.id === 'player' ? 'players-table__th--player' : '',
+                  col.id === 'pos' ? 'players-table__th--pos' : '',
+                  col.id === 'pts' ? 'players-table__th--pts' : '',
+                  col.id === 'next3' ? 'players-table__th--next3' : '',
+                  isActive ? 'players-table__th--sorted' : '',
+                  groupStart ? 'players-table__col--group-start' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')
 
-              if (!colSortKey) {
+                if (!colSortKey) {
+                  return (
+                    <span key={col.id} className={thClass} role="columnheader" title={col.title}>
+                      {col.label}
+                    </span>
+                  )
+                }
+
                 return (
-                  <span key={col.id} className={thClass} role="columnheader" title={col.title}>
-                    {col.label}
-                  </span>
+                  <button
+                    key={col.id}
+                    type="button"
+                    className={`${thClass} players-table__th-btn`}
+                    role="columnheader"
+                    aria-sort={ariaSort}
+                    title={col.title ? `${col.title} · click to sort` : 'Click to sort'}
+                    onClick={() => handleColumnSort(col.id)}
+                  >
+                    <span className="players-table__th-label">{col.label}</span>
+                    {!mobileLayout ? (
+                      isActive ? (
+                        <span className="players-table__sort-indicator" aria-hidden>
+                          {sortDir === 'asc' ? '↑' : '↓'}
+                        </span>
+                      ) : (
+                        <span
+                          className="players-table__sort-indicator players-table__sort-indicator--idle"
+                          aria-hidden
+                        >
+                          ↕
+                        </span>
+                      )
+                    ) : null}
+                  </button>
                 )
-              }
+              })}
+              </div>
+            </div>
 
-              return (
-                <button
-                  key={col.id}
-                  type="button"
-                  className={`${thClass} players-table__th-btn`}
-                  role="columnheader"
-                  aria-sort={ariaSort}
-                  title={col.title ? `${col.title} · click to sort` : 'Click to sort'}
-                  onClick={() => handleColumnSort(col.id)}
-                >
-                  <span className="players-table__th-label">{col.label}</span>
-                  {!mobileLayout ? (
-                    isActive ? (
-                      <span className="players-table__sort-indicator" aria-hidden>
-                        {sortDir === 'asc' ? '↑' : '↓'}
-                      </span>
-                    ) : (
-                      <span
-                        className="players-table__sort-indicator players-table__sort-indicator--idle"
-                        aria-hidden
-                      >
-                        ↕
-                      </span>
-                    )
-                  ) : null}
-                </button>
-              )
-            })}
+            <div className="players-table__body" role="rowgroup">
+              {(bootstrap ? outfieldList : []).map((el) => {
+                const row = enrichElementRow(el, teamById)
+                const elId = Number(el.id)
+                const summary = summaryByElement.get(elId)
+                const nextFixtures = nextFixturesByTeam.get(Number(el.team)) ?? []
+
+                const displayName = fplElementDisplayName(el, el.id)
+                const rowTappable = Boolean(playerDetailOverlay)
+                const posLabel = POS_LABEL[el.element_type]
+                return (
+                  <div
+                    key={el.id}
+                    className={`players-table__row${rowTappable ? ' players-table__row--tappable' : ''}`}
+                    role="row"
+                    tabIndex={rowTappable ? 0 : undefined}
+                    onClick={
+                      rowTappable
+                        ? (e) => {
+                            if (e.target.closest('button, a')) return
+                            openPlayerDetail(el)
+                          }
+                        : undefined
+                    }
+                    onKeyDown={
+                      rowTappable
+                        ? (e) => {
+                            if (e.target !== e.currentTarget) return
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              openPlayerDetail(el)
+                            }
+                          }
+                        : undefined
+                    }
+                  >
+                    {visibleCols.map((col, colIndex) => {
+                      const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
+                      if (col.id === 'player') {
+                        const owner = ownerByElementId.get(elId)
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--player',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            <span className="players-table__kit">
+                              <PlayerKit
+                                badgeUrl={row.badgeUrl}
+                                teamShort={row.teamShort}
+                              />
+                            </span>
+                            <span className="players-table__player-text">
+                              <span className="players-table__name-row">
+                                <ClickablePlayerName
+                                  element={el.id}
+                                  displayName={displayName}
+                                  web_name={el.web_name}
+                                  teamShort={row.teamShort}
+                                  className="players-table__name"
+                                >
+                                  {displayName}
+                                </ClickablePlayerName>
+                                <PlayerInlineIndicators
+                                  el={el}
+                                  owner={owner}
+                                  rostersHealthy={rostersHealthy}
+                                  logoMap={logoMap}
+                                  kitIndexByEntry={kitIndexByEntry}
+                                />
+                              </span>
+                            </span>
+                          </span>
+                        )
+                      }
+                      if (col.id === 'pos') {
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--pos',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            {posLabel ? <PositionChip pos={posLabel} /> : null}
+                          </span>
+                        )
+                      }
+                      if (col.id === 'pts') {
+                        const pts = Number.isFinite(Number(el.total_points)) ? el.total_points : '—'
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--pts',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            {pts}
+                          </span>
+                        )
+                      }
+                      if (WIRE_STAT_CATALOG[col.id]) {
+                        const statDef = WIRE_STAT_CATALOG[col.id]
+                        const value = formatWireStatValue(col.id, el, summary, summaryLoading)
+                        const tone = wireStatToneClass(value)
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              `players-table__cell--stat${tone ? ` ${tone}` : ''}`,
+                              groupStart,
+                            )}
+                            role="cell"
+                            title={statDef.title}
+                          >
+                            {value}
+                          </span>
+                        )
+                      }
+                      if (col.id === 'next3') {
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--next3',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            <NextFixtureBadges fixtures={nextFixtures} />
+                          </span>
+                        )
+                      }
+                      return null
+                    })}
+                  </div>
+                )
+              })}
             </div>
           </div>
-
-          <div className="players-table__body" role="rowgroup">
-            {(bootstrap ? outfieldList : []).map((el) => {
-              const row = enrichElementRow(el, teamById)
-              const elId = Number(el.id)
-              const summary = summaryByElement.get(elId)
-              const nextFixtures = nextFixturesByTeam.get(Number(el.team)) ?? []
-
-              return (
-                <div
-                  key={el.id}
-                  className={`players-table__row${detailPlayerId === el.id ? ' players-table__row--active' : ''}${portrait ? ' players-table__row--tappable' : ''}`}
-                  role="row"
-                  tabIndex={portrait ? 0 : undefined}
-                  onClick={portrait ? () => openDetailFor(el) : undefined}
-                  onKeyDown={
-                    portrait
-                      ? (e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            openDetailFor(el)
-                          }
-                        }
-                      : undefined
-                  }
-                >
-                  {visibleCols.map((col, colIndex) => {
-                    const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
-                    if (col.id === 'player') {
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--player',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <span className="players-table__kit">
-                            <PlayerKit
-                              badgeUrl={row.badgeUrl}
-                              teamShort={row.teamShort}
-                            />
-                          </span>
-                          <span className="players-table__player-text">
-                            <span className="players-table__name-row">
-                              <span className="players-table__name">
-                                {fplElementDisplayName(el, el.id)}
-                              </span>
-                              <PlayerAvailabilityMark el={el} />
-                            </span>
-                          </span>
-                        </span>
-                      )
-                    }
-                    if (col.id === 'detail') {
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--detail',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <button
-                            type="button"
-                            className="players-table__detail-btn"
-                            aria-label={`Details for ${fplElementDisplayName(el, el.id)}`}
-                            title="Player detail"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              openDetailFor(el)
-                            }}
-                          >
-                            <span className="players-table__detail-btn-emoji" aria-hidden>
-                              🔍
-                            </span>
-                          </button>
-                        </span>
-                      )
-                    }
-                    if (col.id === 'pts') {
-                      const owner = ownerByElementId.get(elId)
-                      const pts = Number.isFinite(Number(el.total_points)) ? el.total_points : '—'
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--pts',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <span className="players-table__pts-value tabular">{pts}</span>
-                          {rostersHealthy && owner ? (
-                            <TeamAvatar
-                              entryId={owner.leagueEntryId}
-                              name={owner.teamName}
-                              size="sm"
-                              logoMap={logoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                              badgeFallback
-                            />
-                          ) : null}
-                        </span>
-                      )
-                    }
-                    if (WIRE_STAT_CATALOG[col.id]) {
-                      const statDef = WIRE_STAT_CATALOG[col.id]
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(col.id, activeSortColId, 'tabular', groupStart)}
-                          role="cell"
-                          title={statDef.title}
-                        >
-                          {formatWireStatValue(col.id, el, summary, summaryLoading, {
-                            portraitPosAbbrev:
-                              portrait && positionFilter === POS_FILTER_ALL && col.id === 'pos',
-                          })}
-                        </span>
-                      )
-                    }
-                    if (col.id === 'next3') {
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--next3',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <NextFixtureBadges
-                            fixtures={nextFixtures}
-                            nextOnly={portrait}
-                          />
-                        </span>
-                      )
-                    }
-                    return null
-                  })}
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        )}
       </div>
 
       {!bootstrap ? (
         <p className="muted players-bench-loading">Loading waiver pool…</p>
+      ) : bootstrap && outfieldList.length === 0 ? (
+        <p className="players-bench-empty">No players match these filters.</p>
       ) : null}
-        </>
-      )}
     </section>
   )
 }

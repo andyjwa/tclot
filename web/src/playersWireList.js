@@ -9,9 +9,17 @@ export const POS_LABEL = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
 /** Abbreviated position labels for portrait wire table (All filter). */
 export const PORTRAIT_POS_LABEL = { 1: 'GK', 2: 'D', 3: 'M', 4: 'F' }
 
-/** Portrait default stat columns per position filter (≤600px) — wire list only. */
+/** Single-letter position labels for the portrait wire row body. */
+export const PORTRAIT_POS_LABEL_SINGLE = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' }
+
+/** Portrait default stat columns per position filter (≤600px) — wire list only.
+ *
+ * Variant I tile layout: 'pos' is rendered as a single-letter label inside
+ * each tile's left-column sub-row, so it's no longer needed as a stat column.
+ * Defaults per filter therefore stay focused on numeric stats (Pts is always
+ * rendered first, ahead of these). */
 export const PORTRAIT_DEFAULT_WIRE_STAT_IDS_BY_POSITION = {
-  all: ['pos', 'goals', 'assists', 'defConHits'],
+  all: ['gp', 'goals', 'assists', 'defConHits'],
   '1': ['starts', 'cs', 'savePts', 'bonus'],
   '2': ['goals', 'assists', 'cs', 'defConHits'],
   '3': ['goals', 'assists', 'cs', 'defConHits'],
@@ -327,10 +335,17 @@ const WIRE_STAT_COL = 'minmax(2.15rem, 1fr)'
 
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_BEFORE = [
-  { id: 'player', label: '', title: 'Player', width: 'minmax(6.75rem, 9.5rem)' },
-  { id: 'detail', label: '', title: 'Player detail', width: '1.9rem' },
-  { id: 'pts', label: 'Pts', width: 'minmax(2.85rem, 1.1fr)' },
+  { id: 'player', label: 'Player', title: 'Player', width: 'minmax(11rem, 1.6fr)' },
+  { id: 'pts', label: 'Pts', width: 'minmax(3rem, 52px)' },
 ]
+
+/** Desktop-only Position column injected between Player and Pts. Chip-only. */
+const WIRE_POSITION_COLUMN = {
+  id: 'pos',
+  label: 'POS',
+  title: 'Position',
+  width: 'minmax(56px, 64px)',
+}
 
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_AFTER = [
@@ -344,10 +359,17 @@ const WIRE_NEXT_FIXTURE_PORTRAIT = {
   width: 'minmax(1.25rem, 0.7fr)',
 }
 
-/** Portrait wire grid — fr-based so columns fill the row width. */
+/** Portrait wire grid — fr-based so columns fill the row width.
+ *
+ * Stat-column track tightened (1.25rem → 1rem min, 0.9fr → 0.78fr) so the
+ * numeric stats (PTS / POS / GP / G / A / DC) sit with tight ~4–6px gutters
+ * on a 390px phone. Player + Pts + Next3 keep their original generous
+ * widths so the visual anchor (player name) and the right-edge fixture
+ * group don't get squeezed. Desktop unchanged — desktop uses WIRE_STAT_COL
+ * (`minmax(2.15rem, 1fr)`). */
 const PORTRAIT_WIRE_PLAYER_COL = 'minmax(4.5rem, 2fr)'
 const PORTRAIT_WIRE_PTS_COL = 'minmax(1.65rem, 0.65fr)'
-const PORTRAIT_WIRE_STAT_COL = 'minmax(1.25rem, 0.9fr)'
+const PORTRAIT_WIRE_STAT_COL = 'minmax(1rem, 0.78fr)'
 
 /**
  * @param {string} statId
@@ -375,10 +397,15 @@ export function defaultWireStatIdsForPosition(positionFilter) {
 }
 
 /**
+ * Portrait max stat columns. Variant I tiles have a fixed 168px right column
+ * that fits Pts + N stats — 'all' caps at 5 stats (so right column shows
+ * Pts + 5 = 6 cells), per-position filters cap at 4 (Pts + 4 = 5 cells). Pos
+ * is rendered in the tile sub-row and is not counted in this cap.
+ *
  * @param {PositionFilterId} positionFilter
  */
-export function portraitMaxStatColumns(_positionFilter) {
-  return 4
+export function portraitMaxStatColumns(positionFilter) {
+  return positionFilter === POS_FILTER_ALL ? 5 : 4
 }
 
 /**
@@ -530,14 +557,17 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
     .map((id) => wireStatToColumn(id))
     .filter(Boolean)
     .filter((col) => {
-      if (col.id === 'pos' && positionFilter !== POS_FILTER_ALL) return false
+      // 'pos' is never a stat column. Desktop has a dedicated fixed POS column
+      // between Player and Pts; portrait (Variant I tile layout) renders the
+      // single-letter position in each tile's left-column sub-row.
+      if (col.id === 'pos') return false
       if (!col.hideWhenPos?.length) return true
       if (positionFilter === POS_FILTER_ALL) return true
       return !col.hideWhenPos.includes(positionFilter)
     })
   const fixtureCol = portrait ? [WIRE_NEXT_FIXTURE_PORTRAIT] : WIRE_FIXED_COLUMNS_AFTER
   const fixedBefore = portrait
-    ? WIRE_FIXED_COLUMNS_BEFORE.filter((c) => c.id !== 'detail').map((c) => {
+    ? WIRE_FIXED_COLUMNS_BEFORE.map((c) => {
         if (c.id === 'player') {
           return { ...c, width: PORTRAIT_WIRE_PLAYER_COL }
         }
@@ -546,7 +576,17 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
         }
         return c
       })
-    : WIRE_FIXED_COLUMNS_BEFORE
+    : (() => {
+        // Desktop column order: Player → POS → Pts → stats → Next3
+        const out = []
+        for (const c of WIRE_FIXED_COLUMNS_BEFORE) {
+          if (c.id === 'pts') {
+            out.push(WIRE_POSITION_COLUMN)
+          }
+          out.push(c)
+        }
+        return out
+      })()
   const statWidth = portrait ? PORTRAIT_WIRE_STAT_COL : WIRE_STAT_COL
   const statsWithWidth = stats.map((col) => ({
     ...col,
@@ -760,6 +800,47 @@ export function elementSavePoints(el) {
 }
 
 /**
+ * Position-aware DefCon threshold in GW count for Phase-2 row-tone coloring.
+ * GKP/DEF earn DefCon at 10 BPS, MID/FWD at 12 BPS — surfacing here matches
+ * the production gameweek threshold without re-importing fplBonusFromBps.
+ *
+ * @param {number} elementType
+ */
+export function dcThresholdForPosition(elementType) {
+  return elementType === 1 || elementType === 2 ? 10 : 12
+}
+
+/**
+ * Pure helper for the Phase-2 stat-cell tone treatment.
+ *
+ * Round-2 polish: green `is-good` tone retired in favor of FotMob-style
+ * minimal stat coloring. Only zero/placeholder values get a muted tone now —
+ * non-zero values render in the default text color (matching Pts).
+ *
+ * - `is-zero` (muted, weight 400): value 0 or non-numeric placeholder.
+ * - `''` (default): everything else renders in normal text color.
+ *
+ * Returns a CSS class name suffix to append to `.players-table__cell--stat`.
+ *
+ * The previous signature took `(statId, value, elementType)` to decide which
+ * non-zero values earned the green tone; with that tone retired the extra
+ * arguments are no longer needed. Existing call sites that still pass three
+ * args continue to work — JS silently ignores the extras.
+ *
+ * @param {string | number | null | undefined} value
+ * @returns {'is-zero' | ''}
+ */
+export function wireStatToneClass(value) {
+  if (value === '—' || value === '…' || value == null || value === '') {
+    return 'is-zero'
+  }
+  const num = Number(value)
+  if (!Number.isFinite(num)) return 'is-zero'
+  if (num === 0) return 'is-zero'
+  return ''
+}
+
+/**
  * @param {string} statId
  * @param {object} el bootstrap element
  * @param {{ defConHits?: number | null, gamesPlayed?: number | null, sixtyPlus?: number | null } | null | undefined} summary
@@ -771,6 +852,9 @@ export function formatWireStatValue(statId, el, summary, summaryLoading = false,
   if (!def || !el) return '—'
 
   if (def.format === 'pos') {
+    if (options.portraitPosSingleLetter) {
+      return PORTRAIT_POS_LABEL_SINGLE[el.element_type] ?? '—'
+    }
     if (options.portraitPosAbbrev) {
       return PORTRAIT_POS_LABEL[el.element_type] ?? '—'
     }
@@ -882,8 +966,8 @@ export function wireColumnToSortKey(colId) {
 }
 
 /** Wire table column groups for vertical separators: identity | summary | detail stats | fixtures */
-const WIRE_IDENTITY_COLS = new Set(['player', 'detail'])
-const WIRE_SUMMARY_COLS = new Set(['pts', 'pos', 'gp'])
+const WIRE_IDENTITY_COLS = new Set(['player', 'pos'])
+const WIRE_SUMMARY_COLS = new Set(['pts', 'gp'])
 const WIRE_FIXTURE_COLS = new Set(['next3'])
 
 /**

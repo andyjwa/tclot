@@ -1,0 +1,24 @@
+---
+description: Player display names — web_name site-wide, known_name on detail
+globs: web/src/**/*
+alwaysApply: false
+---
+
+# Player display names
+
+Use helpers from `web/src/fplElementNames.js` for all user-visible player labels.
+
+## Rule
+
+- **Site-wide (web + mobile):** `fplElementDisplayName()` / `fplElementWebName()` — FPL fantasy `web_name` with fallback to official first+last.
+- **Wire player detail page only:** `fplElementKnownName()` — FPL `known_name` for the selected player hero and compare hero headings (`PlayerDetailView.jsx`).
+
+## Do not
+
+- Use `fplElementFullName()` for primary UI (reserved for ESPN/FotMob feed matching).
+- Use `fplElementKnownName()` outside `PlayerDetailView` hero/compare headings.
+- Use raw `el.web_name` in JSX except as `web_name` prop on `ClickablePlayerName` for slide-over context.
+
+## Data
+
+Draft `bootstrap_draft.json` omits `known_name`; merge from `bootstrap_fpl.json` at build (`copy-data.js`) or via `fetchKnownNameMap()` at runtime (needed for detail page).

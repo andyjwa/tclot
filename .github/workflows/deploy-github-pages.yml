@@ -102,14 +102,6 @@ jobs:
           LEAGUE_ID: ${{ secrets.FPL_LEAGUE_ID || vars.FPL_LEAGUE_ID }}
           # Repository secret/variable, or add the same name under Settings → Environments → github-pages
           VITE_FPL_PROXY_URL: ${{ secrets.VITE_FPL_PROXY_URL || vars.VITE_FPL_PROXY_URL }}
-          # Optional per-repo title tile (omit = TCLOT defaults). exFOS / EA Galaxy — use Variables OR Secrets (name must match).
-          VITE_LEAGUE_TITLE_ABBR: ${{ secrets.VITE_LEAGUE_TITLE_ABBR || vars.VITE_LEAGUE_TITLE_ABBR }}
-          VITE_LEAGUE_TITLE: ${{ secrets.VITE_LEAGUE_TITLE || vars.VITE_LEAGUE_TITLE }}
-          # Optional per-repo: omit = show tile. EAGalaxy: set both to false in repo Variables.
-          VITE_SHOW_DASHBOARD_TRADES: ${{ vars.VITE_SHOW_DASHBOARD_TRADES }}
-          VITE_SHOW_DASHBOARD_HALL: ${{ vars.VITE_SHOW_DASHBOARD_HALL }}
-          # Playoff bracket: omit = hidden. ExFOS: set to true in repo Variables.
-          VITE_SHOW_DASHBOARD_PLAYOFF: ${{ vars.VITE_SHOW_DASHBOARD_PLAYOFF }}
           VITE_LEAGUE_DATA_REVISION: gw-${{ github.sha }}
         run: |
           echo "VITE_BASE_PATH=$VITE_BASE_PATH (relative — use URL with trailing slash: …/repo-name/)"
@@ -117,12 +109,6 @@ jobs:
             echo "VITE_FPL_PROXY_URL is set for Vite (Live tab + draft API proxy)"
           else
             echo "VITE_FPL_PROXY_URL omitted (allowed only when FPL_PROXY_OPTIONAL=true)"
-          fi
-          echo "VITE_SHOW_DASHBOARD_TRADES=${VITE_SHOW_DASHBOARD_TRADES:-default on} VITE_SHOW_DASHBOARD_HALL=${VITE_SHOW_DASHBOARD_HALL:-default on}"
-          if [ -n "${VITE_LEAGUE_TITLE_ABBR:-}" ]; then
-            echo "VITE_LEAGUE_TITLE_ABBR is set (branded header can apply — see siteFeatures + public/*-header-brand.png)"
-          else
-            echo "::notice::VITE_LEAGUE_TITLE_ABBR is empty in this build — title defaults to TCLOT. Set Repository or github-pages: Variable or Secret VITE_LEAGUE_TITLE_ABBR=exFOS or EA Galaxy, then re-run workflow."
           fi
           if [ -z "${FPL_LEAGUE_ID:-}" ]; then
             echo "::notice::FPL_LEAGUE_ID not set for this build — build-draft-picks skipped; committed draft_picks.json is copied to dist. Set Repository or github-pages Environment Actions secret (or Variable) FPL_LEAGUE_ID to your draft league number so CI regenerates draft picks for this repo."

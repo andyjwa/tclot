@@ -39,10 +39,40 @@ function MoonIcon() {
   )
 }
 
+function SystemIcon() {
+  return (
+    <svg
+      className="theme-toggle__icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="4" width="18" height="13" rx="2" />
+      <path d="M8 21h8M12 17v4" />
+    </svg>
+  )
+}
+
 /**
- * @param {{ value: 'light' | 'dark', onChange: (t: 'light' | 'dark') => void }} props
+ * @param {{
+ *   value: 'light' | 'dark' | 'system',
+ *   onChange: (t: 'light' | 'dark' | 'system') => void,
+ *   includeSystem?: boolean,
+ * }} props
+ *
+ * When `includeSystem` is false (default), behaves as a 2-button binary
+ * toggle (light/dark) — backward-compatible with the pre-PR-#3 API.
+ * When `includeSystem` is true, renders a 3-button segmented control
+ * including a "follow OS" option. Callers pass `value: 'system'` to
+ * mark the System button as active.
  */
-export function ThemeToggle({ value, onChange }) {
+export function ThemeToggle({ value, onChange, includeSystem = false }) {
   return (
     <div className="theme-toggle" role="group" aria-label="Colour theme">
       <button
@@ -67,6 +97,21 @@ export function ThemeToggle({ value, onChange }) {
       >
         <MoonIcon />
       </button>
+      {includeSystem ? (
+        <button
+          type="button"
+          className={
+            value === 'system'
+              ? 'theme-toggle__btn theme-toggle__btn--active'
+              : 'theme-toggle__btn'
+          }
+          onClick={() => onChange('system')}
+          aria-pressed={value === 'system'}
+          aria-label="Follow system"
+        >
+          <SystemIcon />
+        </button>
+      ) : null}
     </div>
   )
 }

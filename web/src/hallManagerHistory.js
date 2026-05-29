@@ -37,6 +37,65 @@ export function managerFirstNameFromFull(managerFull) {
   return s.split(/\s+/)[0]
 }
 
+/**
+ * Static fallback: historic display key → manager full name.
+ *
+ * Source of truth is the live FPL data — see `buildManagerFullNameByHallKey()` below
+ * which extracts the resolved name from the current season's `tableRows`. This map only
+ * kicks in when a manager from an archived season is missing from the live roster, or
+ * when `tableRows` haven't loaded yet (initial render).
+ *
+ * Extend this map when:
+ *  - A new manager joins the league (add their `<First>` or `Nick X` key).
+ *  - A current manager leaves so their historic seasons survive in the heritage view.
+ */
+export const HISTORIC_MANAGER_FULL_NAMES = {
+  Andy: 'Andy Ward',
+  David: 'David Higman',
+  Eddy: 'Eddy Webster',
+  Jon: 'Jon Ward',
+  Luke: 'Luke Butcher',
+  Mike: 'Mike Sutton',
+  'Nick G': 'Nick Goodacre',
+  'Nick M': 'Nick Mottershead',
+}
+
+/**
+ * First-letter-of-first-name + first-letter-of-last-name, uppercased.
+ * Falls back to first two letters when only one name token is available.
+ * "Luke Butcher" → "LB", "Nick Mottershead" → "NM", "Andy" → "AN".
+ * @param {string | null | undefined} fullName
+ */
+export function managerInitialsFromFull(fullName) {
+  const parts = String(fullName ?? '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '??'
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+/**
+ * Build display-key → full manager name lookup from live `tableRows`.
+ * Falls back to `HISTORIC_MANAGER_FULL_NAMES` for any key not represented in
+ * the current roster (e.g. archived managers).
+ *
+ * @param {{ teamName?: string, manager?: string }[] | null | undefined} tableRows
+ * @returns {Map<string, string>}
+ */
+export function buildManagerFullNameByHallKey(tableRows) {
+  const map = new Map()
+  for (const row of Array.isArray(tableRows) ? tableRows : []) {
+    const full = String(row?.manager ?? '').trim()
+    if (!full) continue
+    const first = managerFirstNameFromFull(full)
+    const key = hallManagerDisplayKey(row?.teamName, first)
+    if (!map.has(key)) map.set(key, full)
+  }
+  for (const [k, v] of Object.entries(HISTORIC_MANAGER_FULL_NAMES)) {
+    if (!map.has(k)) map.set(k, v)
+  }
+  return map
+}
+
 /** @type {{ season: string, rows: { team: string, manager: string, rank: number, w: number, d: number, l: number, pf: number, pts: number }[] }[]} */
 export const HALL_SEASON_FINAL_TABLES = [
   {
@@ -116,11 +175,15 @@ export function buildLiveSeasonHallRows(tableRows) {
   return tableRows.map((row) => ({
     team: row.teamName ?? '—',
     manager: managerFirstNameFromFull(row.manager),
+    /** Full FPL manager name where available — gives the CofC table real "EW"-style initials. */
+    managerFull: row.manager ?? null,
     rank: Number(row.rank) || 0,
     w: row.matches_won ?? 0,
     d: row.matches_drawn ?? 0,
     l: row.matches_lost ?? 0,
     pf: row.gf ?? 0,
+    /** Optional Points-Against; historic seasons don't carry this yet. */
+    pa: row.ga ?? null,
     pts: row.total ?? 0,
   }))
 }
@@ -133,11 +196,10 @@ export function hallPlacementPointsForRank(rank) {
 }
 
 /**
- * @param {{ season: string, rows: { team: string, manager: string, rank: number, pts: number, pf: number }[] }[]} seasonDefs
- * @returns {{ key: string, titles: number, seasons: number, lastPlaceCount: number, totalPts: number, totalPlacementPts: number, totalPf: number, avgRank: number, bestRank: number, worstRank: number }[]}
+ * @param {{ season: string, rows: { team: string, manager: string, rank: number, pts: number, pf: number, pa?: number|null, w?: number, d?: number, l?: number, managerFull?: string|null }[] }[]} seasonDefs
+ * @returns {{ key: string, titles: number, runnerUps: number, titanCount: number, minnowCount: number, seasons: number, lastPlaceCount: number, totalPts: number, totalPlacementPts: number, totalPf: number, totalPa: number, hasFaced: boolean, totalW: number, totalD: number, totalL: number, avgRank: number, bestRank: number, worstRank: number, lastRank: number|null, managerFull: string|null }[]}
  */
 function aggregateHallManagerCareerFromSeasons(seasonDefs) {
-  /** @type {Map<string, { titles: number, totalPts: number, totalPlacementPts: number, totalPf: number, ranks: number[], lastPlaceCount: number }>} */
   const acc = new Map()
 
   for (const { rows } of seasonDefs) {
@@ -147,23 +209,43 @@ function aggregateHallManagerCareerFromSeasons(seasonDefs) {
       if (!acc.has(key)) {
         acc.set(key, {
           titles: 0,
+          runnerUps: 0,
+          titanCount: 0,
+          minnowCount: 0,
           totalPts: 0,
           totalPlacementPts: 0,
           totalPf: 0,
+          totalPa: 0,
+          hasFaced: false,
+          totalW: 0,
+          totalD: 0,
+          totalL: 0,
           ranks: [],
           lastPlaceCount: 0,
+          managerFull: null,
         })
       }
       const a = acc.get(key)
       a.totalPts += r.pts
       a.totalPf += r.pf
+      if (r.pa != null && Number.isFinite(Number(r.pa))) {
+        a.totalPa += Number(r.pa)
+        a.hasFaced = true
+      }
+      a.totalW += Number(r.w ?? 0)
+      a.totalD += Number(r.d ?? 0)
+      a.totalL += Number(r.l ?? 0)
       a.totalPlacementPts += hallPlacementPointsForRank(r.rank)
       a.ranks.push(r.rank)
       if (r.rank === 1) a.titles += 1
+      if (r.rank === 2) a.runnerUps += 1
+      if (r.rank >= 1 && r.rank <= 4) a.titanCount += 1
+      if (r.rank >= 5 && r.rank <= 8) a.minnowCount += 1
       const rk = Number(r.rank)
       if (Number.isFinite(rk) && nTeams > 0 && rk === nTeams) {
         a.lastPlaceCount += 1
       }
+      if (r.managerFull && !a.managerFull) a.managerFull = r.managerFull
     }
   }
 
@@ -173,14 +255,24 @@ function aggregateHallManagerCareerFromSeasons(seasonDefs) {
     return {
       key,
       titles: a.titles,
+      runnerUps: a.runnerUps,
+      titanCount: a.titanCount,
+      minnowCount: a.minnowCount,
       seasons: n,
       lastPlaceCount: a.lastPlaceCount,
       totalPts: a.totalPts,
       totalPlacementPts: a.totalPlacementPts,
       totalPf: a.totalPf,
+      totalPa: a.totalPa,
+      hasFaced: a.hasFaced,
+      totalW: a.totalW,
+      totalD: a.totalD,
+      totalL: a.totalL,
       avgRank,
       bestRank: n ? Math.min(...a.ranks) : 0,
       worstRank: n ? Math.max(...a.ranks) : 0,
+      lastRank: n ? a.ranks[a.ranks.length - 1] : null,
+      managerFull: a.managerFull,
     }
   })
 
@@ -208,9 +300,9 @@ export function computeLiveHallManagerCareerRows(tableRows) {
 
 /**
  * Per manager (display key): teams managed in season order — archived tables plus current
- * season when `tableRows` is available.
+ * season when `tableRows` is available. Each entry carries the rank for heatmap tinting.
  * @param {object[] | null | undefined} tableRows
- * @returns {{ key: string, entries: { season: string, team: string }[] }[]}
+ * @returns {{ key: string, entries: { season: string, team: string, rank: number|null }[] }[]}
  */
 export function computeHallManagerTeamHistory(tableRows) {
   const liveRows = buildLiveSeasonHallRows(tableRows)
@@ -219,14 +311,14 @@ export function computeHallManagerTeamHistory(tableRows) {
       ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
       : HALL_SEASON_FINAL_TABLES
 
-  /** @type {Map<string, { season: string, team: string }[]>} */
   const byKey = new Map()
   for (const { season, rows } of seasonDefs) {
     for (const r of rows) {
       const key = hallManagerDisplayKey(r.team, r.manager)
       if (!byKey.has(key)) byKey.set(key, [])
       const team = String(r.team ?? '').trim() || '—'
-      byKey.get(key).push({ season, team })
+      const rank = Number.isFinite(Number(r.rank)) ? Number(r.rank) : null
+      byKey.get(key).push({ season, team, rank })
     }
   }
 
@@ -234,4 +326,277 @@ export function computeHallManagerTeamHistory(tableRows) {
     a.localeCompare(b, undefined, { sensitivity: 'base' }),
   )
   return keys.map((key) => ({ key, entries: byKey.get(key) }))
+}
+
+/**
+ * Build per-manager career profile: title/runner-up/titan/minnow counts + season cards
+ * for the manager journey timeline (TH-D mockup).
+ * @param {object[] | null | undefined} tableRows
+ */
+export function computeHallManagerJourney(tableRows) {
+  const careerRows = computeLiveHallManagerCareerRows(tableRows)
+  const teamHistory = computeHallManagerTeamHistory(tableRows)
+  const careerByKey = new Map(careerRows.map((r) => [r.key, r]))
+  return teamHistory.map(({ key, entries }) => {
+    const career = careerByKey.get(key)
+    return {
+      key,
+      managerFull: career?.managerFull ?? null,
+      titles: career?.titles ?? 0,
+      runnerUps: career?.runnerUps ?? 0,
+      titanCount: career?.titanCount ?? 0,
+      minnowCount: career?.minnowCount ?? 0,
+      seasons: entries,
+    }
+  })
+}
+
+/**
+ * Algorithm-view rows: per manager, the finishing position is the cell value
+ * (1 for 1st ... 8 for 8th, lowest total wins). Returns rank per season label
+ * plus the algorithm total.
+ * @param {object[] | null | undefined} tableRows
+ */
+export function computeHallAlgorithmRows(tableRows) {
+  const liveRows = buildLiveSeasonHallRows(tableRows)
+  const seasonDefs =
+    liveRows.length > 0
+      ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
+      : HALL_SEASON_FINAL_TABLES
+  const seasonLabels = seasonDefs.map((s) => s.season)
+  const byKey = new Map()
+  for (const { season, rows } of seasonDefs) {
+    for (const r of rows) {
+      const key = hallManagerDisplayKey(r.team, r.manager)
+      if (!byKey.has(key)) byKey.set(key, { ranks: {}, managerFull: null })
+      const a = byKey.get(key)
+      a.ranks[season] = Number.isFinite(Number(r.rank)) ? Number(r.rank) : null
+      if (r.managerFull && !a.managerFull) a.managerFull = r.managerFull
+    }
+  }
+  const out = [...byKey.entries()].map(([key, a]) => {
+    const ranks = seasonLabels.map((s) => a.ranks[s] ?? null)
+    const total = ranks.reduce((sum, r) => sum + (r ?? 0), 0)
+    return { key, managerFull: a.managerFull, ranks, total }
+  })
+  return { seasonLabels, rows: out }
+}
+
+/**
+ * Manager initials for the in-line bubble.
+ *
+ * Always prefers FN+LN initials derived from the manager's full name (e.g.
+ * "Luke Butcher" → "LB"). Falls back to the display key's two-letter form only
+ * when no full name is available (initial render, before `tableRows` load).
+ */
+/**
+ * League-wide all-time records derived from `HALL_SEASON_FINAL_TABLES`
+ * (and the live season when `tableRows` is supplied). Returns the
+ * record-holders the Heritage → Trophy Room → Records section renders.
+ *
+ * **Recomputed on every call** — when next season's final table is
+ * appended to `HALL_SEASON_FINAL_TABLES` (or the live season exceeds
+ * the current ceiling/floor), the records update automatically without
+ * any UI edits required.
+ *
+ * **Tie-breaker policy:** within each category we keep the *first*
+ * row encountered after a stable iteration. The reduce loop walks
+ * seasons oldest → newest, so when scores tie the older holder wins
+ * — i.e. records stand until truly broken, not equalled.
+ *
+ * Records 10 + 11 (highest-pts loss / lowest-pts win) require GW-level
+ * fixture history we don't currently archive (HALL_SEASON_FINAL_TABLES
+ * only carries season totals). Those two stay manually curated until
+ * the GW history is wired in — the function returns them via the
+ * `_static` field so the caller can render them in the same grid.
+ *
+ * @param {object[] | null | undefined} tableRows live `useLeagueData`
+ *   rows — when present, the live `2025-26` season is folded into the
+ *   record search so Andy / Luke can break records mid-season.
+ */
+export function computeHallRecords(tableRows) {
+  const liveRows = buildLiveSeasonHallRows(tableRows)
+  const seasons =
+    liveRows.length > 0
+      ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
+      : HALL_SEASON_FINAL_TABLES
+
+  /** Flat (season, row) pairs for max/min over all entries. */
+  const flat = seasons.flatMap(({ season, rows }) =>
+    (rows ?? []).map((r) => ({ season, ...r })),
+  )
+  if (flat.length === 0) {
+    return { items: [] }
+  }
+
+  /** Stable max — returns the first record reached when scores tie. */
+  const maxBy = (arr, fn) =>
+    arr.reduce((best, cur) => (fn(cur) > fn(best) ? cur : best))
+  const minBy = (arr, fn) =>
+    arr.reduce((best, cur) => (fn(cur) < fn(best) ? cur : best))
+
+  const highestPts = maxBy(flat, (r) => r.pts ?? -Infinity)
+  const lowestPts = minBy(flat, (r) => r.pts ?? Infinity)
+  const highestPf = maxBy(flat, (r) => r.pf ?? -Infinity)
+  const lowestPf = minBy(flat, (r) => r.pf ?? Infinity)
+  const highestSecond = maxBy(
+    flat.filter((r) => r.rank === 2),
+    (r) => r.pts ?? -Infinity,
+  )
+
+  /** Per-season computed margins / ranges. */
+  const seasonMargins = seasons
+    .map(({ season, rows }) => {
+      const sorted = [...(rows ?? [])].sort((a, b) => a.rank - b.rank)
+      if (sorted.length < 2) return null
+      const r1 = sorted[0]
+      const last = sorted[sorted.length - 1]
+      const r2 = sorted[1]
+      const r7 = sorted[sorted.length - 2] ?? null
+      return {
+        season,
+        r1,
+        r2,
+        r7,
+        r8: last,
+        winMargin: (r1.pts ?? 0) - (r2.pts ?? 0),
+        loseMargin: r7 ? (r7.pts ?? 0) - (last.pts ?? 0) : 0,
+        spread: (r1.pts ?? 0) - (last.pts ?? 0),
+      }
+    })
+    .filter(Boolean)
+
+  const biggestWinMargin = maxBy(seasonMargins, (s) => s.winMargin)
+  const biggestLoseMargin = maxBy(seasonMargins, (s) => s.loseMargin)
+  const biggestSpread = maxBy(seasonMargins, (s) => s.spread)
+  const smallestSpread = minBy(seasonMargins, (s) => s.spread)
+
+  /** Tone hints used by the UI to color tiles consistently. */
+  const T = /** @type {const} */ ({
+    APEX: 'apex',
+    NADIR: 'nadir',
+    MARGIN: 'margin',
+    RANGE: 'range',
+    EDGE: 'edge',
+  })
+
+  const items = [
+    {
+      key: 'highest-pts',
+      label: 'Highest points total',
+      value: `${highestPts.pts}`,
+      unit: 'pts',
+      team: highestPts.team,
+      season: highestPts.season,
+      tone: T.APEX,
+    },
+    {
+      key: 'lowest-pts',
+      label: 'Lowest points total',
+      value: `${lowestPts.pts}`,
+      unit: 'pts',
+      team: lowestPts.team,
+      season: lowestPts.season,
+      tone: T.NADIR,
+    },
+    {
+      key: 'highest-for',
+      label: 'Highest For total',
+      value: `${highestPf.pf}`,
+      unit: '',
+      team: highestPf.team,
+      season: highestPf.season,
+      tone: T.APEX,
+    },
+    {
+      key: 'lowest-for',
+      label: 'Lowest For total',
+      value: `${lowestPf.pf}`,
+      unit: '',
+      team: lowestPf.team,
+      season: lowestPf.season,
+      tone: T.NADIR,
+    },
+    {
+      key: 'biggest-title-margin',
+      label: 'Biggest title-winning margin',
+      value: `${biggestWinMargin.winMargin}`,
+      unit: 'pts',
+      team: biggestWinMargin.r1.team,
+      season: biggestWinMargin.season,
+      tone: T.MARGIN,
+    },
+    {
+      key: 'biggest-losing-margin',
+      label: 'Biggest league-losing margin',
+      value: `${biggestLoseMargin.loseMargin}`,
+      unit: 'pts',
+      team: biggestLoseMargin.r8.team,
+      season: biggestLoseMargin.season,
+      tone: T.MARGIN,
+    },
+    {
+      key: 'biggest-spread',
+      label: 'Biggest final points range',
+      value: `${biggestSpread.spread}`,
+      unit: 'pts',
+      team: `${biggestSpread.r1.team} → ${biggestSpread.r8.team}`,
+      season: biggestSpread.season,
+      tone: T.RANGE,
+    },
+    {
+      key: 'smallest-spread',
+      label: 'Smallest final points range',
+      value: `${smallestSpread.spread}`,
+      unit: 'pts',
+      team: `${smallestSpread.r1.team} → ${smallestSpread.r8.team}`,
+      season: smallestSpread.season,
+      tone: T.RANGE,
+    },
+    {
+      key: 'highest-second',
+      label: 'Highest 2nd-place points',
+      value: `${highestSecond.pts}`,
+      unit: 'pts',
+      team: highestSecond.team,
+      season: highestSecond.season,
+      tone: T.APEX,
+    },
+    /* GW-level records — these need fixture history we don't archive
+     * yet. Static entries until that data lands; flagged with `_static`
+     * so future maintainers know to revisit when GW data becomes
+     * available. */
+    {
+      key: 'highest-loss',
+      label: 'Highest losing GW points',
+      value: '47',
+      unit: 'pts',
+      team: 'Ipswich Towelie',
+      season: '2024-25',
+      tone: T.EDGE,
+      _static: true,
+    },
+    {
+      key: 'lowest-win',
+      label: 'Lowest winning GW points',
+      value: '64',
+      unit: 'pts',
+      team: 'Dalston Benoit',
+      season: '2022-23',
+      tone: T.EDGE,
+      _static: true,
+    },
+  ]
+
+  return { items }
+}
+
+export function hallManagerInitials(displayKey, managerFull) {
+  const full = String(managerFull ?? '').trim()
+  if (full) return managerInitialsFromFull(full)
+  const key = String(displayKey ?? '').trim()
+  if (!key) return '—'
+  const parts = key.split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return parts[0].slice(0, 2).toUpperCase()
 }

@@ -1,0 +1,1702 @@
+/*
+ * TCLOT Design Mockup — Part 2 surface styles
+ *
+ * Scoped under .mockup-part2 root (or .mockup if/when integrated). Reuses the
+ * `--*` tokens defined in Mockup.css so light + dark theme cascade for free.
+ *
+ * Namespaces:
+ *   mockup-trophy-*           (desktop trophy room)
+ *   mockup-trophy-p__*        (portrait trophy room)
+ *   mockup-schedule-p__*      (portrait schedule)
+ *   mockup-schedule-pc__*     (portrait schedule — compact alt)
+ *   mockup-schedule-d__*      (desktop schedule note)
+ *   mockup-standings-p__*     (portrait standings)
+ *   mockup-standings-pc__*    (portrait standings — ultra-compact alt)
+ *   mockup-standings-d__*     (desktop standings)
+ *   mockup-waivers-p__*       (portrait waivers / pickups / drops / tenure)
+ *   mockup-waivers-d__*       (desktop waivers)
+ *   mockup-trades-p__*        (portrait trades)
+ *
+ * Variant label utility:
+ *   .mockup-part2__variant-label
+ *
+ * IMPORTANT: do NOT redefine `.mockup-portrait-page`, `.mockup-portrait-frame`,
+ * `.mockup-filter-pill`, `.mockup-subnav`, etc — they exist in Mockup.css.
+ */
+
+/* ================================================================== */
+/* Part-2 container + section utilities                                 */
+/* ================================================================== */
+.mockup-part2 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.mockup-part2__variant-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: var(--space-4) 0 var(--space-2);
+}
+.mockup-part2__variant-label::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ================================================================== */
+/* 1. Trophy room — shared card + desktop gallery                       */
+/* ------------------------------------------------------------------ */
+/* Hall of fame: each card frames the uploaded banner artwork and       */
+/* surfaces only what the art doesn't carry — manager + championship    */
+/* number. The card spec is identical desktop + portrait; only the      */
+/* gallery container differs (responsive grid vs single-column stack).  */
+/*                                                                      */
+/* Polish cue: a 2px brand-violet top accent line on every card —       */
+/* uniform celebration of every winner, visible at-a-glance.            */
+/* ================================================================== */
+.mockup-trophy {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* Hall sub-nav */
+.mockup-trophy__subnav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mockup-trophy__subnav-tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: var(--text-muted);
+  padding: 14px var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  letter-spacing: 0.01em;
+}
+.mockup-trophy__subnav-tab:hover { color: var(--text); }
+.mockup-trophy__subnav-tab.is-active {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mockup-trophy__subnav-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+  border-radius: 2px;
+}
+
+/* Desktop gallery grid — DEFAULT (locked): 1:1 square / 4 cols ≥1024px,
+ * 2 cols 720–1023px, 1 col ≤719px. Locked Trophy decisions B (grid)
+ * are baked into the base gallery + card-image atoms; the variant
+ * section in Part 2 still demonstrates the rejected 3:4, 4:5, and
+ * native alternatives via override classes. */
+.mockup-trophy__gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--surface);
+}
+@media (max-width: 1023px) {
+  .mockup-trophy__gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 719px) {
+  .mockup-trophy__gallery { grid-template-columns: 1fr; }
+}
+
+/* Card — shared between desktop grid and portrait stack. */
+.mockup-trophy__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+/* Brand-violet top accent — uniform on every card. */
+.mockup-trophy__card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brand);
+}
+.mockup-trophy__card:hover,
+.mockup-trophy__card:focus-within {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--border));
+}
+
+/* Eyebrow strip: manager name in brand violet + championship-order pip */
+.mockup-trophy__card-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: 2px; /* visual breathing room below the 2px accent line */
+}
+.mockup-trophy__card-eyebrow-label {
+  font-size: var(--text-sm);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--brand);
+}
+.mockup-trophy__card-eyebrow-pip {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+/* Image well: clean frame for the banner artwork. DEFAULT (locked):
+ * 1:1 square. Source PNGs are 600×900 (2:3 portrait); the square
+ * frame leaves vertical letterbox that reads as a poster mat. The
+ * Part-2 variant section overrides this with its own grid-variant
+ * classes to demonstrate the rejected 3:4 / 4:5 / native ratios. */
+.mockup-trophy__card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.mockup-trophy__card-image img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* ================================================================== */
+/* 1b. Trophy room — portrait gallery                                   */
+/* ------------------------------------------------------------------ */
+/* Same card spec as desktop; only the container differs: a single-     */
+/* column stack at full card width inside the 375px portrait frame.     */
+/* ================================================================== */
+.mockup-trophy-p__hall-tabs {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 0 6px;
+}
+.mockup-trophy-p__hall-tab {
+  flex: 1 1 0;
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: var(--text-muted);
+  padding: 11px 8px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  text-align: center;
+}
+.mockup-trophy-p__hall-tab.is-active {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mockup-trophy-p__hall-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+}
+
+.mockup-trophy-p__gallery {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: var(--surface);
+  gap: 12px;
+}
+
+/* ================================================================== */
+/* 2. Schedule — portrait                                               */
+/* ================================================================== */
+.mockup-schedule-p__strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  padding: 0;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.mockup-schedule-p__strip-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+.mockup-schedule-p__strip-v {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+}
+.mockup-schedule-p__strip-v.is-pos { color: var(--data-positive); }
+.mockup-schedule-p__strip-v.is-neg { color: var(--data-negative); }
+.mockup-schedule-p__strip-k {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.mockup-schedule-p__list {
+  background: var(--surface);
+}
+.mockup-schedule-p__segment {
+  padding: 10px 12px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+}
+.mockup-schedule-p__row {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.mockup-schedule-p__row:last-child { border-bottom: none; }
+.mockup-schedule-p__row.is-upcoming { opacity: 0.65; }
+.mockup-schedule-p__row.is-live {
+  background: color-mix(in srgb, var(--data-negative) 4%, transparent);
+}
+
+.mockup-schedule-p__gw-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-schedule-p__gw {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.mockup-schedule-p__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-circle);
+  background: var(--data-neutral);
+}
+.mockup-schedule-p__status-dot.is-final {
+  background: var(--data-neutral);
+  opacity: 0.6;
+}
+.mockup-schedule-p__status-dot.is-live {
+  background: var(--data-negative);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--data-negative) 25%, transparent);
+}
+.mockup-schedule-p__status-dot.is-upcoming {
+  background: transparent;
+  border: 1.5px solid var(--border);
+}
+
+.mockup-schedule-p__opp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.mockup-schedule-p__opp-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-schedule-p__venue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-sm);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mockup-schedule-p__opp-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-schedule-p__opp-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-schedule-p__opp-mgr {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding-left: 22px;
+}
+
+.mockup-schedule-p__score-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mockup-schedule-p__score {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.mockup-schedule-p__score b { font-weight: 700; }
+.mockup-schedule-p__score-sep { margin: 0 2px; color: var(--text-muted); }
+.mockup-schedule-p__score-pa { font-weight: 500; color: var(--text-muted); }
+.mockup-schedule-p__upcoming {
+  font-family: 'Geist Mono', monospace;
+  color: var(--text-muted);
+}
+.mockup-schedule-p__res {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--r-sm);
+}
+.mockup-schedule-p__res--W { color: var(--data-positive); background: color-mix(in srgb, var(--data-positive) 14%, transparent); }
+.mockup-schedule-p__res--L { color: var(--data-negative); background: color-mix(in srgb, var(--data-negative) 14%, transparent); }
+.mockup-schedule-p__res--T { color: var(--text-muted);    background: var(--surface-2); }
+
+/* 2b. Schedule — compact alt */
+.mockup-schedule-pc__list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.mockup-schedule-pc__row {
+  display: grid;
+  grid-template-columns: 44px 18px 30px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  font-size: var(--text-sm);
+}
+.mockup-schedule-pc__row:last-child { border-bottom: none; }
+.mockup-schedule-pc__row.is-upcoming { opacity: 0.55; }
+.mockup-schedule-pc__gw {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mockup-schedule-pc__venue {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.mockup-schedule-pc__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0 4px;
+}
+.mockup-schedule-pc__score {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  text-align: right;
+}
+.mockup-schedule-pc__res {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--r-sm);
+}
+.mockup-schedule-pc__res--W { color: var(--data-positive); background: color-mix(in srgb, var(--data-positive) 14%, transparent); }
+.mockup-schedule-pc__res--L { color: var(--data-negative); background: color-mix(in srgb, var(--data-negative) 14%, transparent); }
+.mockup-schedule-pc__res--T { color: var(--text-muted);    background: var(--surface-2); }
+.mockup-schedule-pc__res--up { color: var(--text-muted); }
+
+/* 2c. Schedule — desktop note */
+.mockup-schedule-d {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mockup-schedule-d__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  flex-wrap: wrap;
+}
+.mockup-schedule-d__head-left { min-width: 0; flex: 1 1 280px; }
+.mockup-schedule-d__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.mockup-schedule-d__sub {
+  margin: 4px 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.mockup-schedule-d__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.mockup-schedule-d__toggle-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  padding: 6px 12px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.mockup-schedule-d__toggle-btn[aria-selected='true'] {
+  background: var(--brand);
+  color: #fff;
+}
+
+.mockup-schedule-d__sketch {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mockup-schedule-d__sketch-cap {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.mockup-schedule-d__sketch-rows {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.mockup-schedule-d__sketch-row {
+  display: grid;
+  grid-template-columns: 56px 24px 36px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.mockup-schedule-d__sketch-row:last-child { border-bottom: none; }
+.mockup-schedule-d__sketch-row.is-upcoming { opacity: 0.55; }
+.mockup-schedule-d__sketch-gw {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mockup-schedule-d__sketch-venue {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.mockup-schedule-d__sketch-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 22px;
+  padding: 0 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-schedule-d__sketch-opp {
+  font-size: var(--text-sm);
+  color: var(--text-strong);
+  font-weight: 500;
+}
+.mockup-schedule-d__sketch-score {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-sm);
+  color: var(--text);
+}
+.mockup-schedule-d__sketch-res {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--r-sm);
+}
+.mockup-schedule-d__sketch-res--W { color: var(--data-positive); background: color-mix(in srgb, var(--data-positive) 14%, transparent); }
+.mockup-schedule-d__sketch-res--L { color: var(--data-negative); background: color-mix(in srgb, var(--data-negative) 14%, transparent); }
+.mockup-schedule-d__sketch-res--T { color: var(--text-muted);    background: var(--surface-2); }
+
+/* ================================================================== */
+/* 3. Standings — portrait                                              */
+/* ================================================================== */
+.mockup-standings-p__filters {
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.mockup-standings-p__seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.mockup-standings-p__seg-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.mockup-standings-p__seg-btn.is-active {
+  background: var(--surface);
+  color: var(--text-strong);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.mockup-standings-p__list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.mockup-standings-p__row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  transition: background var(--dur-fast) var(--ease);
+}
+.mockup-standings-p__row:last-child { border-bottom: none; }
+.mockup-standings-p__row.is-me {
+  background: color-mix(in srgb, var(--brand) 7%, transparent);
+}
+
+.mockup-standings-p__rank-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.mockup-standings-p__rank {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xl);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+}
+.mockup-standings-p__delta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.mockup-standings-p__delta--up { color: var(--data-positive); }
+.mockup-standings-p__delta--down { color: var(--data-negative); }
+.mockup-standings-p__delta--flat { color: var(--text-muted); }
+
+.mockup-standings-p__id-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.mockup-standings-p__name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-standings-p__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-standings-p__team {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-standings-p__crown {
+  width: 14px;
+  height: 14px;
+  color: #fbbf24;
+  flex-shrink: 0;
+}
+.mockup-standings-p__me-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: var(--brand);
+  border-radius: var(--r-sm);
+}
+
+.mockup-standings-p__meta-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.mockup-standings-p__sep { opacity: 0.5; }
+.mockup-standings-p__wlt {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+  color: var(--text);
+}
+.mockup-standings-p__form {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.mockup-standings-p__pip {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-circle);
+  background: var(--data-neutral);
+}
+.mockup-standings-p__pip--W { background: var(--data-positive); }
+.mockup-standings-p__pip--L { background: var(--data-negative); }
+.mockup-standings-p__pip--D { background: var(--data-neutral); }
+.mockup-standings-p__pip--T { background: var(--data-neutral); }
+
+.mockup-standings-p__pts-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.mockup-standings-p__pts {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xl);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+}
+.mockup-standings-p__pts-gw {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* 3b. Standings — ultra-compact alt */
+.mockup-standings-pc__list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.mockup-standings-pc__row {
+  display: grid;
+  grid-template-columns: 22px 30px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.mockup-standings-pc__row:last-child { border-bottom: none; }
+.mockup-standings-pc__row.is-me {
+  background: color-mix(in srgb, var(--brand) 7%, transparent);
+}
+.mockup-standings-pc__rank {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mockup-standings-pc__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-standings-pc__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-standings-pc__crown {
+  width: 12px;
+  height: 12px;
+  color: #fbbf24;
+}
+.mockup-standings-pc__me {
+  display: inline-flex;
+  padding: 1px 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brand);
+  border-radius: var(--r-sm);
+}
+.mockup-standings-pc__pts {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+/* 3c. Standings — desktop brief */
+.mockup-standings-d {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mockup-standings-d__head {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mockup-standings-d__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.mockup-standings-d__sub {
+  margin: 4px 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 640px;
+}
+.mockup-standings-d__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.mockup-standings-d__th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 12px var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+.mockup-standings-d__th--rank { width: 60px; }
+.mockup-standings-d__th--wlt,
+.mockup-standings-d__th--pf,
+.mockup-standings-d__th--pa { text-align: right; font-family: 'Geist Mono', monospace; }
+.mockup-standings-d__th--form { width: 100px; }
+.mockup-standings-d__th--pts { text-align: right; }
+.mockup-standings-d__th-caret { color: var(--brand); margin-left: 2px; }
+
+.mockup-standings-d__table tr.is-me {
+  background: color-mix(in srgb, var(--brand) 5%, transparent);
+}
+.mockup-standings-d__table tbody td {
+  padding: 12px var(--space-3);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  font-size: var(--text-sm);
+  vertical-align: middle;
+}
+.mockup-standings-d__table tbody tr:last-child td { border-bottom: none; }
+
+.mockup-standings-d__rank {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Geist Mono', monospace;
+}
+.mockup-standings-d__rank-n {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mockup-standings-d__team-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mockup-standings-d__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-standings-d__team-name {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.mockup-standings-d__crown {
+  width: 14px;
+  height: 14px;
+  color: #fbbf24;
+}
+.mockup-standings-d__me-pill {
+  display: inline-flex;
+  padding: 1px 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brand);
+  border-radius: var(--r-sm);
+}
+.mockup-standings-d__mgr {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-left: auto;
+}
+.mockup-standings-d__wlt,
+.mockup-standings-d__num,
+.mockup-standings-d__pts {
+  font-family: 'Geist Mono', monospace;
+  text-align: right;
+}
+.mockup-standings-d__pts {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mockup-standings-d__form-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.mockup-standings-d__pip {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-circle);
+  background: var(--data-neutral);
+}
+.mockup-standings-d__pip--W { background: var(--data-positive); }
+.mockup-standings-d__pip--L { background: var(--data-negative); }
+.mockup-standings-d__pip--D { background: var(--data-neutral); }
+.mockup-standings-d__pip--T { background: var(--data-neutral); }
+
+/* ================================================================== */
+/* 4. Waivers / Pickups / Drops / Tenure — portrait                     */
+/* ================================================================== */
+.mockup-waivers-p__subnav {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mockup-waivers-p__subnav-tab {
+  flex: 1 1 0;
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  padding: 11px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.mockup-waivers-p__subnav-tab.is-active {
+  color: var(--text-strong);
+}
+.mockup-waivers-p__subnav-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+}
+.mockup-waivers-p__subnav-count {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.mockup-waivers-p__subnav-tab.is-active .mockup-waivers-p__subnav-count {
+  background: var(--brand-tint);
+  color: color-mix(in srgb, var(--brand) 80%, var(--text));
+  border-color: color-mix(in srgb, var(--brand) 25%, var(--border));
+}
+
+.mockup-waivers-p__list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.mockup-waivers-p__card {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.mockup-waivers-p__card:last-child { border-bottom: none; }
+
+.mockup-waivers-p__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+}
+.mockup-waivers-p__icon svg { width: 16px; height: 16px; }
+.mockup-waivers-p__icon--pickup {
+  color: var(--data-positive);
+  background: color-mix(in srgb, var(--data-positive) 14%, transparent);
+}
+.mockup-waivers-p__icon--drop {
+  color: var(--data-negative);
+  background: color-mix(in srgb, var(--data-negative) 14%, transparent);
+}
+.mockup-waivers-p__icon--trade {
+  color: color-mix(in srgb, var(--brand) 80%, var(--text));
+  background: var(--brand-tint);
+}
+
+.mockup-waivers-p__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.mockup-waivers-p__head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-waivers-p__team-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 18px;
+  padding: 0 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-waivers-p__team-name {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-waivers-p__time {
+  margin-left: auto;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.mockup-waivers-p__player {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-waivers-p__player-crest img { width: 100%; height: 100%; object-fit: contain; }
+.mockup-waivers-p__player-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-waivers-p__pos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+}
+.mockup-waivers-p__pos--GKP { background: rgba(245, 158, 11, 0.16); color: #fbbf24; }
+.mockup-waivers-p__pos--DEF { background: rgba(8, 145, 178, 0.16);  color: #67e8f9; }
+.mockup-waivers-p__pos--MID { background: rgba(124, 58, 237, 0.18); color: #c4b5fd; }
+.mockup-waivers-p__pos--FWD { background: rgba(220, 38, 38, 0.16);  color: #fca5a5; }
+.mockup[data-theme='light'] .mockup-waivers-p__pos--GKP,
+.mockup-part2[data-theme='light'] .mockup-waivers-p__pos--GKP { background: rgba(245, 158, 11, 0.16); color: #b45309; }
+.mockup[data-theme='light'] .mockup-waivers-p__pos--DEF,
+.mockup-part2[data-theme='light'] .mockup-waivers-p__pos--DEF { background: rgba(8, 145, 178, 0.14); color: #0e7490; }
+.mockup[data-theme='light'] .mockup-waivers-p__pos--MID,
+.mockup-part2[data-theme='light'] .mockup-waivers-p__pos--MID { background: rgba(124, 58, 237, 0.14); color: #6d28d9; }
+.mockup[data-theme='light'] .mockup-waivers-p__pos--FWD,
+.mockup-part2[data-theme='light'] .mockup-waivers-p__pos--FWD { background: rgba(220, 38, 38, 0.12); color: #b91c1c; }
+
+.mockup-waivers-p__note {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Waivers — desktop */
+.mockup-waivers-d {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mockup-waivers-d__head { display: flex; flex-direction: column; gap: 2px; }
+.mockup-waivers-d__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.mockup-waivers-d__sub {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 640px;
+}
+.mockup-waivers-d__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  .mockup-waivers-d__grid { grid-template-columns: 1fr; }
+}
+.mockup-waivers-d__card {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 10px;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.mockup-waivers-d__card .mockup-waivers-p__icon {
+  width: 32px;
+  height: 32px;
+}
+.mockup-waivers-d__head-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.mockup-waivers-d__team-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 20px;
+  padding: 0 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-waivers-d__team-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.mockup-waivers-d__time {
+  margin-left: auto;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.mockup-waivers-d__player {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.mockup-waivers-d__player-name {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.mockup-waivers-d__note {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ================================================================== */
+/* 5. Trades — portrait                                                 */
+/* ================================================================== */
+.mockup-trades-p__strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.mockup-trades-p__strip-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+.mockup-trades-p__strip-v {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+}
+.mockup-trades-p__strip-v--pos { color: var(--data-positive); }
+.mockup-trades-p__strip-k {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.mockup-trades-p__list {
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+}
+.mockup-trades-p__card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.mockup-trades-p__card.is-highlight {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand) 6%, transparent), transparent 70%),
+    var(--surface-2);
+}
+.mockup-trades-p__head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+}
+.mockup-trades-p__gw {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mockup-trades-p__date {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.mockup-trades-p__chip {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--brand) 80%, var(--text));
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  border: 1px solid color-mix(in srgb, var(--brand) 25%, var(--border));
+}
+
+.mockup-trades-p__teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+}
+.mockup-trades-p__team {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--surface);
+}
+.mockup-trades-p__team-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.mockup-trades-p__team-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mockup-trades-p__team-delta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+.mockup-trades-p__team-delta.is-pos { color: var(--data-positive); }
+.mockup-trades-p__team-delta.is-neg { color: var(--data-negative); }
+
+.mockup-trades-p__exchange {
+  display: grid;
+  grid-template-columns: 1fr 28px 1fr;
+  gap: 6px;
+  padding: 10px 12px;
+  align-items: center;
+}
+.mockup-trades-p__lane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-trades-p__lane--b { align-items: flex-end; }
+.mockup-trades-p__lane-eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.mockup-trades-p__player {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  max-width: 100%;
+}
+.mockup-trades-p__player-crest { flex-shrink: 0; }
+.mockup-trades-p__player-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mockup-trades-p__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-circle);
+}
+.mockup-trades-p__arrow svg { width: 14px; height: 14px; }
+.mockup-trades-p__verdict {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 11px;
+  color: var(--text);
+}
+
+/* ================================================================== */
+/* Trophy card · accent variants (Variant Set 2)                        */
+/* ------------------------------------------------------------------ */
+/* Each `mockup-trophy__variant-*` class layers on top of the existing  */
+/* `.mockup-trophy__card` atom and selectively overrides the accent     */
+/* treatment (top-line colour / hover effect / corner mark). Cards      */
+/* keep their shared layout, spacing, and image-well from the base.     */
+/* ================================================================== */
+
+.mockup-trophy__variants-intro {
+  margin: var(--space-3) 0 var(--space-3);
+}
+
+.mockup-trophy__variant-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-5);
+}
+@media (max-width: 1100px) {
+  .mockup-trophy__variant-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .mockup-trophy__variant-row { grid-template-columns: 1fr; }
+}
+.mockup-trophy__variant-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.mockup-trophy__variant-cell-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.mockup-trophy__variant-cell-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.mockup-trophy__variant-frame {
+  background: var(--surface);
+  padding: var(--space-3);
+  border-radius: var(--r-md);
+}
+
+/* Option A — Brand violet 2px top line (CURRENT). Re-stated explicitly
+ * so the cascade is obvious; matches the base `.mockup-trophy__card::before`. */
+.mockup-trophy__variant-violet::before { background: var(--brand); }
+
+/* Option B — Gold 2px top line. */
+.mockup-trophy__variant-gold::before { background: #d4a72c; }
+.mockup-trophy__variant-gold:hover,
+.mockup-trophy__variant-gold:focus-within {
+  border-color: color-mix(in srgb, #d4a72c 35%, var(--border));
+}
+
+/* Option C — No top line; soft brand-tinted glow on hover. */
+.mockup-trophy__variant-glow::before { content: none; }
+.mockup-trophy__variant-glow {
+  transition:
+    transform var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+.mockup-trophy__variant-glow:hover,
+.mockup-trophy__variant-glow:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--brand) 18%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+
+/* Option D — Tiny monochrome trophy SVG, top-right corner. The accent
+ * line stays (so the eye still has the top-edge anchor) — the trophy
+ * mark is additive. */
+.mockup-trophy__variant-trophy-svg .mockup-trophy__variant-trophy-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ================================================================== */
+/* Trophy grid · aspect-ratio + column-count variants (Variant Set 3)   */
+/* ------------------------------------------------------------------ */
+/* Each `mockup-trophy__grid-variant-*` swaps the grid column count    */
+/* and the image-well aspect ratio. Breakpoints:                        */
+/*   Desktop ≥1024px · Tablet 720–1023px · Mobile ≤719px                */
+/* ================================================================== */
+
+.mockup-trophy__grid-variant-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-3) 0 var(--space-5);
+}
+.mockup-trophy__grid-variant-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.mockup-trophy__grid-variant {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+/* Option A — 3:4 / 3-col desktop / 2-col tablet / 1-col mobile. */
+.mockup-trophy__grid-variant-3-4 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mockup-trophy__grid-variant-3-4 .mockup-trophy__card-image {
+  aspect-ratio: 3 / 4;
+}
+@media (max-width: 1023px) {
+  .mockup-trophy__grid-variant-3-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 719px) {
+  .mockup-trophy__grid-variant-3-4 { grid-template-columns: 1fr; }
+}
+
+/* Option B — 1:1 square / 4-col desktop / 2-col tablet / 1-col mobile.
+ * Banner art is contained inside the well so the square frame doesn't
+ * crop the artwork. */
+.mockup-trophy__grid-variant-1-1 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.mockup-trophy__grid-variant-1-1 .mockup-trophy__card-image {
+  aspect-ratio: 1 / 1;
+}
+.mockup-trophy__grid-variant-1-1 .mockup-trophy__card-image img {
+  object-fit: contain;
+}
+@media (max-width: 1023px) {
+  .mockup-trophy__grid-variant-1-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 719px) {
+  .mockup-trophy__grid-variant-1-1 { grid-template-columns: 1fr; }
+}
+
+/* Option C — 4:5 portrait / 3-col desktop / 2-col tablet / 1-col mobile. */
+.mockup-trophy__grid-variant-4-5 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mockup-trophy__grid-variant-4-5 .mockup-trophy__card-image {
+  aspect-ratio: 4 / 5;
+}
+@media (max-width: 1023px) {
+  .mockup-trophy__grid-variant-4-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 719px) {
+  .mockup-trophy__grid-variant-4-5 { grid-template-columns: 1fr; }
+}
+
+/* Option D — Free native aspect / 3-col desktop / 2-col tablet / 1-col
+ * mobile. Image well drops its forced aspect-ratio entirely; the banner
+ * dictates the well height. */
+.mockup-trophy__grid-variant-native {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mockup-trophy__grid-variant-native .mockup-trophy__card-image {
+  aspect-ratio: auto;
+  height: auto;
+}
+.mockup-trophy__grid-variant-native .mockup-trophy__card-image img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+}
+@media (max-width: 1023px) {
+  .mockup-trophy__grid-variant-native { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 719px) {
+  .mockup-trophy__grid-variant-native { grid-template-columns: 1fr; }
+}
+

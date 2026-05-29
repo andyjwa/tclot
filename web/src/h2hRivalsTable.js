@@ -6,7 +6,7 @@
  * @param {Array<{ event?: number, finished?: boolean, league_entry_1: number, league_entry_2: number, league_entry_1_points?: number, league_entry_2_points?: number }>} matches
  * @param {Record<number, string>} idToName
  * @param {number} teamId
- * @returns {Array<{ opponentId: number, opponentName: string, record: string, for: number | string, against: number | string, lastLabel: string }>}
+ * @returns {Array<{ opponentId: number, opponentName: string, p: number, w: number, d: number, l: number, record: string, for: number | string, against: number | string, lastLabel: string }>}
  */
 export function buildH2hRivalsForTeam(matches, idToName, teamId) {
   const tid = Number(teamId);
@@ -80,6 +80,10 @@ export function buildH2hRivalsForTeam(matches, idToName, teamId) {
     return {
       opponentId: oid,
       opponentName: idToName[oid] ?? `Team ${oid}`,
+      p: played,
+      w: row.w,
+      d: row.d,
+      l: row.l,
       record: played > 0 ? `${row.w}–${row.d}–${row.l}` : '—',
       for: played > 0 ? row.for : '—',
       against: played > 0 ? row.against : '—',

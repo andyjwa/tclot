@@ -130,6 +130,140 @@ export function PlayerDetailOverlayProvider({
     [closeDetailImmediately],
   )
 
+  /*
+   * Swipe-right-to-dismiss for the mobile sheet. State lives in a ref so
+   * mid-drag updates don't re-render React. The drag is "claimed"
+   * (s.dragging = true) only once horizontal intent is established
+   * (|dx| > |dy| AND |dx| > 8px AND dx > 0) — until then the touch
+   * scrolls vertically as normal. Once claimed, we write inline
+   * `transform: translateX(<dx>px)` to follow the finger; on release we
+   * either animate out (if past threshold OR fast flick) using the same
+   * close path as the Back button + ESC, or snap back to translateX(0).
+   *
+   * Conflict guard: drags that originate inside the Performance table-wrap
+   * are ignored entirely so vertical/horizontal scroll inside the table
+   * never accidentally dismisses the panel. (The Performance table is
+   * the only inner scrollable surface today; if we add more we should
+   * generalize via `data-no-swipe` markers.)
+   */
+  const swipeRef = useRef({
+    startX: 0,
+    startY: 0,
+    startTime: 0,
+    deltaX: 0,
+    dragging: false,
+    ignored: false,
+  })
+
+  const onMobileSurfaceTouchStart = useCallback((e) => {
+    if (mobileSheetPhaseRef.current !== 'shown') return
+    const touch = e.touches[0]
+    if (!touch) return
+    const target = e.target instanceof Element ? e.target : null
+    /** Performance table scrolls both axes; never let drags from inside it dismiss. */
+    const insideScrollable = target?.closest('.pperf__table-wrap') != null
+    swipeRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startTime: e.timeStamp || (typeof performance !== 'undefined' ? performance.now() : 0),
+      deltaX: 0,
+      dragging: false,
+      ignored: insideScrollable,
+    }
+  }, [])
+
+  const onMobileSurfaceTouchMove = useCallback((e) => {
+    const s = swipeRef.current
+    if (s.ignored || mobileSheetPhaseRef.current !== 'shown') return
+    const touch = e.touches[0]
+    if (!touch) return
+    const dx = touch.clientX - s.startX
+    const dy = touch.clientY - s.startY
+
+    if (!s.dragging) {
+      const absX = Math.abs(dx)
+      const absY = Math.abs(dy)
+      /** Below intent threshold — let the browser keep treating this as a tap/scroll. */
+      if (absX < 8 && absY < 8) return
+      /** Vertical / leftward intent → release the gesture, never reclaim it for this touch. */
+      if (absY >= absX || dx <= 0) {
+        s.ignored = true
+        return
+      }
+      s.dragging = true
+    }
+
+    s.deltaX = dx > 0 ? dx : 0
+    const surface = mobileSurfaceRef.current
+    if (surface) {
+      surface.style.transition = 'none'
+      surface.style.transform = `translateX(${s.deltaX}px)`
+    }
+  }, [])
+
+  const finishSwipeSnapback = useCallback(() => {
+    const surface = mobileSurfaceRef.current
+    if (!surface) return
+    surface.style.transition = 'transform 0.22s cubic-bezier(0.32, 0.72, 0, 1)'
+    surface.style.transform = 'translateX(0)'
+    const onEnd = (e) => {
+      if (e.propertyName !== 'transform') return
+      surface.removeEventListener('transitionend', onEnd)
+      surface.style.transition = ''
+      surface.style.transform = ''
+    }
+    surface.addEventListener('transitionend', onEnd)
+  }, [])
+
+  const finishSwipeClose = useCallback(() => {
+    const surface = mobileSurfaceRef.current
+    if (!surface) {
+      closeDetailImmediately()
+      return
+    }
+    /* Drive the close animation with inline styles so we continue from the
+     * dragged position; the existing data-mobile-phase='exit' CSS path
+     * would snap back to translateX(0) first since inline transform is
+     * cleared. After transform settles, fall through to the normal close
+     * path so React state stays consistent. */
+    surface.style.transition = 'transform 0.22s cubic-bezier(0.4, 0, 1, 1), opacity 0.22s'
+    surface.style.transform = 'translateX(100%)'
+    surface.style.opacity = '0'
+    const onEnd = (e) => {
+      if (e.propertyName !== 'transform') return
+      surface.removeEventListener('transitionend', onEnd)
+      closeDetailImmediately()
+    }
+    surface.addEventListener('transitionend', onEnd)
+  }, [closeDetailImmediately])
+
+  const onMobileSurfaceTouchEnd = useCallback(
+    (e) => {
+      const s = swipeRef.current
+      if (!s.dragging) {
+        s.dragging = false
+        s.ignored = false
+        return
+      }
+      s.dragging = false
+      const elapsed =
+        (e.timeStamp || (typeof performance !== 'undefined' ? performance.now() : 0)) -
+        s.startTime
+      const velocity = elapsed > 0 ? s.deltaX / elapsed : 0
+      const surface = mobileSurfaceRef.current
+      const sheetWidth = surface?.getBoundingClientRect()?.width || (typeof window !== 'undefined' ? window.innerWidth : 360)
+      /** Threshold: 30% of sheet width OR 100px (whichever is smaller — favours quick dismissal on phones). */
+      const distanceThreshold = Math.min(100, sheetWidth * 0.3)
+      const shouldClose = s.deltaX > distanceThreshold || velocity > 0.5
+      if (shouldClose) {
+        finishSwipeClose()
+      } else {
+        finishSwipeSnapback()
+      }
+    },
+    [finishSwipeClose, finishSwipeSnapback],
+  )
+
   const requestDetailClose = useCallback(() => {
     if (mobileLayout) {
       const phase = mobileSheetPhaseRef.current
@@ -587,6 +721,10 @@ export function PlayerDetailOverlayProvider({
               className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
               data-mobile-phase={overlayMobileSlidePhaseAttr}
               onTransitionEnd={onMobileSheetTransitionEnd}
+              onTouchStart={onMobileSurfaceTouchStart}
+              onTouchMove={onMobileSurfaceTouchMove}
+              onTouchEnd={onMobileSurfaceTouchEnd}
+              onTouchCancel={onMobileSurfaceTouchEnd}
               onMouseDown={(e) => {
                 e.stopPropagation()
               }}

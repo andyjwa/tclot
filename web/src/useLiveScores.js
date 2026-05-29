@@ -10,6 +10,8 @@ import {
 } from './fplBonusFromBps';
 import { buildEffectiveLineup } from './fplAutosubProjection';
 import { fetchEspnPremWindow } from './espnPremWindow.js';
+import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
+import { mergePremWindowSources } from './premWindowMerger.js';
 import { computeEspnMatchdayRole } from './espnMatchdayRoleForAutosub.js';
 import {
   FPL_DIRECT,
@@ -20,6 +22,7 @@ import {
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { bustFplLiveCache, fetchFplJsonCached } from './fplFetchCache.js';
 import { gameWeekSelectLabel } from './gwLabel.js';
+import { countEffectiveXiPlayersRemaining } from './liveScoresDerivations.js';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
 function classicResourceUrl(pathAndQuery) {
@@ -310,6 +313,7 @@ function countEffectiveXiLeftToPlayGames(xiRows) {
   return total;
 }
 
+
 /** Same rule as `startersForEffectiveXi` in LiveScores — full bench length match. */
 function xiRowsForLeftToPlayCount(starters, bench, displayStarters, displayBench) {
   const nBench = bench?.length ?? 0;
@@ -449,7 +453,14 @@ export function useLiveScores({
         if (Number.isFinite(id)) liveFullNumeric[id] = v;
       }
 
-      const fxUrl = classicResourceUrl(`fixtures?event=${gw}`);
+      // Trailing slash matters: `fixtures?event=N` returns HTTP 301 to the
+      // same URL with `/` before the query, and the dev proxy passes the
+      // relative `Location` header back to the browser unresolved — the
+      // browser then re-fetches `/api/fixtures/?event=N` against the dev
+      // origin (Vite SPA) instead of upstream FPL, and HTML lands here as
+      // "Unexpected token '<', '<!doctype '..." Adding the slash up-front
+      // skips the redirect and reaches FPL's JSON directly.
+      const fxUrl = classicResourceUrl(`fixtures/?event=${gw}`);
       let gwFixtures = [];
       try {
         const fixturesPayload = await fetchFplJsonCached(fxUrl, {
@@ -479,13 +490,31 @@ export function useLiveScores({
 
       if (loadGen !== loadGenerationRef.current) return;
 
-      /** Best-effort ESPN Prem lineups — projected autosub uses `espnMatchdayRole` per pick. */
+      /**
+       * Prem window: Pulselive (official PL backend) is primary, ESPN is fallback.
+       *
+       *   - Pulselive lineups land at T-75 (clubs are league-mandated to submit team sheets
+       *     75 minutes before kickoff). ESPN follows about 15 minutes later (T-60).
+       *   - Pulselive event timeline has wallclock-precise UTC for goals/assists/cards/own
+       *     goals (`time.millis`) plus `assistId` bundled onto goal rows — same role ESPN
+       *     plays today but earlier and from the official feed.
+       *
+       * Both calls run in parallel; merger picks the better source per fixture so a
+       * Pulselive outage degrades gracefully to ESPN. Per-source failures are swallowed
+       * (the `.catch(() => [])` belt + try/catch braces) — the merger handles missing
+       * rows on either side.
+       */
       let espnPremRows = [];
       try {
-        espnPremRows = await fetchEspnPremWindow({
-          gwFixtures,
-          teamById,
-          elementById,
+        const [pulseRows, espnRows] = await Promise.all([
+          fetchPulselivePremWindow({ gwFixtures, teamById, elementById }).catch(
+            () => [],
+          ),
+          fetchEspnPremWindow({ gwFixtures, teamById, elementById }).catch(() => []),
+        ]);
+        espnPremRows = mergePremWindowSources(pulseRows, espnRows, {
+          primaryLabel: 'pulselive',
+          fallbackLabel: 'espn',
         });
       } catch {
         espnPremRows = [];
@@ -510,6 +539,7 @@ export function useLiveScores({
               autosubSource: 'none',
               projectedAutoSubs: [],
               leftToPlayCount: null,
+              xiPlayersRemaining: null,
             };
           }
 
@@ -536,6 +566,7 @@ export function useLiveScores({
               autosubSource: 'none',
               projectedAutoSubs: [],
               leftToPlayCount: null,
+              xiPlayersRemaining: null,
             };
           }
           const picks = picksPayload.picks || [];
@@ -587,6 +618,13 @@ export function useLiveScores({
             displayBench
           );
           const leftToPlayCount = countEffectiveXiLeftToPlayGames(xiForLtp);
+          /**
+           * Distinct-player count for the FPL Live → Live GW fixture row
+           * `(N)` indicator. Derived from the same `xiForLtp` rows as
+           * {@link leftToPlayCount} so the two stay in sync, but DGW players
+           * count as 1 here regardless of how many fixtures they have left.
+           */
+          const xiPlayersRemaining = countEffectiveXiPlayersRemaining(xiForLtp);
 
           return {
             leagueEntryId: t.id,
@@ -603,6 +641,7 @@ export function useLiveScores({
             autosubSource,
             projectedAutoSubs,
             leftToPlayCount,
+            xiPlayersRemaining,
           };
         })
       );

@@ -1,4 +1,19 @@
-/* Players / waiver workbench — portrait-first; drawer becomes bottom sheet on narrow viewports */
+/* Players (Wire) workbench — Phase 2 redesign.
+ *
+ * Three vertical bands inside one card on desktop:
+ *   1. Header band  — title meta + search + Include drafted toggle
+ *   2. Filter pill row — Position · Club · Owned · spacer · Sort · Stats
+ *   3. Table band   — Player · POS chip · Pts · stat cols · Next 3
+ *
+ * Portrait stacks four bands (title strip → scroll pill row → search+toggle
+ * row → sticky-header sortable table). The Player cell owns a trailing
+ * indicator cluster (right-aligned inside the cell) carrying ownership +
+ * availability — there is no dedicated owner or status column.
+ */
+
+/* =====================================================
+   Outer card / shell
+   ===================================================== */
 
 .players-bench-tile {
   position: relative;
@@ -7,143 +22,296 @@
 
 .players-bench-tile.tile--standings {
   overflow: visible;
-}
-
-.players-bench-pos-filter {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 0.85rem;
-  position: relative;
-  z-index: 6;
-  overflow: visible;
-}
-
-.players-bench-filter-pills {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  overflow: visible;
+  /* `.tile--standings { padding: 0 }` is defined earlier in App.css than the
+   * base `.tile { padding: 16px 18px }`, so at equal specificity the base
+   * padding leaks back in on desktop — pushing the Players sub-menu band
+   * ~16px down and ~18px right of the Heritage reference. Re-assert padding:0
+   * here (higher specificity, two classes) so the chrome band pins flush at
+   * the card's content edge. The header/filter bands keep their own internal
+   * padding for breathing room. */
+  padding: 0;
 }
 
 .players-bench-banner {
   padding: 0.6rem 0.85rem;
-  border-radius: 10px;
-  background: rgba(248, 113, 113, 0.12);
-  border: 1px solid rgba(248, 113, 113, 0.35);
-  font-size: 0.8125rem;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--data-negative) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--data-negative) 35%, transparent);
+  font-size: var(--text-sm);
   margin-bottom: 0.75rem;
 }
 
-.fotmob[data-theme='light'] .players-bench-banner {
-  background: rgba(220, 38, 38, 0.08);
-  border-color: rgba(220, 38, 38, 0.28);
+.players-bench-chrome.section-chrome--sticky {
+  overflow: visible;
 }
 
-.players-bench-pos-tabs {
+/* =====================================================
+   Header band (desktop)
+   ===================================================== */
+
+.players-bench-header {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-}
-
-/* Filter pills: identical box model for idle + active (no border/padding shift) */
-.players-bench-pos-filter .team-selection-submenu__btn,
-.players-bench-pos-filter .team-selection-submenu__btn.team-selection-submenu__btn--active {
-  box-sizing: border-box;
-  border-width: 1px;
-  border-style: solid;
-}
-
-/* Uniform 34px pill height across position tabs + club/fantasy/stats */
-.players-bench-pos-filter .team-selection-submenu__btn,
-.players-bench-pos-filter .players-club-pill__btn,
-.players-bench-pos-filter .players-fantasy-pill__btn,
-.players-bench-pos-filter .players-compare-pill__btn,
-.players-bench-pos-filter .players-stats-pill__btn {
-  box-sizing: border-box;
-  height: 2.125rem;
-  min-height: 2.125rem;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.players-bench-pos-tabs .team-selection-submenu__btn,
-.players-bench-pos-tabs .team-selection-submenu__btn.team-selection-submenu__btn--active {
-  min-width: 3.1rem;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-.players-bench-pos-filter .players-club-pill__btn,
-.players-bench-pos-filter .players-fantasy-pill__btn,
-.players-bench-pos-filter .players-compare-pill__btn,
-.players-bench-pos-filter .players-stats-pill__btn,
-.players-bench-pos-filter .players-club-pill__btn.team-selection-submenu__btn--active,
-.players-bench-pos-filter .players-fantasy-pill__btn.team-selection-submenu__btn--active,
-.players-bench-pos-filter .players-compare-pill__btn.team-selection-submenu__btn--active,
-.players-bench-pos-filter .players-stats-pill__btn.team-selection-submenu__btn--active {
+  justify-content: space-between;
+  gap: var(--space-4);
+  /* Top padding normalized to the Heritage sub-nav standard: the
+   * `.players-bench-tile` (`.tile--standings`, padding: 0) already pins this
+   * chrome band flush at the card top (= the 8px nav→content grid gap), but the
+   * header's 16px (--space-4) internal top padding pushed the visible sub-menu
+   * (title + search + filters) ~16px lower than the reference strips. Reduced to
+   * 8px (--space-2) so the sub-menu sits at the same offset as the Standings
+   * strip. Desktop-only: the ≤1080px portrait rule below overrides this. */
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   min-width: 0;
-  width: auto;
-  padding-left: 10px;
-  padding-right: 9px;
-  gap: 0.3rem;
 }
 
-/* No reserved icon slot when idle — keeps Club/Fantasy compact like position tabs */
-.players-bench-pos-filter .players-club-pill__btn:not(:has(.players-club-pill__badge))::before,
-.players-bench-pos-filter .players-fantasy-pill__btn:not(:has(.team-avatar-frame))::before {
-  content: none;
-  display: none;
-  width: 0;
+.players-bench-header__titles {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
-.players-bench-pos-filter .players-fantasy-pill__btn .team-avatar-frame--sm {
-  width: 18px;
-  height: 18px;
+.players-bench-header__title {
+  margin: 0;
+  font-size: var(--text-xl);
+  line-height: var(--lh-xl);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
 }
 
-.players-bench-pos-filter .players-fantasy-pill__btn:not(:has(.team-avatar-frame))::before {
-  width: 18px;
-  height: 18px;
+/* Search field (desktop pill).
+ *
+ * The search bar lives inline in the desktop header row between the
+ * "Players" title and the Wire/Owned segmented toggle. It stretches to
+ * fill the remaining row width so the toolbar reads as a unified
+ * search-led band, matching the portrait Variant C treatment.
+ */
+.players-bench-search-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  transition: border-color 160ms ease, background 160ms ease;
+  flex: 1 1 auto;
+  min-width: 240px;
+  max-width: 100%;
 }
 
-.players-bench-pos-filter .players-club-pill__badge {
-  width: 18px;
-  height: 18px;
+.players-bench-search-field:focus-within {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+  background: var(--surface);
 }
 
-.players-bench-pos-filter .players-club-pill__btn:not(:has(.players-club-pill__badge))::before {
-  width: 18px;
-  height: 18px;
+.players-bench-search-field__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
-.players-bench-pos-filter .team-selection-submenu__btn.team-selection-submenu__btn--active {
-  border-color: var(--fm-border);
-  box-shadow: inset 0 0 0 1px var(--pill-active-border);
+.players-bench-search {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--text);
 }
 
-.fotmob[data-theme='light'] .players-bench-pos-filter .team-selection-submenu__btn.team-selection-submenu__btn--active {
-  border-color: #e5e5e5;
-  box-shadow: inset 0 0 0 1px var(--pill-active-border);
+.players-bench-search::placeholder {
+  color: var(--text-muted);
 }
 
-.players-bench-pos-filter .team-selection-submenu__btn.team-selection-submenu__btn--active:hover {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #795bfb 58%, var(--fm-border));
+/* Include-drafted toggle (iOS-style pill) — mirrors `.mockup-include-drafted` */
+.players-include-drafted {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+  flex: 0 0 auto;
+  user-select: none;
 }
 
-.fotmob[data-theme='light']
-  .players-bench-pos-filter
-  .team-selection-submenu__btn.team-selection-submenu__btn--active:hover {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #795bfb 52%, #d0c4fa);
+.players-include-drafted:hover:not(:disabled) {
+  background: var(--row-hi);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+
+.players-include-drafted:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.players-include-drafted:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.players-include-drafted__track {
+  position: relative;
+  width: 26px;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 35%, transparent);
+  transition: background 160ms ease;
+  flex: 0 0 auto;
+}
+
+.players-include-drafted[aria-checked='true'] .players-include-drafted__track {
+  background: var(--brand);
+}
+
+.players-include-drafted__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 160ms ease;
+}
+
+.players-include-drafted[aria-checked='true'] .players-include-drafted__thumb {
+  transform: translateX(10px);
+}
+
+.players-include-drafted__label {
+  white-space: nowrap;
+}
+
+.players-include-drafted--sm {
+  padding: 3px 8px 3px 3px;
+  font-size: var(--text-xs);
+}
+
+.players-include-drafted--sm .players-include-drafted__track {
+  width: 22px;
+  height: 14px;
+}
+
+.players-include-drafted--sm .players-include-drafted__thumb {
+  width: 10px;
+  height: 10px;
+}
+
+.players-include-drafted--sm[aria-checked='true'] .players-include-drafted__thumb {
+  transform: translateX(8px);
+}
+
+/* =====================================================
+   Filter pill row
+   ===================================================== */
+
+.players-bench-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  min-width: 0;
+  position: relative;
+  z-index: 6;
+}
+
+.players-bench-filters__spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.players-bench-filters .team-selection-submenu__btn,
+.players-bench-filters .players-club-pill__btn,
+.players-bench-filters .players-fantasy-pill__btn,
+.players-bench-filters .players-position-pill__btn,
+.players-bench-filters .players-owned-pill__btn,
+.players-bench-filters .players-sort-pill__btn,
+.players-bench-filters .players-stats-pill__btn {
+  box-sizing: border-box;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  gap: 0.38rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.players-bench-filters .team-selection-submenu__btn:hover,
+.players-bench-filters .players-club-pill__btn:hover,
+.players-bench-filters .players-fantasy-pill__btn:hover,
+.players-bench-filters .players-position-pill__btn:hover,
+.players-bench-filters .players-owned-pill__btn:hover,
+.players-bench-filters .players-sort-pill__btn:hover,
+.players-bench-filters .players-stats-pill__btn:hover {
+  background: var(--row-hi);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+
+.players-bench-filters .team-selection-submenu__btn--active,
+.players-bench-filters .players-club-pill__btn.team-selection-submenu__btn--active,
+.players-bench-filters .players-fantasy-pill__btn.team-selection-submenu__btn--active,
+.players-bench-filters .players-position-pill__btn.team-selection-submenu__btn--active,
+.players-bench-filters .players-owned-pill__btn.team-selection-submenu__btn--active,
+.players-bench-filters .players-sort-pill__btn.team-selection-submenu__btn--active,
+.players-bench-filters .players-stats-pill__btn.team-selection-submenu__btn--active {
+  background: var(--brand-tint);
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+  color: var(--text-strong);
+}
+
+.players-bench-filters .team-selection-submenu__btn:focus-visible,
+.players-bench-filters .players-club-pill__btn:focus-visible,
+.players-bench-filters .players-fantasy-pill__btn:focus-visible,
+.players-bench-filters .players-position-pill__btn:focus-visible,
+.players-bench-filters .players-owned-pill__btn:focus-visible,
+.players-bench-filters .players-sort-pill__btn:focus-visible,
+.players-bench-filters .players-stats-pill__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 .players-club-pill,
 .players-fantasy-pill,
-.players-compare-pill,
+.players-position-pill,
+.players-owned-pill,
+.players-sort-pill,
 .players-stats-pill {
   position: relative;
   flex-shrink: 0;
@@ -154,41 +322,10 @@
   z-index: 40;
 }
 
-.players-club-pill__btn,
-.players-fantasy-pill__btn,
-.players-compare-pill__btn,
-.players-stats-pill__btn {
-  gap: 0.38rem;
-}
-
-.players-bench-pos-filter .players-club-pill,
-.players-bench-pos-filter .players-fantasy-pill,
-.players-bench-pos-filter .players-stats-pill {
-  width: auto;
-}
-
-/* Reserve icon slot so club/fantasy pills don't grow when a filter is applied */
-.players-club-pill__btn:not(:has(.players-club-pill__badge))::before {
-  content: '';
-  width: 1.12rem;
-  height: 1.12rem;
-  flex-shrink: 0;
-}
-
-.players-fantasy-pill__btn:not(:has(.team-avatar-frame))::before {
-  content: '';
+/* Pill badges / labels */
+.players-club-pill__badge {
   width: 18px;
   height: 18px;
-  flex-shrink: 0;
-}
-
-.players-fantasy-pill__btn .team-avatar-frame--sm {
-  flex-shrink: 0;
-}
-
-.players-club-pill__badge {
-  width: 1.12rem;
-  height: 1.12rem;
   object-fit: contain;
   flex-shrink: 0;
   display: block;
@@ -196,7 +333,9 @@
 
 .players-club-pill__label,
 .players-fantasy-pill__label,
-.players-compare-pill__label,
+.players-position-pill__label,
+.players-owned-pill__label,
+.players-sort-pill__label,
 .players-stats-pill__label {
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -209,19 +348,11 @@
   font-weight: 700;
   line-height: 1;
   margin-left: 0.12rem;
-  color: color-mix(in srgb, var(--fm-text-strong) 62%, var(--fm-muted));
-  opacity: 1;
+  color: color-mix(in srgb, var(--text-strong) 62%, var(--text-muted));
 }
 
-.fotmob[data-theme='light'] .players-menu-pill__chev,
-.fotmob[data-theme='light'] .players-club-pill__chev {
-  color: #5c5c5c;
-}
-
-.players-menu-pill__btn--open .players-menu-pill__chev,
-.players-club-pill__btn--open .players-club-pill__chev,
-.players-stats-pill__btn.players-menu-pill__btn--open .players-menu-pill__chev {
-  color: var(--fm-text-strong);
+.players-menu-pill__btn--open .players-menu-pill__chev {
+  color: var(--text-strong);
 }
 
 .players-pill-clear {
@@ -236,7 +367,7 @@
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: color-mix(in srgb, var(--fm-text-strong) 58%, var(--fm-muted));
+  color: color-mix(in srgb, var(--text-strong) 58%, var(--text-muted));
   font: inherit;
   font-size: 0.9rem;
   font-weight: 700;
@@ -245,24 +376,39 @@
 }
 
 .players-pill-clear:hover {
-  background: color-mix(in srgb, var(--fm-muted) 22%, transparent);
-  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--text-muted) 22%, transparent);
+  color: var(--text-strong);
 }
 
 .players-pill-clear:focus-visible {
-  outline: 2px solid var(--tclot-logo-purple);
+  outline: 2px solid var(--brand);
   outline-offset: 1px;
 }
 
-.fotmob[data-theme='light'] .players-pill-clear {
-  color: #666666;
+/* Pill labels for owned / sort show "label · value" two-tone */
+.players-owned-pill__label-text,
+.players-sort-pill__label-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
-.fotmob[data-theme='light'] .players-pill-clear:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: #111111;
+.players-owned-pill__label-text .players-owned-pill__label-key,
+.players-sort-pill__label-text .players-sort-pill__label-key {
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--text-xs);
 }
 
+.players-owned-pill__label-text .players-owned-pill__label-value,
+.players-sort-pill__label-text .players-sort-pill__label-value {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Pill dropdown menus */
 .players-menu-pill__menu,
 .players-club-pill__menu {
   position: absolute;
@@ -270,15 +416,15 @@
   left: 0;
   z-index: 30;
   min-width: 9.5rem;
-  max-width: min(16rem, 88vw);
-  max-height: min(18rem, 52vh);
+  max-width: min(20rem, 88vw);
+  max-height: min(20rem, 52vh);
   margin: 0;
   padding: 0.35rem;
   list-style: none;
   overflow: auto;
-  border-radius: 12px;
-  border: 1px solid var(--fm-border);
-  background: var(--fm-card);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
 }
 
@@ -298,9 +444,9 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: var(--fm-text-strong);
+  color: var(--text-strong);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -308,17 +454,35 @@
 
 .players-menu-pill__option:hover,
 .players-club-pill__option:hover {
-  background: var(--pill-idle-hover-bg);
+  background: var(--row-hi);
 }
 
 .players-menu-pill__option--active,
 .players-club-pill__option--active {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.14) 52%, var(--fm-card));
+  background: var(--brand-tint);
+  color: var(--text-strong);
 }
 
-.fotmob[data-theme='light'] .players-menu-pill__option--active,
-.fotmob[data-theme='light'] .players-club-pill__option--active {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.12) 50%, #ffffff);
+.players-menu-pill__option--empty {
+  cursor: default;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.players-menu-pill__option-text,
+.players-club-pill__option-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.players-menu-pill__divider {
+  height: 1px;
+  margin: 0.3rem 0.45rem;
+  background: color-mix(in srgb, var(--border) 75%, transparent);
+  list-style: none;
 }
 
 .players-club-pill__badge-fallback {
@@ -328,26 +492,17 @@
   place-items: center;
   font-size: 0.48rem;
   font-weight: 700;
-  color: var(--fm-muted);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.players-menu-pill__option-text,
-.players-club-pill__option-text {
-  min-width: 0;
+/* Right-align Sort pill menu so it doesn't overflow on narrow screens */
+.players-sort-pill .players-menu-pill__menu {
+  left: auto;
+  right: 0;
 }
 
-.players-menu-pill__divider {
-  height: 1px;
-  margin: 0.3rem 0.45rem;
-  background: color-mix(in srgb, var(--fm-border) 75%, transparent);
-  list-style: none;
-}
-
-.players-club-pill__menu--compare {
-  min-width: 10.5rem;
-}
-
+/* Stats column picker panel */
 .players-stats-pill__panel {
   position: absolute;
   top: calc(100% + 6px);
@@ -358,9 +513,9 @@
   max-height: min(24rem, 62vh);
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
-  border: 1px solid var(--fm-border);
-  background: var(--fm-card);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
   overflow: hidden;
 }
@@ -378,33 +533,29 @@
 }
 
 .players-stats-pill__panel-title {
-  font-size: 0.8125rem;
+  font-size: var(--text-sm);
   font-weight: 700;
 }
 
 .players-stats-pill__panel-count {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }
 
 .players-stats-pill__panel-note {
   margin: 0;
   padding: 0 0.75rem 0.55rem;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   line-height: 1.35;
 }
 
 .players-stats-pill__panel-context {
   margin: 0 0.75rem 0.55rem;
   padding: 0.45rem 0.55rem;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   line-height: 1.4;
   border-radius: 8px;
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.12) 65%, transparent);
-  border: 1px solid color-mix(in srgb, rgba(121, 91, 251, 0.28) 55%, var(--fm-border));
-}
-
-.fotmob[data-theme='light'] .players-stats-pill__panel-context {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.08) 70%, #ffffff);
+  background: var(--brand-tint);
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--border));
 }
 
 .players-stats-pill__context-tag {
@@ -416,8 +567,8 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.22) 60%, transparent);
-  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  color: var(--text-strong);
 }
 
 .players-stats-pill__panel-body {
@@ -432,12 +583,12 @@
 .players-stats-pill__group--promoted {
   padding: 0.35rem 0.35rem 0.45rem;
   border-radius: 10px;
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.08) 55%, transparent);
-  border: 1px solid color-mix(in srgb, rgba(121, 91, 251, 0.2) 45%, var(--fm-border));
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--border));
 }
 
 .players-stats-pill__group--promoted .players-stats-pill__group-label {
-  color: var(--fm-text-strong);
+  color: var(--text-strong);
 }
 
 .players-stats-pill__group-label {
@@ -447,7 +598,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--fm-muted);
+  color: var(--text-muted);
 }
 
 .players-stats-pill__grid {
@@ -468,11 +619,11 @@
 }
 
 .players-stats-pill__option:hover:not(.players-stats-pill__option--disabled) {
-  background: var(--pill-idle-hover-bg);
+  background: var(--row-hi);
 }
 
 .players-stats-pill__option--checked {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.14) 70%, transparent);
+  background: var(--brand-tint);
 }
 
 .players-stats-pill__option--disabled {
@@ -489,7 +640,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.08rem;
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   line-height: 1.1;
 }
@@ -498,12 +649,12 @@
   font-size: 0.58rem;
   font-weight: 500;
   line-height: 1.15;
-  color: var(--fm-muted);
+  color: var(--text-muted);
 }
 
 .players-stats-pill__panel-foot {
   padding: 0.45rem 0.75rem 0.65rem;
-  border-top: 1px solid var(--fm-border);
+  border-top: 1px solid var(--border);
 }
 
 .players-stats-pill__reset {
@@ -513,15 +664,15 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: var(--fm-text-strong);
+  color: var(--text-strong);
   font: inherit;
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
 }
 
 .players-stats-pill__reset:hover:not(:disabled) {
-  background: var(--pill-idle-hover-bg);
+  background: var(--row-hi);
 }
 
 .players-stats-pill__reset:disabled {
@@ -529,187 +680,143 @@
   cursor: not-allowed;
 }
 
-.players-bench-toolbar-tail {
-  display: flex;
+/* Reserve icon slot so club/fantasy pills don't grow when a filter is applied */
+.players-bench-filters .players-club-pill__btn:not(:has(.players-club-pill__badge))::before {
+  content: '';
+  width: 1.12rem;
+  height: 1.12rem;
+  flex-shrink: 0;
+}
+
+.players-bench-filters .players-fantasy-pill__btn:not(:has(.team-avatar-frame))::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.players-bench-filters .players-fantasy-pill__btn .team-avatar-frame--sm {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+/* =====================================================
+   Position chip atom — rendered in player cell on desktop
+   ===================================================== */
+
+.position-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  flex: 1 1 auto;
-  min-width: 0;
+  justify-content: center;
+  min-width: 26px;
+  height: 16px;
+  padding: 0 5px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.position-chip--GKP {
+  color: #f59e0b;
+  border-color: color-mix(in srgb, #f59e0b 38%, var(--border));
+}
+.position-chip--DEF {
+  color: #22d3ee;
+  border-color: color-mix(in srgb, #22d3ee 38%, var(--border));
+}
+.position-chip--MID {
+  color: #c4b5fd;
+  border-color: color-mix(in srgb, #a78bfa 38%, var(--border));
+}
+.position-chip--FWD {
+  color: #fca5a5;
+  border-color: color-mix(in srgb, #ef4444 38%, var(--border));
+}
+
+.fotmob[data-theme='light'] .position-chip--GKP {
+  color: #b45309;
+}
+.fotmob[data-theme='light'] .position-chip--DEF {
+  color: #0e7490;
+}
+.fotmob[data-theme='light'] .position-chip--MID {
+  color: #6d28d9;
+}
+.fotmob[data-theme='light'] .position-chip--FWD {
+  color: #b91c1c;
+}
+
+/* =====================================================
+   Player-cell trailing indicator cluster
+   Lives at the right edge of the Player cell (after the name).
+   Up to two icons stack: ownership (owner avatar OR green FA dot) plus
+   availability (🚑 emoji OR red suspended dot).
+   ===================================================== */
+
+.players-table__name-indicators {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
   margin-left: auto;
 }
 
-.players-bench-field--search {
-  flex: 0 0 auto;
-  width: 10.5rem;
-  max-width: min(10.5rem, 42vw);
-}
-
-.players-bench-toggle {
-  flex-shrink: 0;
-  font-size: 0.8125rem;
-  display: flex;
+.players-table__name-indicator {
+  display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  color: var(--fm-text);
-  user-select: none;
-  min-height: 2.125rem;
-  padding: 0;
-  cursor: pointer;
-}
-
-.players-bench-toggle--disabled {
-  cursor: not-allowed;
-  opacity: 0.62;
-}
-
-.players-bench-toggle__input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.players-bench-toggle__track {
-  position: relative;
+  justify-content: center;
   flex-shrink: 0;
-  width: 2.35rem;
-  height: 1.35rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--fm-muted) 28%, var(--fm-surface-2));
-  border: 1px solid color-mix(in srgb, var(--fm-muted) 22%, var(--fm-border));
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+  line-height: 1;
 }
 
-.fotmob[data-theme='light'] .players-bench-toggle__track {
-  background: color-mix(in srgb, var(--fm-muted) 18%, #e8e8ec);
-  border-color: color-mix(in srgb, var(--fm-muted) 16%, #d4d4d8);
-}
-
-.players-bench-toggle__thumb {
-  position: absolute;
-  top: 50%;
-  left: 0.14rem;
-  width: 1.02rem;
-  height: 1.02rem;
+.players-table__name-indicator--fa {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--fm-text-strong);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
-  transform: translateY(-50%);
-  transition:
-    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-    background 160ms ease;
+  background: var(--data-positive);
 }
 
-.fotmob[data-theme='light'] .players-bench-toggle__thumb {
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+.players-table__name-indicator--sus {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--data-negative);
 }
 
-.players-bench-toggle__input:checked + .players-bench-toggle__track {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.52) 68%, var(--fm-surface-2));
-  border-color: color-mix(in srgb, rgba(121, 91, 251, 0.62) 55%, var(--fm-border));
-  box-shadow: 0 0 0 1px rgba(121, 91, 251, 0.12);
+.players-table__name-indicator--injury {
+  font-size: 14px;
+  line-height: 1;
 }
 
-.fotmob[data-theme='light'] .players-bench-toggle__input:checked + .players-bench-toggle__track {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.38) 62%, #ffffff);
-  border-color: color-mix(in srgb, rgba(121, 91, 251, 0.48) 50%, #d8cffc);
+/* Owner avatar at ~18px regardless of the TeamAvatar size prop ('sm' = 20px elsewhere). */
+.players-table__name-indicator--owner {
+  width: 18px;
+  height: 18px;
 }
 
-.players-bench-toggle__input:checked + .players-bench-toggle__track .players-bench-toggle__thumb {
-  transform: translate(1rem, -50%);
-  background: color-mix(in srgb, #ffffff 88%, rgba(121, 91, 251, 0.35));
+.players-table__name-indicator--owner .team-avatar-frame {
+  width: 18px;
+  height: 18px;
 }
 
-.fotmob[data-theme='light']
-  .players-bench-toggle__input:checked
-  + .players-bench-toggle__track
-  .players-bench-toggle__thumb {
-  background: #ffffff;
-}
+/* =====================================================
+   Table
+   ===================================================== */
 
-.players-bench-toggle__input:focus-visible + .players-bench-toggle__track {
-  outline: 2px solid var(--tclot-logo-purple);
-  outline-offset: 2px;
-}
-
-.players-bench-toggle__input:disabled + .players-bench-toggle__track {
-  opacity: 0.55;
-}
-
-.players-bench-toggle__input:disabled:checked + .players-bench-toggle__track {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.28) 55%, var(--fm-surface-2));
-  border-color: color-mix(in srgb, rgba(121, 91, 251, 0.32) 45%, var(--fm-border));
-}
-
-.players-bench-toggle__label {
-  line-height: 1.3;
-}
-
-.players-bench-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
-.players-bench-field--grow {
-  flex: 1 1 12rem;
-}
-
-.players-bench-label {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fm-muted);
-  font-weight: 600;
-}
-
-.players-bench-select,
-.players-bench-search {
-  font: inherit;
-  font-size: 0.9375rem;
-  padding: 0.52rem 0.62rem;
-  border-radius: 10px;
-  border: 1px solid var(--fm-border);
-  background: var(--fm-surface-2);
-  color: var(--fm-text-strong);
-}
-
-.players-bench-search {
-  width: 100%;
-  box-sizing: border-box;
-  height: 2.125rem;
-  min-height: 2.125rem;
-  padding: 0 0.55rem;
-  font-size: 0.8125rem;
-  border-radius: 999px;
-}
-
-/* —— aligned column table (subgrid — head + rows share one column track) —— */
 .players-table-scroll {
-  margin-top: 0.85rem;
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-height: min(72vh, 520px);
-  -webkit-overflow-scrolling: touch;
-  border: 1px solid var(--fm-border);
-  border-radius: 12px;
-  background: var(--fm-card);
-}
-
-@media (min-height: 700px) {
-  .players-table-scroll {
-    max-height: min(68vh, 640px);
-  }
+  margin-top: 0;
+  /* Phase 2: no scroll cap — table renders at natural height; the page scrolls. */
+  overflow: visible;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .players-table {
@@ -723,6 +830,14 @@
   min-width: 0;
 }
 
+.players-table__head {
+  display: contents;
+}
+
+.players-table__body {
+  display: contents;
+}
+
 .players-table__head-row,
 .players-table__row {
   display: grid;
@@ -732,79 +847,67 @@
 }
 
 .players-table__head-row {
-  --players-head-bg: color-mix(
-    in srgb,
-    rgb(121, 91, 251) 12%,
-    var(--fm-table-head, var(--fm-surface-2))
-  );
   position: sticky;
   top: 0;
   z-index: 3;
-  background-color: var(--players-head-bg);
-  border-bottom: 1px solid color-mix(in srgb, rgb(121, 91, 251) 22%, var(--fm-border));
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06);
-}
-
-.fotmob[data-theme='light'] .players-table__head-row {
-  --players-head-bg: color-mix(
-    in srgb,
-    rgb(121, 91, 251) 8%,
-    var(--fm-table-head, var(--fm-surface-2))
-  );
+  background-color: color-mix(in srgb, var(--brand) 8%, var(--surface-2));
+  border-bottom: 1px solid var(--border);
 }
 
 body[data-tclot-theme='dark'] .players-table__head-row {
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
 }
 
 .players-table__head-row > * {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.68rem 0.38rem;
+  justify-content: flex-end;
+  min-height: 34px;
+  padding: 0.4rem 0.55rem;
   min-width: 0;
-  background-color: var(--players-head-bg);
+  background-color: inherit;
   background-clip: padding-box;
-}
-
-.players-table__row > * {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.48rem 0.38rem;
-  min-width: 0;
-  background: transparent;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  line-height: 1.2;
 }
 
 .players-table__head-row > *:first-child,
 .players-table__row > *:first-child {
-  padding-left: 0.72rem;
+  padding-left: var(--space-4);
 }
 
-.players-table__head-row > *:first-child {
-  border-top-left-radius: 11px;
+.players-table__head-row > *:last-child,
+.players-table__row > *:last-child {
+  padding-right: var(--space-4);
 }
 
-.players-table__head-row > *.players-table__col--group-start,
-.players-table__row > *.players-table__col--group-start {
-  box-shadow: inset 1px 0 0 color-mix(in srgb, rgb(121, 91, 251) 22%, var(--fm-border));
+.players-table__th--player {
+  justify-content: flex-start;
+  text-align: left;
 }
 
-.players-table__th {
-  font-size: 0.7rem;
-  font-weight: 650;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--fm-muted);
+.players-table__th--pos {
+  justify-content: center;
   text-align: center;
-  line-height: 1.2;
+}
+
+.players-table__th--next3 {
+  justify-content: center;
+  text-align: center;
 }
 
 .players-table__th-btn {
+  /* Default: right-align label + sort arrow so numeric column headers match
+   * their right-aligned data cells (Pts, stat cols). Per-column overrides
+   * below flip this for text/centered columns (Player, POS, Next 3). */
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.12rem;
+  justify-content: flex-end;
+  gap: 0.18rem;
   width: 100%;
   height: 100%;
   margin: 0;
@@ -824,12 +927,20 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   justify-content: flex-start;
 }
 
+.players-table__th-btn.players-table__th--pos {
+  justify-content: center;
+}
+
+.players-table__th-btn.players-table__th--next3 {
+  justify-content: center;
+}
+
 .players-table__th-btn:hover {
-  color: var(--fm-text);
+  color: var(--text);
 }
 
 .players-table__th--sorted {
-  color: var(--fm-text);
+  color: var(--text-strong);
   font-weight: 800;
 }
 
@@ -843,131 +954,146 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 
 .players-table__sort-indicator {
   flex-shrink: 0;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   line-height: 1;
-  opacity: 0.95;
+  color: var(--brand);
 }
 
 .players-table__sort-indicator--idle {
-  opacity: 0.28;
-  font-size: 0.52rem;
+  opacity: 0.3;
+  font-size: 0.56rem;
+  color: var(--text-muted);
 }
 
 .players-table__th-btn:hover .players-table__sort-indicator--idle {
-  opacity: 0.5;
+  opacity: 0.55;
+  color: var(--text);
 }
 
-.players-table__head-row > .players-table__th--player,
-.players-table__row > .players-table__cell--player {
-  justify-content: flex-start;
-}
+/* Round-2 polish: vertical group dividers between Player / POS / Pts / stats /
+ * Next-3 have been removed. Only the horizontal row separators below remain.
+ * The `.players-table__col--group-start` class is still applied by the JSX
+ * (kept as a hook in case a future redesign wants the dividers back) but
+ * intentionally has no visual effect. */
 
-.players-table__th--player {
-  text-align: left;
-  font-weight: 700;
-}
-
-.players-table__th--player .players-table__th-label {
-  font-weight: 700;
-}
-
-.players-table__th--pts {
-  font-weight: 800;
-  color: var(--fm-text);
-}
-
-.players-table__th--next3 {
-  text-align: center;
-}
-
-.players-table__body {
-  display: contents;
-}
-
-.players-table__head {
-  display: contents;
-}
-
+/* Body rows */
 .players-table__row {
-  background: var(--fm-card);
-  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 55%, transparent);
+  background: var(--surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  cursor: pointer;
+  transition: background 160ms ease;
 }
 
 .players-table__row:last-child {
   border-bottom: none;
 }
 
-.players-table__row:nth-child(even) {
-  background: color-mix(in srgb, rgb(121, 91, 251) 5.5%, var(--fm-card));
-}
-
-.fotmob[data-theme='light'] .players-table__row:nth-child(even) {
-  background: color-mix(in srgb, rgb(121, 91, 251) 4%, var(--fm-card));
-}
-
 .players-table__row:hover {
-  background: color-mix(in srgb, rgb(121, 91, 251) 10%, var(--fm-card));
+  background: var(--row-hi);
 }
 
-.fotmob[data-theme='light'] .players-table__row:hover {
-  background: color-mix(in srgb, rgb(121, 91, 251) 7.5%, var(--fm-card));
-}
-
-.players-table__row--active {
-  background: color-mix(in srgb, rgb(121, 91, 251) 14%, var(--fm-card)) !important;
-}
-
-.fotmob[data-theme='light'] .players-table__row--active {
-  background: color-mix(in srgb, rgb(121, 91, 251) 10%, var(--fm-card)) !important;
+.players-table__row > * {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 56px;
+  padding: 0.4rem 0.55rem;
+  min-width: 0;
+  background: transparent;
 }
 
 .players-table__cell {
-  font-size: 0.78rem;
+  font-size: var(--text-md);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  text-align: center;
   line-height: 1.35;
+  color: var(--text);
 }
 
-.players-table__cell--sorted {
-  font-weight: 600;
-  color: var(--fm-text-strong);
+.players-table__cell--player {
+  justify-content: flex-start;
+  text-align: left;
+  gap: 8px;
+  min-width: 0;
 }
 
-.players-table__cell--player.players-table__cell--sorted .players-table__name {
-  font-weight: 600;
-}
-
-.players-table__cell--pts.players-table__cell--sorted .players-table__pts-value {
-  font-weight: 650;
+.players-table__cell--pos {
+  justify-content: center;
 }
 
 .players-table__cell--pts {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.28rem;
-  font-weight: 600;
-  font-size: inherit;
-  color: var(--fm-text-strong);
-  overflow: visible;
+  justify-content: flex-end;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  color: var(--text-strong);
 }
 
-.players-table__pts-value {
-  font-weight: inherit;
-  font-size: inherit;
-  font-variant-numeric: tabular-nums;
+.players-table__cell--stat {
+  justify-content: flex-end;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: var(--text-sm);
+  color: var(--text);
 }
 
-.players-table__cell--pts .team-avatar-frame--sm {
-  flex-shrink: 0;
+.players-table__cell--stat.is-zero {
+  color: var(--text-muted);
+  font-weight: 400;
 }
+
+/* Round-2 polish: the green `is-good` tone has been retired. Non-zero
+ * stats now render in the default text color (matching Pts) for a more
+ * minimal, FotMob-style look. Zero values still render muted via
+ * `.is-zero` above. */
 
 .players-table__cell--next3 {
-  text-align: center;
+  justify-content: center;
   overflow: visible;
 }
 
+/* Player cell */
+.players-table__kit {
+  flex-shrink: 0;
+  width: 28px;
+  display: grid;
+  place-items: center;
+}
+
+.players-table__kit .pl-kit-badge,
+.players-table__kit .pl-kit-fallback {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.players-table__player-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.players-table__name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+.players-table__name {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Fixtures (Next 3) */
 .players-fixtures-badges {
   display: inline-flex;
   align-items: center;
@@ -1009,107 +1135,22 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 .players-fixture-badge__crest--fallback {
   font-size: 0.62rem;
   font-weight: 700;
-  color: var(--fm-muted);
+  color: var(--text-muted);
   line-height: 1.85rem;
   text-align: center;
 }
 
 .players-fixtures-empty {
-  color: var(--fm-muted);
+  color: var(--text-muted);
 }
 
-.players-table__cell--player {
-  gap: 0.35rem;
-  min-width: 0;
-  text-align: left;
-}
-
-.players-table__kit {
-  flex-shrink: 0;
-  width: 30px;
-  display: grid;
-  place-items: center;
-}
-
-.players-table__kit .pl-kit-badge {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-
-.players-table__player-text {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-}
-
-.players-table__th--detail,
-.players-table__cell--detail {
+/* Empty / loading */
+.players-bench-empty {
+  margin: 0;
+  padding: var(--space-4);
   text-align: center;
-  padding-left: 0.12rem;
-  padding-right: 0.12rem;
-}
-
-.players-table__cell--detail {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.players-table__detail-btn {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.55rem;
-  height: 1.55rem;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, rgba(121, 91, 251, 0.38) 55%, var(--fm-border));
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.12) 45%, var(--fm-surface-2));
-  color: var(--fm-text-strong);
-  font: inherit;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.players-table__detail-btn-emoji {
-  display: block;
-  font-size: 0.78rem;
-  line-height: 1;
-}
-
-.players-table__detail-btn:hover {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.16) 50%, var(--fm-surface-2));
-  border-color: rgba(121, 91, 251, 0.45);
-}
-
-.fotmob[data-theme='light'] .players-table__detail-btn {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.08) 50%, #ffffff);
-}
-
-.players-table__name-row {
-  display: flex;
-  align-items: center;
-  gap: 0.32rem;
-  min-width: 0;
-}
-
-.players-table__name {
-  font-weight: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.players-availability-mark {
-  flex-shrink: 0;
-  font-size: 0.82rem;
-  line-height: 1;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
 }
 
 .players-bench-loading {
@@ -1117,335 +1158,338 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   margin: 0;
 }
 
-.players-drawer-root {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-}
-
-.players-drawer-scrim {
-  position: absolute;
-  inset: 0;
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: rgba(0, 0, 0, 0.48);
-}
-
-.players-drawer-panel {
-  position: absolute;
-  top: env(safe-area-inset-top, 0px);
-  right: 0;
-  bottom: 0;
-  width: min(420px, 100%);
-  padding: calc(14px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom))
-    calc(14px + env(safe-area-inset-right));
-  box-sizing: border-box;
-  background: var(--fm-card);
-  border-left: 1px solid var(--fm-border);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.35);
-  overflow: auto;
-  overscroll-behavior: contain;
-  animation: players-drawer-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes players-drawer-in {
-  from {
-    opacity: 0;
-    transform: translateX(10px);
-  }
-}
-
-@media (max-width: 520px) {
-  /* Narrow phone — bottom sheet is easier thumb reach than side rail */
-  .players-drawer-panel {
-    top: auto;
-    bottom: 0;
-    left: env(safe-area-inset-left, 0px);
-    right: 0;
-    width: auto;
-    max-height: min(94dvh, 92vh);
-    border-left: none;
-    border-radius: 16px 16px 0 0;
-    border-top: 1px solid var(--fm-border);
-    padding-top: calc(10px + env(safe-area-inset-top));
-    animation-name: players-sheet-up;
-  }
-
-  @keyframes players-sheet-up {
-    from {
-      opacity: 0;
-      transform: translateY(18px);
-    }
-  }
-}
-
-.players-drawer-close {
-  position: absolute;
-  top: calc(12px + env(safe-area-inset-top));
-  right: calc(12px + env(safe-area-inset-right));
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: none;
-  background: var(--fm-surface-2);
-  color: var(--fm-text-strong);
-  font-size: 1.4rem;
-  line-height: 1;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.players-drawer-hero {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 0.6rem;
-  align-items: start;
-  margin-bottom: 0.85rem;
-  padding-right: 38px;
-}
-
-.players-drawer-hero .pl-kit-shirt,
-.players-drawer-hero .pl-kit-badge {
-  width: 44px;
-  height: auto;
-}
-
-.players-drawer-name {
-  margin: 0 0 0.45rem;
-  font-size: 1.125rem;
-  line-height: 1.26;
-}
-
-.players-stat-strip {
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.players-stat-pill dt {
-  font-size: 0.58rem;
-  letter-spacing: 0.06em;
-  margin: 0;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--fm-muted);
-}
-
-.players-stat-pill dd {
-  margin: 0.04rem 0 0;
-  font-size: 0.8125rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 690;
-}
-
-.players-stat-pill {
-  background: color-mix(in srgb, var(--fm-accent) 7%, transparent);
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--fm-accent) 14%, transparent);
-  padding: 0.42rem 0.55rem;
-  min-width: 4rem;
-}
-
-.fotmob[data-theme='light'] .players-stat-pill {
-  background: color-mix(in srgb, var(--fm-accent) 6%, #fff);
-}
-
-.players-drawer-compare-head {
-  margin-bottom: 0.72rem;
-}
-
-.players-compare-placeholder {
-  font-size: 0.8125rem;
-  margin: 0.65rem 0 0;
-}
-
-.players-radar {
-  margin-top: 0.2rem;
-}
-
-.players-radar__svg {
-  display: block;
-  width: 100%;
-  max-width: 360px;
-  margin: 0 auto;
-}
-
-.players-radar__spoke {
-  stroke: color-mix(in srgb, var(--fm-muted) 40%, transparent);
-  stroke-width: 0.4;
-}
-
-.players-radar__grid {
-  fill: none;
-  stroke: color-mix(in srgb, var(--fm-muted) 45%, transparent);
-  stroke-width: 0.25;
-}
-
-.players-radar__poly {
-  fill-opacity: 0.22;
-  stroke-width: 1.05;
-}
-
-.players-radar__poly--bench {
-  fill: var(--fm-pitch);
-  stroke: color-mix(in srgb, var(--fm-pitch) 92%, transparent);
-}
-
-.players-radar__poly--waiver {
-  fill: var(--tclot-logo-purple);
-  stroke: color-mix(in srgb, var(--tclot-logo-purple) 90%, transparent);
-}
-
-.players-radar__axis-label {
-  font-size: 3.4px;
-  fill: currentColor;
-  opacity: 0.9;
-}
-
-.players-radar__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  margin: 0.4rem auto 0.75rem;
-  font-size: 0.705rem;
-  font-weight: 700;
-}
-
-.players-radar__swatch::before {
-  content: '';
-  display: inline-block;
-  width: 0.6rem;
-  height: 0.6rem;
-  margin-right: 0.24rem;
-  border-radius: 2px;
-  vertical-align: 0;
-}
-
-.players-radar__swatch {
-  display: inline-flex;
-  align-items: center;
-}
-
-.players-radar__swatch--waiver::before {
-  background: var(--tclot-logo-purple);
-}
-
-.players-radar__swatch--bench::before {
-  background: var(--fm-pitch);
-}
-
-.players-radar-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.728rem;
-  margin-bottom: 0.45rem;
-}
-
-.players-radar-table th,
-.players-radar-table td {
-  padding: 0.38rem 0.28rem;
-  border-bottom: 1px solid var(--fm-border);
-}
-
-.players-radar-table th:first-child {
-  width: 32%;
-}
-
-.players-radar-note {
-  font-size: 0.66rem;
-  line-height: 1.41;
-}
-
-/* —— Portrait wire list (≤600px) —— */
-.players-bench-chrome.section-chrome--sticky {
-  overflow: visible;
-}
-
-.players-bench-chrome .players-bench-pos-filter {
-  margin-bottom: 0;
-  flex-wrap: wrap !important;
-  overflow: visible !important;
-  -webkit-overflow-scrolling: auto;
-}
-
-.players-bench-chrome .players-bench-filter-pills {
-  overflow: visible !important;
-}
-
-.players-bench-chrome .team-selection-submenu__btn {
-  touch-action: manipulation;
-}
-
-.players-bench-chrome .players-club-pill,
-.players-bench-chrome .players-fantasy-pill,
-.players-bench-chrome .players-position-pill,
-.players-bench-chrome .players-stats-pill {
-  position: relative;
-}
-
-.players-bench-chrome .players-menu-pill__menu,
-.players-bench-chrome .players-stats-pill__panel {
-  z-index: 50;
-}
-
-.players-bench-chrome .players-club-pill:has(.players-menu-pill__menu),
-.players-bench-chrome .players-fantasy-pill:has(.players-menu-pill__menu),
-.players-bench-chrome .players-position-pill:has(.players-menu-pill__menu),
-.players-bench-chrome .players-stats-pill:has(.players-stats-pill__panel) {
-  z-index: 51;
-}
+/* =====================================================
+   Mobile-layout sort indicators (≤1080px desktop tweaks)
+   ===================================================== */
 
 @media (max-width: 1080px) {
   .players-bench-chrome.section-chrome--sticky {
-    margin: -14px -18px 0.65rem;
     z-index: 31;
   }
-}
 
-.players-position-pill {
-  position: relative;
-  flex-shrink: 0;
-  z-index: 1;
-}
-
-.players-position-pill__btn {
-  min-width: 0;
-}
-
-.players-position-pill__label {
-  white-space: nowrap;
-}
-
-@media (max-width: 1080px) {
   .players-table__sort-indicator {
     display: none;
   }
-
-  .players-table__head-row > .players-table__th-btn {
-    align-self: stretch;
-    min-height: 100%;
-    border-radius: 0;
-  }
-
-  .players-table__head-row > .players-table__th--sorted,
-  .players-table__head-row > .players-table__th-btn.players-table__th--sorted {
-    background-color: color-mix(
-      in srgb,
-      rgb(121, 91, 251) 26%,
-      var(--players-head-bg)
-    ) !important;
-    box-shadow: inset 0 -2px 0 var(--tclot-logo-purple);
-  }
-
-  .players-table__th--sorted .players-table__th-label {
-    color: var(--tclot-logo-purple);
-    font-weight: 800;
-  }
 }
+
+/* =====================================================
+   Multi-select dropdown pill + Wire/Owned segmented toggle
+   (Variant C toolbar — shared between portrait and desktop;
+   originally portrait-only, now also rendered in the desktop
+   header band and Position/Club/Stats filter row.)
+   ===================================================== */
+
+.players-portrait-pill {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.players-portrait-pill__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.players-portrait-pill__btn:hover {
+  background: var(--row-hi);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+
+.players-portrait-pill__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.players-portrait-pill__btn--active,
+.players-portrait-pill__btn--open {
+  border-color: color-mix(in srgb, var(--brand) 50%, var(--border));
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  color: var(--text-strong);
+}
+
+.players-portrait-pill__label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.players-portrait-pill__btn--active .players-portrait-pill__label,
+.players-portrait-pill__btn--open .players-portrait-pill__label {
+  color: color-mix(in srgb, var(--text-strong) 75%, var(--text-muted));
+}
+
+.players-portrait-pill__sep {
+  color: var(--text-muted);
+  padding: 0 1px;
+}
+
+.players-portrait-pill__value {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.players-portrait-pill__caret {
+  width: 11px;
+  height: 11px;
+  color: var(--text-muted);
+  margin-left: 2px;
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+.players-portrait-pill__caret--open {
+  transform: rotate(180deg);
+  color: color-mix(in srgb, var(--brand) 80%, var(--text-strong));
+}
+
+.players-portrait-pill__pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 180px;
+  max-width: min(280px, 88vw);
+  max-height: min(360px, 60vh);
+  padding: 4px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+}
+
+.fotmob[data-theme='light'] .players-portrait-pill__pop {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+}
+
+.players-portrait-pill__pop--grouped {
+  gap: 4px;
+  padding: 6px 4px;
+}
+
+.players-portrait-pill__section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.players-portrait-pill__section + .players-portrait-pill__section {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.players-portrait-pill__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 9px 4px;
+}
+
+.players-portrait-pill__section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.players-portrait-pill__section-toggle {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: color-mix(in srgb, var(--brand) 75%, var(--text-strong));
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.players-portrait-pill__section-toggle:hover {
+  background: var(--row-hi);
+}
+
+.players-portrait-pill__divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.players-portrait-pill__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.players-portrait-pill__item:hover {
+  background: var(--row-hi);
+  color: var(--text-strong);
+}
+
+.players-portrait-pill__item--checked {
+  color: var(--text-strong);
+}
+
+.players-portrait-pill__item--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.players-portrait-pill__item--disabled:hover {
+  background: transparent;
+}
+
+.players-portrait-pill__hint {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.players-portrait-pill__check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--text-muted) 50%, var(--border));
+  background: var(--surface);
+  margin: 0;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.players-portrait-pill__check:checked {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.players-portrait-pill__check:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+  background-size: 11px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.players-portrait-pill__check:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Wire / Owned segmented toggle */
+.players-portrait-segment {
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 32px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.players-portrait-segment--disabled {
+  opacity: 0.55;
+}
+
+.players-portrait-segment__btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 44px;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.players-portrait-segment__btn:hover:not(:disabled):not(.players-portrait-segment__btn--active) {
+  color: var(--text);
+}
+
+.players-portrait-segment__btn:disabled {
+  cursor: not-allowed;
+}
+
+.players-portrait-segment__btn--active {
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  color: color-mix(in srgb, var(--brand) 85%, var(--text-strong));
+}
+
+.players-portrait-segment__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* =====================================================
+   Desktop-only pill / toggle sizing tweaks.
+   The shared Variant C pill chrome defaults to portrait sizing
+   (32 px); on desktop we give it ~36 px and slightly larger
+   type so it reads as primary toolbar UI rather than a compact
+   mobile control. Portrait keeps its existing 32 px treatment.
+   ===================================================== */
+
+.players-bench-filters--desktop .players-portrait-pill__btn {
+  height: 36px;
+  padding: 0 14px 0 15px;
+  font-size: 13px;
+  gap: 6px;
+}
+
+.players-bench-filters--desktop .players-portrait-pill__caret {
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+}
+
+.players-bench-header .players-portrait-segment {
+  height: 36px;
+  flex: 0 0 auto;
+}
+
+.players-bench-header .players-portrait-segment__btn {
+  font-size: 13px;
+  min-width: 56px;
+  padding: 0 14px;
+}
+
+/* =====================================================
+   Portrait (≤600px) chrome + sortable card
+   ===================================================== */
 
 @media (max-width: 600px) {
   .players-bench-tile--portrait-list {
@@ -1453,165 +1497,218 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     flex-direction: column;
   }
 
-  .players-bench-pos-filter {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
+  /* Variant C — strip outer tile chrome entirely on portrait so rows go
+   * edge-to-edge. The inner header / filter / search bands keep their own
+   * 12px horizontal padding so they don't sit on the screen edge. */
+  .players-bench-tile.tile--standings.players-bench-tile--portrait-list {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
   }
 
-  .players-bench-filter-pills {
+  /* The sticky chrome wrapper uses `margin: -14px -16px 0` at ≤1080px to
+   * escape the `.tile` default padding (16px 18px). With Variant C
+   * stripping tile padding to 0 on portrait, that negative margin would
+   * push the chrome outside the tile and into horizontal overflow — reset
+   * it here so the inner bands govern the horizontal inset on portrait. */
+  .players-bench-tile--portrait-list .players-bench-chrome.section-chrome--sticky {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-bottom: none;
+    box-shadow: none;
+  }
+
+  /* Portrait three-band chrome: title strip → search row → pill scroll-row */
+  .players-bench-header {
+    padding: 12px 12px 8px;
+    background: var(--surface-2);
+    flex-wrap: nowrap;
+    gap: 8px;
+    border-bottom: none;
+  }
+
+  .players-bench-header__titles {
+    flex: 1 1 auto;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .players-bench-header__title {
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  /* Variant C portrait toolbar — search row first, then filter scroll row.
+   * Both rows live on the tinted surface-2 band (same as header). */
+  .players-bench-search-row--portrait {
+    padding: 0 12px 8px;
+    background: var(--surface-2);
+    border-bottom: none;
+  }
+
+  .players-bench-search-row {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+  }
+
+  .players-bench-filters--portrait {
+    padding: 0 12px 10px;
+    gap: 6px;
+    background: var(--surface-2);
+    flex-wrap: nowrap;
+    border-bottom: none;
+    /* Positioning context for the absolutely-positioned dropdown popovers
+     * (which use z-index: 40). Visible overflow on BOTH axes lets the
+     * popovers paint outside the row instead of being clipped by the
+     * filter row's bottom edge — the previous `overflow-x: auto` silently
+     * coerced overflow-y to auto, hiding the popovers. */
+    position: relative;
+    z-index: 6;
+  }
+
+  .players-bench-filters--portrait > * {
+    flex-shrink: 0;
+  }
+
+  /* Pill-chrome search field on portrait — match Variant C dropdown pills.
+   *
+   * The base `.players-bench-search-field` rule sets `min-width: 240px` so
+   * the desktop search reads as a comfortable input. At narrow portrait
+   * widths (≤390px) that 240px floor combined with the Wire/Owned toggle's
+   * ~120px intrinsic width + 8px row gap + 12px row paddings + 16px app
+   * paddings exceeds the viewport, clipping the trailing "d" of "Owned".
+   * Resetting `min-width: 0` here lets the search field shrink to fit so
+   * the flex-shrink:0 toggle stays fully on-screen. */
+  .players-bench-search-row--portrait .players-bench-search-field {
+    flex: 1 1 auto;
+    width: auto;
     min-width: 0;
-    overflow: visible;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
   }
 
-  .players-bench-filter-pills > .players-position-pill,
-  .players-bench-filter-pills > .players-club-pill,
-  .players-bench-filter-pills > .players-fantasy-pill,
-  .players-bench-filter-pills > .players-stats-pill {
-    touch-action: manipulation;
+  .players-bench-search-row--portrait .players-bench-search-field:focus-within {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
   }
 
-  .players-bench-toolbar-tail {
-    width: 100%;
-    flex: 1 1 100%;
-    margin-left: 0;
+  .players-bench-search-row--portrait .players-bench-search-field__icon {
+    width: 14px;
+    height: 14px;
   }
 
-  /* Portrait wire filter pills — icon-only when space is tight */
-  .players-bench-pos-filter .players-stats-pill--compact .players-stats-pill__label-text {
-    display: none;
+  .players-bench-search-row--portrait .players-bench-search {
+    font-size: 13px;
   }
 
-  .players-bench-pos-filter .players-stats-pill--compact .players-stats-pill__label-icon {
-    display: inline;
-    font-size: 1rem;
-    line-height: 1;
-  }
-
-  .players-bench-pos-filter .players-stats-pill--compact .players-stats-pill__btn {
-    padding: 0 10px;
-    min-width: 2.125rem;
-    justify-content: center;
-  }
-
-  .players-bench-pos-filter .players-club-pill--badge-only .players-club-pill__label,
-  .players-bench-pos-filter .players-fantasy-pill--badge-only .players-fantasy-pill__label {
-    display: none;
-  }
-
-  .players-bench-pos-filter .players-club-pill--badge-only .players-club-pill__btn,
-  .players-bench-pos-filter .players-fantasy-pill--badge-only .players-fantasy-pill__btn {
-    padding-left: 8px;
-    padding-right: 8px;
-    gap: 0.25rem;
-  }
-
+  /* Variant C — strip the nested inner card around the table-scroll so rows
+   * extend edge-to-edge. The horizontal row separators inside the table
+   * still keep rhythm. */
   .players-bench-tile--portrait-list .players-table-scroll {
-    max-height: min(
-      calc(100dvh - var(--mobile-bottom-nav-h) - env(safe-area-inset-bottom, 0px) - 10.75rem),
-      68vh
-    );
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: var(--surface);
+    overflow: visible;
+    border-top: 1px solid var(--border);
+  }
+
+  .players-table--portrait .players-table__head-row {
+    background: color-mix(in srgb, var(--brand) 6%, var(--surface-2));
   }
 
   .players-table--portrait .players-table__head-row > * {
-    min-height: 1.95rem;
-    padding: 0.4rem 0.05rem;
+    min-height: 30px;
+    padding: 0.4rem 0.06rem;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
+  /* Round-2 polish: tighter left edge on mobile so the player-cell content
+   * (crest + name + indicators) sits further left and reclaims width back
+   * for the stat group. */
   .players-table--portrait .players-table__head-row > *:first-child,
   .players-table--portrait .players-table__row > *:first-child {
-    padding-left: 0.32rem;
-    padding-right: 0.16rem;
+    padding-left: 12px;
+  }
+
+  .players-table--portrait .players-table__head-row > *:last-child,
+  .players-table--portrait .players-table__row > *:last-child {
+    padding-right: 12px;
   }
 
   .players-table--portrait .players-table__row > * {
-    padding: 0.34rem 0.05rem;
+    min-height: 38px;
+    padding: 0.32rem 0.06rem;
   }
 
-  .players-table--portrait .players-table__th {
-    font-size: 0.58rem;
-    letter-spacing: 0.015em;
+  .players-table--portrait .players-table__cell {
+    font-size: 13px;
   }
 
+  .players-table--portrait .players-table__cell--stat {
+    font-size: 12px;
+  }
+
+  /* Round-2 polish: shrink crest + name on mobile so the player-cell content
+   * fits more comfortably on a narrow row without pushing the stat columns
+   * right. Desktop player-cell sizing is unchanged. */
   .players-table--portrait .players-table__kit {
-    width: 18px;
+    width: 14px;
   }
 
   .players-table--portrait .players-table__kit .pl-kit-badge,
   .players-table--portrait .players-table__kit .pl-kit-fallback {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
   }
 
   .players-table--portrait .players-table__cell--player {
-    gap: 0.18rem;
-  }
-
-  .players-table--portrait .players-table__cell {
-    font-size: 0.72rem;
-  }
-
-  .players-table--portrait .players-table__col--group-start {
-    box-shadow: none;
+    gap: 6px;
   }
 
   .players-table--portrait .players-table__name {
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
   }
 
   .players-table--portrait .players-table__name-row {
-    gap: 0.12rem;
+    gap: 4px;
   }
 
-  .players-table--portrait .players-table__name-row .players-availability-mark {
-    font-size: 0.62rem;
-    line-height: 1;
+  /* Slightly tighter indicator cluster on portrait */
+  .players-table--portrait .players-table__name-indicators {
+    gap: 3px;
+  }
+
+  .players-table--portrait .players-table__name-indicator--owner,
+  .players-table--portrait .players-table__name-indicator--owner .team-avatar-frame {
+    width: 16px;
+    height: 16px;
+  }
+
+  .players-table--portrait .players-table__name-indicator--injury {
+    font-size: 11px;
   }
 
   .players-table--portrait .players-table__cell--pts {
-    flex-direction: column;
-    gap: 0.06rem;
-    padding-top: 0.28rem;
-    padding-bottom: 0.28rem;
-    line-height: 1.05;
-  }
-
-  .players-table--portrait .players-table__pts-value {
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  .players-table--portrait .players-table__cell--pts .team-avatar-frame--sm {
-    width: 0.82rem;
-    height: 0.82rem;
+    font-size: 13px;
   }
 
   .players-table__row--tappable {
     cursor: pointer;
   }
 
-  .players-table__detail-btn {
-    width: 2.75rem;
-    height: 2.75rem;
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-  }
-
-  .players-bench-field--search {
-    flex: 1 1 5.5rem;
-    max-width: none;
-    min-width: min(5.5rem, 34vw);
-  }
-
+  /* Compact portrait fixture badge */
   .players-fixtures-badges--next-only {
     justify-content: center;
   }
@@ -1636,26 +1733,284 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     font-size: 0.46rem;
     line-height: 1.28rem;
   }
-}
 
-.players-bench-tile--detail {
-  padding-bottom: calc(var(--mobile-bottom-nav-h, 56px) + env(safe-area-inset-bottom, 0px) + 8px);
-}
+  /* =====================================================
+     Portrait Variant I — tile list (replaces grid table)
+     Per-tile 2-col grid: left = identity + sub-row + fixtures,
+     right = fixed 168px N-track value grid sharing tracks with
+     the persistent column header above the tile group.
+     ===================================================== */
 
-@media (max-width: 1080px) {
-  .players-bench-tile--detail.tile--standings {
+  .players-wire-tile-list {
     display: flex;
     flex-direction: column;
-    overflow: visible;
-    min-height: 0;
+    background: var(--surface);
   }
 
-  .players-bench-tile--detail .players-detail__table-area--edge-back {
-    overflow: visible;
+  .players-wire-tile-colhead {
+    display: grid;
+    grid-template-columns: 1fr 168px;
+    align-items: center;
+    column-gap: 12px;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--brand) 6%, var(--surface-2));
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   }
 
-  .players-bench-tile--detail .players-detail {
-    flex: 1 1 auto;
-    min-height: 0;
+  .players-wire-tile-colhead__spacer {
+    display: block;
+  }
+
+  .players-wire-tile-colhead__cols {
+    display: grid;
+    column-gap: 6px;
+  }
+
+  .players-wire-tile-colhead__cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    margin: 0;
+    padding: 2px 0;
+    border: none;
+    background: transparent;
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    min-width: 0;
+    text-align: right;
+  }
+
+  .players-wire-tile-colhead__btn {
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .players-wire-tile-colhead__btn:hover {
+    color: var(--text);
+  }
+
+  .players-wire-tile-colhead__btn:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  .players-wire-tile-colhead__cell--sorted {
+    color: var(--text-strong);
+    font-weight: 800;
+  }
+
+  .players-wire-tile-colhead__label {
+    min-width: 0;
+  }
+
+  .players-wire-tile-colhead__arrow {
+    flex-shrink: 0;
+    font-size: 9px;
+    line-height: 1;
+    color: var(--brand);
+  }
+
+  .players-wire-tile {
+    display: grid;
+    grid-template-columns: 1fr 168px;
+    align-items: center;
+    column-gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    transition: background 160ms ease;
+    min-width: 0;
+  }
+
+  .players-wire-tile:last-child {
+    border-bottom: none;
+  }
+
+  .players-wire-tile--tappable {
+    cursor: pointer;
+  }
+
+  .players-wire-tile--tappable:hover {
+    background: var(--row-hi);
+  }
+
+  .players-wire-tile--tappable:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: -2px;
+  }
+
+  .players-wire-tile__left {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .players-wire-tile__id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .players-wire-tile__kit {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+  }
+
+  .players-wire-tile__kit .pl-kit-badge,
+  .players-wire-tile__kit .pl-kit-fallback {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .players-wire-tile__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-strong);
+    line-height: 1.25;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  /* Small single-letter position chip rendered inline next to the player
+   * name on the top row. Kept unobtrusive (muted text, 1px border, 18px
+   * square) so the name remains the visual anchor. */
+  .players-wire-tile__pos-chip {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+    color: var(--text-muted);
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .players-wire-tile__sub-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .players-wire-tile__owner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .players-wire-tile__owner .team-avatar-frame {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Indicator cluster reused — only injury/sus dots show in this context. */
+  .players-wire-tile__sub-row .players-table__name-indicators {
+    margin-left: 0;
+    gap: 4px;
+  }
+
+  .players-wire-tile__sub-row .players-table__name-indicator--injury {
+    font-size: 11px;
+  }
+
+  .players-wire-tile__fixtures {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .players-wire-tile__fixtures .players-fixtures-badges {
+    justify-content: flex-start;
+    gap: 4px;
+  }
+
+  /* Slim down the Next-3 chips so three fit comfortably alongside the
+   * left-column identity stack on a 360–390px phone. */
+  .players-wire-tile__fixtures .players-fixture-badge {
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0.04rem;
+    border-width: 1.25px;
+  }
+
+  .players-wire-tile__fixtures .players-fixture-badge--home {
+    border-radius: 4px;
+  }
+
+  .players-wire-tile__fixtures .players-fixture-badge__crest {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .players-wire-tile__fixtures .players-fixture-badge__crest--fallback {
+    font-size: 0.5rem;
+    line-height: 1.4rem;
+  }
+
+  .players-wire-tile__right {
+    display: grid;
+    column-gap: 6px;
+    align-items: center;
+    font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .players-wire-tile__stat {
+    text-align: right;
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  .players-wire-tile__stat--pts {
+    color: var(--text-strong);
+    font-weight: 700;
+  }
+
+  .players-wire-tile__stat.is-zero {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .players-wire-tile__stat--sorted {
+    color: var(--text-strong);
+    font-weight: 700;
+  }
+
+  .players-wire-tile__stat--sorted.is-zero {
+    color: var(--text-muted);
+    font-weight: 600;
   }
 }

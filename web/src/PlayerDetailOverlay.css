@@ -53,32 +53,45 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   align-items: stretch;
 }
 
-/* Mobile overlay: slide down from above; reverse on close. */
+/*
+ * Mobile overlay: slide in from the RIGHT (matches desktop slide-sheet
+ * direction so phones/tablets feel native); reverse on close. Round 3
+ * polish swap from translateY (top-down) → translateX (right-side).
+ * The transform-origin moves to `right center` so the surface scales
+ * naturally from the trailing edge during entry/exit.
+ *
+ * Mid-drag swipe-right also writes inline `transform: translateX(<dx>px)`
+ * directly to the surface (see `PlayerDetailOverlay.jsx` touch handlers);
+ * those inline styles win over these `[data-mobile-phase]` rules during
+ * the drag and are cleared on release so the data-phase transitions
+ * resume control.
+ */
 .player-detail-overlay-shell--mobile-sheet.player-detail-overlay-shell--body {
   justify-content: flex-start;
 }
 
 .player-detail-overlay__surface.player-detail-overlay__surface--mobile-sheet-anim {
-  transform-origin: top center;
+  transform-origin: right center;
   will-change: transform;
+  touch-action: pan-y;
 }
 
 .player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase='enter'] {
-  transform: translateY(calc(-100% - 18px));
+  transform: translateX(100%);
   opacity: 0.94;
   transition: none;
 }
 
 .player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase='open'] {
-  transform: translateY(0);
+  transform: translateX(0);
   opacity: 1;
-  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase='exit'] {
-  transform: translateY(calc(-100% - 24px));
+  transform: translateX(100%);
   opacity: 0;
-  transition: transform 0.31s cubic-bezier(0.4, 0, 1, 1);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -149,9 +162,17 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   cursor: pointer;
 }
 
-/* Desktop: wider right sheet hosting wire detail (mirror .live-player-slide in App.css) */
+/* Desktop: wider right sheet hosting redesign-phase-2 player detail
+   (120 px hero crest + side-by-side Overview body needs more breathing room
+   than the legacy 42rem sheet). */
 .live-player-slide__sheet.live-player-slide__sheet--player-detail {
-  width: min(100vw, 42rem);
+  width: min(100vw, 52.5rem);
+}
+
+@media (min-width: 1280px) {
+  .live-player-slide__sheet.live-player-slide__sheet--player-detail {
+    width: min(100vw, 56rem);
+  }
 }
 
 .live-player-slide__body--player-detail-host {
@@ -160,10 +181,23 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
   box-sizing: border-box;
   padding: 1rem;
-  overflow: auto;
+  /*
+   * Round 3 follow-up (desktop): `overflow: hidden` (was `auto`) so this
+   * container constrains its child's height instead of growing with content.
+   * Without it, `.pperf__table-wrap`'s `max-height: 100%` resolved to the
+   * natural table height and the inner scroll container never engaged —
+   * the slide-sheet body scrolled instead, and the auto-scroll-to-last-
+   * completed-GW silently no-op'd because the wrap wasn't actually
+   * scrollable. Mobile already had `overflow: hidden` on its surface; this
+   * brings desktop in line.
+   *
+   * Also dropped `justify-content: center` — with the inner host now
+   * filling all available height, vertical centering had no effect except
+   * to mask sizing bugs.
+   */
+  overflow: hidden;
 }
 
 .player-detail-overlay__surface--slide {

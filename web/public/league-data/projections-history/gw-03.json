@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 3,
-  "generatedAt": "2026-05-16T07:11:26.582Z",
+  "generatedAt": "2026-05-28T20:10:24.742Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -29,13 +29,13 @@
       "actualXiPts1": 26,
       "actualXiPts2": 48,
       "actualWinner": "away",
-      "xPtsXi1": 31.7,
-      "xPtsXi2": 27.8,
+      "xPtsXi1": 39.2,
+      "xPtsXi2": 35.5,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 62,
+        "homeWinPct": 59,
         "drawPct": 3,
-        "awayWinPct": 35
+        "awayWinPct": 38
       },
       "projXi1": 26,
       "projXi2": 48,
@@ -61,11 +61,11 @@
       "actualXiPts1": 37,
       "actualXiPts2": 40,
       "actualWinner": "away",
-      "xPtsXi1": 31.9,
-      "xPtsXi2": 29.2,
+      "xPtsXi1": 39.1,
+      "xPtsXi2": 34.1,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 58,
+        "homeWinPct": 59,
         "drawPct": 4,
         "awayWinPct": 38
       },
@@ -93,13 +93,13 @@
       "actualXiPts1": 47,
       "actualXiPts2": 42,
       "actualWinner": "home",
-      "xPtsXi1": 33.1,
-      "xPtsXi2": 31,
+      "xPtsXi1": 39.8,
+      "xPtsXi2": 38.3,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 56,
-        "drawPct": 5,
-        "awayWinPct": 39
+        "homeWinPct": 52,
+        "drawPct": 3,
+        "awayWinPct": 44
       },
       "projXi1": 47,
       "projXi2": 42,
@@ -125,13 +125,13 @@
       "actualXiPts1": 42,
       "actualXiPts2": 41,
       "actualWinner": "home",
-      "xPtsXi1": 25.6,
-      "xPtsXi2": 29,
+      "xPtsXi1": 30.6,
+      "xPtsXi2": 36.3,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 34,
+        "homeWinPct": 33,
         "drawPct": 4,
-        "awayWinPct": 62
+        "awayWinPct": 63
       },
       "projXi1": 42,
       "projXi2": 41,

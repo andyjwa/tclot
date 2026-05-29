@@ -1,0 +1,560 @@
+/**
+ * LeagueInfoModal — LP-C sectioned-card layout, portaled to
+ * `document.body`.
+ *
+ * Two structural concerns are handled here:
+ *
+ *  1. **Token mirroring.** The modal is portaled onto `document.body`,
+ *     outside the `.app.fotmob` ancestor where the design-token
+ *     variables (`--surface`, `--brand`, `--space-*`, …) are defined.
+ *     We therefore mirror the full token set on
+ *     `.league-info-modal-shell` so the cascade keeps working in the
+ *     portal context — same pattern as `.live-player-slide` in
+ *     `App.css`. Light-mode overrides hang off
+ *     `body[data-tclot-theme='light']` (set in App.jsx via the
+ *     `useLayoutEffect` block that mirrors the theme onto <body>).
+ *
+ *  2. **Self-contained `.li-*` ports.** The `.li-modal`, `.li-card`,
+ *     `.li-hero`, `.li-badges-grid`, `.li-managers-list`, `.li-terms`,
+ *     `.li-appearance`, and `.li-footer` rules
+ *     originate in `Mockup.css`, but that stylesheet is only loaded
+ *     when the user hits the standalone mockup route. To keep the
+ *     production modal self-sufficient we re-declare just the bits we
+ *     use, scoped under `.league-info-modal-shell` so they never
+ *     collide with the mockup page when both are loaded in the same
+ *     session.
+ */
+
+.league-info-modal-shell {
+  /* ---- spacing / sizing tokens ----------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --lh-sm: 16px;
+  --lh-md: 20px;
+  --lh-lg: 22px;
+  --lh-xl: 26px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-circle: 999px;
+
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-md: 240ms;
+
+  --brand: #795bfb;
+
+  /* ---- dark defaults — mirror `:root .fotmob` --------------------- */
+  --surface: #14141a;
+  --surface-2: #1c1c24;
+  --border: #2a2a35;
+  --text: #d8d8e0;
+  --text-strong: #ffffff;
+  --text-muted: #8a8a97;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  animation: league-info-modal-fade-in var(--dur-base) var(--ease);
+}
+
+/* Light theme — App.jsx mirrors `themePref` onto `<body>` as
+ * `data-tclot-theme` so portal-rendered components like this one can
+ * theme themselves outside `.app.fotmob`. */
+body[data-tclot-theme='light'] .league-info-modal-shell {
+  --surface: #ffffff;
+  --surface-2: #f1f1f5;
+  --border: #e4e4ea;
+  --text: #1c1c24;
+  --text-strong: #0a0a0d;
+  --text-muted: #6b6b78;
+}
+
+@keyframes league-info-modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ==================================================================
+ * Modal shell — desktop centered, mobile full-sheet
+ * ================================================================== */
+.league-info-modal-shell .league-info-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 64px);
+  max-width: 520px;
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(0, 0, 0, 0.30);
+  box-sizing: border-box;
+  animation: league-info-modal-rise var(--dur-md) var(--ease);
+}
+
+@keyframes league-info-modal-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ==================================================================
+ * Close button
+ * ================================================================== */
+.league-info-modal-shell .li-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  appearance: none;
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-circle);
+  font-size: 22px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.league-info-modal-shell .li-modal__close:hover {
+  background: var(--surface-2);
+}
+.league-info-modal-shell .li-modal__close:active {
+  transform: translateY(1px);
+}
+.league-info-modal-shell .li-modal__close:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ==================================================================
+ * Body — scrollable, padded
+ * ================================================================== */
+.league-info-modal-shell .li-modal__body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.league-info-modal-shell .li-modal__body--scroll {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.league-info-modal-shell .li-modal__body--scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.league-info-modal-shell .li-modal__body--scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* ==================================================================
+ * LP-C themed shell — purple radial top, gradient base
+ * ================================================================== */
+.league-info-modal-shell .li-modal--lp-c {
+  background:
+    radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 70%),
+    linear-gradient(180deg, #1a1626 0%, #14121d 100%);
+  border-color: color-mix(in srgb, var(--brand) 24%, var(--border));
+}
+body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
+  background:
+    radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, #f4f1fb 0%, #ece8f6 100%);
+  border-color: color-mix(in srgb, var(--brand) 20%, var(--border));
+}
+
+/* ==================================================================
+ * Card primitive
+ * ================================================================== */
+.league-info-modal-shell .li-card {
+  position: relative;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: var(--r-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  backdrop-filter: blur(2px);
+}
+/* Section eyebrows — uppercase tracked purple to match the rest of the
+ * site's heading vernacular (vs. the previous muted-grey). Reads as
+ * "this card's title" without competing with the league-name hero. */
+.league-info-modal-shell .li-card__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* ==================================================================
+ * Hero card
+ * ================================================================== */
+.league-info-modal-shell .li-card--hero {
+  padding: var(--space-3);
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(80% 80% at 50% 0%, rgba(241, 196, 59, 0.18), transparent 70%),
+    color-mix(in srgb, var(--surface) 92%, transparent);
+  border-color: color-mix(in srgb, #f1c43b 30%, var(--border));
+}
+.league-info-modal-shell .li-hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+  padding: 0;
+}
+/* Branded header banner — single 16:9 image carrying the lion logo,
+ * wordmark, subtitle and flags. Constrained to the hero-card content
+ * width (the image's natural 1024px width would otherwise overflow the
+ * modal). `height: auto` preserves aspect; rounded corners + soft shadow
+ * frame it as a deliberate header plate. */
+.league-info-modal-shell .li-hero--banner {
+  width: 100%;
+}
+.league-info-modal-shell .li-hero__banner {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.20),
+    0 2px 6px rgba(0, 0, 0, 0.14);
+}
+/* ==================================================================
+ * Tab strip — Lingo · Teams · Managers · Settings
+ * Reuses the site-standard `.subnav` / `.subnav__tab` segmented-pill
+ * classes (defined globally in App.css, same look as the Heritage /
+ * Standings sub-tabs). `.li-subnav` is a thin scoping modifier on the
+ * same element: it keeps the capsule at its natural content width
+ * (the global `.subnav` is `inline-flex`, which would otherwise be
+ * stretched full-width by the flex-column modal body) and lets it
+ * scroll horizontally on narrow viewports — mirroring the
+ * `.heritage-subnav-strip` treatment without touching the global rule.
+ * ================================================================== */
+.league-info-modal-shell .li-subnav {
+  align-self: flex-start;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* The modal body is a flex column, so the strip inherits
+   * `flex-shrink: 1` and gets squashed below its content height when the
+   * panel is tall. Once the mobile rule turns it into a scroll container
+   * (`overflow-x: auto` forces `overflow-y` to compute as `auto`), that
+   * squash clips the tabs at the top edge. Pin it so it always renders
+   * at full height. */
+  flex: 0 0 auto;
+  /* Re-assert the segmented-pill capsule chrome with the modal's own
+   * surface tokens so it paints reliably on the light shell background,
+   * independent of how the global `.subnav` fallback chain resolves in
+   * the portal context. */
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 3px;
+  gap: 2px;
+}
+@media (max-width: 720px) {
+  .league-info-modal-shell .li-subnav {
+    /* The four short tabs comfortably fit on one row at typical phone
+     * widths, so no horizontal scroll is needed in practice; keep
+     * `overflow-x: auto` purely as a safety valve for very narrow
+     * screens. `min-height` + the `flex: 0 0 auto` above guarantee the
+     * capsule keeps its full height so nothing is clipped vertically. */
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-height: 40px;
+  }
+  .league-info-modal-shell .li-subnav::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ==================================================================
+ * Badges grid (LP-C: 2-up on desktop, 4-up on mobile)
+ * ================================================================== */
+.league-info-modal-shell .li-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.league-info-modal-shell .li-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.league-info-modal-shell .league-info-modal__badge-crest {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-circle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.league-info-modal-shell .li-badge__name {
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--text);
+  letter-spacing: -0.005em;
+  word-break: break-word;
+}
+
+/* ==================================================================
+ * Managers list
+ * ================================================================== */
+.league-info-modal-shell .li-managers-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.league-info-modal-shell .li-mgr-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 0;
+}
+.league-info-modal-shell .li-mgr-row + .li-mgr-row {
+  border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+.league-info-modal-shell .league-info-modal__mgr-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-circle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  flex: 0 0 auto;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+}
+.league-info-modal-shell .li-mgr-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.league-info-modal-shell .li-mgr-row__name {
+  font-size: var(--text-md);
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.league-info-modal-shell .li-mgr-row__descriptor {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.league-info-modal-shell .li-mgr-row__initials {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================
+ * Terminology (league-canon glossary)
+ * ==================================================================
+ * Term name = purple uppercase tracking (matches the site's heading
+ * vernacular and the eyebrow style above), definition = regular prose
+ * underneath. Gold quote-mark decoration was dropped during the
+ * modernization pass. */
+.league-info-modal-shell .li-terms {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.league-info-modal-shell .li-term {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.league-info-modal-shell .li-term:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.league-info-modal-shell .li-term__name {
+  margin: 0;
+  font-family: inherit;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.league-info-modal-shell .li-term__def {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text);
+  letter-spacing: 0.005em;
+}
+
+/* ==================================================================
+ * Settings card — overrides for the embedded SettingsPanelBody so it
+ * sits flush inside the LP-C card chrome.
+ *
+ * The standalone tile applies `.settings-card` styles via App.css; we
+ * re-shape it to match the LP-C card aesthetic and override `.tile`
+ * leakage.
+ * ================================================================== */
+.league-info-modal-shell .li-card--settings .settings-card {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.league-info-modal-shell .li-card--settings .settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 8px 0;
+}
+.league-info-modal-shell .li-card--settings .settings-row + .settings-row {
+  border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+.league-info-modal-shell .li-card--settings .settings-row__label {
+  font-size: var(--text-md);
+  color: var(--text);
+}
+
+/* ==================================================================
+ * Footer
+ * ================================================================== */
+.league-info-modal-shell .li-footer {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-2) 0 var(--space-1);
+  letter-spacing: 0.02em;
+}
+.league-info-modal-shell .league-info-modal__footer-version {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.league-info-modal-shell .league-info-modal__placeholder {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ==================================================================
+ * Mobile sheet (≤720px) — full-screen, no horizontal padding chrome
+ * ================================================================== */
+@media (max-width: 720px) {
+  .league-info-modal-shell .league-info-modal {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: 100%;
+    top: 0;
+    left: 0;
+    transform: none;
+    border-radius: 0;
+    border: 0;
+    animation: league-info-modal-rise-mobile var(--dur-md) var(--ease);
+  }
+  .league-info-modal-shell .li-modal__close {
+    top: 12px;
+    right: 12px;
+  }
+  .league-info-modal-shell .li-modal__body {
+    padding: var(--space-3);
+    padding-top: var(--space-5);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-4));
+    gap: var(--space-3);
+  }
+  .league-info-modal-shell .li-card {
+    padding: var(--space-3);
+  }
+  .league-info-modal-shell .li-card--hero {
+    padding: var(--space-4);
+  }
+  .league-info-modal-shell .li-mgr-row__name {
+    font-size: var(--text-sm);
+  }
+  /* LP-C on mobile: badges go to 4-wide so the row reads at a glance. */
+  .league-info-modal-shell .li-card--badges .li-badges-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@keyframes league-info-modal-rise-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .league-info-modal-shell,
+  .league-info-modal-shell .league-info-modal {
+    animation: none;
+  }
+}

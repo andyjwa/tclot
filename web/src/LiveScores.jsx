@@ -1,34 +1,39 @@
 import {
+  Fragment,
   useMemo,
   useState,
   useCallback,
   useSyncExternalStore,
 } from 'react';
 import { TeamAvatar } from './TeamAvatar';
+import { PointsCell } from './PointsCell.jsx';
 import { PlayerContributions } from './PlayerContributions';
 import { useLiveScores } from './useLiveScores';
-import { eventNameToGameWeekLabel, gameWeekSelectLabel } from './gwLabel.js';
-import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
-import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
+import { eventNameToGameWeekLabel } from './gwLabel.js';
+import { GameWeekNavigator } from './GameWeekNavigator.jsx';
 import { usePlayerHistory, ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx';
 import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
-import { DEFAULT_MODEL_CONFIG } from 'fpl-predictions';
 import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
-import { LiveFixtureGwPointsChart } from './LiveFixtureGwPointsChart.jsx';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
+import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
+import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
+import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
+import { GuardOfHonourSplash } from './GuardOfHonourSplash.jsx';
 import {
-  bootstrapTeamToPredictionTeam,
-  simulateFantasyH2hPercents,
-  simulateFantasyH2hPercentsFromProjBlends,
-  projectionRng as makePredictionRng,
-} from './livePredictionMappers.js';
+  REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
+  REIGNING_CHAMPION_TEAM_NAME,
+  findChampionFixture,
+  managerSurnameFromFullName,
+} from './championOfRecord.js';
+import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
+import { firstWord } from './teamNameUtils.js';
 import {
-  monteCarloBlendFromLiveBlend,
-  projectedGwTotalLiveBlendForElement,
-} from './liveGwMidProjection.js';
-
+  computeManagerForm,
+  liveGwOutcomeDot,
+  projectedH2HPoints,
+} from './liveScoresDerivations.js';
 /**
  * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
  */
@@ -364,13 +369,6 @@ function liveH2hBonusPts(myLive, oppLive) {
   return 1;
 }
 
-/** GW column: league points from the live fixture (+3 / +1 / 0). */
-function formatGwLeaguePtsBonus(h2hBonus) {
-  if (h2hBonus === 3) return '+3';
-  if (h2hBonus === 1) return '+1';
-  return '0';
-}
-
 function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
@@ -567,128 +565,6 @@ function heroDefeatLeagueEntryIds(squads, gwMatches) {
   return heroDefeatEntryIds(squadsToGwPointsMap(squads), gwMatches);
 }
 
-const H2H_WIN_PCT_CONFIG = { ...DEFAULT_MODEL_CONFIG, simulationIterations: 450 };
-
-/**
- * Collect per-player {projFinal, remaining} blends for exactly 11 starters.
- * Returns null if any player is missing from context.
- */
-function buildProjBlendsForPicks(picks, ctx, teamsById, gw, blendCtx, liveByEl) {
-  if (!Array.isArray(picks) || picks.length !== 11) return null;
-  const blends = [];
-  for (let i = 0; i < 11; i++) {
-    const pid = Number(picks[i]?.element);
-    const el = ctx.elementById?.[pid];
-    if (!el) return null;
-    try {
-      const blend = projectedGwTotalLiveBlendForElement(
-        el,
-        blendCtx,
-        teamsById,
-        gw,
-        H2H_WIN_PCT_CONFIG,
-        liveByEl[pid],
-        makePredictionRng(pid, 990_011 + gw + i * 31),
-        320,
-        Number(picks[i]?.fplMultiplier) || 1,
-      );
-      blends.push(monteCarloBlendFromLiveBlend(blend, picks[i]));
-    } catch {
-      return null;
-    }
-  }
-  return blends;
-}
-
-/** Sum projected GW totals for 11 starters; matches `buildProjBlendsForPicks` RNG seeds. */
-function sumProjectedGwForStarters(picks, ctx, teamsById, gw, blendCtx, liveByEl) {
-  if (!Array.isArray(picks) || picks.length !== 11) return null;
-  let sum = 0;
-  for (let i = 0; i < 11; i++) {
-    const pid = Number(picks[i]?.element);
-    const el = ctx.elementById?.[pid];
-    if (!el) return null;
-    try {
-      const blend = projectedGwTotalLiveBlendForElement(
-        el,
-        blendCtx,
-        teamsById,
-        gw,
-        H2H_WIN_PCT_CONFIG,
-        liveByEl[pid],
-        makePredictionRng(pid, 990_011 + gw + i * 31),
-        320,
-        Number(picks[i]?.fplMultiplier) || 1,
-      );
-      sum += monteCarloBlendFromLiveBlend(blend, picks[i]).projFinal;
-    } catch {
-      return null;
-    }
-  }
-  return sum;
-}
-
-
-/** Joker + “Villain Detected” for live tiles (image in `public/villain-detected.png`). */
-function VillainDetectedBadge({ variant = 'default' }) {
-  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-  const src = `${base}villain-detected.png`;
-  const compact = variant === 'compact';
-  return (
-    <span
-      className={
-        'live-villain-detected' +
-        (compact ? ' live-villain-detected--compact' : '')
-      }
-      role="img"
-      aria-label="Villain detected: winning this head-to-head gameweek on live points while ranked 7th in the league for raw gameweek total"
-    >
-      <img
-        className="live-villain-detected__img"
-        src={src}
-        alt=""
-        width={compact ? 32 : 40}
-        height={compact ? 32 : 40}
-        decoding="async"
-        loading="lazy"
-      />
-      <span className="live-villain-detected__label" aria-hidden="true">
-        Villain Detected
-      </span>
-    </span>
-  );
-}
-
-/** Bonnie Tyler cover + “Hero Defeat” (`public/hero-defeat.png`). */
-function HeroDefeatBadge({ variant = 'default' }) {
-  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-  const src = `${base}hero-defeat.png`;
-  const compact = variant === 'compact';
-  return (
-    <span
-      className={
-        'live-hero-defeat' +
-        (compact ? ' live-hero-defeat--compact' : '')
-      }
-      role="img"
-      aria-label="Hero defeat: 2nd-highest raw gameweek score in the league but losing this head-to-head on live points"
-    >
-      <img
-        className="live-hero-defeat__img"
-        src={src}
-        alt=""
-        width={compact ? 32 : 38}
-        height={compact ? 46 : 52}
-        decoding="async"
-        loading="lazy"
-      />
-      <span className="live-hero-defeat__label" aria-hidden="true">
-        Hero Defeat
-      </span>
-    </span>
-  );
-}
-
 /** Effective XI rows (post-autosub when available). */
 function startersForEffectiveXi(squad) {
   if (!squad || squad.error) return [];
@@ -712,13 +588,6 @@ function pickElementIdSet(squad) {
     if (r?.element != null) s.add(r.element);
   }
   return s;
-}
-
-/** FPL `web_name` (e.g. Martinez) — matches game UI better than derived displayName. */
-function formatPlayerLtpSegment(r) {
-  const name = String(r.web_name ?? r.displayName ?? '').trim() || '?';
-  const opp = r.opponentShortLabel ?? '—';
-  return `${name} (${opp})`;
 }
 
 const LEFT_TO_PLAY_TITLE =
@@ -852,6 +721,434 @@ function proxyHostLabel() {
 }
 
 /**
+ * Build the row class string shared by mobile + desktop renders of the
+ * Live Table. Mirrors the production Standings variant-c row treatment:
+ * rank-1 row tint (`row-highlight`) and the rank-8 8th-place band. The
+ * Hero / Villain row tints were intentionally removed — the hero/villain
+ * narrative is a face-off-row treatment only and is no longer reflected
+ * in the standings-style Live Table.
+ */
+function liveStandingsRowClass(row) {
+  return [
+    row.liveRank === 1 ? 'row-highlight' : '',
+    row.liveRank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * Render the team cell content (avatar + name + +3/+1 chip + ↑/↓ move
+ * indicator). Used by both the mobile (variant-c-mobile) and desktop
+ * (variant-c sidebar) Live Table renders so the cell internals stay in
+ * sync. On mobile (`mobile === true`) the team name collapses to its
+ * first word via {@link firstWord} so a long club like "Crouch End
+ * Oashisu" fits the 390px viewport without wrapping.
+ */
+function LiveTeamCell({
+  row,
+  teamLogoMap,
+  kitIndexByEntry,
+  mobile,
+}) {
+  const displayName = mobile ? firstWord(row.teamName) : row.teamName;
+  const moveUp = row.rankMove > 0;
+  const moveDown = row.rankMove < 0;
+  return (
+    <span className="team-cell">
+      <TeamAvatar
+        entryId={row.league_entry}
+        name={row.teamName}
+        size="sm"
+        logoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+      <span className="team-name team-name--sidebar live-standings-team-name">
+        {displayName}
+        {moveUp ? (
+          <span
+            className="live-standings-move live-standings-move--up"
+            title={`Up ${row.rankMove} vs league #${row.rank}`}
+            aria-label={`Up ${row.rankMove} places vs league position ${row.rank}`}
+          >
+            ↑
+          </span>
+        ) : null}
+        {moveDown ? (
+          <span
+            className="live-standings-move live-standings-move--down"
+            title={`Down ${-row.rankMove} vs league #${row.rank}`}
+            aria-label={`Down ${-row.rankMove} places vs league position ${row.rank}`}
+          >
+            ↓
+          </span>
+        ) : null}
+      </span>
+      {row.h2hProj && row.h2hProj.value != null ? (
+        <span
+          className={`live-form-margin live-form-margin--${row.h2hProj.kind}`}
+          title={
+            row.h2hProj.kind === 'win'
+              ? `Projected H2H points: +${row.h2hProj.value} (winning this GW)`
+              : `Projected H2H points: +${row.h2hProj.value} (drawing this GW)`
+          }
+          aria-label={
+            row.h2hProj.kind === 'win'
+              ? `Projected H2H points plus ${row.h2hProj.value} (winning)`
+              : `Projected H2H points plus ${row.h2hProj.value} (drawing)`
+          }
+        >
+          +{row.h2hProj.value}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+/**
+ * Single `LAST` dot for a Live Table row — collapses the previous
+ * `Last 5 + GW` two-column treatment into a single dot showing the
+ * **current GW's** H2H result. When the GW is in flight (not frozen)
+ * the dot pulses so on-pitch teams visibly read as live; frozen dots
+ * keep their colour but skip the pulse animation.
+ *
+ * Visually matches `.live-form-dot` from the legacy Form column so the
+ * Live Table reads as a single-dot variant of the production Standings
+ * Form column.
+ */
+function LiveLastDot({ row, gwStandingsFrozen, gameweek, teams }) {
+  const kind = row.gwOutcomeDot;
+  const isLive = !gwStandingsFrozen && kind !== 'none';
+  const cls = ['live-gw-dot', `live-gw-dot--${kind}`, isLive ? 'live-gw-dot--live' : '']
+    .filter(Boolean)
+    .join(' ');
+  const label =
+    kind === 'win'
+      ? `GW ${gameweek} winning`
+      : kind === 'draw'
+        ? `GW ${gameweek} drawing`
+        : kind === 'loss'
+          ? `GW ${gameweek} losing`
+          : `GW ${gameweek} not started`;
+  const oppName =
+    row.oppEntryThisGw != null
+      ? teamNameForEntry(teams, Number(row.oppEntryThisGw))
+      : null;
+  const hasScores = row.liveGw != null && row.oppLiveGw != null;
+  let tooltip = null;
+  if (oppName) {
+    if (hasScores) {
+      const liveTag = isLive ? ' · LIVE' : '';
+      tooltip = `GW${gameweek} · ${row.liveGw} − ${row.oppLiveGw} · vs ${oppName}${liveTag}`;
+    } else {
+      tooltip = `GW${gameweek} · vs ${oppName}`;
+    }
+  }
+  return (
+    <span
+      className={cls}
+      role="img"
+      tabIndex={tooltip ? 0 : -1}
+      data-tooltip={tooltip || undefined}
+      aria-label={tooltip ?? label}
+    />
+  );
+}
+
+/**
+ * Live Table — mirrors the production Standings variant-c table for
+ * visual parity (column widths, row padding, Minnows divider between
+ * rank 4 and rank 5, hero/villain row tints). Renders two variants:
+ *
+ *   • mobile (`mobile === true`) — `.standings-table--variant-c-mobile`
+ *     5-column layout (#, Team, For, PTS, Last) sized to fit a 390px
+ *     viewport without horizontal scroll. Team names collapse to the
+ *     first word via {@link firstWord}.
+ *
+ *   • desktop — `.standings-table--variant-c .standings-table--sidebar`
+ *     11-column layout (#, Team, PL, W, D, L, For, Faced, GD, PTS,
+ *     Last), full team names, same column widths as the production
+ *     Standings table.
+ *
+ * Both variants drop the legacy `Last 5` 5-dot column and rename `GW`
+ * to `LAST` (single dot rendered by {@link LiveLastDot}). PTS is
+ * rendered via the shared `<PointsCell size="md" />` so violet PTS
+ * styling stays unified across Live Table, Standings, CofC, and the
+ * algorithm leaderboard.
+ */
+function LiveStandingsTable({
+  liveStandingsRows,
+  gwStandingsFrozen,
+  gameweek,
+  teams,
+  teamLogoMap,
+  kitIndexByEntry,
+  mobile,
+}) {
+  const lastTitle = gwStandingsFrozen
+    ? 'This GW’s H2H result: green win, amber draw, red loss'
+    : 'Live H2H result vs opponent: green winning, amber drawing, red losing, muted pre-kickoff';
+
+  if (mobile) {
+    return (
+      <div className="table-scroll table-scroll--standings-open">
+        <table
+          className="standings-table standings-table--variant-c standings-table--variant-c-mobile standings-table--live-mobile"
+          role="table"
+          aria-label="Live Table — ranks 1 through 8 (sorted by projected points)"
+        >
+          <thead>
+            <tr>
+              <th scope="col" className="col-rank">#</th>
+              <th scope="col" className="col-team">Team</th>
+              <th scope="col" className="col-num col-for">For</th>
+              <th scope="col" className="col-num col-pts">PTS</th>
+              <th
+                scope="col"
+                className="col-last"
+                title={lastTitle}
+              >
+                Last
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {liveStandingsRows.map((row) => {
+              const rowClass = liveStandingsRowClass(row);
+              return (
+                <Fragment key={row.league_entry}>
+                  <tr className={rowClass || undefined}>
+                    <td className="col-rank">
+                      {row.liveRank === 8 ? (
+                        <span
+                          role="img"
+                          className="standings-rank-8"
+                          aria-label="8"
+                        >
+                          🧩
+                        </span>
+                      ) : (
+                        row.liveRank
+                      )}
+                    </td>
+                    <td className="col-team">
+                      <LiveTeamCell
+                        row={row}
+                        teamLogoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                        mobile
+                      />
+                    </td>
+                    <td
+                      className="col-num col-for tabular"
+                      title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
+                    >
+                      {row.projectedFor}
+                    </td>
+                    <td className="col-num col-pts tabular">
+                      <PointsCell
+                        value={row.projectedPts}
+                        size="md"
+                        showLabel={false}
+                      />
+                    </td>
+                    <td className="col-last">
+                      <LiveLastDot
+                        row={row}
+                        gwStandingsFrozen={gwStandingsFrozen}
+                        gameweek={gameweek}
+                        teams={teams}
+                      />
+                    </td>
+                  </tr>
+                  {row.liveRank === 4 ? (
+                    <tr
+                      className="standings-divider standings-divider--minnows"
+                      aria-hidden="true"
+                    >
+                      <td colSpan={5}>
+                        <span className="standings-divider__label">
+                          Minnows
+                        </span>
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="table-scroll table-scroll--standings-open">
+      <table
+        className="standings-table standings-table--sidebar standings-table--live"
+        role="table"
+        aria-label="Live Table — ranks 1 through 8 (sorted by projected points)"
+      >
+        <thead>
+          <tr>
+            <th
+              className="col-rank"
+              title={
+                gwStandingsFrozen
+                  ? 'League position (this GW is finished)'
+                  : 'Position by projected points including this GW'
+              }
+            >
+              #
+            </th>
+            <th className="col-team">Team</th>
+            <th
+              className="col-num col-pl"
+              title="Season H2H matches played"
+            >
+              PL
+            </th>
+            <th className="col-num col-wdl" title="Season H2H wins">W</th>
+            <th className="col-num col-wdl" title="Season H2H draws">D</th>
+            <th className="col-num col-wdl" title="Season H2H losses">L</th>
+            <th
+              className="col-num col-for"
+              title={
+                gwStandingsFrozen
+                  ? 'Season points for (includes this GW)'
+                  : 'Season points for, plus this GW’s live FPL points'
+              }
+            >
+              For
+            </th>
+            <th
+              className="col-num col-faced"
+              title={
+                gwStandingsFrozen
+                  ? 'Season points against (includes this GW)'
+                  : 'Season points against, plus your opponent’s live GW score vs you (when paired)'
+              }
+            >
+              Faced
+            </th>
+            <th
+              className="col-num col-gd"
+              title={
+                gwStandingsFrozen
+                  ? 'Goal difference: For minus Against'
+                  : 'Projected GD: projected For minus projected Against'
+              }
+            >
+              GD
+            </th>
+            <th
+              className="col-num col-pts"
+              title={
+                gwStandingsFrozen
+                  ? 'Season H2H points (includes this GW)'
+                  : 'Season H2H points plus 3 / 1 / 0 from live score vs opponent this GW'
+              }
+            >
+              PTS
+            </th>
+            <th
+              className="col-last"
+              title={lastTitle}
+            >
+              Last
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {liveStandingsRows.map((row) => {
+            const rowClass = liveStandingsRowClass(row);
+            return (
+              <Fragment key={row.league_entry}>
+                <tr className={rowClass || undefined}>
+                  <td className="col-rank">
+                    {row.liveRank === 8 ? (
+                      <span
+                        role="img"
+                        className="standings-rank-8"
+                        aria-label="8"
+                      >
+                        🧩
+                      </span>
+                    ) : (
+                      row.liveRank
+                    )}
+                  </td>
+                  <td className="col-team">
+                    <LiveTeamCell
+                      row={row}
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                      mobile={false}
+                    />
+                  </td>
+                  <td className="col-num col-pl tabular">
+                    {(row.matches_won ?? 0) +
+                      (row.matches_drawn ?? 0) +
+                      (row.matches_lost ?? 0)}
+                  </td>
+                  <td className="col-num col-wdl tabular">{row.matches_won ?? 0}</td>
+                  <td className="col-num col-wdl tabular">{row.matches_drawn ?? 0}</td>
+                  <td className="col-num col-wdl tabular">{row.matches_lost ?? 0}</td>
+                  <td
+                    className="col-num col-for tabular"
+                    title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
+                  >
+                    {row.projectedFor}
+                  </td>
+                  <td
+                    className="col-num col-faced tabular"
+                    title={`Season ${row.ga} + opponent GW${row.oppLiveGw != null ? ` (${row.oppLiveGw})` : ''}`}
+                  >
+                    {row.projectedGa}
+                  </td>
+                  <td className="col-num col-gd tabular">
+                    {row.projectedGd > 0
+                      ? `+${row.projectedGd}`
+                      : row.projectedGd}
+                  </td>
+                  <td className="col-num col-pts tabular">
+                    <PointsCell
+                      value={row.projectedPts}
+                      size="md"
+                      showLabel={false}
+                    />
+                  </td>
+                  <td className="col-last">
+                    <LiveLastDot
+                      row={row}
+                      gwStandingsFrozen={gwStandingsFrozen}
+                      gameweek={gameweek}
+                      teams={teams}
+                    />
+                  </td>
+                </tr>
+                {row.liveRank === 4 ? (
+                  <tr
+                    className="standings-divider standings-divider--minnows"
+                    aria-hidden="true"
+                  >
+                    <td colSpan={11}>
+                      <span className="standings-divider__label">
+                        Minnows
+                      </span>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/**
  * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object, leagueId?: number | null, waiverOutGwRows?: object[], fplDraftCurrentGw?: number | null, projectionsOnly?: boolean }}
  */
 export function LiveScores({
@@ -872,7 +1169,7 @@ export function LiveScores({
   /** Mobile app shell: hide tile h2; GW toolbar sticks below section sub-pills. */
   compactMobileChrome = false,
 }) {
-  const { loading, error, fixturesDegradedNotice, refresh, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
+  const { error, fixturesDegradedNotice, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
       teams,
       gameweek,
@@ -881,6 +1178,23 @@ export function LiveScores({
       /** Hook only applies the interval when GW is current and not finished. */
       pollIntervalMs: 90_000,
     });
+
+  /**
+   * Below-desktop breakpoint (≤880px) — drives both the slim face-off row
+   * treatment (manager+rank line hidden, smaller avatars and score) and the
+   * `LiveExpandedFixture` tab-selector layout across the full phone+tablet
+   * range, replacing the prior 601–880px stacked two-column grid.
+   */
+  const narrowViewport = useNarrowViewport();
+  /**
+   * Phone-width breakpoint (≤767px) — at this width the H2H fixture rows
+   * collapse team names to their first word (mockup `Toronto 44 (3) – 53 (5)
+   * Hanson` instead of the truncated full-name-with-ellipsis treatment that
+   * read as `Tor… 44 (3) – 53 (5) Hanson o…` on a 390px viewport). Tracked
+   * separately from {@link narrowViewport} so 768–880px tablets keep full
+   * names.
+   */
+  const mobileNarrowViewport = useMobileNarrowViewport();
 
   /** Fixture keys in the set are expanded; default empty = all collapsed. */
   const [expandedFixtures, setExpandedFixtures] = useState(() => new Set());
@@ -893,8 +1207,8 @@ export function LiveScores({
     });
   }, []);
 
-  /** Single “fixtures left” panel for all H2H fixtures — collapsed by default. */
-  const [ltpPanelExpanded, setLtpPanelExpanded] = useState(false);
+  /** Single “players remaining” panel for all H2H fixtures — open by default. */
+  const [ltpPanelExpanded, setLtpPanelExpanded] = useState(true);
 
   /** FPL element id + labels — opens slide-over season history from `element-summary`. */
   const { openPlayerHistory } = usePlayerHistory();
@@ -962,6 +1276,58 @@ export function LiveScores({
     return m;
   }, [squads]);
 
+  /**
+   * Guard of Honour splash — top-down 2D match-engine cinematic for the
+   * reigning champion's first fixture of a new season. Production trigger
+   * (`gameweek === 1`) is OR'd with a manual `?gohSplash=1` URL flag so the
+   * splash can be previewed against current (mid-season) data before the
+   * new season opener. Dismiss state is local to the component instance —
+   * resets on page reload, which matches how the FplLiveTripleThreatBanner
+   * promo behaves.
+   */
+  const gohForceFlag = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return new URLSearchParams(window.location.search).get('gohSplash') === '1';
+    } catch {
+      return false;
+    }
+  }, []);
+  const [gohDismissed, setGohDismissed] = useState(false);
+  const championFixtureBundle = useMemo(() => {
+    if (gohDismissed) return null;
+    const shouldRender = gohForceFlag || Number(gameweek) === 1;
+    if (!shouldRender) return null;
+    const fx = findChampionFixture(gwMatches, REIGNING_CHAMPION_LEAGUE_ENTRY_ID);
+    if (!fx) return null;
+    const champSquad = squadByLeagueEntry.get(fx.championLeagueEntryId);
+    const oppSquad = squadByLeagueEntry.get(fx.opponentLeagueEntryId);
+    const champStarters =
+      champSquad?.displayStarters?.length === 11
+        ? champSquad.displayStarters
+        : (champSquad?.starters ?? []);
+    const oppStarters =
+      oppSquad?.displayStarters?.length === 11
+        ? oppSquad.displayStarters
+        : (oppSquad?.starters ?? []);
+    if (champStarters.length < 11 || oppStarters.length < 11) return null;
+    const opponentTeam = teams?.find((t) => Number(t.id) === fx.opponentLeagueEntryId);
+    return {
+      championStarters: champStarters,
+      opponentStarters: oppStarters,
+      championTeamName: REIGNING_CHAMPION_TEAM_NAME,
+      opponentTeamName: teamNameForEntry(teams, fx.opponentLeagueEntryId),
+      opponentManagerSurname: managerSurnameFromFullName(opponentTeam?.manager),
+    };
+  }, [
+    gohDismissed,
+    gohForceFlag,
+    gameweek,
+    gwMatches,
+    squadByLeagueEntry,
+    teams,
+  ]);
+
   /** Opponent’s live GW total for this GW (for projected Faced / GD / H2H pts). */
   const oppLiveGwByLeagueEntry = useMemo(() => {
     const m = new Map();
@@ -977,130 +1343,22 @@ export function LiveScores({
   }, [gwMatches, squadByLeagueEntry]);
 
   /**
-   * Win percentages for each H2H fixture: pre-live uses xPts MC; live uses per-player Proj MC.
-   * Keyed by `${homeId}-${awayId}-${gameweek}`.
+   * Opponent's `league_entry` id for this GW, keyed by manager `league_entry`.
+   * Powers the site-wide form-dot tooltip on the `GW` dot column so we can
+   * resolve the opponent's team name via {@link teamNameForEntry}.
    */
-  const h2hWinPctByKey = useMemo(() => {
-    const ctx = contributionLiveContext;
-    if (!ctx?.elementById || !gwMatches.length) return new Map();
-    const gw = Number(gameweek);
-    if (!Number.isFinite(gw)) return new Map();
-
-    const allFx = Array.isArray(ctx.gwFixtures) ? ctx.gwFixtures : [];
-    const teamsById = new Map();
-    for (const t of Object.values(ctx.teamById || {})) {
-      const tm = bootstrapTeamToPredictionTeam(t);
-      teamsById.set(tm.id, tm);
-    }
-
-    const gwIsLive = allFx.some((f) => f?.started === true);
-    const liveByEl = ctx.liveFullByElementId || {};
-    const blendCtx = { gwFixtures: allFx };
-    const result = new Map();
-
-    for (const m of gwMatches) {
-      const homeId = Number(m.league_entry_1);
-      const awayId = Number(m.league_entry_2);
-      const sqH = squadByLeagueEntry.get(homeId);
-      const sqA = squadByLeagueEntry.get(awayId);
-      const stH =
-        sqH?.displayStarters?.length === 11 ? sqH.displayStarters : (sqH?.starters ?? []);
-      const stA =
-        sqA?.displayStarters?.length === 11 ? sqA.displayStarters : (sqA?.starters ?? []);
-      const key = `${homeId}-${awayId}-${gw}`;
-      const rnd = makePredictionRng(homeId, awayId);
-
-      if (gwIsLive && stH.length === 11 && stA.length === 11) {
-        const hBlends = buildProjBlendsForPicks(stH, ctx, teamsById, gw, blendCtx, liveByEl);
-        const aBlends = buildProjBlendsForPicks(stA, ctx, teamsById, gw, blendCtx, liveByEl);
-        if (hBlends && aBlends) {
-          const pct = simulateFantasyH2hPercentsFromProjBlends(hBlends, aBlends, rnd, 1500, {
-            homeXiFixturesLeft: sqH?.leftToPlayCount,
-            awayXiFixturesLeft: sqA?.leftToPlayCount,
-          });
-          if (pct) {
-            result.set(key, { ...pct, isLive: true });
-            continue;
-          }
-        }
-      }
-
-      if (stH.length === 11 && stA.length === 11) {
-        const pct = simulateFantasyH2hPercents(
-          stH, stA, ctx, teamsById, gw, H2H_WIN_PCT_CONFIG, rnd, 1500,
-        );
-        if (pct) result.set(key, { ...pct, isLive: false });
-      }
-    }
-    return result;
-  }, [contributionLiveContext, gwMatches, gameweek, squadByLeagueEntry]);
-
-  /** Per-entry projected GW total (live blend); null when lineup or context incomplete. */
-  const projectedGwByEntryId = useMemo(() => {
+  const oppEntryByLeagueEntry = useMemo(() => {
     const m = new Map();
-    const ctx = contributionLiveContext;
-    if (!ctx?.elementById || !gwMatches.length) return m;
-    const gw = Number(gameweek);
-    if (!Number.isFinite(gw)) return m;
-
-    const allFx = Array.isArray(ctx.gwFixtures) ? ctx.gwFixtures : [];
-    const teamsById = new Map();
-    for (const t of Object.values(ctx.teamById || {})) {
-      const tm = bootstrapTeamToPredictionTeam(t);
-      teamsById.set(tm.id, tm);
-    }
-    const blendCtx = { gwFixtures: allFx };
-    const liveByEl = ctx.liveFullByElementId || {};
-
-    const entryIds = new Set();
     for (const fx of gwMatches) {
-      entryIds.add(Number(fx.league_entry_1));
-      entryIds.add(Number(fx.league_entry_2));
-    }
-    for (const id of entryIds) {
-      const sq = squadByLeagueEntry.get(id);
-      const st =
-        sq?.displayStarters?.length === 11
-          ? sq.displayStarters
-          : (sq?.starters ?? []);
-      if (st.length !== 11) {
-        m.set(id, null);
-        continue;
+      const a = Number(fx.league_entry_1);
+      const b = Number(fx.league_entry_2);
+      if (Number.isFinite(a) && Number.isFinite(b)) {
+        m.set(a, b);
+        m.set(b, a);
       }
-      const sum = sumProjectedGwForStarters(
-        st,
-        ctx,
-        teamsById,
-        gw,
-        blendCtx,
-        liveByEl,
-      );
-      m.set(id, sum);
     }
     return m;
-  }, [contributionLiveContext, gwMatches, gameweek, squadByLeagueEntry]);
-
-  /**
-   * Median FPL points among winning sides in **finished** head-to-head matches (full season),
-   * from league `matches` — not the current GW’s live polling totals.
-   */
-  const medianGwWinScore = useMemo(() => {
-    const winners = [];
-    for (const m of matches) {
-      if (!m?.finished) continue;
-      const p1 = Number(m.league_entry_1_points);
-      const p2 = Number(m.league_entry_2_points);
-      if (!Number.isFinite(p1) || !Number.isFinite(p2)) continue;
-      if (p1 > p2) winners.push(p1);
-      else if (p2 > p1) winners.push(p2);
-    }
-    if (!winners.length) return null;
-    winners.sort((x, y) => x - y);
-    const mid = Math.floor(winners.length / 2);
-    return winners.length % 2 === 1
-      ? winners[mid]
-      : (winners[mid - 1] + winners[mid]) / 2;
-  }, [matches]);
+  }, [gwMatches]);
 
   /**
    * When “frozen”, PTS / For / Faced come from league `standings` only (no live +3 overlay).
@@ -1130,6 +1388,14 @@ export function LiveScores({
    */
   const liveStandingsRows = useMemo(() => {
     if (!Array.isArray(tableRows) || tableRows.length === 0) return [];
+    /**
+     * PR #5g — `gwHasStarted` is the signal the new `GW` dot column uses to
+     * differentiate "pre-kickoff" (muted placeholder dot) from "live"
+     * (W/D/L coloured dot, pulsing if not frozen). Frozen GWs are
+     * always considered started so the FT dot still renders coloured.
+     */
+    const gwHasStarted =
+      gwStandingsFrozen || gwMatches.some((m) => m?.started === true);
     const enriched = tableRows.map((row) => {
       const eid = row.league_entry;
       const squad = squadByLeagueEntry.get(eid);
@@ -1150,6 +1416,13 @@ export function LiveScores({
           ? 0
           : Number(oppLiveGw);
 
+      /**
+       * PR #5g — `projectedFor` is the live-cumulative For (season points
+       * for + this GW's live FPL points). When `gwStandingsFrozen` is true
+       * the league `gf` already includes this GW so we add 0 to avoid
+       * double-counting. This is the same value rendered in the new `FOR`
+       * column post-restructure — no separate helper needed.
+       */
       const projectedFor = gf + addMine;
       const projectedGa = ga + addOpp;
       const projectedGd = projectedFor - projectedGa;
@@ -1158,6 +1431,33 @@ export function LiveScores({
           ? liveH2hBonusPts(liveGw, oppLiveGw)
           : 0;
       const projectedPts = gwStandingsFrozen ? total : total + h2hBonus;
+
+      /**
+       * PR #5g — `formDotsHistoric` powers the new `Last 5` column: 5
+       * most-recently-finished GW dots, no live dot (the live result moved
+       * to the separate `GW` dot column).
+       */
+      const formDotsHistoric = computeManagerForm({
+        leagueEntryId: eid,
+        matches,
+        gameweek,
+        includeLive: false,
+        count: 5,
+      });
+      /**
+       * PR #5g — `gwOutcomeDot` drives the new `GW` column (single
+       * coloured dot). `h2hProj` drives the inline `+3 / +1` chip in the
+       * team-name cell (hidden on losing rows; `value === null` then).
+       */
+      const gwOutcomeDot = liveGwOutcomeDot(
+        liveGw,
+        inFixture ? oppLiveGw : null,
+        gwHasStarted,
+      );
+      const h2hProj = projectedH2HPoints(
+        liveGw,
+        inFixture ? oppLiveGw : null,
+      );
 
       return {
         ...row,
@@ -1168,6 +1468,10 @@ export function LiveScores({
         projectedGd,
         h2hBonus,
         projectedPts,
+        formDotsHistoric,
+        gwOutcomeDot,
+        h2hProj,
+        oppEntryThisGw: oppEntryByLeagueEntry.get(eid) ?? null,
       };
     });
     const sorted = [...enriched].sort((a, b) => {
@@ -1189,7 +1493,16 @@ export function LiveScores({
       const rankMove = (row.rank ?? 999) - ordinalLive;
       return { ...row, liveRank, ordinalLive, rankMove };
     });
-  }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry, gwStandingsFrozen]);
+  }, [
+    tableRows,
+    squadByLeagueEntry,
+    oppLiveGwByLeagueEntry,
+    oppEntryByLeagueEntry,
+    gwStandingsFrozen,
+    matches,
+    gameweek,
+    gwMatches,
+  ]);
 
   const liveRankByEntry = useMemo(() => {
     const o = {};
@@ -1224,12 +1537,18 @@ export function LiveScores({
       const ltpRows = xi
         .filter((r) => allowed.has(r.element))
         .filter((r) => Number(r.playerGamesLeftToPlay) > 0);
-      const segments = ltpRows.map(formatPlayerLtpSegment);
+      // PR #5i: structured chips replace the old preformatted
+      // "Name (OPP)" strings so the redesigned tile can style player
+      // name (Inter) and opponent code (Geist Mono) separately.
+      const chips = ltpRows.map((r) => ({
+        name: String(r.web_name ?? r.displayName ?? '').trim() || '?',
+        opp: r.opponentShortLabel ?? '—',
+      }));
       const ltpGamesCount = ltpRows.reduce((sum, r) => {
         const n = Number(r.playerGamesLeftToPlay);
         return sum + (Number.isFinite(n) && n > 0 ? n : 0);
       }, 0);
-      return { leagueEntryId, name, live, segments, ltpGamesCount };
+      return { leagueEntryId, name, live, chips, ltpGamesCount };
     };
     return gwMatches.map((m) => {
       const homeId = Number(m.league_entry_1);
@@ -1241,6 +1560,20 @@ export function LiveScores({
       };
     });
   }, [gwMatches, teams, squadByLeagueEntry, gameweek]);
+
+  // Sum of remaining player-fixtures across both sides of every H2H
+  // matchup. Used only to gate the empty-state — when this is 0 the
+  // tile is hidden entirely (GW done ⇒ the brand-header status strip
+  // already says "GW {N} complete · …" page-wide).
+  const totalRemainingFixtures = useMemo(
+    () =>
+      leftToPlayByFixture.reduce(
+        (sum, fx) =>
+          sum + (fx.home?.ltpGamesCount ?? 0) + (fx.away?.ltpGamesCount ?? 0),
+        0
+      ),
+    [leftToPlayByFixture]
+  );
 
   const pairedLeagueEntryIds = useMemo(() => {
     const s = new Set();
@@ -1258,6 +1591,8 @@ export function LiveScores({
 
   const useFixtureLayout = gwMatches.length > 0;
 
+  const liveSectionLabel = projectionsOnly ? 'Projections' : 'Live gameweek';
+
   return (
     <div
       className={
@@ -1269,18 +1604,8 @@ export function LiveScores({
         className={
           compactMobileChrome ? 'live-scores-chrome' : 'tile tile--compact'
         }
-        aria-labelledby="live-heading"
+        aria-label={liveSectionLabel}
       >
-        <h2
-          id="live-heading"
-          className={
-            'tile-title tile-title--sm' +
-            (compactMobileChrome ? ' live-heading--hide-mobile' : '')
-          }
-        >
-          {projectionsOnly ? 'Projections' : 'Live GW'}
-        </h2>
-
         {showNoProxyBuildError ? (
           <div className="data-banner data-banner--error" role="alert">
             <strong>No proxy in this JavaScript build.</strong>{' '}
@@ -1311,46 +1636,12 @@ export function LiveScores({
           </div>
         ) : null}
 
-        <div
-          className={
-            'live-toolbar' +
-            (compactMobileChrome ? ' live-toolbar--section-sticky' : '')
-          }
-        >
-          <div className="live-gw-field">
-            <div className="live-gw-input-row">
-              <label className="live-gw-label">
-                <select
-                  className="live-gw-select"
-                  aria-label="Game week"
-                  value={gameweek}
-                  onChange={(e) => onGameweekChange(Number(e.target.value))}
-                >
-                  {gwOptions.length ? (
-                    <GameWeekSelectOptgroups options={gwOptions} />
-                  ) : (
-                    <option value={gameweek}>{gameWeekSelectLabel(gameweek)}</option>
-                  )}
-                </select>
-              </label>
-              {selectedGwOption?.finished ? (
-                <span
-                  className="live-gw-pill"
-                  title="This game week is complete (all fixtures finished)"
-                  aria-label="This game week is complete"
-                >
-                  FT
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <LiveRefreshIconButton
-            title="Refresh from FPL"
-            loading={Boolean(loading)}
-            disabled={Boolean(loading)}
-            onClick={() => void refresh()}
-          />
-        </div>
+        <GameWeekNavigator
+          gameweek={gameweek}
+          gwOptions={gwOptions}
+          onGameweekChange={onGameweekChange}
+          sticky={compactMobileChrome}
+        />
 
         {error ? (
           <div className="data-banner data-banner--error" role="alert">
@@ -1400,329 +1691,146 @@ export function LiveScores({
         />
       ) : (
         <>
-      <section
-        className="tile tile--compact player-contrib-tile"
-        aria-label="FPL live scores"
-      >
-        <PlayerContributions
-          leagueId={leagueId}
-          gameweek={gameweek}
-          squads={squads}
-          contributionLiveContext={contributionLiveContext}
-          waiverOutGwRows={waiverOutGwRows}
-          lastUpdated={lastUpdated}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
+      {championFixtureBundle ? (
+        <GuardOfHonourSplash
+          championStarters={championFixtureBundle.championStarters}
+          opponentStarters={championFixtureBundle.opponentStarters}
+          championTeamName={championFixtureBundle.championTeamName}
+          opponentTeamName={championFixtureBundle.opponentTeamName}
+          opponentManagerSurname={championFixtureBundle.opponentManagerSurname}
+          onDismiss={() => setGohDismissed(true)}
         />
-      </section>
-
+      ) : null}
       {useFixtureLayout ? (
-        <div
-          className="live-fixtures-scroller"
-          role="region"
+        <section
+          className="tile tile--compact live-banner-group-tile"
           aria-label={`Gameweek ${gameweek} head-to-head fixtures`}
         >
-          <div className="live-fixtures-scroller__track">
+          <div className="live-banner-group__list">
             {gwMatches.map((m) => {
-            const homeId = Number(m.league_entry_1);
-            const awayId = Number(m.league_entry_2);
-            const homeName = teamNameForEntry(teams, homeId);
-            const awayName = teamNameForEntry(teams, awayId);
-            const homeSquad = squadByLeagueEntry.get(homeId);
-            const awaySquad = squadByLeagueEntry.get(awayId);
-            const homeLive = liveGwDisplayTotal(homeSquad);
-            const awayLive = liveGwDisplayTotal(awaySquad);
-            const homeLead =
-              homeLive != null && awayLive != null && homeLive > awayLive;
-            const awayLead =
-              homeLive != null && awayLive != null && awayLive > homeLive;
+              const homeId = Number(m.league_entry_1);
+              const awayId = Number(m.league_entry_2);
+              const homeName = teamNameForEntry(teams, homeId);
+              const awayName = teamNameForEntry(teams, awayId);
+              /**
+               * Mobile (≤767px) collapses team names to their first word so
+               * the H2H fixture row fits a 390px viewport without
+               * `text-overflow: ellipsis` chewing mid-word; matches the
+               * Standings hero+table treatment via the shared
+               * {@link firstWord} helper.
+               */
+              const homeDisplayName = mobileNarrowViewport
+                ? firstWord(homeName)
+                : homeName;
+              const awayDisplayName = mobileNarrowViewport
+                ? firstWord(awayName)
+                : awayName;
+              const homeSquad = squadByLeagueEntry.get(homeId);
+              const awaySquad = squadByLeagueEntry.get(awayId);
+              const homeLive = liveGwDisplayTotal(homeSquad);
+              const awayLive = liveGwDisplayTotal(awaySquad);
+              /**
+               * Distinct-player count (`xiPlayersRemaining`) drives the
+               * bracketed `(N)` indicator next to each side's score. Falls
+               * back to `null` when the squad payload is missing/errored
+               * (orphan / `entry_id` not yet ingested) so the renderer can
+               * skip the chip cleanly. When `N === 0` the renderer swaps
+               * `(0)` for the "all done" green pulse dot.
+               */
+              const homeRemaining =
+                homeSquad && !homeSquad.error &&
+                Number.isFinite(Number(homeSquad.xiPlayersRemaining))
+                  ? Number(homeSquad.xiPlayersRemaining)
+                  : null;
+              const awayRemaining =
+                awaySquad && !awaySquad.error &&
+                Number.isFinite(Number(awaySquad.xiPlayersRemaining))
+                  ? Number(awaySquad.xiPlayersRemaining)
+                  : null;
 
-            const homeLtp = homeSquad?.leftToPlayCount;
-            const awayLtp = awaySquad?.leftToPlayCount;
+              const homeVillain = villainVictoryEntryIds.has(homeId);
+              const awayVillain = villainVictoryEntryIds.has(awayId);
+              const homeHero = heroDefeatEntryIds.has(homeId);
+              const awayHero = heroDefeatEntryIds.has(awayId);
 
-            const homeVillain = villainVictoryEntryIds.has(homeId);
-            const awayVillain = villainVictoryEntryIds.has(awayId);
-            const homeHero = heroDefeatEntryIds.has(homeId);
-            const awayHero = heroDefeatEntryIds.has(awayId);
+              const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
+              const lineupOpen = expandedFixtures.has(fixtureKey);
+              const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
 
-            const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
-            const winPct = h2hWinPctByKey.get(fixtureKey);
-            const lineupOpen = expandedFixtures.has(fixtureKey);
-            const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
+              // Hero defeat / villain victory narrative status is passed
+              // through to LiveFaceOffRow as `homeStatus`/`awayStatus`. The
+              // tinted ring marks which manager avatar carries the status,
+              // while the narrative caption pill renders beneath the central
+              // score column (not under the crest).
+              const homeStatus = homeVillain ? 'villain' : homeHero ? 'hero' : null;
+              const awayStatus = awayVillain ? 'villain' : awayHero ? 'hero' : null;
 
-            return (
-              <section
-                key={fixtureKey}
-                className={
-                  'tile tile--compact live-fixture-tile' +
-                  (homeVillain || awayVillain
-                    ? ' live-fixture-tile--villain-victory'
-                    : '') +
-                  (homeHero || awayHero ? ' live-fixture-tile--hero-defeat' : '')
-                }
-                aria-label={
-                  typeof homeLtp === 'number' && typeof awayLtp === 'number'
-                    ? `${homeName}, ${homeLtp} fixtures left, vs ${awayName}, ${awayLtp} fixtures left`
-                    : `${homeName} vs ${awayName}`
-                }
-              >
-                <button
-                  type="button"
-                  className="live-fixture-banner live-fixture-banner--toggle"
-                  onClick={() => toggleFixtureExpanded(fixtureKey)}
-                  aria-expanded={lineupOpen}
-                  aria-controls={fixtureBodyId}
+              return (
+                <div
+                  key={fixtureKey}
+                  className={
+                    'live-banner-group__item' +
+                    (lineupOpen ? ' live-banner-group__item--open' : '') +
+                    (homeVillain || awayVillain ? ' live-banner-group__item--villain-victory' : '') +
+                    (homeHero || awayHero ? ' live-banner-group__item--hero-defeat' : '')
+                  }
                 >
-                  <span className="live-fixture-chevron live-fixture-chevron--desktop" aria-hidden>
-                    {lineupOpen ? '▼' : '▶'}
-                  </span>
-                    <span className="live-fixture-banner__row">
-                    <span className="live-fixture-banner__team live-fixture-banner__team--home">
-                      {homeVillain ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--home">
-                          <VillainDetectedBadge variant="compact" />
-                        </span>
-                      ) : homeHero ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--home">
-                          <HeroDefeatBadge variant="compact" />
-                        </span>
-                      ) : null}
-                      <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--home">
-                        {winPct ? (
-                          <span
-                            className={
-                              'live-fixture-banner__win-pct live-fixture-banner__win-pct--home tabular' +
-                              (winPct.isLive ? ' live-fixture-banner__win-pct--live' : '')
-                            }
-                            title={winPct.isLive ? 'Home win % (live Proj MC)' : 'Home win % (xPts MC)'}
-                            aria-label={`Home win ${Math.round(winPct.homeWinPct)}%`}
-                          >
-                            {Math.round(winPct.homeWinPct)}%
-                          </span>
-                        ) : null}
-                        <span className="live-fixture-banner__team-avatar">
-                        <TeamAvatar
-                          entryId={homeId}
-                          name={homeName}
-                          size="sm"
-                          logoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
+                  <LiveFaceOffRow
+                    homeId={homeId}
+                    awayId={awayId}
+                    homeName={homeName}
+                    awayName={awayName}
+                    homeDisplayName={homeDisplayName}
+                    awayDisplayName={awayDisplayName}
+                    homeLive={homeLive}
+                    awayLive={awayLive}
+                    homeRemaining={homeRemaining}
+                    awayRemaining={awayRemaining}
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                    compact={narrowViewport}
+                    expanded={lineupOpen}
+                    homeStatus={homeStatus}
+                    awayStatus={awayStatus}
+                    onToggle={() => toggleFixtureExpanded(fixtureKey)}
+                    ariaControls={fixtureBodyId}
+                    chevronEnd={
+                      <span className="live-banner-row__chev" aria-hidden="true">
+                        {lineupOpen ? '▾' : '▸'}
                       </span>
-                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--home">
-                        <span className="live-fixture-banner__team-inner">
-                          <span className="live-fixture-banner__name-line">
-                            <span
-                              className={`live-fixture-banner__name ${homeLead ? 'live-fixture-banner__name--lead' : ''}`}
-                            >
-                              {homeName}
-                            </span>
-                          </span>
-                          {typeof homeLtp === 'number' ? (
-                            <span className="live-fixture-banner__ltp-line">
-                              <LeftToPlayOutsideAfter count={homeLtp} leadingSpace={false} />
-                            </span>
-                          ) : null}
-                        </span>
-                      </span>
-                      </span>
-                    </span>
-
-                    <span className="live-fixture-banner__vs-sep" aria-hidden="true">
-                      vs
-                    </span>
-
-                    <span className="live-fixture-banner__scorebox" aria-label="Gameweek points comparison">
-                      <span className="live-fixture-banner__score-row">
-                        <span
-                          className="live-fixture-banner__score-avatar live-fixture-banner__score-avatar--home"
-                          aria-hidden="true"
-                        >
-                          <TeamAvatar
-                            entryId={homeId}
-                            name={homeName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                        </span>
-                        {homeLive != null && awayLive != null ? (
-                          <span className="live-fixture-banner__live-score tabular">
-                            <span className={homeLead ? 'live-fixture-pts--lead' : ''}>{homeLive}</span>
-                            <span className="live-fixture-banner__dash">–</span>
-                            <span className={awayLead ? 'live-fixture-pts--lead' : ''}>{awayLive}</span>
-                          </span>
-                        ) : (
-                          <span className="live-fixture-vs">v</span>
-                        )}
-                        <span
-                          className="live-fixture-banner__score-avatar live-fixture-banner__score-avatar--away"
-                          aria-hidden="true"
-                        >
-                          <TeamAvatar
-                            entryId={awayId}
-                            name={awayName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                        </span>
-                      </span>
-                      <span className="muted live-fixture-banner__score-caption">GW pts (live)</span>
-                    </span>
-
-                    <span className="live-fixture-banner__team live-fixture-banner__team--away">
-                      <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--away">
-                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--away">
-                        <span className="live-fixture-banner__team-inner">
-                          <span className="live-fixture-banner__name-line">
-                            <span
-                              className={`live-fixture-banner__name ${awayLead ? 'live-fixture-banner__name--lead' : ''}`}
-                            >
-                              {awayName}
-                            </span>
-                          </span>
-                          {typeof awayLtp === 'number' ? (
-                            <span className="live-fixture-banner__ltp-line">
-                              <LeftToPlayOutsideAfter count={awayLtp} leadingSpace={false} />
-                            </span>
-                          ) : null}
-                        </span>
-                      </span>
-                      <span className="live-fixture-banner__team-avatar">
-                        <TeamAvatar
-                          entryId={awayId}
-                          name={awayName}
-                          size="sm"
-                          logoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                      </span>
-                      </span>
-                      {winPct ? (
-                        <span
-                          className={
-                            'live-fixture-banner__win-pct live-fixture-banner__win-pct--away tabular' +
-                            (winPct.isLive ? ' live-fixture-banner__win-pct--live' : '')
-                          }
-                          title={winPct.isLive ? 'Away win % (live Proj MC)' : 'Away win % (xPts MC)'}
-                          aria-label={`Away win ${Math.round(winPct.awayWinPct)}%`}
-                        >
-                          {Math.round(winPct.awayWinPct)}%
-                        </span>
-                      ) : null}
-                      {awayVillain ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
-                          <VillainDetectedBadge variant="compact" />
-                        </span>
-                      ) : awayHero ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
-                          <HeroDefeatBadge variant="compact" />
-                        </span>
-                      ) : null}
-                    </span>
-                  </span>
-                  {/* Mobile: bottom affordance — ▼ = collapsed (lineup below), ▲ = expanded (hide). */}
-                  <span className="live-fixture-banner__expand-foot">
-                    <span className="live-fixture-chevron live-fixture-chevron--mobile" aria-hidden>
-                      {!lineupOpen ? '▼' : '▲'}
-                    </span>
-                  </span>
-                </button>
-
-                {lineupOpen ? (
-                  <div className="live-fixture-expanded-body" id={fixtureBodyId}>
-                    <LiveFixtureSeasonH2h
-                      homeId={homeId}
-                      awayId={awayId}
-                      homeName={homeName}
-                      awayName={awayName}
-                      matches={matches}
-                      gameweek={gameweek}
-                      liveHomePts={homeLive}
-                      liveAwayPts={awayLive}
-                      selectedGwFinished={Boolean(selectedGwOption?.finished)}
-                      teamLogoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                    <div className="live-fixture-split">
-                  <div
-                    className={
-                      'live-fixture-column' +
-                      (homeVillain ? ' live-fixture-column--villain-victory' : '') +
-                      (homeHero ? ' live-fixture-column--hero-defeat' : '')
                     }
-                  >
-                    <div className="live-fixture-column-head">
-                      <h3 className="live-fixture-column-title">
-                        <span className="live-fixture-column-title__row">
-                          <span>
-                            {homeName}
-                            <LeftToPlayOutsideAfter count={homeLtp} />
-                          </span>
-                          {homeVillain ? (
-                            <VillainDetectedBadge />
-                          ) : homeHero ? (
-                            <HeroDefeatBadge />
-                          ) : null}
-                        </span>
-                      </h3>
-                      <div className="live-squad-meta tabular">
-                        {homeLive != null ? (
-                          <span className="live-squad-pts">
-                            <strong>{homeLive}</strong> GW pts
-                          </span>
-                        ) : null}
-                        {homeSquad?.pointsOnBench != null ? (
-                          <span className="muted">Bench: {homeSquad.pointsOnBench} pts</span>
-                        ) : null}
-                      </div>
+                  />
+
+                  {lineupOpen ? (
+                    <div className="live-banner-group__expanded" id={fixtureBodyId}>
+                      <LiveFixtureSeasonH2h
+                        homeId={homeId}
+                        awayId={awayId}
+                        homeName={homeName}
+                        awayName={awayName}
+                        matches={matches}
+                        gameweek={gameweek}
+                        liveHomePts={homeLive}
+                        liveAwayPts={awayLive}
+                        selectedGwFinished={Boolean(selectedGwOption?.finished)}
+                        teamLogoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
+                      <LiveExpandedFixture
+                        homeSquad={homeSquad}
+                        awaySquad={awaySquad}
+                        homeName={homeName}
+                        awayName={awayName}
+                        viewport={narrowViewport ? 'mobile' : 'desktop'}
+                        onOpenPlayer={openLineupOrHistory}
+                      />
                     </div>
-                    <SquadLineupPanel squad={homeSquad} onPlayerClick={openLineupOrHistory} />
-                  </div>
-                  <div className="live-fixture-divider" aria-hidden="true" />
-                  <div
-                    className={
-                      'live-fixture-column' +
-                      (awayVillain ? ' live-fixture-column--villain-victory' : '') +
-                      (awayHero ? ' live-fixture-column--hero-defeat' : '')
-                    }
-                  >
-                    <div className="live-fixture-column-head">
-                      <h3 className="live-fixture-column-title">
-                        <span className="live-fixture-column-title__row">
-                          <span>
-                            {awayName}
-                            <LeftToPlayOutsideAfter count={awayLtp} />
-                          </span>
-                          {awayVillain ? (
-                            <VillainDetectedBadge />
-                          ) : awayHero ? (
-                            <HeroDefeatBadge />
-                          ) : null}
-                        </span>
-                      </h3>
-                      <div className="live-squad-meta tabular">
-                        {awayLive != null ? (
-                          <span className="live-squad-pts">
-                            <strong>{awayLive}</strong> GW pts
-                          </span>
-                        ) : null}
-                        {awaySquad?.pointsOnBench != null ? (
-                          <span className="muted">Bench: {awaySquad.pointsOnBench} pts</span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <SquadLineupPanel squad={awaySquad} onPlayerClick={openLineupOrHistory} />
-                    </div>
-                  </div>
+                  ) : null}
                 </div>
-                ) : null}
-              </section>
-            );
+              );
             })}
           </div>
-        </div>
+        </section>
       ) : (
         squads.map((squad) => {
           const squadVillain = villainVictoryEntryIds.has(Number(squad.leagueEntryId));
@@ -1747,23 +1855,23 @@ export function LiveScores({
                       : undefined
                   }
                 >
-                  <TeamAvatar
-                    entryId={squad.leagueEntryId}
-                    name={squad.teamName}
-                    size="sm"
-                    logoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                  />
+                  <HeroVillainAvatarFrame
+                    status={squadVillain ? 'villain' : squadHero ? 'hero' : null}
+                    size="compact"
+                  >
+                    <TeamAvatar
+                      entryId={squad.leagueEntryId}
+                      name={squad.teamName}
+                      size="sm"
+                      logoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  </HeroVillainAvatarFrame>
                   <span className="live-squad-title__text">
                     <span>
                       {squad.teamName}
                       <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
                     </span>
-                    {squadVillain ? (
-                      <VillainDetectedBadge variant="compact" />
-                    ) : squadHero ? (
-                      <HeroDefeatBadge variant="compact" />
-                    ) : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1782,6 +1890,22 @@ export function LiveScores({
           );
         })
       )}
+
+      <section
+        className="tile tile--compact player-contrib-tile"
+        aria-label="FPL live scores"
+      >
+        <PlayerContributions
+          leagueId={leagueId}
+          gameweek={gameweek}
+          squads={squads}
+          contributionLiveContext={contributionLiveContext}
+          waiverOutGwRows={waiverOutGwRows}
+          lastUpdated={lastUpdated}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      </section>
 
       {useFixtureLayout && orphanSquads.length > 0
         ? orphanSquads.map((squad) => {
@@ -1810,23 +1934,23 @@ export function LiveScores({
                       : undefined
                   }
                 >
-                  <TeamAvatar
-                    entryId={squad.leagueEntryId}
-                    name={squad.teamName}
-                    size="sm"
-                    logoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                  />
+                  <HeroVillainAvatarFrame
+                    status={squadVillain ? 'villain' : squadHero ? 'hero' : null}
+                    size="compact"
+                  >
+                    <TeamAvatar
+                      entryId={squad.leagueEntryId}
+                      name={squad.teamName}
+                      size="sm"
+                      logoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  </HeroVillainAvatarFrame>
                   <span className="live-squad-title__text">
                     <span>
                       {squad.teamName}
                       <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
                     </span>
-                    {squadVillain ? (
-                      <VillainDetectedBadge variant="compact" />
-                    ) : squadHero ? (
-                      <HeroDefeatBadge variant="compact" />
-                    ) : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1843,81 +1967,6 @@ export function LiveScores({
           })
         : null}
 
-      {leftToPlayByFixture.length > 0 ? (
-        <section
-          className="tile tile--compact live-ltp-panel-tile"
-          aria-label="Total fixtures left to play in H2H matchups"
-        >
-          <button
-            type="button"
-            className="live-fixture-banner live-fixture-banner--toggle live-ltp-fixture-banner"
-            onClick={() => setLtpPanelExpanded((v) => !v)}
-            aria-expanded={ltpPanelExpanded}
-            aria-controls="live-ltp-panel-body"
-          >
-            <span className="live-fixture-chevron live-fixture-chevron--desktop" aria-hidden>
-              {ltpPanelExpanded ? '▼' : '▶'}
-            </span>
-            <span className="live-ltp-fixture-banner__text">
-              <span className="live-ltp-fixture-banner__title live-ltp-fixture-banner__title--only">
-                Fixtures left to play
-              </span>
-            </span>
-            <span className="live-fixture-banner__expand-foot" aria-hidden>
-              <span className="live-fixture-chevron live-fixture-chevron--mobile">
-                {!ltpPanelExpanded ? '▼' : '▲'}
-              </span>
-            </span>
-          </button>
-
-          {ltpPanelExpanded ? (
-            <div className="live-ltp-panel-body" id="live-ltp-panel-body">
-              {leftToPlayByFixture.map((fx) => (
-                <div key={fx.key} className="live-ltp-fixture-block">
-                  <div className="live-ltp-summary-list">
-                    {[fx.home, fx.away].map((row) => (
-                      <div
-                        key={row.leagueEntryId}
-                        className="live-ltp-summary-row"
-                      >
-                        <span className="live-ltp-summary-team">
-                          <span className="live-ltp-summary-score-inline tabular">
-                            {row.live != null ? row.live : '—'}
-                          </span>
-                          <TeamAvatar
-                            entryId={row.leagueEntryId}
-                            name={row.name}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                          <strong className="live-ltp-summary-team-name">
-                            {row.name}
-                          </strong>
-                        </span>
-                        <span className="live-ltp-summary-players">
-                          <span
-                            className="live-ltp-summary-players-count muted tabular"
-                            title="Total fixtures left (sum over effective starting XI)"
-                          >
-                            ({row.ltpGamesCount})
-                          </span>
-                          {row.segments.length ? (
-                            <> {row.segments.join(', ')}</>
-                          ) : (
-                            <span className="muted"> None</span>
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </section>
-      ) : null}
-
       <section
         className="tile tile--compact tile--live-standings"
         aria-labelledby="live-standings-heading"
@@ -1931,219 +1980,106 @@ export function LiveScores({
         {!tableRows?.length ? (
           <p className="muted muted--tight">No standings data.</p>
         ) : (
-          <div className="table-scroll table-scroll--standings-open">
-            <table className="standings-table standings-table--sidebar standings-table--live">
-              <thead>
-                <tr>
-                  <th
-                    className="col-rank"
-                    title={
-                      gwStandingsFrozen
-                        ? 'League position (this GW is finished)'
-                        : 'Position by projected points including this GW'
-                    }
-                  >
-                    #
-                  </th>
-                  <th className="col-team">Team</th>
-                  <th className="col-num col-pl">PL</th>
-                  <th className="col-num col-wdl">W</th>
-                  <th className="col-num col-wdl">D</th>
-                  <th className="col-num col-wdl">L</th>
-                  <th
-                    className="col-num col-for"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Season points for (includes this GW)'
-                        : 'Season points for, plus this GW’s live score vs your opponent'
-                    }
-                  >
-                    For
-                  </th>
-                  <th
-                    className="col-num col-faced"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Season points against (includes this GW)'
-                        : 'Season points against, plus your opponent’s live GW score vs you (when paired)'
-                    }
-                  >
-                    Faced
-                  </th>
-                  <th
-                    className="col-num col-gd"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Goal difference: For minus Faced'
-                        : 'Projected GD: projected For minus projected Faced'
-                    }
-                  >
-                    GD
-                  </th>
-                  <th
-                    className="col-num col-live-gw"
-                    title={
-                      gwStandingsFrozen
-                        ? 'League points from this GW’s result: +3 win, +1 draw, 0 loss'
-                        : 'League points from this GW’s live fixture: +3 win, +1 draw, 0 loss'
-                    }
-                  >
-                    GW
-                  </th>
-                  <th
-                    className="col-num col-pts"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Season H2H points (includes this GW)'
-                        : 'Season H2H points plus 3 / 1 / 0 from live score vs opponent this GW'
-                    }
-                  >
-                    PTS
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {liveStandingsRows.map((row) => {
-                  const isLeader = row.liveRank === 1;
-                  const isVillainVictory = villainVictoryEntryIds.has(
-                    Number(row.league_entry)
-                  );
-                  const isHeroDefeat = heroDefeatEntryIds.has(
-                    Number(row.league_entry)
-                  );
-                  const rowClass = [
-                    isLeader ? 'row-highlight' : '',
-                    row.liveRank === 1 ? 'standings-row--divider-below' : '',
-                    row.liveRank === 8
-                      ? 'standings-row--divider-above standings-row--8th'
-                      : '',
-                    isVillainVictory ? 'standings-row--villain-victory' : '',
-                    isHeroDefeat ? 'standings-row--hero-defeat' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ');
-                  const moveUp = row.rankMove > 0;
-                  const moveDown = row.rankMove < 0;
-                  return (
-                    <tr key={row.league_entry} className={rowClass || undefined}>
-                      <td className="col-rank">
-                        {row.liveRank === 8 ? (
-                          <span
-                            role="img"
-                            className="standings-rank-8"
-                            aria-label="8"
-                          >
-                            🧩
-                          </span>
-                        ) : (
-                          row.liveRank
-                        )}
-                      </td>
-                      <td className="col-team">
-                        <span className="team-cell">
-                          <TeamAvatar
-                            entryId={row.league_entry}
-                            name={row.teamName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                          <span className="team-name team-name--sidebar live-standings-team-name">
-                            {row.teamName}
-                            {isVillainVictory ? (
-                              <VillainDetectedBadge variant="compact" />
-                            ) : isHeroDefeat ? (
-                              <HeroDefeatBadge variant="compact" />
-                            ) : null}
-                            {moveUp ? (
-                              <span
-                                className="live-standings-move live-standings-move--up"
-                                title={`Up ${row.rankMove} vs league #${row.rank}`}
-                                aria-label={`Up ${row.rankMove} places vs league position ${row.rank}`}
-                              >
-                                ↑
-                              </span>
-                            ) : null}
-                            {moveDown ? (
-                              <span
-                                className="live-standings-move live-standings-move--down"
-                                title={`Down ${-row.rankMove} vs league #${row.rank}`}
-                                aria-label={`Down ${-row.rankMove} places vs league position ${row.rank}`}
-                              >
-                                ↓
-                              </span>
-                            ) : null}
-                          </span>
-                        </span>
-                      </td>
-                      <td className="col-num col-pl">{row.pl}</td>
-                      <td className="col-num col-wdl">{row.matches_won}</td>
-                      <td className="col-num col-wdl">{row.matches_drawn}</td>
-                      <td className="col-num col-wdl">{row.matches_lost}</td>
-                      <td
-                        className="col-num col-for tabular"
-                        title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
-                      >
-                        {row.projectedFor}
-                      </td>
-                      <td
-                        className="col-num col-faced tabular"
-                        title={`Season ${row.ga} + opponent GW${row.oppLiveGw != null ? ` (${row.oppLiveGw})` : ''}`}
-                      >
-                        {row.projectedGa}
-                      </td>
-                      <td className="col-num col-gd tabular">
-                        {row.projectedGd > 0
-                          ? `+${row.projectedGd}`
-                          : row.projectedGd}
-                      </td>
-                      <td className="col-num col-live-gw tabular">
-                        <strong
-                          className={
-                            row.h2hBonus === 3
-                              ? 'live-standings-gw-val live-standings-gw-val--win'
-                              : row.h2hBonus === 1
-                                ? 'live-standings-gw-val live-standings-gw-val--draw'
-                                : 'live-standings-gw-val live-standings-gw-val--loss'
-                          }
-                        >
-                          {formatGwLeaguePtsBonus(row.h2hBonus)}
-                        </strong>
-                      </td>
-                      <td className="col-num col-pts tabular">
-                        <strong>{row.projectedPts}</strong>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <LiveStandingsTable
+            liveStandingsRows={liveStandingsRows}
+            gwStandingsFrozen={gwStandingsFrozen}
+            gameweek={gameweek}
+            teams={teams}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            mobile={mobileNarrowViewport}
+          />
         )}
-        <p className="table-foot muted standings-landscape-hint">
-          On mobile, turn your device to landscape for the full table.
-          {gwStandingsFrozen ? (
-            <>
-              {' '}
-              Frozen standings use league totals from the last loaded league file; refresh ingest /
-              deploy so <code>details.json</code> matches FPL if PTS look stale.
-            </>
-          ) : null}
-        </p>
       </section>
 
-      {useFixtureLayout ? (
-        <LiveFixtureGwPointsChart
-          gameweek={gameweek}
-          gwMatches={gwMatches}
-          teams={teams}
-          squadByLeagueEntry={squadByLeagueEntry}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-          projectedGwByEntryId={projectedGwByEntryId}
-          medianGwWinScore={medianGwWinScore}
-        />
+      {leftToPlayByFixture.length > 0 && totalRemainingFixtures > 0 ? (
+        <section
+          className="tile tile--compact live-remaining-fixtures"
+          aria-label="Players remaining in H2H matchups"
+        >
+          <button
+            type="button"
+            className="live-remaining-fixtures__toggle"
+            onClick={() => setLtpPanelExpanded((v) => !v)}
+            aria-expanded={ltpPanelExpanded}
+            aria-controls="live-remaining-fixtures-body"
+          >
+            <span className="live-remaining-fixtures__title">
+              Players remaining
+            </span>
+            <span
+              className="live-fixture-chevron live-remaining-fixtures__chevron"
+              aria-hidden
+            >
+              {ltpPanelExpanded ? '▼' : '▶'}
+            </span>
+          </button>
+
+          {ltpPanelExpanded ? (
+            <div
+              className="live-remaining-fixtures__body"
+              id="live-remaining-fixtures-body"
+            >
+              {leftToPlayByFixture.map((fx) => (
+                <div key={fx.key} className="live-remaining-fixtures__card">
+                  {[fx.home, fx.away].map((side) => (
+                    <div
+                      key={side.leagueEntryId}
+                      className="live-remaining-fixtures__side"
+                    >
+                      <div className="live-remaining-fixtures__side-head">
+                        <TeamAvatar
+                          entryId={side.leagueEntryId}
+                          name={side.name}
+                          size="sm"
+                          logoMap={teamLogoMap}
+                          kitIndexByEntry={kitIndexByEntry}
+                        />
+                        <span className="live-remaining-fixtures__name">
+                          {side.name}
+                        </span>
+                        {side.ltpGamesCount > 0 ? (
+                          <span
+                            className="live-remaining-fixtures__pill"
+                            title="Player-fixtures left for the effective XI (double GWs can add >1 per player)"
+                          >
+                            {side.ltpGamesCount} left
+                          </span>
+                        ) : null}
+                        <span className="live-remaining-fixtures__score tabular">
+                          {side.live != null ? side.live : '—'}
+                        </span>
+                      </div>
+                      {side.chips.length ? (
+                        <ul className="live-remaining-fixtures__chips">
+                          {side.chips.map((p, idx) => (
+                            <li
+                              key={`${side.leagueEntryId}-${p.name}-${idx}`}
+                              className="live-remaining-fixtures__chip"
+                            >
+                              <span className="live-remaining-fixtures__chip-name">
+                                {p.name}
+                              </span>
+                              <span className="live-remaining-fixtures__chip-opp tabular">
+                                {p.opp}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="live-remaining-fixtures__done">
+                          All players done
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </section>
       ) : null}
+
         </>
       )}
     </div>

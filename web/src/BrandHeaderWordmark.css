@@ -1,0 +1,59 @@
+/* BrandHeaderWordmark — keeps the existing `.brand-header__pill` look
+ * (gradient + lion + wordmark) but as a semantic <button> with a small
+ * muted chevron appended. Hover/focus lift subtly to signal tappability.
+ * Pairs with `.brand-header__pill` rules in App.css for the gradient
+ * background, padding, and white wordmark colour.
+ */
+
+.brand-header-wordmark {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    filter var(--dur-fast) var(--ease);
+}
+
+.brand-header-wordmark:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.16) inset,
+    0 2px 8px rgba(0, 0, 0, 0.30);
+}
+
+.brand-header-wordmark:active {
+  transform: translateY(1px);
+}
+
+.brand-header-wordmark:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.brand-header-wordmark[aria-expanded='true'] .brand-header-wordmark__chevron {
+  transform: rotate(180deg);
+}
+
+.brand-header-wordmark__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.78);
+  margin-left: 2px;
+  margin-top: 1px;
+  transition: transform var(--dur-base) var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-header-wordmark,
+  .brand-header-wordmark__chevron {
+    transition: none;
+  }
+}

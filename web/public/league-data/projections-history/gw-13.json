@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "gameweek": 13,
-  "generatedAt": "2026-05-16T07:11:34.741Z",
+  "generatedAt": "2026-05-28T20:10:38.398Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -29,13 +29,13 @@
       "actualXiPts1": 31,
       "actualXiPts2": 45,
       "actualWinner": "away",
-      "xPtsXi1": 34.8,
-      "xPtsXi2": 34,
+      "xPtsXi1": 42.2,
+      "xPtsXi2": 40.8,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 51,
-        "drawPct": 4,
-        "awayWinPct": 45
+        "homeWinPct": 48,
+        "drawPct": 3,
+        "awayWinPct": 49
       },
       "projXi1": 31,
       "projXi2": 45,
@@ -61,13 +61,13 @@
       "actualXiPts1": 25,
       "actualXiPts2": 40,
       "actualWinner": "away",
-      "xPtsXi1": 30.9,
-      "xPtsXi2": 31.1,
+      "xPtsXi1": 38.4,
+      "xPtsXi2": 41.5,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 49,
+        "homeWinPct": 44,
         "drawPct": 4,
-        "awayWinPct": 47
+        "awayWinPct": 53
       },
       "projXi1": 25,
       "projXi2": 40,
@@ -93,13 +93,13 @@
       "actualXiPts1": 33,
       "actualXiPts2": 59,
       "actualWinner": "away",
-      "xPtsXi1": 29.8,
-      "xPtsXi2": 32.6,
+      "xPtsXi1": 36.1,
+      "xPtsXi2": 41,
       "xPtsFavorite": "away",
       "xPtsMc": {
-        "homeWinPct": 39,
+        "homeWinPct": 33,
         "drawPct": 3,
-        "awayWinPct": 58
+        "awayWinPct": 64
       },
       "projXi1": 33,
       "projXi2": 59,
@@ -125,13 +125,13 @@
       "actualXiPts1": 30,
       "actualXiPts2": 18,
       "actualWinner": "home",
-      "xPtsXi1": 36.3,
-      "xPtsXi2": 33.8,
+      "xPtsXi1": 45.5,
+      "xPtsXi2": 41.7,
       "xPtsFavorite": "home",
       "xPtsMc": {
-        "homeWinPct": 57,
-        "drawPct": 3,
-        "awayWinPct": 40
+        "homeWinPct": 51,
+        "drawPct": 4,
+        "awayWinPct": 46
       },
       "projXi1": 30,
       "projXi2": 18,

@@ -10,6 +10,18 @@ export function gameWeekSelectLabel(n) {
 }
 
 /**
+ * Compact gameweek label for tight, space-constrained triggers (e.g. mobile
+ * pills). Renders "GW38" with no separator.
+ * @param {number | string} n
+ * @returns {string}
+ */
+export function gameWeekShortLabel(n) {
+  const g = Number(n)
+  if (!Number.isFinite(g)) return 'GW'
+  return `GW${g}`
+}
+
+/**
  * FPL bootstrap often uses a single word ("Gameweek 33"). Normalize to "Game Week 33".
  * @param {string | null | undefined} name
  * @param {number | string} id

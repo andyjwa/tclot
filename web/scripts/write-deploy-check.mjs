@@ -45,8 +45,6 @@ if (existsSync(tw)) {
 
 const proxyUrl = (process.env.VITE_FPL_PROXY_URL || '').trim()
 const liveProxyConfigured = proxyUrl.length > 0
-const viteLeagueTitleAbbr = (process.env.VITE_LEAGUE_TITLE_ABBR || '').trim() || null
-const viteLeagueHeaderImage = (process.env.VITE_LEAGUE_HEADER_IMAGE || '').trim() || null
 
 const out = {
   leagueName,
@@ -55,10 +53,6 @@ const out = {
   detailsJsonBytes: detailsBytes,
   teamLogosPngInDist: logoPngs,
   teamLogosWebInDist: webLogos,
-  /** Baked at build time — if null here, your GitHub Variable was empty (defaults to TCLOT in the app) */
-  viteLeagueTitleAbbr,
-  /** Optional full header image filename under site root; overrides abbr-based headers */
-  viteLeagueHeaderImage,
   liveProxyConfigured,
   liveProxyHost: liveProxyConfigured
     ? (() => {

@@ -57,32 +57,26 @@ async function fetchFirstOptional(paths, cacheKey = '') {
   return null;
 }
 
-/** H2H win margin → column key (wins by exactly N pts, or range). */
-export const WIN_MARGIN_BUCKET_KEYS = [
-  '1',
-  '2',
-  '3',
-  '4',
-  '5-10',
-  '11-15',
-  '16-20',
-  '21+',
-];
+/** H2H win margin → column key (wins/losses by exactly N pts, or range).
+ *
+ * Standings tab redesign (Phase 2): bucket scheme is now `1 / 2 / 3-5 / 6-10 / 10+`.
+ * Boundary call: `5` belongs to `3-5` (the lower bucket); `5-10` is therefore
+ * `6-10` in practice. Header label kept as `5-10` per the design screenshot. */
+export const WIN_MARGIN_BUCKET_KEYS = ['1', '2', '3-5', '5-10', '10+'];
 
 function winMarginBucketKey(margin) {
   const m = Number(margin);
   if (m === 1) return '1';
   if (m === 2) return '2';
-  if (m === 3) return '3';
-  if (m === 4) return '4';
-  if (m >= 5 && m <= 10) return '5-10';
-  if (m >= 11 && m <= 15) return '11-15';
-  if (m >= 16 && m <= 20) return '16-20';
-  return '21+';
+  if (m >= 3 && m <= 5) return '3-5';
+  if (m >= 6 && m <= 10) return '5-10';
+  return '10+';
 }
 
 /** element_type 1 = GKP — excluded: cheap keeper churn dominates waivers but isn’t useful for this list */
 const OUTFIELD_TYPES = new Set([2, 3, 4]);
+/** FPL element_type → position label (matches Players-Wire `POS_LABEL`). */
+const POS_BY_TYPE = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
 /** FPL element IDs omitted from this list (e.g. suspected bad/misleading waiver attribution). */
 const EXCLUDED_WAIVER_ELEMENT_IDS = new Set([667]);
 
@@ -113,6 +107,7 @@ function buildMostWaivered(transactionsPayload, fplMini) {
         teamShort: tm?.short_name ?? '—',
         teamCode: tm?.code,
         teamId,
+        pos: POS_BY_TYPE[e?.element_type] ?? null,
         claims: claimCount,
         shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
         badgeUrl:
@@ -180,6 +175,7 @@ function buildFirstWaiverOrderPicks(
         fplElementWebName(pickEl, elementIn) ??
         (elementIn != null ? `Player #${elementIn}` : '—'),
       pickedTeamShort: pickTm?.short_name ?? '—',
+      pickedPos: POS_BY_TYPE[pickEl?.element_type] ?? null,
       pickedShirtUrl: fplShirtImageUrl(pickTm?.code, pickEl?.element_type),
       pickedBadgeUrl:
         pickTm?.code != null
@@ -831,6 +827,8 @@ function processLeagueData(raw, extras = {}) {
         entryRow?.entry_id != null ? Number(entryRow.entry_id) : null,
       rank: s.rank,
       teamName: s.teamName,
+      /** Live scores redesign (PR #5) — manager name for face-off `mgr · #rank` sub-line. */
+      manager: s.manager ?? null,
     };
   });
 
@@ -931,6 +929,8 @@ function processLeagueData(raw, extras = {}) {
         `Player #${row.element_in}`,
       droppedTeamShort: dropTm?.short_name ?? '—',
       pickedTeamShort: pickTm?.short_name ?? '—',
+      pickedPos: POS_BY_TYPE[pickEl?.element_type] ?? null,
+      droppedPos: POS_BY_TYPE[dropEl?.element_type] ?? null,
       droppedShirtUrl: fplShirtImageUrl(dropTm?.code, dropEl?.element_type),
       droppedBadgeUrl:
         dropTm?.code != null
@@ -962,9 +962,11 @@ function processLeagueData(raw, extras = {}) {
       return {
         ...r,
         teamName: teams[r.entry]?.entry_name ?? `Team ${r.entry}`,
+        leagueEntryId: teams[r.entry]?.id ?? r.entry,
         playerName: fplElementWebName(e, r.elementId),
         teamShort: tm?.short_name ?? '—',
         teamId: e?.team,
+        pos: POS_BY_TYPE[e?.element_type] ?? null,
         shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
         badgeUrl:
           tm?.code != null

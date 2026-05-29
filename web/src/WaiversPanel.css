@@ -1,0 +1,690 @@
+/* =================================================================== */
+/* Waivers panel · .waivers-* — production port of the locked            */
+/* `mockup-wv-*` redesign (see Mockup.css). Fantasy-team crests render   */
+/* via <TeamAvatar>; player club crests via <PlayerKit> badges.          */
+/* =================================================================== */
+
+/* ── shared atoms ── */
+.waivers-player {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.waivers-crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-circle);
+  overflow: hidden;
+  background: var(--surface);
+}
+.waivers-crest img,
+.waivers-crest .pl-kit-badge,
+.waivers-crest .pl-kit-shirt {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.waivers-crest .pl-kit-fallback {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.waivers-crest--out { opacity: 0.85; }
+.waivers-player__name {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+/* Fixed-width arrow box so the in/out arrows form a clean vertical column and
+ * every club badge lines up just to the right of it, row-to-row. */
+.waivers-dir {
+  font-size: var(--text-sm);
+  font-weight: 800;
+  flex: 0 0 auto;
+  width: 0.85em;
+  text-align: center;
+}
+.waivers-dir--in { color: var(--data-positive); }
+.waivers-dir--out { color: var(--data-negative); }
+
+/* single-letter position chip beside the player name (Players-Wire style) */
+.waivers-pos-chip {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.waivers-pos-chip--GKP { color: #f59e0b; border-color: color-mix(in srgb, #f59e0b 38%, var(--border)); }
+.waivers-pos-chip--DEF { color: #22d3ee; border-color: color-mix(in srgb, #22d3ee 38%, var(--border)); }
+.waivers-pos-chip--MID { color: #c4b5fd; border-color: color-mix(in srgb, #a78bfa 38%, var(--border)); }
+.waivers-pos-chip--FWD { color: #fca5a5; border-color: color-mix(in srgb, #ef4444 38%, var(--border)); }
+[data-theme='light'] .waivers-pos-chip--GKP { color: #b45309; }
+[data-theme='light'] .waivers-pos-chip--DEF { color: #0e7490; }
+[data-theme='light'] .waivers-pos-chip--MID { color: #6d28d9; }
+[data-theme='light'] .waivers-pos-chip--FWD { color: #b91c1c; }
+
+/* numerics — PointsCell style */
+.waivers-pts {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 2px 7px;
+  border-radius: var(--r-sm);
+  background: var(--brand-tint);
+  color: var(--text-strong);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.waivers-pts--lg { min-width: 34px; padding: 3px 9px; font-size: var(--text-md); }
+
+/* ── condensed toggle (mirrors standings wins-by-margin toggle) ── */
+.waivers-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-3);
+}
+.waivers-toggle__btn {
+  padding: 5px 14px;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.waivers-toggle__btn:hover { color: var(--text-strong); }
+.waivers-toggle__btn.is-active {
+  background: var(--surface);
+  color: var(--text-strong);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.waivers-toggle--sm { margin-bottom: 0; }
+.waivers-toggle--sm .waivers-toggle__btn { padding: 4px 11px; font-size: var(--text-xs); }
+
+/* ── Section 1 · weekly flat/grouped swap table ── */
+.waivers-weekly__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+/* GW pill rides on the same row as the toggle, pinned to the right. */
+.waivers-weekly__gw { margin-left: auto; display: inline-flex; }
+.waivers-weekly__bar--empty { justify-content: flex-end; }
+
+/* Mobile: keep the compact "GW38" pill on the SAME row as the view toggle
+ * instead of wrapping onto its own line. The toggle can scroll horizontally
+ * on very narrow phones so the pill always stays anchored on the right. */
+.waivers-weekly-mobile .waivers-weekly__bar {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.waivers-weekly-mobile .waivers-weekly__bar .waivers-toggle {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.waivers-weekly-mobile .waivers-weekly__bar .waivers-toggle::-webkit-scrollbar {
+  display: none;
+}
+.waivers-weekly-mobile .waivers-weekly__bar .waivers-toggle__btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.waivers-weekly-mobile .waivers-weekly__gw { flex: 0 0 auto; }
+
+.waivers-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-md); }
+.waivers-table { width: 100%; border-collapse: collapse; }
+
+/* Fixed column geometry so the # / In / Out headings sit directly above their
+ * data columns in both the flat and the by-team grouped views. */
+.waivers-weekly__table { table-layout: fixed; }
+.waivers-weekly__table .waivers-col-num { width: 3rem; }
+.waivers-weekly__table .waivers-col-team { width: 26%; }
+.waivers-weekly__table .waivers-col-io { width: auto; }
+/* Center the # column so rank numbers, FA tags and the by-team group crest all
+ * stack in one clean vertical column. */
+.waivers-weekly__table .waivers-table__num,
+.waivers-weekly__table thead th.waivers-table__num { text-align: center; }
+.waivers-weekly__grouphead-crest { text-align: center; }
+.waivers-weekly__grouphead-crest .team-avatar,
+.waivers-weekly__grouphead-crest img { display: inline-flex; vertical-align: middle; }
+.waivers-weekly__groupname { font-weight: 700; color: var(--text-strong); }
+.waivers-weekly__table .waivers-table__team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.waivers-table thead th {
+  text-align: left;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.waivers-table tbody td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  vertical-align: middle;
+}
+.waivers-table tbody tr:last-child td { border-bottom: 0; }
+.waivers-table__num { text-align: right; width: 1%; white-space: nowrap; }
+.waivers-table thead th.waivers-table__num { text-align: right; }
+.waivers-table__team {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.waivers-table .fw-700 { font-weight: 700; }
+
+/* inline FA tag inside the # column */
+.waivers-fa-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--brand);
+  background: var(--brand-tint);
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+/* team grouping header row inside the grouped table */
+.waivers-weekly__grouphead td {
+  background: var(--surface-2);
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+.waivers-weekly__grouphead .waivers-table__team { font-weight: 700; }
+.waivers-weekly__group:not(:first-of-type) .waivers-weekly__grouphead td {
+  border-top: 2px solid var(--border);
+}
+
+/* ── Section 1 · mobile glance + tiles ── */
+.waivers-weekly-mobile { display: flex; flex-direction: column; gap: var(--space-3); }
+.waivers-weekly-mobile .waivers-toggle--sm { align-self: flex-start; }
+
+/* Each team is its own spaced rounded tile (matches Heritage › Team Journeys
+ * mobile leaderboard cards): flex column with gaps instead of a single framed
+ * list of flush divider rows. */
+.waivers-glance__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.waivers-glance__item {
+  border: 1px solid var(--fm-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--fm-card);
+}
+.waivers-glance__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.waivers-glance__row[disabled] { cursor: default; }
+.waivers-glance__row.is-open { background: var(--fm-surface-2); }
+.waivers-glance__caret {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.waivers-glance__caret.is-open { transform: rotate(90deg); }
+.waivers-glance__moves {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+}
+.waivers-glance__team {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-strong);
+  flex: 1 1 auto;
+  min-width: 4.5em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.waivers-glance__counts { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; min-width: 2.75em; }
+.waivers-glance__count { font-size: var(--text-sm); font-weight: 700; font-variant-numeric: tabular-nums; }
+.waivers-glance__arrows { display: inline-flex; align-items: center; line-height: 1; }
+.waivers-glance__arrow { font-size: var(--text-sm); font-weight: 700; }
+.waivers-glance__arrow--in { color: var(--data-positive); }
+.waivers-glance__arrow--out { color: var(--data-negative); }
+.waivers-glance__crests { display: inline-flex; flex: 0 0 auto; }
+.waivers-glance__crest {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-circle);
+  overflow: hidden;
+  margin-left: -6px;
+  border: 1.5px solid var(--surface);
+  background: var(--surface);
+}
+.waivers-glance__crest:first-child { margin-left: 0; }
+.waivers-glance__crest-more {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: 3px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.waivers-glance__crest img,
+.waivers-glance__crest .pl-kit-badge { width: 100%; height: 100%; object-fit: contain; }
+.waivers-glance__crest .pl-kit-fallback {
+  width: 100%; height: 100%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 7px; font-weight: 700; color: var(--text-muted);
+}
+.waivers-glance__none { font-size: var(--text-sm); color: var(--text-muted); flex: 0 0 auto; }
+
+.waivers-weekly-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-3); }
+.waivers-weekly-grid--compact { grid-template-columns: 1fr; gap: var(--space-2); }
+.waivers-weekly-tile {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.waivers-weekly-tile__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.waivers-weekly-tile__team {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-strong);
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.waivers-weekly-tile__count {
+  flex: 0 0 auto;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.waivers-weekly-tile__caret {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.waivers-weekly-tile__caret.is-open { transform: rotate(90deg); }
+.waivers-order {
+  flex: 0 0 auto;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.waivers-weekly-tile__moves {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+}
+.waivers-swap {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  position: relative;
+}
+.waivers-swap__arrow { color: var(--text-muted); font-size: var(--text-md); }
+/* Dense 3-col swap inside mobile tiles: tighten the player cells so real
+ * (longer) player names keep more room before truncating. */
+.waivers-swap .waivers-player { gap: var(--space-1); }
+.waivers-fa-chip {
+  position: absolute;
+  top: -7px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--brand);
+  background: var(--brand-tint);
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+/* ── Section 3 · first-picks table (fixed-height scroller) ── */
+.waivers-first { border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
+/* Fixed height so the condensed view is a scroll box (all GWs scroll within). */
+.waivers-first__scroll { max-height: 22rem; overflow-y: auto; }
+.waivers-first .waivers-table { border: 0; }
+.waivers-first__table { table-layout: fixed; }
+.waivers-first__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-2);
+}
+.waivers-first__col-gw { width: 3rem; }
+.waivers-first__col-pick { width: 3.5rem; }
+.waivers-first__col-player { width: auto; }
+.waivers-first__col-pts { width: 3.25rem; }
+/* Badge-only "First pick" column, centered above the crest. */
+.waivers-first__pick { text-align: center; }
+.waivers-first__pick .team-avatar,
+.waivers-first__pick img { display: inline-flex; vertical-align: middle; }
+.waivers-first__table thead th.waivers-first__pick-head { text-align: center; }
+.waivers-first__table .waivers-player__name { overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Section 2 · totals bars ── */
+.waivers-totals__hint { font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 var(--space-3); }
+.waivers-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.waivers-bar-row {
+  display: grid;
+  grid-template-columns: 24px minmax(64px, 1fr) minmax(80px, 2.2fr) 40px 34px 44px;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* Keep the crest inside its 24px column so it can't bleed into the team name. */
+.waivers-bars .team-avatar-frame {
+  width: 22px;
+  height: 22px;
+  justify-self: center;
+}
+.waivers-bars-head {
+  padding-bottom: 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  margin-bottom: 2px;
+}
+.waivers-bars-head span {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-align: right;
+}
+.waivers-bars-head .waivers-bar-row__team { text-align: left; }
+.waivers-bars-head .waivers-bar-row__track-head { text-transform: none; letter-spacing: 0; text-align: left; }
+.waivers-bar-row__team {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.waivers-bar-row__track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  overflow: hidden;
+}
+.waivers-bar-row__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--brand);
+  min-width: 4px;
+}
+.waivers-bar-row__val { font-weight: 700; color: var(--text-strong); font-size: var(--text-md); text-align: right; }
+.waivers-bar-row__col { font-size: var(--text-sm); text-align: right; white-space: nowrap; }
+
+/* ── Section 4 · ranked list ── */
+.waivers-rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.waivers-rank-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1.4fr) minmax(0, 1.2fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.waivers-rank-row:last-child { border-bottom: 0; }
+/* "Best pairs" rows carry an extra trailing crest cell — give them a 5-col grid
+   so nothing wraps onto a second line. */
+.waivers-rank-row--best {
+  grid-template-columns: 22px minmax(0, 1.4fr) minmax(0, 1fr) auto auto;
+}
+.waivers-rank-row__rank { color: var(--text-muted); font-size: var(--text-sm); text-align: right; }
+.waivers-rank-row__meta { display: inline-flex; flex-direction: column; min-width: 0; }
+.waivers-rank-row__crest { display: inline-flex; align-items: center; flex: 0 0 auto; }
+.waivers-rank-row__owner { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--text-sm); }
+.waivers-rank-row__owner-name { color: var(--text-strong); font-weight: 600; white-space: nowrap; }
+.waivers-rank-row__range { font-size: var(--text-xs); white-space: nowrap; }
+.waivers-rank-row__owner--muted { color: var(--text-muted); }
+
+/* ── narrow / mobile-portrait adjustments (no horizontal page scroll) ── */
+@media (max-width: 600px) {
+  .waivers-bar-row {
+    grid-template-columns: 22px minmax(38px, 1fr) minmax(40px, 1.4fr) 30px 26px 34px;
+    gap: var(--space-1);
+  }
+  .waivers-bar-row__val { font-size: var(--text-sm); }
+  .waivers-rank-row { grid-template-columns: 20px minmax(0, 1.5fr) minmax(0, 1fr) auto; gap: var(--space-2); }
+  /* Best-pairs row: meta is empty on mobile (name + range hidden), so drop that
+     column entirely and keep rank · player · pts · crest on a single row. */
+  .waivers-rank-row--best {
+    grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  }
+  .waivers-rank-row--best .waivers-rank-row__meta { display: none; }
+  .waivers-rank-row__range { display: none; }
+  /* Portrait: fantasy-team BADGE only — drop the team name to avoid squashing. */
+  .waivers-rank-row__owner-name { display: none; }
+  .waivers-rank-row__owner--muted { overflow: hidden; text-overflow: ellipsis; }
+  .waivers-first__table { table-layout: fixed; width: 100%; }
+  .waivers-first__table th:nth-child(1),
+  .waivers-first__table td:nth-child(1) { width: 36px; }
+  .waivers-first__table th:nth-child(4),
+  .waivers-first__table td:nth-child(4) { width: 46px; }
+  .waivers-first__table td:nth-child(2),
+  .waivers-first__table td:nth-child(3) { overflow: hidden; }
+  .waivers-first__table .waivers-table__team span,
+  .waivers-first__table .waivers-player__name { overflow: hidden; text-overflow: ellipsis; }
+  .waivers-table tbody td,
+  .waivers-table thead th { padding-left: var(--space-2); padding-right: var(--space-2); }
+}
+
+/* ══ Section 5 · Shareable weekly waiver card (screenshot card) ══════ */
+.waivers-share {
+  height: min(700px, 78vh);
+  max-width: 460px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--text-strong);
+  padding: 14px 12px 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+.waivers-share__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.waivers-share__brand { display: flex; flex-direction: column; line-height: 1.12; }
+.waivers-share__league {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.waivers-share__title { font-size: var(--text-lg); font-weight: 700; }
+.waivers-share__gw { font-size: var(--text-md); font-weight: 700; color: var(--text-muted); }
+.waivers-share__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.waivers-share__row {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 26px 20px minmax(0, 1.25fr) 12px 18px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+.waivers-share__row:last-child { border-bottom: 0; }
+/* Left marker column: waiver number for waiver rows, FA tag for free agents.
+ * Both share one fixed-width, centred column so they line up down the card. */
+.waivers-share__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.waivers-share__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 4px;
+  font-size: var(--text-xs);
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--brand);
+}
+.waivers-share__tag--fa {
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+  color: var(--text-muted);
+}
+.waivers-share__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-circle);
+  overflow: hidden;
+}
+.waivers-share__crest--out { width: 18px; height: 18px; }
+.waivers-share__crest img,
+.waivers-share__crest .pl-kit-badge { width: 100%; height: 100%; object-fit: contain; }
+.waivers-share__crest .pl-kit-fallback {
+  width: 100%; height: 100%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 7px; font-weight: 700; color: var(--text-muted);
+}
+.waivers-share__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.waivers-share__name--out { color: var(--text-muted); font-weight: 500; }
+.waivers-share__arrow { color: var(--text-muted); text-align: center; }
+.waivers-share__avatar { display: inline-flex; align-items: center; justify-self: end; }
+/* The fantasy-team crest (TeamAvatar) defaults to 28px; pin it to the row's
+ * right column so it never overflows / overlaps the row below — even when the
+ * record (~30-row) week squeezes each row to a sliver. */
+.waivers-share__avatar .team-avatar-frame {
+  width: 20px;
+  height: 20px;
+}
+.waivers-share--dense .waivers-share__avatar .team-avatar-frame {
+  width: 15px;
+  height: 15px;
+}
+/* Density presets: airy (light week) reads large; dense (record week) stays compact. */
+.waivers-share--airy { font-size: var(--text-md); }
+.waivers-share--airy .waivers-share__name { font-size: var(--text-md); }
+.waivers-share--airy .waivers-share__marker { font-size: var(--text-md); }
+.waivers-share--dense { font-size: var(--text-xs); }
+.waivers-share--dense .waivers-share__row {
+  grid-template-columns: 22px 16px minmax(0, 1.25fr) 10px 14px minmax(0, 1fr) 18px;
+  gap: 4px;
+}
+.waivers-share--dense .waivers-share__crest { width: 16px; height: 16px; }
+.waivers-share--dense .waivers-share__crest--out { width: 14px; height: 14px; }
+.waivers-share--dense .waivers-share__tag { padding: 1px 3px; }
+.waivers-share--dense .waivers-share__name { font-size: var(--text-xs); }

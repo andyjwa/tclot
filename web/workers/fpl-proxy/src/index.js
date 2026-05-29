@@ -3,7 +3,9 @@
  * - fantasy.premierleague.com/api/* (bootstrap-static, event/{gw}/live, …)
  * - draft/* → draft.premierleague.com/api/* (bootstrap-static, event/{gw}/live, entry picks — draft ID space)
  * - fotmob/* → www.fotmob.com/api/* (unofficial read-only match timelines for Live tab ordering)
- * - espn/* → site.api.espn.com/apis/site/v2/sports/soccer/eng.1/* (open scoreboard + summary feed)
+ * - espn/* → site.api.espn.com/apis/site/v2/sports/soccer/eng.1/* (open scoreboard + summary feed; lineups at T-60)
+ * - pulselive/* → footballapi.pulselive.com/football/* (official PL backend; T-75 lineups +
+ *   wallclock-precise events; requires `Account: premierleague` header)
  * Avoid * + / in this block comment — it would end the comment early.
  * Deploy: cd web/workers/fpl-proxy && npm run deploy
  */
@@ -11,6 +13,7 @@ const FANTASY_API = 'https://fantasy.premierleague.com/api';
 const DRAFT_API = 'https://draft.premierleague.com/api';
 const FOTMOB_API = 'https://www.fotmob.com/api';
 const ESPN_API = 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1';
+const PULSELIVE_API = 'https://footballapi.pulselive.com/football';
 
 function corsHeaders(env, request) {
   const origin = request.headers.get('Origin');
@@ -32,6 +35,18 @@ function cacheTtlSeconds(path, upstreamBase) {
   if (path.includes('/entry/') && path.includes('/event/')) return 45;
   if (upstreamBase === FOTMOB_API) return 60;
   if (upstreamBase === ESPN_API) return 120;
+  /**
+   * Pulselive is the T-75 lineup source — lineups + events flip from absent → published
+   * within seconds of clubs submitting team sheets, so a short TTL on per-fixture reads
+   * keeps the "Confirmed" badge and the live event ticker fresh. The seasons + fixtures
+   * list endpoints don't churn within a GW so they get a longer TTL.
+   */
+  if (upstreamBase === PULSELIVE_API) {
+    if (path.startsWith('fixtures/') && !path.includes('?')) return 30;
+    if (path.startsWith('fixtures') && path.includes('?')) return 120;
+    if (path.startsWith('competitions/') && path.includes('/compseasons')) return 86400;
+    return 60;
+  }
   return 0;
 }
 
@@ -79,6 +94,9 @@ export default {
     } else if (path.startsWith('espn/')) {
       path = path.slice('espn/'.length);
       upstreamBase = ESPN_API;
+    } else if (path.startsWith('pulselive/')) {
+      path = path.slice('pulselive/'.length);
+      upstreamBase = PULSELIVE_API;
     }
     const target = `${upstreamBase}/${path}${url.search}`;
     const cacheTtl = cacheTtlSeconds(path, upstreamBase);
@@ -98,6 +116,15 @@ export default {
     };
     if (upstreamBase === FOTMOB_API) {
       headers.Referer = 'https://www.fotmob.com/';
+    } else if (upstreamBase === PULSELIVE_API) {
+      /**
+       * Pulselive (premierleague.com backend) returns HTTP 401 without `Account:
+       * premierleague`. `Origin`/`Referer` aren't strictly required but match what the
+       * official PL site sends, so we mirror them to stay in the well-trodden path.
+       */
+      headers.Origin = 'https://www.premierleague.com';
+      headers.Referer = 'https://www.premierleague.com/';
+      headers.Account = 'premierleague';
     }
     const upstream = await fetch(target, {
       method: request.method,

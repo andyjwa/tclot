@@ -1,13 +1,10 @@
 import { useCallback, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar.jsx'
 import { PlayerKit } from './PlayerKit.jsx'
-import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { gameWeekSelectLabel } from './gwLabel.js'
-import {
-  flattenWaiverGroups,
-  sortGroupsByTeamName,
-  sortMovesWaiverThenFa,
-} from './waiverMovesSort.js'
+import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
+import { CompactSelectPill } from './CompactSelectPill.jsx'
+import './WaiversPanel.css'
 
 function teamFirstToken(teamName) {
   const t = (teamName ?? '').trim()
@@ -30,119 +27,85 @@ function moveLineForCopy(r) {
 }
 
 /**
- * @param {{ gw: number | null, layoutMode: 'league' | 'team', flatRows: Array<object>, teamGroups: Array<object>, leagueTitleAbbr: string, leagueTitle: string }} args
+ * @param {{ gw: number | null, flatRows: Array<object>, leagueTitleAbbr: string, leagueTitle: string }} args
  */
-function buildWaiverShareText({
-  gw,
-  layoutMode,
-  flatRows,
-  teamGroups,
-  leagueTitleAbbr,
-  leagueTitle,
-}) {
-  if (gw == null) return ''
-  if (layoutMode === 'league' && !flatRows?.length) return ''
-  if (layoutMode === 'team' && !teamGroups?.length) return ''
-
+function buildWaiverShareText({ gw, flatRows, leagueTitleAbbr, leagueTitle }) {
+  if (gw == null || !flatRows?.length) return ''
   const lines = []
   lines.push(`${leagueTitleAbbr} · GW ${gw}`)
   lines.push(leagueTitle)
   lines.push('')
-
-  if (layoutMode === 'league') {
-    for (const r of flatRows) {
-      const who = teamFirstToken(r.teamName)
-      lines.push(`${moveLineForCopy(r)}  |  ${who}`)
-    }
-  } else {
-    for (const g of teamGroups) {
-      lines.push(g.teamName)
-      for (const r of g.moves) {
-        lines.push(`  ${moveLineForCopy(r)}`)
-      }
-      lines.push('')
-      lines.push('')
-    }
+  for (const r of flatRows) {
+    const who = teamFirstToken(r.teamName)
+    lines.push(`${moveLineForCopy(r)}  |  ${who}`)
   }
   return lines.join('\n').trimEnd()
 }
 
-function CompactMoveLine({
-  r,
-  showTeamColumn,
-  teamLogoMap,
-  kitIndexByEntry,
-}) {
+/**
+ * Portrait, one-screen, screenshot-friendly waiver card. Rows flex (flex: 1 1 0)
+ * to divide the fixed card height evenly, so a light week reads large and the
+ * full record week still fits with no scroll. Density scales type to row count.
+ * Real GW data: IN player + club crest ← OUT player, league-wide waiver order
+ * (FA = none), and the manager's fantasy-team crest pinned right.
+ */
+function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEntry }) {
+  const density = rows.length > 12 ? 'dense' : 'airy'
   return (
-    <li
-      className={
-        showTeamColumn
-          ? 'waiver-summary-share__compact-line'
-          : 'waiver-summary-share__compact-line waiver-summary-share__compact-line--solo'
-      }
-    >
-      <div className="waiver-summary-share__compact-main">
-        {r.waiverProcessOrder != null ? (
-          <span className="waiver-summary-share__compact-rank tabular">
-            {r.waiverProcessOrder}.{' '}
-          </span>
-        ) : null}
-        <div className="waiver-summary-share__kind-with-kit">
-          <span
-            className={
-              r.transactionKind === 'f'
-                ? 'waiver-summary-share__kind waiver-summary-share__kind--fa'
-                : 'waiver-summary-share__kind'
-            }
-          >
-            {r.transactionKind === 'f' ? 'FA' : 'W'}
-          </span>
-          <PlayerKit
-            shirtUrl={r.pickedShirtUrl}
-            badgeUrl={r.pickedBadgeUrl}
-            teamShort={r.pickedTeamShort}
-          />
+    <div className={'waivers-share waivers-share--' + density} aria-label="Waiver summary for sharing">
+      <div className="waivers-share__head">
+        <div className="waivers-share__brand">
+          <span className="waivers-share__league">{leagueTitleAbbr}</span>
+          <span className="waivers-share__title">Waivers</span>
         </div>
-        <span className="waiver-summary-share__compact-pick">
-          <ClickablePlayerName
-            element={r.element_in}
-            web_name={r.pickedName}
-            teamShort={r.pickedTeamShort}
-          >
-            {r.pickedName ?? '—'}
-          </ClickablePlayerName>{' '}
-          <span className="waiver-summary-share__compact-arrow">←</span>{' '}
-          <span className="muted">
-            <ClickablePlayerName
-              element={r.element_out}
-              web_name={r.droppedName}
-              teamShort={r.droppedTeamShort}
-            >
-              {r.droppedName ?? '—'}
-            </ClickablePlayerName>
-          </span>
-        </span>
+        <span className="waivers-share__gw tabular">GW {gw}</span>
       </div>
-      {showTeamColumn ? (
-        <div className="waiver-summary-share__compact-team">
-          <span className="waiver-summary-share__compact-first muted">
-            {teamFirstToken(r.teamName)}
-          </span>
-          <TeamAvatar
-            entryId={r.leagueEntryId}
-            name={r.teamName}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        </div>
-      ) : null}
-    </li>
+      <ol className="waivers-share__list">
+        {rows.map((r) => {
+          const isFa = r.transactionKind === 'f'
+          return (
+            <li className="waivers-share__row" key={r.transactionId}>
+              <span className="waivers-share__marker tabular">
+                {isFa ? (
+                  <span className="waivers-share__tag waivers-share__tag--fa">FA</span>
+                ) : r.waiverProcessOrder != null ? (
+                  r.waiverProcessOrder
+                ) : (
+                  ''
+                )}
+              </span>
+              <span className="waivers-share__crest">
+                <PlayerKit badgeUrl={r.pickedBadgeUrl} teamShort={r.pickedTeamShort} />
+              </span>
+              <span className="waivers-share__name">{r.pickedName ?? '—'}</span>
+              <span className="waivers-share__arrow" aria-hidden="true">←</span>
+              <span className="waivers-share__crest waivers-share__crest--out">
+                <PlayerKit badgeUrl={r.droppedBadgeUrl} teamShort={r.droppedTeamShort} />
+              </span>
+              <span className="waivers-share__name waivers-share__name--out">
+                {r.droppedName ?? '—'}
+              </span>
+              <span className="waivers-share__avatar">
+                <TeamAvatar
+                  entryId={r.leagueEntryId}
+                  name={r.teamName}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
   )
 }
 
 /**
- * Compact waiver summary: copy-friendly; optional league order vs by team.
+ * Shareable weekly waiver card — a portrait, one-screen, screenshot-friendly
+ * render of a single GW's waivers built from real league data, with a GW picker
+ * and copy-for-sharing action.
  */
 export function WaiverSummaryShare({
   gw,
@@ -154,28 +117,18 @@ export function WaiverSummaryShare({
   gwPickerOptions = [],
   gwValue,
   onGwChange,
+  showGwPicker = true,
 }) {
   const [copied, setCopied] = useState(false)
-  const [layoutMode, setLayoutMode] = useState('league')
 
   const flatRows = useMemo(() => {
     const f = flattenWaiverGroups(groups)
     return f.sort(sortMovesWaiverThenFa)
   }, [groups])
 
-  const teamGroups = useMemo(() => sortGroupsByTeamName(groups), [groups])
-
   const shareText = useMemo(
-    () =>
-      buildWaiverShareText({
-        gw,
-        layoutMode,
-        flatRows,
-        teamGroups,
-        leagueTitleAbbr,
-        leagueTitle,
-      }),
-    [gw, layoutMode, flatRows, teamGroups, leagueTitleAbbr, leagueTitle],
+    () => buildWaiverShareText({ gw, flatRows, leagueTitleAbbr, leagueTitle }),
+    [gw, flatRows, leagueTitleAbbr, leagueTitle],
   )
 
   const onCopy = useCallback(async () => {
@@ -218,52 +171,22 @@ export function WaiverSummaryShare({
   return (
     <div className="waiver-summary-share">
       <div className="waiver-summary-share__toolbar">
-        <div className="waiver-summary-share__toolbar-row waiver-summary-share__toolbar-row--primary">
-          {gwPickerOptions.length > 0 && gwValue != null && onGwChange ? (
-            <select
-              className="tile-gw-select tile-gw-select--inline waiver-summary-share__gw-select"
-              aria-label="Waivers game week"
-              value={gwValue}
-              onChange={(e) => onGwChange(Number(e.target.value))}
-            >
-              {gwPickerOptions.map((g) => (
-                <option key={g} value={g}>
-                  {gameWeekSelectLabel(g)}
-                </option>
-              ))}
-            </select>
-          ) : null}
-          <div
-            className="waiver-summary-share__layout-toggle"
-            role="group"
-            aria-label="Waiver summary layout"
-          >
-            <button
-              type="button"
-              className={
-                layoutMode === 'league'
-                  ? 'waiver-summary-share__layout-btn waiver-summary-share__layout-btn--active'
-                  : 'waiver-summary-share__layout-btn'
-              }
-              aria-pressed={layoutMode === 'league'}
-              onClick={() => setLayoutMode('league')}
-            >
-              By order
-            </button>
-            <button
-              type="button"
-              className={
-                layoutMode === 'team'
-                  ? 'waiver-summary-share__layout-btn waiver-summary-share__layout-btn--active'
-                  : 'waiver-summary-share__layout-btn'
-              }
-              aria-pressed={layoutMode === 'team'}
-              onClick={() => setLayoutMode('team')}
-            >
-              By team
-            </button>
+        {showGwPicker && gwPickerOptions.length > 0 && gwValue != null && onGwChange ? (
+          <div className="waiver-summary-share__toolbar-row waiver-summary-share__toolbar-row--primary">
+            <CompactSelectPill
+              className="waiver-summary-share__gw-select"
+              label="GW"
+              ariaLabel="Waivers game week"
+              isActive={false}
+              value={String(gwValue)}
+              onChange={(next) => onGwChange(Number(next))}
+              options={gwPickerOptions.map((g) => ({
+                value: String(g),
+                label: gameWeekSelectLabel(g),
+              }))}
+            />
           </div>
-        </div>
+        ) : null}
         <div className="waiver-summary-share__toolbar-actions">
           <button
             type="button"
@@ -276,59 +199,13 @@ export function WaiverSummaryShare({
         </div>
       </div>
 
-      <div
-        className="waiver-summary-share__shot waiver-summary-share__shot--compact"
-        aria-label="Waiver summary for sharing"
-      >
-        <div className="waiver-summary-share__shot-head">
-          <span className="waiver-summary-share__shot-abbr">{leagueTitleAbbr}</span>
-          <span className="waiver-summary-share__shot-gw tabular">GW {gw}</span>
-        </div>
-
-        {layoutMode === 'league' ? (
-          <ul className="waiver-summary-share__compact-list">
-            {flatRows.map((r) => (
-              <CompactMoveLine
-                key={r.transactionId}
-                r={r}
-                showTeamColumn
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            ))}
-          </ul>
-        ) : (
-          <div className="waiver-summary-share__team-stack">
-            {teamGroups.map((g) => (
-              <section key={g.entry} className="waiver-summary-share__team-section">
-                <div className="waiver-summary-share__team-section-head">
-                  <span className="waiver-summary-share__team-section-name">
-                    {teamFirstToken(g.teamName)}
-                  </span>
-                  <TeamAvatar
-                    entryId={g.leagueEntryId}
-                    name={g.teamName}
-                    size="sm"
-                    logoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                  />
-                </div>
-                <ul className="waiver-summary-share__compact-list waiver-summary-share__compact-list--nested">
-                  {g.moves.map((r) => (
-                    <CompactMoveLine
-                      key={r.transactionId}
-                      r={r}
-                      showTeamColumn={false}
-                      teamLogoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
-        )}
-      </div>
+      <WaiverShareCard
+        gw={gw}
+        rows={flatRows}
+        leagueTitleAbbr={leagueTitleAbbr}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
     </div>
   )
 }

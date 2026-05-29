@@ -1,0 +1,802 @@
+/* =================================================================== */
+/* Lineups redesign mockup — CONVERGED design.                          */
+/* All classes namespaced `mockup-lu-*`; never touches `prem-lineup-*`. */
+/* =================================================================== */
+
+/* ---- shared atoms ------------------------------------------------- */
+.mockup-lu-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mockup-lu-crest img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.mockup-lu-crest__txt {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.mockup-lu-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+.mockup-lu-owner__name {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 86px;
+}
+.mockup-lu-owner__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* GW/fixture selector pill + refresh (mirrors CompactSelectPill look) */
+.mockup-lu-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mockup-lu-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12px;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.mockup-lu-pill__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+.mockup-lu-pill__value { font-weight: 600; }
+.mockup-lu-pill__chev { width: 12px; height: 12px; color: var(--text-muted); }
+.mockup-lu-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-left: auto;
+}
+.mockup-lu-refresh svg { width: 15px; height: 15px; }
+
+/* Confirmed badge (everything shown is confirmed; no Predicted state) */
+.mockup-lu-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.mockup-lu-badge--confirmed {
+  color: #34d399;
+  background: color-mix(in srgb, #12a15a 18%, transparent);
+  border-color: color-mix(in srgb, #12a15a 45%, var(--border));
+}
+.mockup[data-theme='light'] .mockup-lu-badge--confirmed { color: #047857; }
+
+/* page + card surfaces */
+.mockup-lu-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mockup-lu-page--mobile { gap: 10px; padding: 12px 10px; }
+.mockup-lu-mtitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mockup-lu-mtitle span {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mockup-lu-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* Static fixture header: reuses the collapsed `mockup-lu-fxrow` grid layout
+ * but renders as a non-button heading (no chev) at the top of the deep-dive
+ * variant's card. Modifier overrides the column template to drop the chev
+ * column and removes the hover/cursor affordance. */
+.mockup-lu-fxrow--static {
+  grid-template-columns: 110px 1fr 70px;
+  cursor: default;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+}
+.mockup-lu-fxrow--static:hover { background: var(--surface-2); }
+.mockup-lu-page--mobile .mockup-lu-fxrow--static {
+  grid-template-columns: 84px 1fr 50px;
+  padding: 10px 12px;
+}
+
+/* desktop wrapper + section chrome (mirrors waivers conventions) */
+.mockup-lu-variant { margin-bottom: 14px; }
+.mockup-lu-variant__label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.mockup-lu-desktop {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  padding: 14px;
+}
+.mockup-lu-frames.mockup-portrait-row { grid-template-columns: repeat(2, 390px); }
+@media (max-width: 900px) {
+  .mockup-lu-frames.mockup-portrait-row { grid-template-columns: 1fr; }
+}
+
+/* phone frame */
+.mockup-lu-phone {
+  width: 390px;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: var(--bg);
+  padding: 8px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+.mockup-lu-phone__screen {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* "preserves" chip row */
+.mockup-lu-preserves {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.mockup-lu-preserves__h {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-right: 2px;
+}
+.mockup-lu-preserves__chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-strong);
+}
+
+/* position pill never shrinks */
+.mockup-lu-card .mockup-players-pos { flex-shrink: 0; }
+
+/* =================================================================== */
+/* DESKTOP — paired XI tiles                                            */
+/* =================================================================== */
+.mockup-lu-a__heads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.mockup-lu-a__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 7px;
+  padding: 9px 12px;
+  min-width: 0;
+  background: var(--surface-2);
+}
+.mockup-lu-a__head--home { border-right: 1px solid var(--border); }
+.mockup-lu-a__team {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-strong);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mockup-lu-a__head .mockup-lu-crest { flex-shrink: 0; }
+.mockup-lu-a__formation {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mockup-lu-a__rows { display: flex; flex-direction: column; }
+.mockup-lu-a__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+.mockup-lu-a__cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  min-width: 0;
+  min-height: 2.4rem;
+  box-sizing: border-box;
+}
+.mockup-lu-a__cell--home {
+  border-right: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 45%, var(--surface));
+}
+.mockup-lu-a__cell.is-owned {
+  background: color-mix(in srgb, var(--brand) 7%, var(--surface));
+}
+.mockup-lu-a__cell--home.is-owned {
+  background: color-mix(in srgb, var(--brand) 9%, var(--surface));
+}
+.mockup-lu-a__name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mockup-lu-a__bench-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-2) 60%, var(--surface));
+}
+.mockup-lu-a__bench-head span {
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.mockup-lu-a__bench-head span:first-child { border-right: 1px solid var(--border); }
+.mockup-lu-a__rows--bench .mockup-lu-a__name { font-weight: 500; }
+
+.mockup-lu-a__nis-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--border);
+}
+.mockup-lu-a__nis-cell { min-width: 0; }
+.mockup-lu-a__nis-cell--home {
+  border-right: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+}
+/* When a side has no "not in squad" players, keep the column visually
+ * paired with its neighbour by leaving the cell empty (the row border still
+ * spans both columns). */
+.mockup-lu-a__nis-cell .mockup-lu-nis { border-top: none; }
+
+/* =================================================================== */
+/* MOBILE — home/away toggle + single-team A-style rows                 */
+/* =================================================================== */
+.mockup-lu-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.mockup-lu-toggle__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 0;
+}
+.mockup-lu-toggle__pill.is-active {
+  color: #fff;
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.mockup[data-theme='light'] .mockup-lu-toggle__pill.is-active { color: #fff; }
+.mockup-lu-toggle__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-lu-toggle__count {
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  color: var(--brand);
+  flex-shrink: 0;
+}
+.mockup-lu-toggle__pill.is-active .mockup-lu-toggle__count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+.mockup-lu-toggle__formation {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mockup-lu-toggle__pill.is-active .mockup-lu-toggle__formation {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.mockup-lu-m__sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mockup-lu-m__formation {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mockup-lu-m__owned-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+  text-align: right;
+}
+
+.mockup-lu-m__list { display: flex; flex-direction: column; }
+.mockup-lu-m__row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  min-width: 0;
+}
+.mockup-lu-m__list:first-of-type .mockup-lu-m__row:first-child { border-top: none; }
+.mockup-lu-m__row.is-owned {
+  background: color-mix(in srgb, var(--brand) 7%, transparent);
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+.mockup-lu-m__row--bench .mockup-lu-m__name { font-weight: 500; color: var(--text-muted); }
+.mockup-lu-m__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mockup-lu-m__bench-head {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding: 8px 12px 5px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-2) 60%, var(--surface));
+}
+
+/* "Not in squad" — label on top, players on a single row below. Shown when
+ * there are fantasy-owned players on this PL club that aren't in XI/bench.
+ * Items still wrap if names overflow, but with the label stacked above we
+ * give the items the full row width so 3 short names fit on one line at
+ * 390 px portrait. */
+.mockup-lu-nis {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 9px 12px 11px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 40%, var(--surface));
+  min-width: 0;
+}
+.mockup-lu-nis__h {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.mockup-lu-nis__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+}
+.mockup-lu-nis__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-lu-nis__sep {
+  color: color-mix(in srgb, var(--text-muted) 55%, transparent);
+  font-weight: 400;
+  margin: 0 4px;
+  user-select: none;
+}
+.mockup-lu-nis__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.mockup-lu-nis--desktop {
+  padding: 10px 14px 12px;
+}
+.mockup-lu-nis--desktop .mockup-lu-nis__name { font-size: 12.5px; }
+
+/* =================================================================== */
+/* NEW: Gameweek fixture list (pre-selection state).                    */
+/* FotMob-styled day-grouped rows with inline expand below each.        */
+/* =================================================================== */
+
+/* '‹ GW 31 ▾ ›' centered selector */
+.mockup-lu-gwnav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+.mockup-lu-gwnav__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.mockup-lu-gwnav__arrow:hover { color: var(--text-strong); }
+.mockup-lu-gwnav__arrow svg { width: 16px; height: 16px; }
+.mockup-lu-gwnav__center {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 13px;
+  cursor: pointer;
+  min-width: 110px;
+  justify-content: center;
+}
+.mockup-lu-gwnav__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.mockup-lu-gwnav__value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mockup-lu-gwnav__chev { width: 12px; height: 12px; color: var(--text-muted); }
+.mockup-lu-gwnav__refresh {
+  position: absolute;
+  right: 0;
+  margin-left: 0;
+}
+
+/* Day band: 'Saturday, Apr 12' */
+.mockup-lu-day {
+  padding: 9px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  background: color-mix(in srgb, var(--surface-2) 70%, var(--surface));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.mockup-lu-daysect:first-child .mockup-lu-day,
+.mockup-lu-card > .mockup-lu-fixlist-wrap > .mockup-lu-daysect:first-child .mockup-lu-day {
+  border-top: none;
+}
+
+/* Pinned 'Live now' strip */
+.mockup-lu-livenow {
+  background: color-mix(in srgb, #ef4444 6%, var(--surface));
+  border-bottom: 1px solid var(--border);
+}
+.mockup-lu-livenow__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ef4444;
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, #ef4444 25%, var(--border));
+}
+.mockup-lu-livenow__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  animation: mockup-lu-pulse 1.6s ease-out infinite;
+}
+.mockup-lu-livenow__title { letter-spacing: 0.1em; }
+.mockup-lu-livenow__count {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #ef4444 22%, transparent);
+}
+
+/* Fixture list (within either a day section or the live strip) */
+.mockup-lu-fxlist { display: flex; flex-direction: column; }
+.mockup-lu-fxitem {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.mockup-lu-fxitem:last-child { border-bottom: none; }
+.mockup-lu-fxitem.is-expanded {
+  background: color-mix(in srgb, var(--brand) 4%, var(--surface));
+}
+
+/* Collapsed row: grid for clean 3-zone layout */
+.mockup-lu-fxrow {
+  display: grid;
+  grid-template-columns: 110px 1fr 70px 18px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  min-height: 44px;
+}
+.mockup-lu-fxrow:hover { background: color-mix(in srgb, var(--brand) 5%, var(--surface)); }
+.mockup-lu-fxitem.is-expanded .mockup-lu-fxrow { background: transparent; }
+.mockup-lu-fxrow__chip { display: inline-flex; min-width: 0; }
+.mockup-lu-fxrow__teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.mockup-lu-fxrow__home,
+.mockup-lu-fxrow__away {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mockup-lu-fxrow__home { justify-content: flex-end; }
+.mockup-lu-fxrow__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-lu-fxrow__score {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong);
+  padding: 0 6px;
+  white-space: nowrap;
+}
+.mockup-lu-fxrow__score--vs {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mockup-lu-fxrow__right {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+.mockup-lu-fxrow__chev {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* State chips on the LEFT of each row */
+.mockup-lu-fxchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.mockup-lu-fxchip--live {
+  color: #ef4444;
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  border-color: color-mix(in srgb, #ef4444 45%, var(--border));
+}
+.mockup-lu-fxchip--live .mockup-lu-fxchip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  animation: mockup-lu-pulse 1.6s ease-out infinite;
+}
+.mockup-lu-fxchip--live .mockup-lu-fxchip__min {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.mockup-lu-fxchip--pre {
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+}
+.mockup-lu-fxchip--ft {
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-2) 80%, var(--surface));
+}
+.mockup-lu-fxchip--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+@keyframes mockup-lu-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0.45); }
+  70%  { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);    }
+  100% { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0);    }
+}
+
+/* Expanded body region below a row */
+.mockup-lu-fxbody {
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: var(--surface);
+}
+.mockup-lu-fxbody__empty {
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Mobile-row variant: narrower zones, smaller crests, abbreviated names */
+.mockup-lu-page--mobile .mockup-lu-fxrow {
+  grid-template-columns: 84px 1fr 50px 14px;
+  gap: 8px;
+  padding: 9px 10px;
+  min-height: 42px;
+}
+.mockup-lu-page--mobile .mockup-lu-fxrow__teams { gap: 6px; }
+.mockup-lu-page--mobile .mockup-lu-fxrow__name {
+  font-size: 12.5px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.mockup-lu-page--mobile .mockup-lu-fxrow__score { font-size: 13px; padding: 0 4px; }
+.mockup-lu-page--mobile .mockup-lu-fxrow__right { font-size: 10.5px; }
+.mockup-lu-page--mobile .mockup-lu-fxchip {
+  font-size: 9px;
+  padding: 2px 6px;
+  gap: 4px;
+}
+.mockup-lu-page--mobile .mockup-lu-day {
+  padding: 8px 12px;
+  font-size: 11.5px;
+}
+.mockup-lu-page--mobile .mockup-lu-livenow__head {
+  padding: 8px 12px;
+  font-size: 10.5px;
+}

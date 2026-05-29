@@ -25,7 +25,7 @@ function redirectRootToBasePath(base) {
 /** Production / static deploy: subpath on GitHub Pages. Local `vite`/`npm run dev:vite` uses `/` so http://localhost:5173/ and #/players work. */
 const productionBase = process.env.VITE_BASE_PATH || '/TCLOT/'
 
-/** Dev + `vite preview`: Live / ESPN / FotMob same-origin proxies (`fplDraftUrl.js` uses `/__fpl` on localhost). */
+/** Dev + `vite preview`: Live / ESPN / FotMob / Pulselive same-origin proxies (`fplDraftUrl.js` uses `/__fpl` on localhost). */
 const fplRelatedProxy = {
   '^/__fpl/draft/': {
     target: 'https://draft.premierleague.com',
@@ -47,6 +47,20 @@ const fplRelatedProxy = {
     changeOrigin: true,
     rewrite: (path) =>
       path.replace(/^\/__espn/, '/apis/site/v2/sports/soccer/eng.1'),
+  },
+  '^/__pulselive/': {
+    target: 'https://footballapi.pulselive.com',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/__pulselive/, '/football'),
+    /** Pulselive returns HTTP 401 without `Account: premierleague`; `Origin`/`Referer`
+     *  match the worker so dev and prod talk to the same upstream. */
+    configure: (proxy) => {
+      proxy.on('proxyReq', (proxyReq) => {
+        proxyReq.setHeader('Origin', 'https://www.premierleague.com')
+        proxyReq.setHeader('Referer', 'https://www.premierleague.com/')
+        proxyReq.setHeader('Account', 'premierleague')
+      })
+    },
   },
 }
 

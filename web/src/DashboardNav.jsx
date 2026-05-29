@@ -1,18 +1,34 @@
-import {
-  showDashboardHall,
-  showDashboardPlayoff,
-} from './siteFeatures'
-import { ThemeToggle } from './ThemeToggle'
 import { TeamAvatar } from './TeamAvatar'
+import { NavIcon } from './NavIcon'
 
-/** @typedef {'standings' | 'playoff' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
+/** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
+
+/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'more' | 'settings'} NavIconName */
 
 /**
- * @param {{ id: DashboardViewId, label: string, shortLabel: string, emoji?: string, bottomEmoji?: string, logoSrc?: string, bottomOnly?: boolean }} item
+ * Note: the view ID for the Moves tab stays `teamSelection` to keep
+ * already-stored Settings default-tab prefs (PR #3) working — the
+ * user-visible label has gone Team Selection → Transactions → Moves, but
+ * the internal id is load-bearing for saved preferences and is preserved.
+ *
+ * @param {{
+ *   item: {
+ *     id: DashboardViewId,
+ *     label: string,
+ *     shortLabel: string,
+ *     icon: NavIconName,
+ *     pulse?: boolean,
+ *     bottomOnly?: boolean,
+ *   },
+ *   active: boolean,
+ *   onSelect: (id: DashboardViewId) => void,
+ *   variant: 'top' | 'bottom',
+ * }} props
  */
 function NavButton({ item, active, onSelect, variant }) {
   const isBottom = variant === 'bottom'
-  const emoji = isBottom && item.bottomEmoji != null ? item.bottomEmoji : item.emoji
+  const iconClass =
+    'dashboard-nav__icon' + (item.pulse ? ' dashboard-nav__icon--pulse' : '')
   return (
     <button
       type="button"
@@ -26,20 +42,7 @@ function NavButton({ item, active, onSelect, variant }) {
       aria-label={isBottom ? item.label : undefined}
       title={isBottom ? item.label : undefined}
     >
-      {item.logoSrc ? (
-        <img
-          className="dashboard-nav__fd-logo"
-          src={item.logoSrc}
-          alt=""
-          loading="eager"
-          decoding="async"
-          aria-hidden
-        />
-      ) : (
-        <span className="dashboard-nav__emoji" aria-hidden="true">
-          {emoji}
-        </span>
-      )}
+      <NavIcon name={item.icon} className={iconClass} />
       <span className="dashboard-nav__label">
         {isBottom ? item.shortLabel : item.label}
       </span>
@@ -48,84 +51,69 @@ function NavButton({ item, active, onSelect, variant }) {
 }
 
 /**
- * @param {{ variant: 'top' | 'bottom', dashboardView: DashboardViewId, onSelect: (id: DashboardViewId) => void, fplLogoSrc: string }} props
+ * @param {{ variant: 'top' | 'bottom', dashboardView: DashboardViewId, onSelect: (id: DashboardViewId) => void }} props
  */
-export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
+export function DashboardNav({ variant, dashboardView, onSelect }) {
   const isBottom = variant === 'bottom'
 
+  // Single source of truth for nav order (left → right on desktop, also the
+  // mobile bottom-pill order): FPL Live · Standings · Moves ·
+  // Players · TCLOT Heritage · More. `More` is `bottomOnly` so it only
+  // renders in the mobile bottom nav; desktop gets a separate Settings gear
+  // button (rendered below the .map() loop), kept out of this array so its
+  // hairline-divider + margin-left:auto styling stays local to that button.
   const primaryItems = [
     {
       id: /** @type {const} */ ('fplLive'),
       label: 'FPL Live',
       shortLabel: 'Live',
-      logoSrc: fplLogoSrc,
+      icon: /** @type {const} */ ('pulsing-dot'),
+      pulse: true,
     },
     {
       id: /** @type {const} */ ('standings'),
-      label: 'Standings & Form',
+      label: 'Standings',
       shortLabel: 'Table',
-      emoji: '📈',
-      bottomEmoji: '🧩',
+      icon: /** @type {const} */ ('bar-chart-3'),
     },
     {
       id: /** @type {const} */ ('teamSelection'),
-      label: 'Team Selection',
+      label: 'Moves',
       shortLabel: 'Moves',
-      emoji: '👥',
-      bottomEmoji: '🎢',
+      icon: /** @type {const} */ ('users'),
     },
     {
       id: /** @type {const} */ ('players'),
       label: 'Players',
       shortLabel: 'Wire',
-      emoji: '🪂',
+      icon: /** @type {const} */ ('shuffle'),
+    },
+    {
+      id: /** @type {const} */ ('hall'),
+      label: 'TCLOT Heritage',
+      shortLabel: 'Heritage',
+      icon: /** @type {const} */ ('column'),
     },
     {
       id: /** @type {const} */ ('more'),
       label: 'More',
       shortLabel: 'More',
-      emoji: '⋯',
+      icon: /** @type {const} */ ('more'),
       bottomOnly: true,
     },
   ]
 
-  const topItems = [
-    primaryItems.find((i) => i.id === 'standings'),
-    ...(showDashboardPlayoff
-      ? [
-          {
-            id: /** @type {const} */ ('playoff'),
-            label: 'Play Off',
-            shortLabel: 'Play Off',
-            emoji: '🏅',
-          },
-        ]
-      : []),
-    primaryItems.find((i) => i.id === 'teamSelection'),
-    ...(showDashboardHall
-      ? [
-          {
-            id: /** @type {const} */ ('hall'),
-            label: 'Hall of Champions',
-            shortLabel: 'Hall',
-            emoji: '🏆',
-          },
-        ]
-      : []),
-    primaryItems.find((i) => i.id === 'players'),
-    primaryItems.find((i) => i.id === 'fplLive'),
-  ].filter(Boolean)
-
-  const items = isBottom
-    ? primaryItems.filter((i) => i.bottomOnly || !i.bottomOnly)
-    : topItems
+  const topItems = primaryItems.filter((i) => !i.bottomOnly)
+  const items = isBottom ? primaryItems : topItems
 
   const isActive = (id) => {
     if (id === 'more') {
-      return dashboardView === 'more' || dashboardView === 'playoff' || dashboardView === 'hall'
+      return dashboardView === 'more' || dashboardView === 'settings'
     }
     return dashboardView === id
   }
+
+  const settingsActive = dashboardView === 'settings'
 
   return (
     <nav
@@ -143,25 +131,33 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
           variant={variant}
         />
       ))}
+      {!isBottom && (
+        <button
+          type="button"
+          className={
+            'dashboard-nav__btn dashboard-nav__btn--settings' +
+            (settingsActive ? ' dashboard-nav__btn--active' : '')
+          }
+          onClick={() => onSelect('settings')}
+          aria-current={settingsActive ? 'page' : undefined}
+          aria-label="Settings"
+          title="Settings"
+        >
+          <NavIcon name="settings" className="dashboard-nav__icon" />
+        </button>
+      )}
     </nav>
   )
 }
 
 export function DashboardMorePanel({
   onNavigate,
-  colorTheme,
-  onThemeChange,
   badgeTeams = [],
   teamLogoMap = {},
   kitIndexByEntry = {},
 }) {
   const rows = [
-    ...(showDashboardPlayoff
-      ? [{ id: /** @type {const} */ ('playoff'), label: 'Play Off', emoji: '🏅' }]
-      : []),
-    ...(showDashboardHall
-      ? [{ id: /** @type {const} */ ('hall'), label: 'Hall of Champions', emoji: '🏆' }]
-      : []),
+    { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },
   ]
 
   return (
@@ -204,14 +200,7 @@ export function DashboardMorePanel({
             </button>
           </li>
         ))}
-        <li className="dashboard-more__theme-row">
-          <span className="dashboard-more__theme-label">Theme</span>
-          <ThemeToggle value={colorTheme} onChange={onThemeChange} />
-        </li>
       </ul>
-      {rows.length === 0 ? (
-        <p className="muted dashboard-more__empty">Use the tabs above for league sections.</p>
-      ) : null}
     </section>
   )
 }

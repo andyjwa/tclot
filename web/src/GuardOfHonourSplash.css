@@ -1,0 +1,690 @@
+/* ------------------------------------------------------------------ */
+/* GuardOfHonourSplash — top-down match-engine cinematic for the
+ * reigning champion's opener. Currently a static render of the v2 mock
+ * geometry; keyframe choreography (blue line slide-in, red conga march,
+ * Higman bob, clap wave, crown pulse) will be layered on in a follow-up
+ * pass once we're happy with the static look.
+ *
+ * Mounted as a full-width banner above the LiveScores fixture list,
+ * matching the slot the FplLiveTripleThreatBanner promo uses. Aspect
+ * ratio is 16:9 by intrinsic SVG viewBox so the banner scales with the
+ * available width without layout shift.                                */
+/* ------------------------------------------------------------------ */
+
+.goh-splash {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: min(960px, 100%);
+  margin: clamp(0.5rem, 1.8vw, 0.9rem) auto;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #1c2a1a;
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.18),
+    0 0 0 1px color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, transparent);
+  /* Subtle "this is a special moment" framing — gold-tinted outer halo. */
+  outline: 1px solid color-mix(in srgb, #ffd166 35%, transparent);
+  outline-offset: -1px;
+}
+
+.goh-splash__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
+}
+
+/* Dot label + number text. Bold, white, with a thin dark stroke so they
+ * stay legible against both the deep-blue and deep-red dot fills as well
+ * as the green pitch where the surname labels sit.
+ *
+ * NB on responsive sizing: SVG <text> uses CSS pixels for `font-size`, NOT
+ * viewBox units — so a 10px label on a 1024-wide-viewBox SVG rendered at
+ * 400 CSS px wide ends up gobbling ~2.6× more viewBox horizontal space
+ * than it does at full desktop size. That collides labels on portrait
+ * mobile even though the same data renders cleanly on desktop. Fluid
+ * `clamp()` sizing (with `vw` driving the middle of the curve) keeps the
+ * labels physically readable but shrinks them in viewBox terms as the
+ * surrounding pitch contracts, so the alternating above/below labelling
+ * pattern in the conga still resolves without collisions. Stroke width
+ * is scaled in parallel so a thin label doesn't render as a bold blob. */
+.goh-splash__num {
+  font-family: inherit;
+  font-size: clamp(8.5px, 1.6vw, 12px);
+  font-weight: 800;
+  fill: #ffffff;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: clamp(0.6px, 0.13vw, 1px);
+  letter-spacing: 0.01em;
+}
+
+.goh-splash__label {
+  font-family: inherit;
+  font-size: clamp(7px, 1.4vw, 10px);
+  font-weight: 700;
+  fill: #ffffff;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.7);
+  stroke-width: clamp(0.6px, 0.13vw, 1px);
+  letter-spacing: 0.01em;
+}
+
+.goh-splash__label--higman {
+  font-size: clamp(10px, 2vw, 14px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  /* Subtle gold tinge to match the ring + crown. */
+  fill: #fff7e0;
+  stroke: rgba(60, 32, 0, 0.85);
+  stroke-width: clamp(0.8px, 0.16vw, 1.25px);
+}
+
+/* Streaker label — bright pink with a dark outline so the joke name
+ * pops against any pitch background. Slightly smaller than the manager
+ * labels because the streaker is a fleeting visual gag. */
+.goh-splash__label--streaker {
+  font-size: clamp(8.5px, 1.7vw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  fill: #ff66cc;
+  stroke: rgba(0, 0, 0, 0.85);
+  stroke-width: clamp(0.7px, 0.14vw, 1.1px);
+}
+
+/* Streaker + security guards are HIDDEN by default (no `--playing`
+ * class on the parent) so the static post-session-cap tableau and the
+ * `prefers-reduced-motion` fallback both render as a clean guard of
+ * honour without a pitch invader frozen at centre. The cinematic CSS
+ * animations override this with their own opacity keyframes when the
+ * `--playing` class is set on the root, fading the streaker / security
+ * in for their entrance and back out as they get dragged off-screen. */
+.goh-splash__streaker,
+.goh-splash__security {
+  opacity: 0;
+}
+
+/* Dismiss button — same chrome treatment as the FplLiveTripleThreatBanner
+ * close affordance so users recognise the dismissal pattern. */
+.goh-splash__dismiss {
+  position: absolute;
+  top: clamp(6px, 1.5vw, 10px);
+  right: clamp(6px, 1.5vw, 10px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(34px, 8vw, 40px);
+  height: clamp(34px, 8vw, 40px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, rgba(0, 0, 0, 0.4));
+  background: rgba(255, 255, 255, 0.96);
+  color: #1a1a1c;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fotmob[data-theme='dark'] .goh-splash__dismiss {
+  background: rgba(30, 30, 34, 0.95);
+  border-color: color-mix(in srgb, #ffffff 35%, rgba(255, 255, 255, 0.12));
+  color: #fafafa;
+}
+
+.goh-splash__dismiss:active {
+  transform: scale(0.96);
+}
+
+.goh-splash__dismiss-x {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: -0.06em;
+}
+
+.goh-splash__dismiss:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 75%, transparent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goh-splash__dismiss:active {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Replay button — stacked just below the close X in the top-right.
+ * Forces a fresh playback of the entrance cinematic by remounting the
+ * SVG (React `key` flip), bypassing the per-session play cap.
+ *
+ * Why top-right and not bottom-right (the original placement): on
+ * portrait mobile the splash collapses to ~225 CSS px tall and the GK
+ * label sits at ~y=210, which the bottom-right button used to overlap.
+ * Stacking under the dismiss X keeps both controls out of the player
+ * zone at every breakpoint. The `top` value is the dismiss button's
+ * top offset + its full height + a 6px breathing gap, computed via
+ * `calc` so the stack stays correct as the dismiss button itself
+ * scales with `clamp()`.                                              */
+/* ------------------------------------------------------------------ */
+.goh-splash__replay {
+  position: absolute;
+  top: calc(clamp(6px, 1.5vw, 10px) + clamp(34px, 8vw, 40px) + 6px);
+  right: clamp(6px, 1.5vw, 10px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(30px, 7vw, 34px);
+  height: clamp(30px, 7vw, 34px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, rgba(0, 0, 0, 0.4));
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a1c;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+
+.fotmob[data-theme='dark'] .goh-splash__replay {
+  background: rgba(30, 30, 34, 0.92);
+  border-color: color-mix(in srgb, #ffffff 35%, rgba(255, 255, 255, 0.12));
+  color: #fafafa;
+}
+
+.goh-splash__replay:hover {
+  background: rgba(255, 255, 255, 1);
+}
+.fotmob[data-theme='dark'] .goh-splash__replay:hover {
+  background: rgba(45, 45, 50, 1);
+}
+
+.goh-splash__replay:active {
+  transform: scale(0.94);
+}
+.goh-splash__replay:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 75%, transparent);
+  outline-offset: 2px;
+}
+
+.goh-splash__replay-icon {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  display: block;
+  transform: translateY(-1px);
+}
+
+/* ------------------------------------------------------------------ */
+/* Three-act animation timeline. All keyframe-driven motion is scoped
+ * under `.goh-splash--playing` so that:
+ *   - The post-session-cap static render shows the final-frame tableau
+ *     (blue in formation, red lined up on the left) with no animation,
+ *   - `prefers-reduced-motion: reduce` users get the same final-frame
+ *     tableau (overridden at the bottom of this block),
+ *   - A React `key`-based replay (dismount + remount of the SVG inside
+ *     the playing root) restarts every CSS animation from t=0.
+ *
+ * Per-dot start/waypoint offsets are passed through inline CSS custom
+ * properties from the JSX (`--enter-dx`, `--enter-dy`, `--handshake-dx`,
+ * `--exit-dx`). Every dot is RENDERED in the SVG at its FINAL on-pitch
+ * position; the keyframes simply translate it from off-screen / waypoint
+ * back to (0, 0) (the final position) using those per-dot offsets.
+ *
+ * Timeline:
+ *   ACT 1 — Guard of honour forms (≈0.0–11.3s)
+ *     0.0–0.6s   pitch fades in
+ *     0.8–1.6s   centrepiece (crown + trophy) fades in
+ *     2.6–11.3s  blue outfielders + Butcher + opp GK enter
+ *                (430ms stagger × 4.3s walk = 6×2 formation)
+ *     8.0s+      blue celebrates: bob loop + clap-wave loop start as
+ *                the first dots settle, while later dots are still
+ *                arriving (was 12s, after the whole formation was
+ *                in place — pulled in to remove dead air)
+ *
+ *   ACT 2 — Champions parade + Higman inspects (≈10–38s)
+ *     10.0s+     Higman emerges FIRST (1s before the conga) and runs
+ *                his zigzag weave through the blue guard
+ *     11.0–25.5s 11 red starters emerge from the tunnel, turn up into
+ *                the corridor, and PARADE the full width of the pitch
+ *                down the guard before peeling into the vertical line
+ *                on the left touchline (550ms stagger × 9s — slowed
+ *                from 5.2s for a deliberate procession)
+ *     ~28.2–38s  Higman walks SLOWLY DOWN his own inspection lane
+ *                (offset right of the column so he never overlaps a
+ *                teammate's dot or label) past every starter
+ *     10s+       Higman perpetual bob + ring pulse (active throughout)
+ *
+ *   ACT 3 — Pitch invader chased off (≈28–38s)
+ *     28.0s+     Streaker sprints ON from OFF-SCREEN LEFT just as
+ *                Higman BEGINS his walk-down, so the gag overlaps the
+ *                inspection instead of only firing at the very end
+ *     28.0s+     Streaker bouncing run + flag wave (perpetual until exit)
+ *     31.0–38s   Security EMERGES FROM THE CORNER TUNNEL — converges on
+ *                the streaker, catches up shoulder-to-shoulder (22px
+ *                flanking), and hauls the whole bundle back off toward
+ *                the tunnel by t=38s, the same moment Higman reaches
+ *                HIGMAN_FINAL */
+/* ------------------------------------------------------------------ */
+
+/* ACT 1 — opening atmospherics ------------------------------------- */
+
+@keyframes goh-pitch-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes goh-centre-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes goh-centre-swell {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.78; }
+}
+
+/* ACT 1 — blue team marches in single-file from off-screen right then
+ * disperses to its formation positions. Each dot translates from its
+ * own per-position offset (var --enter-dx, --enter-dy) back to (0, 0).
+ * Because all 11 dots share the same off-screen entry coordinate
+ * (ENTRY_X, ENTRY_Y), they appear to enter as a procession and fan out
+ * to their final spots along the way. */
+
+@keyframes goh-opp-enter {
+  0% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 0;
+  }
+  8% { opacity: 1; }
+  22% {
+    transform: translate(var(--mouth-dx, 0), var(--mouth-dy, 0));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+/* "Jumping on the spot / celebrating" — perpetual subtle vertical bob,
+ * applied to the inner __opp-bob wrapper so it stacks cleanly with the
+ * outer entrance translate. Starts after the dot arrives at formation. */
+@keyframes goh-opp-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+@keyframes goh-clap-wave {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+/* ACT 2 — red starters emerge from the corner tunnel, turn UP into the
+ * corridor at its right end, then PARADE the full width of the pitch
+ * down the corridor (between the two blue rows) before peeling into the
+ * vertical line on the left touchline. Multi-keyframe path:
+ *   0%   off-screen in the tunnel          → (enter-dx, enter-dy)
+ *   14%  at the tunnel mouth (single-file) → (mouth-dx, mouth-dy)
+ *   28%  turned up into the corridor, right end → (corr-dx, corr-dy)
+ *   78%  walked the FULL width to the left end  → (corrL-dx, corrL-dy)
+ *   100% peeled up/down into the vertical-line slot → (0, 0)
+ * The 28%→78% leg is the long, deliberate parade through the guard —
+ * half the animation — so the champions process the length of the
+ * pitch rather than cutting straight to the touchline. */
+
+@keyframes goh-red-walk {
+  0% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 0;
+  }
+  6%   { opacity: 1; }
+  14%  {
+    transform: translate(var(--mouth-dx, 0), var(--mouth-dy, 0));
+    opacity: 1;
+  }
+  28%  {
+    transform: translate(var(--corr-dx, 0), var(--corr-dy, 0));
+    opacity: 1;
+  }
+  78%  {
+    transform: translate(var(--corrL-dx, 0), var(--corrL-dy, 0));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+/* Higman weave — Higman emerges FIRST onto the pitch (right after the
+ * blue guard settles). He now mirrors the red conga's exit route — out
+ * of the tunnel, turn UP to the RIGHT of Roefs into the corridor — and
+ * ONLY THEN zigzags between the two blue rows before stepping into his
+ * own inspection lane and walking SLOWLY DOWN it past every teammate.
+ * Each waypoint is consumed as a translate from his final SVG position
+ * (bottom of the lane), the same convention every other dot uses.
+ *
+ *   0%   off-screen in the corner tunnel (--enter-dx, --enter-dy)
+ *   3%   appears (opacity 1)
+ *   8%   tunnel mouth at the corner      (--mouth-dx, --mouth-dy)
+ *   14%  corridor entry, RIGHT of Roefs  (--corr-dx, --corr-dy)
+ *   24%  W1 top row near right end       (--w1-dx, --w1-dy)
+ *   38%  W2 bottom row near centre       (--w2-dx, --w2-dy)
+ *   52%  W3 top row near left            (--w3-dx, --w3-dy)
+ *   65%  W4 TOP of inspection lane       (--w4-dx, --w4-dy)
+ *   100% BOTTOM of inspection lane       translate(0, 0)
+ *
+ * The 0%→14% intro (tunnel → mouth → corridor entry to the right of
+ * Roefs) matches the conga's `goh-red-walk` emergence, so Higman and the
+ * champions leave the tunnel along the same path and clear the Roefs dot.
+ *
+ * The 65%→100% phase is the long, slow walk down the line — it's the
+ * single longest leg of the keyframe (35% of the run versus ~15% per
+ * weave hop) so that the walk-down reads as deliberate inspection
+ * rather than a quick stroll. With a 28s overall duration this works
+ * out to ~9.8s for the walk-down (≈47 px/s, very leisurely).
+ *
+ * Opacity is pinned to 1 at each weave waypoint so the interpolated
+ * value never dips between 3% (first set to 1) and 100% (final state
+ * also 1) — otherwise an intermediate keyframe declaring only
+ * `transform` would leave the opacity to interpolate across the whole
+ * arc, and any future per-waypoint opacity tweak (e.g. a slight fade
+ * during a sprint) could land unexpectedly. */
+@keyframes goh-higman-weave {
+  0% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 0;
+  }
+  3% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 1;
+  }
+  8% {
+    transform: translate(var(--mouth-dx, 0), var(--mouth-dy, 0));
+    opacity: 1;
+  }
+  14% {
+    transform: translate(var(--corr-dx, 0), var(--corr-dy, 0));
+    opacity: 1;
+  }
+  24% {
+    transform: translate(var(--w1-dx, 0), var(--w1-dy, 0));
+    opacity: 1;
+  }
+  38% {
+    transform: translate(var(--w2-dx, 0), var(--w2-dy, 0));
+    opacity: 1;
+  }
+  52% {
+    transform: translate(var(--w3-dx, 0), var(--w3-dy, 0));
+    opacity: 1;
+  }
+  65% {
+    transform: translate(var(--w4-dx, 0), var(--w4-dy, 0));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes goh-higman-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+@keyframes goh-higman-glow-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* ACT 3 — streaker cinematic. Sprints ON from OFF-SCREEN LEFT along the
+ * corridor, dashes to the corridor centre, holds only briefly (just long
+ * enough to look "caught") before security catch up and the whole
+ * bundle is hauled off toward the bottom-right tunnel. The hold window
+ * has been deliberately shortened from 50–70% to 50–60% of the animation
+ * so the chase reads as an actual pursuit rather than a long
+ * pause-then-eject.
+ *
+ * Explicit `opacity: 1` at the entry, on-pitch, and held waypoints so
+ * the streaker stays fully visible during the entrance and capture
+ * phases, only fading out as he gets dragged off-screen between 60%
+ * and 100% of the timeline. */
+@keyframes goh-streaker {
+  0% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 0;
+  }
+  8% { opacity: 1; }
+  50% { transform: translate(0, 0); opacity: 1; }
+  60% { transform: translate(0, 0); opacity: 1; }
+  100% {
+    transform: translate(var(--exit-dx, 0), var(--exit-dy, 0));
+    opacity: 0;
+  }
+}
+
+/* Streaker bouncing run — faster bob than the other dots to read as a
+ * frantic dash rather than a settled celebration. */
+@keyframes goh-streaker-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3.5px); }
+}
+
+/* Flag wave — left and right flags oscillate out of phase so the pair
+ * reads as a frantic semaphore. `transform-origin` set on the rule
+ * below pins the rotation to the mast base. */
+@keyframes goh-streaker-flag-wave-l {
+  0%, 100% { transform: rotate(-18deg); }
+  50%      { transform: rotate(22deg); }
+}
+
+@keyframes goh-streaker-flag-wave-r {
+  0%, 100% { transform: rotate(18deg); }
+  50%      { transform: rotate(-22deg); }
+}
+
+/* Security — EMERGES FROM THE CORNER TUNNEL (bottom-right), cuts up-left
+ * to the streaker at corridor centre, catches up shoulder-to-shoulder
+ * (22px flanking), then hauls him back off toward the tunnel in close
+ * formation.
+ *
+ * Phase timeline (the `__security` rule's delay/duration positions
+ * these inside the streaker's window):
+ *   0–10%   appears at the tunnel mouth, fades in
+ *   10–40%  in-pursuit phase — translate from the tunnel mouth
+ *           up-left toward the streaker at corridor centre
+ *   40–55%  caught up, shoulder-to-shoulder with the streaker at
+ *           his brief centre hold
+ *   55–100% haul the bundle off toward the bottom-right tunnel —
+ *           fires ~0.65s after the streaker's 60% drag-off start so
+ *           the streaker barely leads the pack back into the tunnel */
+@keyframes goh-security {
+  0% {
+    transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  40% { transform: translate(0, 0); opacity: 1; }
+  55% { transform: translate(0, 0); opacity: 1; }
+  100% {
+    transform: translate(var(--exit-dx, 0), var(--exit-dy, 0));
+    opacity: 0;
+  }
+}
+
+/* Targets ----------------------------------------------------------
+ *
+ * Whole-cinematic timeline ≈ 50s. One-shot durations and delays:
+ *
+ *   0.0 – 1.0s    pitch fade
+ *   1.4 – 2.8s    centre crown fade-in, then perpetual swell @ 8s
+ *   2.6 – 11.3s   blue OUTFIELDERS (10 dots) march in, fan to formation
+ *   8s onwards    blue bob + clap-wave kick in (perpetual) — the
+ *                 stadium starts roaring as the first dots arrive,
+ *                 not after every last one has settled
+ *   10   – 38.0s  Higman emerges FIRST, weaves through the guard
+ *                 (R→top-row→bot-row→top-row→top-of-lane), then walks
+ *                 SLOWLY DOWN his inspection lane past every teammate
+ *   10s onwards   Higman perpetual bob + ring pulse (active the whole
+ *                 time he's on the pitch — he's the overly-animated
+ *                 manager dot, bouncing while he weaves and while he
+ *                 walks the line)
+ *   11   – 25.5s  CONGA (11 red starters) parades the full width of the
+ *                 corridor (9s walk) and stacks into the vertical line
+ *                 to Higman's LEFT
+ *   28   – 38.0s  streaker sprints in FROM OFF-SCREEN LEFT → brief
+ *                 centre hold (starts as Higman BEGINS his walk-down) →
+ *                 hauled off toward the bottom-right tunnel, fully gone
+ *                 by t=38s
+ *   31   – 38.0s  security EMERGES FROM THE CORNER TUNNEL, catches the
+ *                 streaker, hauls the whole bundle back off toward the
+ *                 tunnel by t=38s — the same moment Higman reaches
+ *                 HIGMAN_FINAL
+ */
+
+.goh-splash--playing .goh-splash__pitch {
+  animation: goh-pitch-fade-in 1s ease-out 0s both;
+}
+
+.goh-splash--playing .goh-splash__centre {
+  animation:
+    goh-centre-fade 1.4s ease-out 1.4s both,
+    goh-centre-swell 5s ease-in-out 8s infinite;
+}
+
+/* Blue outfield entrance — 430ms stagger × 4.3s walk = settles by
+ * ~8.6s for the last outfielder. (Blue keeper joins the conga in v4,
+ * so there's no separate `__opp-gk` formation rule any more.) */
+.goh-splash--playing .goh-splash__opp-top,
+.goh-splash--playing .goh-splash__opp-bot {
+  animation: goh-opp-enter 4.3s cubic-bezier(0.25, 1, 0.5, 1)
+    calc(2.6s + var(--i, 0) * 0.43s) both;
+}
+
+/* Blue celebration — perpetual bob on inner wrapper, kicks in at
+ * ~8s so the wave starts rolling as the first dots arrive, not after
+ * the whole formation has settled. Staggered by row index so the
+ * line doesn't bob in lockstep. */
+.goh-splash--playing .goh-splash__opp-top .goh-splash__opp-bob,
+.goh-splash--playing .goh-splash__opp-bot .goh-splash__opp-bob {
+  animation: goh-opp-bob 0.6s ease-in-out
+    calc(8s + var(--i, 0) * 0.14s) infinite;
+}
+
+/* Clap-wave on every blue chevron — staggered by row index for a
+ * stadium-wave feel. Starts at t=8s, while later dots are still
+ * tracking in, so the stadium is already roaring by the time Higman
+ * emerges and the conga begins. */
+.goh-splash--playing .goh-clap-chevron {
+  animation: goh-clap-wave 0.8s ease-in-out
+    calc(8s + var(--i, 0) * 0.21s) infinite;
+}
+
+/* Conga (11 red starters) parade through the corridor — 550ms stagger
+ * × 9s walk (lengthened from 5.2s so the full-width traverse reads as a
+ * deliberate parade rather than a dash). First dot starts at t=11s, the
+ * last settles at ~25.5s — still comfortably before the streaker enters
+ * at t=28s. A near-linear ease keeps the corridor walk at a steady
+ * processional pace instead of rushing then braking. */
+.goh-splash--playing .goh-splash__conga-slot {
+  animation: goh-red-walk 9s cubic-bezier(0.45, 0.05, 0.55, 0.95)
+    calc(11s + var(--i, 0) * 0.55s) both;
+}
+
+/* Higman cinematic — starts at t=10s (1s BEFORE the conga so he's
+ * first onto the pitch) and runs 28s through six waypoints:
+ *   10.0–~28.2s   four-waypoint weave between the blue rows then up
+ *                 to the top of the inspection lane (W1 → W4)
+ *   ~28.2–38.0s   long, slow walk DOWN the inspection lane past every
+ *                 teammate, finishing below the bottom of the column
+ *                 at t=38s. (Duration and path are unchanged from v6;
+ *                 only the start delay shifts earlier with the rest
+ *                 of the tightened timeline.) */
+.goh-splash--playing .goh-splash__higman {
+  animation: goh-higman-weave 28s cubic-bezier(0.3, 0.9, 0.55, 1) 10s both;
+}
+
+/* Higman perpetual bob + ring pulse — start the moment he appears so
+ * he reads as "overly animated and bouncing more than everyone else"
+ * the entire time he's on the pitch (the original brief). The bob
+ * lives on the INNER wrapper so it composes with the outer weave
+ * translate cleanly — Higman bobs while he weaves AND while he walks
+ * the line. */
+.goh-splash--playing .goh-splash__higman-bob {
+  animation: goh-higman-bob 0.75s ease-in-out 10s infinite;
+}
+
+.goh-splash--playing .goh-splash__higman-glow {
+  animation: goh-higman-glow-pulse 1.8s ease-in-out 10s infinite;
+}
+
+/* Streaker cinematic — starts t=28s, just as Higman BEGINS his
+ * walk-down the inspection lane (the walk-down runs ~28.2–38s), so
+ * the streaker is on the pitch overlapping Higman's walk rather than
+ * only bursting on at the very end. Runs 10s and fully exits at
+ * t=38s — the same moment Higman reaches HIGMAN_FINAL (100% of
+ * goh-higman-weave) — so the whole pitch-invader gag lands and
+ * clears in step with the climax of Higman's inspection. */
+.goh-splash--playing .goh-splash__streaker {
+  animation: goh-streaker 10s cubic-bezier(0.3, 1, 0.55, 1) 28s both;
+}
+
+/* Streaker's bouncing run + flag wave loop the entire time the
+ * streaker is on the pitch. Delay matches the streaker's main
+ * animation delay so the bob/flag-wave start the instant he
+ * appears. */
+.goh-splash--playing .goh-splash__streaker-bob {
+  animation: goh-streaker-bob 0.35s ease-in-out 28s infinite;
+}
+
+.goh-splash--playing .goh-splash__streaker-flag--left .goh-splash__streaker-flag-spin {
+  animation: goh-streaker-flag-wave-l 0.4s ease-in-out 28s infinite;
+  transform-origin: 0 0;
+}
+
+.goh-splash--playing .goh-splash__streaker-flag--right .goh-splash__streaker-flag-spin {
+  animation: goh-streaker-flag-wave-r 0.4s ease-in-out 28s infinite;
+  transform-origin: 0 0;
+}
+
+/* Security — both guards start t=31s (3s after the streaker, so
+ * they're pursuing rather than ambushing) and run 7s, ending at
+ * t=38s — the same instant the streaker fully exits and Higman
+ * reaches HIGMAN_FINAL. The streaker reaches centre at ~33s; security
+ * catches up at 40% (t=33.8s), holds shoulder-to-shoulder until 55%
+ * (t=34.85s), then chases the whole bundle off the right edge so all
+ * three converge on the same off-screen exit point by t=38s. The
+ * --enter-dy custom property is different per guard (one cuts in
+ * slightly higher, one slightly lower) so the SAME keyframe produces
+ * two distinct pursuit paths from the same bottom-right origin where
+ * the streaker came in. */
+.goh-splash--playing .goh-splash__security {
+  animation: goh-security 7s cubic-bezier(0.3, 1, 0.55, 1) 31s both;
+}
+
+/* Reduced-motion fallback. Force every animated descendant of the
+ * playing root back to its final-state default (no transforms, no
+ * opacity ramps) so the splash reads as the same static tableau a
+ * post-session-cap viewer would see. Note: this snaps the streaker
+ * and security dots to their final FRAME (off-screen, opacity 0) so
+ * the pitch-invader bit is effectively skipped — the user lands on
+ * the clean guard-of-honour tableau. */
+@media (prefers-reduced-motion: reduce) {
+  .goh-splash--playing,
+  .goh-splash--playing * {
+    animation: none !important;
+  }
+}

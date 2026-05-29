@@ -1,161 +1,57 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { fplElementKnownName, fplElementWebName } from './fplElementNames.js'
-import { PlayerKit } from './PlayerKit.jsx'
-import { TeamAvatar } from './TeamAvatar.jsx'
-import { CompareClubSourcePill, ComparePlayerPill, ComparePlayerSearch, StatsColumnsPill } from './playersFilterPills.jsx'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { fplElementWebName } from './fplElementNames.js'
 import {
   buildWireStatPills,
   fetchElementSummary,
   portraitDetailDefaultWireStatIdsForPosition,
   portraitMaxStatColumns,
-  POS_LABEL,
   readWireStatSelection,
   writeWireStatSelection,
 } from './playersWireList.js'
-import {
-  formatHistoryBlankStat,
-  formatHistoryCount,
-  formatHistoryDcForRow,
-  historyGw,
-  historyOpponentMetaForGw,
-  historyPoints,
-  normalizeHistoryRows,
-} from './playerGwHistory.js'
 import { useMobileLayout, usePortraitMobile } from './usePortraitMobile.js'
+import { PlayerDetailHero } from './PlayerDetailHero.jsx'
+import { PlayerDetailOverview } from './PlayerDetailOverview.jsx'
+import { PlayerDetailPerformance } from './PlayerDetailPerformance.jsx'
+import { PlayerCompareView } from './PlayerCompareView.jsx'
 import './PlayersWorkbench.css'
 import './PlayerDetailView.css'
 
-/** Same URL/size pattern as waiver `enrichElementRow` crests (`NextFixtureBadges`). */
-function oppFixtureCrestUrl(teamCode) {
-  if (teamCode == null) return null
-  const n = Number(teamCode)
-  if (!Number.isFinite(n)) return null
-  return `https://resources.premierleague.com/premierleague/badges/50/t${n}.png`
+/** @typedef {'overview' | 'performance'} PdetailTabId */
+
+const TABS = /** @type {{ id: PdetailTabId, label: string }[]} */ ([
+  { id: 'overview',    label: 'Overview' },
+  { id: 'performance', label: 'Performance' },
+])
+
+/** @returns {'xi' | 'bench' | 'absent'} */
+function deriveXiKind(el) {
+  const status = String(el?.status ?? '').toLowerCase()
+  if (status === 'i' || status === 'u' || status === 's') return 'absent'
+  const chance = Number(el?.chance_of_playing_next_round)
+  if (Number.isFinite(chance) && chance < 50) return 'absent'
+  if (Number.isFinite(chance) && chance < 100 && chance >= 50) return 'bench'
+  return 'xi'
 }
 
-/** Crest inside waiver fixture chip — green rounded square (home), red circle (away). */
-function HistoryOpponentBadgeCell({ opponents, title: tip }) {
-  if (!Array.isArray(opponents) || opponents.length === 0) {
-    return <span className="players-detail__opp-empty">—</span>
-  }
-  const multi = opponents.length > 1
-  return (
-    <span
-      className={
-        'players-fixtures-badges players-detail__hist-opp-fixtures' +
-        (multi ? ' players-detail__hist-opp-fixtures--multi' : '')
-      }
-      role="list"
-      {...(tip ? { 'aria-label': tip } : { 'aria-hidden': true })}
-    >
-      {opponents.map((o, i) => {
-        const isHome = Boolean(o?.isHome)
-        const crestSrc = oppFixtureCrestUrl(o.code)
-        const abbrev = String(o.short ?? '?').slice(0, 3)
-        const oneTitle = `${isHome ? 'Home' : 'Away'} vs ${o.name}`
-        const key = `${o.short}-${String(i)}`
-        return (
-          <span
-            key={key}
-            className={`players-fixture-badge${
-              isHome ? ' players-fixture-badge--home' : ' players-fixture-badge--away'
-            }`}
-            role="listitem"
-            title={oneTitle}
-            aria-label={oneTitle}
-          >
-            {crestSrc ? (
-              <img
-                src={crestSrc}
-                alt=""
-                className="players-fixture-badge__crest"
-                width={28}
-                height={28}
-                loading="lazy"
-                decoding="async"
-              />
-            ) : (
-              <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
-                {abbrev}
-              </span>
-            )}
-          </span>
-        )
-      })}
-    </span>
-  )
-}
-
-/** @param {{ k: string, v: string }[]} pills */
-function WireStatBoxStrip({ pills }) {
-  return (
-    <dl className="players-stat-strip players-detail__stat-strip">
-      {pills.map((s) => (
-        <div key={s.k} className="players-stat-pill">
-          <dt>{s.k}</dt>
-          <dd className="tabular">{s.v}</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
-/** @param {{
- *   el: object,
- *   teamById: Map<number, object>,
- *   pills: { k: string, v: string }[],
- *   owner?: { leagueEntryId: number, teamName: string } | null,
- *   rostersHealthy?: boolean,
- *   logoMap?: Record<string, string>,
- *   kitIndexByEntry?: Record<number, number>,
- * }} props */
-function PlayerWireHero({
-  el,
-  teamById,
-  pills,
-  owner = null,
-  rostersHealthy = false,
-  logoMap = {},
-  kitIndexByEntry = {},
-}) {
-  const tm = teamById.get(el?.team)
-  const badgeUrl =
-    tm?.code != null
-      ? `https://resources.premierleague.com/premierleague/badges/50/t${tm.code}.png`
-      : null
-  const posLabel = POS_LABEL[el?.element_type] ?? '?'
-  const showOwner = rostersHealthy && owner != null
-  return (
-    <div className="players-detail__hero">
-      <h2 className="players-detail__name">
-        {fplElementKnownName(el, el.id)}{' '}
-        <span className="players-detail__meta muted">({posLabel})</span>
-      </h2>
-      <div className="players-detail__hero-row">
-        <div className="players-detail__hero-badges">
-          <PlayerKit badgeUrl={badgeUrl} teamShort={tm?.short_name} />
-          {showOwner ? (
-            <span
-              className="players-detail__hero-owner"
-              title={owner.teamName}
-            >
-              <TeamAvatar
-                entryId={owner.leagueEntryId}
-                name={owner.teamName}
-                size="sm"
-                logoMap={logoMap}
-                kitIndexByEntry={kitIndexByEntry}
-                badgeFallback
-              />
-            </span>
-          ) : null}
-        </div>
-        <div className="players-detail__stat-cluster">
-          <WireStatBoxStrip pills={pills} />
-        </div>
-      </div>
-    </div>
-  )
+/**
+ * Map a fantasy-team owner pill to the small "On {crest} {team-name}"
+ * label rendered in the hero. Returns `null` when the player is a free
+ * agent OR when rosters haven't loaded yet (the hero falls back to the
+ * Free agent dot in that case — same as the locked Mockup).
+ *
+ * @param {{ leagueEntryId: number, teamName: string } | null} owner
+ * @returns {{ code: string, name: string } | null}
+ */
+function buildOwnerLabel(owner) {
+  if (!owner?.teamName) return null
+  const parts = String(owner.teamName)
+    .split(/\s+/)
+    .filter(Boolean)
+  const initials = parts
+    .map((p) => p.charAt(0).toUpperCase())
+    .join('')
+    .slice(0, 3)
+  return { code: initials || '?', name: owner.teamName }
 }
 
 /**
@@ -204,18 +100,22 @@ export function PlayerDetailView({
 }) {
   const portrait = usePortraitMobile()
   const mobileLayout = useMobileLayout()
+  const [tab, setTab] = useState(/** @type {PdetailTabId} */ ('overview'))
+  const [compareOpen, setCompareOpen] = useState(false)
   const [primaryPayload, setPrimaryPayload] = useState(null)
   const [comparePayload, setComparePayload] = useState(null)
   const [loadingPrimary, setLoadingPrimary] = useState(true)
   const [loadingCompare, setLoadingCompare] = useState(false)
   const [errorPrimary, setErrorPrimary] = useState(null)
 
+  /** Reset Compare flow state when the focused player changes. */
+  useEffect(() => {
+    setCompareOpen(false)
+  }, [playerId])
+
   const elementType = playerEl?.element_type
   const detailPositionFilter =
     elementType != null ? String(elementType) : 'all'
-  const posLabel = POS_LABEL[elementType] ?? '?'
-  const showCs = elementType !== 4
-  const defDetail = elementType === 2
 
   const [detailStatIds, setDetailStatIds] = useState(() =>
     readWireStatSelection(detailPositionFilter),
@@ -283,57 +183,20 @@ export function PlayerDetailView({
     }
   }, [benchId])
 
-  const primaryRows = useMemo(
-    () => normalizeHistoryRows(primaryPayload || {}),
-    [primaryPayload],
-  )
-
-  const tableScrollRef = useRef(null)
-
-  useLayoutEffect(() => {
-    if (!mobileLayout) return
-    if (loadingPrimary || errorPrimary || !primaryRows.length) return
-    const el = tableScrollRef.current
-    if (!el) return
-
-    let cancelled = false
-    const snapToEnd = () => {
-      if (cancelled) return
-      const node = tableScrollRef.current
-      if (!node) return
-      node.scrollTop = Math.max(0, node.scrollHeight - node.clientHeight)
-    }
-
-    snapToEnd()
-
-    let raf2 = 0
-    const raf1 = requestAnimationFrame(() => {
-      snapToEnd()
-      raf2 = requestAnimationFrame(() => {
-        snapToEnd()
-      })
-    })
-
-    const tIdle = window.setTimeout(snapToEnd, 0)
-
-    return () => {
-      cancelled = true
-      cancelAnimationFrame(raf1)
-      if (raf2) cancelAnimationFrame(raf2)
-      window.clearTimeout(tIdle)
-    }
-  }, [mobileLayout, loadingPrimary, errorPrimary, primaryRows.length, playerId])
-
   const compareActive = benchEl != null && benchId != null
   const compareElementType = benchEl?.element_type ?? elementType
   const primaryOwner = ownerByElementId.get(Number(playerId)) ?? null
-  const benchOwner =
-    benchId != null ? ownerByElementId.get(Number(benchId)) ?? null : null
+
+  const ownerLabel = useMemo(
+    () => (rostersHealthy ? buildOwnerLabel(primaryOwner) : null),
+    [primaryOwner, rostersHealthy],
+  )
+  const xiKind = useMemo(() => deriveXiKind(playerEl), [playerEl])
+  const team = teamById.get(playerEl?.team) ?? null
 
   const detailStatMax = portrait ? portraitMaxStatColumns(detailPositionFilter) : 8
   const portraitCompare = portrait && compareActive
   const pillOptions = { portrait, portraitDetail: portrait, portraitCompare }
-  const benchSelected = benchId != null && benchEl != null
 
   const primaryWirePills = useMemo(
     () =>
@@ -346,6 +209,7 @@ export function PlayerDetailView({
         detailPositionFilter,
         pillOptions,
       ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       playerEl,
       primaryPayload,
@@ -369,6 +233,7 @@ export function PlayerDetailView({
       detailPositionFilter,
       pillOptions,
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     compareActive,
     benchEl,
@@ -381,219 +246,127 @@ export function PlayerDetailView({
     portraitCompare,
   ])
 
-  const handleSourceChange = (source) => {
-    onCompareSourceChange(source)
-  }
+  const handleCloseCompare = useCallback(() => {
+    setCompareOpen(false)
+  }, [])
 
-  const comparePillOptions = compareSource ? compareSquadOptions : compareSearchOptions
+  const handleClearCompare = useCallback(() => {
+    onBenchChange?.(null)
+  }, [onBenchChange])
 
   return (
-    <div className="players-detail" aria-label={`${fplElementKnownName(playerEl, playerId)} season detail`}>
-      <header className="players-detail__toolbar players-detail__toolbar--sticky team-selection-submenu">
-        <div className="players-detail__compare-row">
-          <div className="players-detail__compare-primary">
-            {!mobileLayout ? (
-              <span className="players-detail__compare-label">Compare:</span>
-            ) : null}
-            {benchSelected ? (
-              <ComparePlayerPill
-                options={comparePillOptions}
-                selectedId={benchId}
-                onSelect={onBenchChange}
-                positionLabel={posLabel}
-                displayName={
-                  mobileLayout
-                    ? fplElementWebName(benchEl, benchId)
-                    : fplElementKnownName(benchEl, benchId)
-                }
+    <div
+      className={'pdetail-host' + (mobileLayout ? ' pdetail-host--mobile' : '')}
+      aria-label={`${fplElementWebName(playerEl, playerId)} player detail`}
+    >
+      {/*
+       * Top header bar — Back chevron + "Player" title. Renders for every
+       * mobile-layout width (≤1080px), not just narrow portrait phones, so
+       * tablets and landscape phones get the same chevron-anchored exit
+       * affordance instead of a bottom "BACK" link. Mockup parity:
+       * `mockup-pdetail-p__h` from the locked PlayerDetailPortrait. Round 3
+       * polish: also serves the swipe-right gesture target on the surface
+       * itself; clicking the chevron closes via the same path
+       * (`onBack` → `requestDetailClose`).
+       */}
+      {mobileLayout ? (
+        <div className="pdetail__topbar">
+          <button
+            type="button"
+            className="pdetail__back"
+            aria-label="Back"
+            onClick={onBack}
+          >
+            <span aria-hidden>‹</span>
+          </button>
+          <span className="pdetail__topbar-title">Player</span>
+          <span aria-hidden />
+        </div>
+      ) : null}
+
+      {compareOpen ? null : (
+        <PlayerDetailHero
+          el={playerEl}
+          team={team}
+          ownerLabel={ownerLabel}
+          xiKind={xiKind}
+          portrait={portrait}
+          onCompareClick={() => setCompareOpen(true)}
+          compareDisabled={false}
+        />
+      )}
+
+      {compareOpen ? (
+        <PlayerCompareView
+          primaryEl={playerEl}
+          primaryPayload={primaryPayload}
+          primaryPills={primaryWirePills}
+          compareEl={compareActive ? benchEl : null}
+          comparePayload={comparePayload}
+          comparePills={compareWirePills}
+          teamById={teamById}
+          onClose={handleCloseCompare}
+          onClearCompare={handleClearCompare}
+          benchId={benchId}
+          onBenchChange={onBenchChange}
+          onSearchBenchSelect={onSearchBenchSelect}
+          compareSource={compareSource}
+          onCompareSourceChange={onCompareSourceChange}
+          compareSearchOptions={compareSearchOptions}
+          compareSquadOptions={compareSquadOptions}
+          teamsForFormSelect={teamsForFormSelect}
+          plClubs={plClubs}
+          logoMap={logoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          detailStatIds={detailStatIds}
+          onDetailStatChange={handleDetailStatChange}
+          detailPositionFilter={detailPositionFilter}
+          detailStatMax={detailStatMax}
+          portrait={portrait}
+          mobileLayout={mobileLayout}
+        />
+      ) : (
+        <>
+          <div className="pdetail__tabs" role="tablist">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                className={'pdetail__tab' + (tab === t.id ? ' is-active' : '')}
+                onClick={() => setTab(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="pdetail__main">
+            {loadingPrimary && !primaryPayload ? (
+              <p className="muted pdetail__loading">Loading season data…</p>
+            ) : errorPrimary ? (
+              <p className="muted pdetail__error" role="alert">
+                Could not load season data. {errorPrimary}
+              </p>
+            ) : tab === 'overview' ? (
+              <PlayerDetailOverview
+                el={playerEl}
+                summaryPayload={primaryPayload}
+                teamById={teamById}
+                portrait={portrait}
+                plFixtures={plFixtures}
               />
             ) : (
-              <ComparePlayerSearch
-                options={compareSearchOptions}
-                selectedId={benchId}
-                onSelect={onSearchBenchSelect}
-                placeholder="Find a player…"
-                positionLabel={posLabel}
-                compact={mobileLayout}
+              <PlayerDetailPerformance
+                el={playerEl}
+                summaryPayload={primaryPayload}
+                teamById={teamById}
               />
             )}
           </div>
-          <div className="players-detail__compare-actions">
-            <CompareClubSourcePill
-              fantasyTeams={teamsForFormSelect}
-              plClubs={plClubs}
-              selected={compareSource}
-              onSelect={handleSourceChange}
-              logoMap={logoMap}
-              kitIndexByEntry={kitIndexByEntry}
-              compact={mobileLayout}
-            />
-            <StatsColumnsPill
-              selectedIds={detailStatIds}
-              onChange={handleDetailStatChange}
-              positionFilter={detailPositionFilter}
-              maxStatColumns={detailStatMax}
-              compact={mobileLayout}
-            />
-          </div>
-        </div>
-      </header>
-
-      <div className="players-detail__main">
-        <div className="players-detail__content">
-      <PlayerWireHero
-        el={playerEl}
-        teamById={teamById}
-        pills={primaryWirePills}
-        owner={primaryOwner}
-        rostersHealthy={rostersHealthy}
-        logoMap={logoMap}
-        kitIndexByEntry={kitIndexByEntry}
-      />
-
-      {compareActive ? (
-        <PlayerWireHero
-          el={benchEl}
-          teamById={teamById}
-          pills={compareWirePills}
-          owner={benchOwner}
-          rostersHealthy={rostersHealthy}
-          logoMap={logoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-      ) : null}
-
-      <div
-        className={`players-detail__table-area${
-          mobileLayout ? ' players-detail__table-area--edge-back' : ''
-        }`}
-      >
-      <div className="players-detail__table-wrap" ref={tableScrollRef}>
-        {loadingPrimary ? (
-          <p className="muted players-detail__loading">Loading gameweek history…</p>
-        ) : errorPrimary ? (
-          <p className="players-bench-banner" role="alert">
-            Could not load history. {errorPrimary}
-          </p>
-        ) : !primaryRows.length ? (
-          <p className="muted">No gameweek history available.</p>
-        ) : (
-          <table className="players-detail__table">
-            <thead>
-              <tr>
-                <th scope="col">GW</th>
-                <th
-                  scope="col"
-                  className="players-detail__opp-th"
-                  aria-label="Opponent Premier League club"
-                />
-                <th scope="col">Mins</th>
-                <th scope="col" title="Goals">
-                  G
-                </th>
-                <th scope="col" title="Assists">
-                  A
-                </th>
-                {!defDetail ? (
-                  <th scope="col" title="Defensive contributions">
-                    DC
-                  </th>
-                ) : null}
-                {showCs ? <th scope="col">CS</th> : null}
-                {defDetail ? (
-                  <th scope="col" title="Defensive contributions">
-                    DC
-                  </th>
-                ) : (
-                  <th scope="col">Bps</th>
-                )}
-                <th scope="col">Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {primaryRows.map((h, i) => {
-                const gw = historyGw(h)
-                const pts = historyPoints(h)
-                const oppMeta = historyOpponentMetaForGw(
-                  gw,
-                  playerEl?.team,
-                  plFixtures,
-                  teamById,
-                )
-                return (
-                  <tr key={`${gw}-${i}`}>
-                    <td className="tabular players-detail__gw">
-                      {Number.isFinite(gw) ? gw : '—'}
-                    </td>
-                    <td
-                      className="tabular players-detail__opp-col"
-                      title={oppMeta.title || undefined}
-                    >
-                      <HistoryOpponentBadgeCell
-                        opponents={oppMeta.opponents}
-                        title={oppMeta.title}
-                      />
-                    </td>
-                    <td className="tabular">{h.minutes ?? '—'}</td>
-                    <td className="tabular">
-                      {formatHistoryCount('⚽', h.goals_scored)}
-                    </td>
-                    <td className="tabular">
-                      {formatHistoryCount('🍑', h.assists)}
-                    </td>
-                    {!defDetail ? (
-                      <td className="tabular">
-                        {formatHistoryDcForRow(
-                          h,
-                          playerId,
-                          playerEl?.team,
-                          elementType,
-                          plFixtures,
-                        )}
-                      </td>
-                    ) : null}
-                    {showCs ? (
-                      <td className="tabular">
-                        {formatHistoryBlankStat(h.clean_sheets)}
-                      </td>
-                    ) : null}
-                    <td className="tabular">
-                      {defDetail
-                        ? formatHistoryDcForRow(
-                            h,
-                            playerId,
-                            playerEl?.team,
-                            elementType,
-                            plFixtures,
-                          )
-                        : formatHistoryBlankStat(h.bonus)}
-                    </td>
-                    <td className="tabular players-detail__pts">
-                      {pts != null ? pts : '—'}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
-      </div>
-      <div className="players-detail__footer-back">
-        <button
-          type="button"
-          className="players-detail__stack-back"
-          onClick={onBack}
-          aria-label="Back"
-        >
-          <span className="players-detail__stack-back__arrow" aria-hidden="true">
-            ←
-          </span>
-          <span className="players-detail__stack-back__label">BACK</span>
-        </button>
-      </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   )
 }

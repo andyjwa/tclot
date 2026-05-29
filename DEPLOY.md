@@ -124,35 +124,3 @@ In **Actions → latest run → build job log**, look for:
 | Demo league / yellow banner | No `FPL_LEAGUE_ID` and no real committed `league-data` |
 | Wrong league | Wrong ID in secret |
 | Letter avatars only | `team-logos/*.png` not committed |
-
----
-
-## 5. Satellite repos (forks / other league sites)
-
-**GitHub Actions only deploys the repo that was pushed.** A push to the canonical **TCLOT** repo runs **Deploy site to Pages** there only. It does **not** copy the build to ExFOS, Spoons, or any other GitHub repo.
-
-To refresh those sites after you merge to `main`:
-
-1. Ensure each satellite is a **git remote** (e.g. `exfos`, `my-league`, `spoons`) pointing at that repo’s URL.
-2. From the repo root, push `main` to every remote:
-
-   ```bash
-   ./scripts/push-all-league-remotes.sh
-   ```
-
-   That script runs `git push origin main` then the same for the remotes listed inside it. **Edit the script** if your mirror remote names differ.
-
-3. Each satellite repo must have **Pages → GitHub Actions** enabled and its own **secrets/variables** (`FPL_LEAGUE_ID`, `VITE_FPL_PROXY_URL`, etc.) so its workflow builds the right league.
-
-If you only `git push origin main` (or push only to TCLOT on GitHub), the other repos never get the commit, so their Pages workflows do not run and their sites stay stale.
-
-### Draft tab on fork / satellite repos
-
-The committed **`draft_picks.json`** in the canonical repo is for **TCLOT’s league id**. On another site, the app **drops** that file if it does not match **`details.json`**, then tries to **rebuild the draft from the FPL API in the browser**. **GitHub Pages cannot do that** (CORS) unless you set **`VITE_FPL_PROXY_URL`** on that repo’s build.
-
-**Fix for each satellite repo:**
-
-1. Set **`FPL_LEAGUE_ID`** (Actions secret or variable) so CI runs `ingest.py` and **`build-draft-picks.mjs`** writes a **`draft_picks.json`** for that league (no browser draft calls needed for the board).
-2. If the draft build step ever fails in Actions, still set **`VITE_FPL_PROXY_URL`** so the Draft tab can fall back to the proxy.
-
-After pulling the latest `main`, the **`prune-stale-draft-picks`** build step removes mismatched `draft_picks.json` before regenerating it, so you are not stuck with TCLOT’s picks while `details.json` is already yours.

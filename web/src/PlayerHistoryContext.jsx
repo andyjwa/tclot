@@ -3,15 +3,18 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useState,
 } from 'react'
 import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx'
-import { PlayerSeasonSlideOver } from './PlayerSeasonSlideOver.jsx';
 
 const PlayerHistoryContext = createContext(null);
 
 /**
- * Opens the season history slide-over. Accepts pick rows, trade legs, waiver rows, etc.
+ * Opens the player detail overlay (`PlayerDetailOverlay`). Accepts pick rows, trade legs, waiver rows, etc.
+ *
+ * The legacy `PlayerSeasonSlideOver` fallback was retired in Phase 2 — `App.jsx` always wraps the tree
+ * in `PlayerDetailOverlayProvider`, so the only path is `playerDetailOverlay.openPlayerDetail(...)`. If
+ * the overlay provider is somehow missing in development we log loudly so the bug surfaces immediately.
+ *
  * @param {object} row
  * @param {number} [row.element]
  * @param {number} [row.elementId]
@@ -23,14 +26,24 @@ const PlayerHistoryContext = createContext(null);
  * @param {string} [row.teamName]
  * @param {string} [row.pickedTeamShort]
  * @param {string} [row.droppedTeamShort]
+ * @param {number} [row.leagueEntryId]
  */
-export function PlayerHistoryProvider({ children, teamLogoMap = {}, kitIndexByEntry }) {
-  const [target, setTarget] = useState(null);
+export function PlayerHistoryProvider({ children }) {
   const playerDetailOverlay = usePlayerDetailOverlayOptional();
 
   const openPlayerHistory = useCallback((row) => {
     const element = Number(row?.element ?? row?.elementId);
     if (!Number.isFinite(element)) return;
+    if (!playerDetailOverlay) {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[PlayerHistoryProvider] PlayerDetailOverlayProvider is missing — cannot open player detail. ' +
+            'Wrap the app in <PlayerDetailOverlayProvider> above <PlayerHistoryProvider>.',
+        );
+      }
+      return;
+    }
     const displayName =
       row?.displayName ?? row?.playerFullName ?? row?.playerName ?? undefined;
     const web_name = row?.web_name ?? undefined;
@@ -40,24 +53,17 @@ export function PlayerHistoryProvider({ children, teamLogoMap = {}, kitIndexByEn
       row?.pickedTeamShort ??
       row?.droppedTeamShort ??
       undefined;
-    if (playerDetailOverlay) {
-      let leagueRaw = row?.leagueEntryId ?? null;
-      if (leagueRaw != null) leagueRaw = Number(leagueRaw);
-      const leagueOk = Number.isFinite(leagueRaw) ? leagueRaw : undefined;
-
-      playerDetailOverlay.openPlayerDetail({
-        element,
-        ...(leagueOk != null ? { leagueEntryId: leagueOk } : {}),
-        displayName,
-        web_name,
-        teamShort,
-      });
-      return;
-    }
-    setTarget({ element, displayName, web_name, teamShort });
+    let leagueRaw = row?.leagueEntryId ?? null;
+    if (leagueRaw != null) leagueRaw = Number(leagueRaw);
+    const leagueOk = Number.isFinite(leagueRaw) ? leagueRaw : undefined;
+    playerDetailOverlay.openPlayerDetail({
+      element,
+      ...(leagueOk != null ? { leagueEntryId: leagueOk } : {}),
+      displayName,
+      web_name,
+      teamShort,
+    });
   }, [playerDetailOverlay]);
-
-  const closePlayerHistory = useCallback(() => setTarget(null), []);
 
   const value = useMemo(
     () => ({ openPlayerHistory }),
@@ -67,14 +73,6 @@ export function PlayerHistoryProvider({ children, teamLogoMap = {}, kitIndexByEn
   return (
     <PlayerHistoryContext.Provider value={value}>
       {children}
-      {!playerDetailOverlay && target ? (
-        <PlayerSeasonSlideOver
-          target={target}
-          onClose={closePlayerHistory}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-      ) : null}
     </PlayerHistoryContext.Provider>
   );
 }

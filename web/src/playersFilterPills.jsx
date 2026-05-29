@@ -2,9 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar.jsx'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
 import {
+  defaultSortDirForKey,
   defaultWireStatIdsForPosition,
   isWireStatDisabledInPicker,
   normalizeWireStatSelection,
+  sortKeysForPositionFilter,
+  SORT_LABELS,
   wireStatPickerDisabledReason,
   wireStatPickerLayout,
   wireStatPickerPositionTabLabel,
@@ -941,5 +944,385 @@ export function StatsColumnsPill({
         </div>
       ) : null}
     </div>
+  )
+}
+
+/* ============================================================
+ * Owned filter pill — collapses the old `availableOnly` switch + FantasyTeamPill
+ * into one dropdown:
+ *
+ *   "Free agents only"  → availableOnly=true,  myTeam=null   (default)
+ *   "Any owner"         → availableOnly=false, myTeam=null
+ *   ───────────────────
+ *   "On my squad"       → sets myTeam = myTeamLeagueEntryId  (if available)
+ *   "On {teamName}"     → per-team rows
+ *
+ * The pill exposes a single enum `ownedMode` derived from the underlying
+ * (availableOnly, myTeam) tuple so the caller doesn't need to translate.
+ * ============================================================ */
+
+/**
+ * @typedef {'free' | 'any' | 'mySquad'} OwnedScalarMode
+ * @typedef {OwnedScalarMode | { teamId: number }} OwnedMode
+ */
+
+/**
+ * @param {{
+ *   ownedMode: OwnedMode,
+ *   onOwnedModeChange: (mode: OwnedMode) => void,
+ *   teams: { id?: number|null, teamName?: string|null, fplEntryId?: number|null }[],
+ *   myFantasyEntryId: number | null,
+ *   logoMap: Record<string, string>,
+ *   kitIndexByEntry: Record<number, number>,
+ *   compact?: boolean,
+ *   rostersHealthy?: boolean,
+ * }} props
+ */
+export function OwnedFilterPill({
+  ownedMode,
+  onOwnedModeChange,
+  teams,
+  myFantasyEntryId,
+  logoMap,
+  kitIndexByEntry,
+  compact = false,
+  rostersHealthy = true,
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+
+  const dismiss = useCallback(() => setOpen(false), [])
+  usePillMenuDismiss(rootRef, open, dismiss)
+
+  const mySquadTeam =
+    myFantasyEntryId != null
+      ? teams.find((t) => Number(t.id) === Number(myFantasyEntryId)) ?? null
+      : null
+
+  const activeTeam =
+    typeof ownedMode === 'object' && ownedMode != null
+      ? teams.find((t) => Number(t.id) === Number(ownedMode.teamId)) ?? null
+      : null
+
+  let activeLabel = 'Free agents'
+  if (ownedMode === 'any') activeLabel = 'Any owner'
+  else if (ownedMode === 'mySquad') {
+    activeLabel = 'On my squad'
+  } else if (typeof ownedMode === 'object' && activeTeam) {
+    const short =
+      fantasyTeamFirstWord(activeTeam.teamName) ||
+      activeTeam.teamName ||
+      `Team ${activeTeam.id}`
+    activeLabel = `On ${short}`
+  } else if (ownedMode === 'free') {
+    activeLabel = compact ? 'Free agents' : 'Free agents only'
+  }
+
+  // Active state surfaces "narrowed view" — every option except "Any owner"
+  // is treated as an active filter.
+  const isActive = ownedMode !== 'any'
+
+  const pick = (mode) => {
+    onOwnedModeChange(mode)
+    dismiss()
+  }
+
+  const isMySquadActive = ownedMode === 'mySquad'
+  const teamActiveId =
+    typeof ownedMode === 'object' && ownedMode != null
+      ? Number(ownedMode.teamId)
+      : null
+
+  return (
+    <div className="players-owned-pill" ref={rootRef}>
+      <button
+        type="button"
+        className={`team-selection-submenu__btn players-owned-pill__btn${
+          isActive ? ' team-selection-submenu__btn--active' : ''
+        }${open ? ' players-menu-pill__btn--open' : ''}`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Owned filter: ${activeLabel}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="players-owned-pill__label">
+          <span className="players-owned-pill__label-text">
+            <span className="players-owned-pill__label-key">Owned</span>
+            <span className="players-owned-pill__label-value">{activeLabel}</span>
+          </span>
+        </span>
+        <span className="players-menu-pill__chev" aria-hidden>
+          ▾
+        </span>
+      </button>
+      {open ? (
+        <ul
+          className="players-menu-pill__menu"
+          role="listbox"
+          aria-label="Owned filter"
+        >
+          <li role="presentation">
+            <button
+              type="button"
+              role="option"
+              aria-selected={ownedMode === 'free'}
+              className={`players-menu-pill__option${
+                ownedMode === 'free' ? ' players-menu-pill__option--active' : ''
+              }`}
+              onClick={() => pick('free')}
+              disabled={!rostersHealthy}
+              title={!rostersHealthy ? 'Needs roster data' : undefined}
+            >
+              <span className="players-menu-pill__option-text">Free agents only</span>
+            </button>
+          </li>
+          <li role="presentation">
+            <button
+              type="button"
+              role="option"
+              aria-selected={ownedMode === 'any'}
+              className={`players-menu-pill__option${
+                ownedMode === 'any' ? ' players-menu-pill__option--active' : ''
+              }`}
+              onClick={() => pick('any')}
+            >
+              <span className="players-menu-pill__option-text">Any owner</span>
+            </button>
+          </li>
+          {(mySquadTeam || teams.length) ? (
+            <li
+              role="separator"
+              className="players-menu-pill__divider"
+              aria-hidden
+            />
+          ) : null}
+          {mySquadTeam ? (
+            <li role="presentation">
+              <button
+                type="button"
+                role="option"
+                aria-selected={isMySquadActive}
+                className={`players-menu-pill__option${
+                  isMySquadActive ? ' players-menu-pill__option--active' : ''
+                }`}
+                onClick={() => pick('mySquad')}
+              >
+                <TeamAvatar
+                  entryId={mySquadTeam.id}
+                  name={mySquadTeam.teamName}
+                  size="sm"
+                  logoMap={logoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  badgeFallback
+                />
+                <span className="players-menu-pill__option-text">On my squad</span>
+              </button>
+            </li>
+          ) : null}
+          {teams
+            .filter((t) => {
+              const tid = Number(t.id)
+              if (!Number.isFinite(tid)) return false
+              // Exclude my squad from the per-team list — it has its own row above.
+              if (
+                myFantasyEntryId != null &&
+                Number(myFantasyEntryId) === tid
+              ) {
+                return false
+              }
+              return true
+            })
+            .map((t) => {
+              const tid = Number(t.id)
+              const active = teamActiveId === tid
+              const short =
+                fantasyTeamFirstWord(t.teamName) || t.teamName || `Team ${t.id}`
+              return (
+                <li key={t.id} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    title={t.teamName ?? undefined}
+                    className={`players-menu-pill__option${
+                      active ? ' players-menu-pill__option--active' : ''
+                    }`}
+                    onClick={() => pick({ teamId: tid })}
+                  >
+                    <TeamAvatar
+                      entryId={t.id}
+                      name={t.teamName}
+                      size="sm"
+                      logoMap={logoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                      badgeFallback
+                    />
+                    <span className="players-menu-pill__option-text">{`On ${short}`}</span>
+                  </button>
+                </li>
+              )
+            })}
+        </ul>
+      ) : null}
+    </div>
+  )
+}
+
+/* ============================================================
+ * Sort pill — mirrors header-click sort. Trigger: "Sort · {label} {↓|↑}";
+ * dropdown lists keys returned by `sortKeysForPositionFilter(positionFilter)`.
+ * ============================================================ */
+
+/**
+ * @param {{
+ *   sortKey: import('./playersWireList.js').WireSortKey,
+ *   sortDir: import('./playersWireList.js').WireSortDir,
+ *   onSortKeyChange: (key: import('./playersWireList.js').WireSortKey) => void,
+ *   onSortDirChange: (dir: import('./playersWireList.js').WireSortDir) => void,
+ *   positionFilter: import('./playersWireList.js').PositionFilterId,
+ * }} props
+ */
+export function SortPill({
+  sortKey,
+  sortDir,
+  onSortKeyChange,
+  onSortDirChange,
+  positionFilter,
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+
+  const dismiss = useCallback(() => setOpen(false), [])
+  usePillMenuDismiss(rootRef, open, dismiss)
+
+  const keys = sortKeysForPositionFilter(positionFilter)
+  const arrow = sortDir === 'asc' ? '↑' : '↓'
+  const activeLabel = `${SORT_LABELS[sortKey] ?? 'Total pts'} ${arrow}`
+
+  const pickKey = (key) => {
+    if (key === sortKey) {
+      onSortDirChange(sortDir === 'desc' ? 'asc' : 'desc')
+    } else {
+      onSortKeyChange(key)
+      onSortDirChange(defaultSortDirForKey(key))
+    }
+    dismiss()
+  }
+
+  const flipDir = () => {
+    onSortDirChange(sortDir === 'desc' ? 'asc' : 'desc')
+  }
+
+  return (
+    <div className="players-sort-pill" ref={rootRef}>
+      <button
+        type="button"
+        className={`team-selection-submenu__btn players-sort-pill__btn${
+          open ? ' players-menu-pill__btn--open' : ''
+        }`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Sort: ${activeLabel}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="players-sort-pill__label">
+          <span className="players-sort-pill__label-text">
+            <span className="players-sort-pill__label-key">Sort</span>
+            <span className="players-sort-pill__label-value">{activeLabel}</span>
+          </span>
+        </span>
+        <span className="players-menu-pill__chev" aria-hidden>
+          ▾
+        </span>
+      </button>
+      {open ? (
+        <ul
+          className="players-menu-pill__menu"
+          role="listbox"
+          aria-label="Sort by"
+        >
+          {keys.map((key) => {
+            const active = key === sortKey
+            return (
+              <li key={key} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  className={`players-menu-pill__option${
+                    active ? ' players-menu-pill__option--active' : ''
+                  }`}
+                  onClick={() => pickKey(key)}
+                >
+                  <span className="players-menu-pill__option-text">
+                    {SORT_LABELS[key] ?? key}
+                  </span>
+                  {active ? (
+                    <span aria-hidden style={{ marginLeft: 'auto', opacity: 0.85 }}>
+                      {arrow}
+                    </span>
+                  ) : null}
+                </button>
+              </li>
+            )
+          })}
+          <li role="separator" className="players-menu-pill__divider" aria-hidden />
+          <li role="presentation">
+            <button
+              type="button"
+              role="option"
+              aria-selected={false}
+              className="players-menu-pill__option"
+              onClick={() => {
+                flipDir()
+                dismiss()
+              }}
+            >
+              <span className="players-menu-pill__option-text">
+                Reverse direction ({arrow})
+              </span>
+            </button>
+          </li>
+        </ul>
+      ) : null}
+    </div>
+  )
+}
+
+/* ============================================================
+ * Include-drafted toggle — iOS-style pill switch. Internally inverse of
+ * `availableOnly` for the Free / Any spectrum; disabled when the parent
+ * has narrowed ownership to a specific team (decision 9).
+ * ============================================================ */
+
+/**
+ * @param {{
+ *   checked: boolean,
+ *   onChange: (next: boolean) => void,
+ *   disabled?: boolean,
+ *   compact?: boolean,
+ * }} props
+ */
+export function IncludeDraftedToggle({ checked, onChange, disabled = false, compact = false }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label="Include drafted players"
+      disabled={disabled}
+      className={`players-include-drafted${compact ? ' players-include-drafted--sm' : ''}${
+        disabled ? ' players-include-drafted--disabled' : ''
+      }`}
+      onClick={() => {
+        if (disabled) return
+        onChange(!checked)
+      }}
+    >
+      <span className="players-include-drafted__track" aria-hidden>
+        <span className="players-include-drafted__thumb" />
+      </span>
+      <span className="players-include-drafted__label">Include drafted</span>
+    </button>
   )
 }
