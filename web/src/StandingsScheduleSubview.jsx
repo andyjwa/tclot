@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import {
   buildTeamScheduleRows,
@@ -6,6 +6,9 @@ import {
   summarizeTeamSchedule,
 } from './standingsScheduleDerivations'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import { LiveExpandedFixture } from './LiveExpandedFixture.jsx'
+import { useHistoricGwFixtureSquads } from './useHistoricGwFixtureSquads.js'
+import { useNarrowViewport } from './usePortraitMobile.js'
 
 function pad2(n) {
   const num = Number(n)
@@ -181,6 +184,7 @@ export function StandingsScheduleSubview({
           rankByEntryId={rankByEntryId}
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
+          teamsForFormSelect={teamsForFormSelect}
         />
       ) : (
         <TeamScheduleCompact
@@ -200,7 +204,30 @@ function AllTeamsScheduleList({
   rankByEntryId,
   teamLogoMap,
   kitIndexByEntry,
+  teamsForFormSelect = [],
 }) {
+  /** Lookup league_entry → fplEntryId so finished rows can expand into FPL picks. */
+  const fplEntryByLeagueId = useMemo(() => {
+    const m = new Map()
+    for (const t of teamsForFormSelect) {
+      const lid = Number(t?.id)
+      if (!Number.isFinite(lid)) continue
+      m.set(lid, t.fplEntryId ?? null)
+    }
+    return m
+  }, [teamsForFormSelect])
+
+  /** Set of expanded fixture keys (`${event}-${homeId}-${awayId}`). */
+  const [expandedFixtures, setExpandedFixtures] = useState(() => new Set())
+  const toggleExpanded = useCallback((key) => {
+    setExpandedFixtures((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }, [])
+
   if (!groups.length) {
     return (
       <p className="muted muted--tight standings-schedule__empty">
@@ -226,106 +253,217 @@ function AllTeamsScheduleList({
             </span>
           </div>
           <ul className="standings-schedule__fixtures">
-            {g.fixtures.map((fx, i) => {
-              const homeRank = rankByEntryId.get(fx.homeId)
-              const awayRank = rankByEntryId.get(fx.awayId)
-              const homeWin =
-                fx.finished && fx.homePts != null && fx.awayPts != null && fx.homePts > fx.awayPts
-              const awayWin =
-                fx.finished && fx.homePts != null && fx.awayPts != null && fx.awayPts > fx.homePts
-              return (
-                <li
-                  key={`${fx.event}-${fx.homeId}-${fx.awayId}-${i}`}
-                  className="standings-schedule__fixture"
-                >
-                  <span className="standings-schedule__fixture-side standings-schedule__fixture-side--home">
-                    <TeamAvatar
-                      entryId={fx.homeId}
-                      name={fx.homeName}
-                      size="sm"
-                      logoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                    <span
-                      className={
-                        'standings-schedule__fixture-name' +
-                        (homeWin ? ' standings-schedule__fixture-name--winner' : '') +
-                        (awayWin ? ' standings-schedule__fixture-name--loser' : '')
-                      }
-                      title={fx.homeName}
-                    >
-                      <span className="standings-schedule__fixture-name-full">
-                        {fx.homeName}
-                      </span>
-                      <span className="standings-schedule__fixture-name-short">
-                        {firstWord(fx.homeName)}
-                      </span>
-                    </span>
-                    {homeRank != null ? (
-                      <span className="standings-schedule__fixture-rank muted">({homeRank})</span>
-                    ) : null}
-                  </span>
-                  {fx.finished && fx.homePts != null && fx.awayPts != null ? (
-                    <span className="standings-schedule__fixture-mid tabular">
-                      <span
-                        className={
-                          'standings-schedule__fixture-score' +
-                          (homeWin ? ' standings-schedule__fixture-score--winner' : '') +
-                          (awayWin ? ' standings-schedule__fixture-score--loser' : '')
-                        }
-                      >
-                        {fx.homePts}
-                      </span>
-                      <span className="standings-schedule__fixture-dash">–</span>
-                      <span
-                        className={
-                          'standings-schedule__fixture-score' +
-                          (awayWin ? ' standings-schedule__fixture-score--winner' : '') +
-                          (homeWin ? ' standings-schedule__fixture-score--loser' : '')
-                        }
-                      >
-                        {fx.awayPts}
-                      </span>
-                    </span>
-                  ) : (
-                    <span className="standings-schedule__fixture-mid standings-schedule__fixture-vs">
-                      vs
-                    </span>
-                  )}
-                  <span className="standings-schedule__fixture-side standings-schedule__fixture-side--away">
-                    {awayRank != null ? (
-                      <span className="standings-schedule__fixture-rank muted">({awayRank})</span>
-                    ) : null}
-                    <span
-                      className={
-                        'standings-schedule__fixture-name' +
-                        (awayWin ? ' standings-schedule__fixture-name--winner' : '') +
-                        (homeWin ? ' standings-schedule__fixture-name--loser' : '')
-                      }
-                      title={fx.awayName}
-                    >
-                      <span className="standings-schedule__fixture-name-full">
-                        {fx.awayName}
-                      </span>
-                      <span className="standings-schedule__fixture-name-short">
-                        {firstWord(fx.awayName)}
-                      </span>
-                    </span>
-                    <TeamAvatar
-                      entryId={fx.awayId}
-                      name={fx.awayName}
-                      size="sm"
-                      logoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                  </span>
-                </li>
-              )
-            })}
+            {g.fixtures.map((fx, i) => (
+              <ScheduleFixtureItem
+                key={`${fx.event}-${fx.homeId}-${fx.awayId}-${i}`}
+                fx={fx}
+                rankByEntryId={rankByEntryId}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+                fplEntryByLeagueId={fplEntryByLeagueId}
+                expandedKey={`${fx.event}-${fx.homeId}-${fx.awayId}`}
+                expanded={expandedFixtures.has(`${fx.event}-${fx.homeId}-${fx.awayId}`)}
+                onToggle={toggleExpanded}
+              />
+            ))}
           </ul>
         </li>
       ))}
     </ol>
+  )
+}
+
+/**
+ * Single fixture row — finished GW fixtures render as an expandable
+ * accordion (click to reveal the player-by-player FPL breakdown via
+ * {@link LiveExpandedFixture}). Upcoming fixtures stay inert.
+ */
+function ScheduleFixtureItem({
+  fx,
+  rankByEntryId,
+  teamLogoMap,
+  kitIndexByEntry,
+  fplEntryByLeagueId,
+  expandedKey,
+  expanded,
+  onToggle,
+}) {
+  const homeRank = rankByEntryId.get(fx.homeId)
+  const awayRank = rankByEntryId.get(fx.awayId)
+  const homeWin =
+    fx.finished && fx.homePts != null && fx.awayPts != null && fx.homePts > fx.awayPts
+  const awayWin =
+    fx.finished && fx.homePts != null && fx.awayPts != null && fx.awayPts > fx.homePts
+
+  const expandable = fx.finished
+  const bodyId = `standings-fixture-${expandedKey}`
+
+  const rowChildren = (
+    <>
+      <span className="standings-schedule__fixture-side standings-schedule__fixture-side--home">
+        <TeamAvatar
+          entryId={fx.homeId}
+          name={fx.homeName}
+          size="sm"
+          logoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+        <span
+          className={
+            'standings-schedule__fixture-name' +
+            (homeWin ? ' standings-schedule__fixture-name--winner' : '') +
+            (awayWin ? ' standings-schedule__fixture-name--loser' : '')
+          }
+          title={fx.homeName}
+        >
+          <span className="standings-schedule__fixture-name-full">
+            {fx.homeName}
+          </span>
+          <span className="standings-schedule__fixture-name-short">
+            {firstWord(fx.homeName)}
+          </span>
+        </span>
+        {homeRank != null ? (
+          <span className="standings-schedule__fixture-rank muted">({homeRank})</span>
+        ) : null}
+      </span>
+      {fx.finished && fx.homePts != null && fx.awayPts != null ? (
+        <span className="standings-schedule__fixture-mid tabular">
+          <span
+            className={
+              'standings-schedule__fixture-score' +
+              (homeWin ? ' standings-schedule__fixture-score--winner' : '') +
+              (awayWin ? ' standings-schedule__fixture-score--loser' : '')
+            }
+          >
+            {fx.homePts}
+          </span>
+          <span className="standings-schedule__fixture-dash">–</span>
+          <span
+            className={
+              'standings-schedule__fixture-score' +
+              (awayWin ? ' standings-schedule__fixture-score--winner' : '') +
+              (homeWin ? ' standings-schedule__fixture-score--loser' : '')
+            }
+          >
+            {fx.awayPts}
+          </span>
+        </span>
+      ) : (
+        <span className="standings-schedule__fixture-mid standings-schedule__fixture-vs">
+          vs
+        </span>
+      )}
+      <span className="standings-schedule__fixture-side standings-schedule__fixture-side--away">
+        {awayRank != null ? (
+          <span className="standings-schedule__fixture-rank muted">({awayRank})</span>
+        ) : null}
+        <span
+          className={
+            'standings-schedule__fixture-name' +
+            (awayWin ? ' standings-schedule__fixture-name--winner' : '') +
+            (homeWin ? ' standings-schedule__fixture-name--loser' : '')
+          }
+          title={fx.awayName}
+        >
+          <span className="standings-schedule__fixture-name-full">
+            {fx.awayName}
+          </span>
+          <span className="standings-schedule__fixture-name-short">
+            {firstWord(fx.awayName)}
+          </span>
+        </span>
+        <TeamAvatar
+          entryId={fx.awayId}
+          name={fx.awayName}
+          size="sm"
+          logoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+        {expandable ? (
+          <span
+            className={
+              'standings-schedule__fixture-chev' +
+              (expanded ? ' standings-schedule__fixture-chev--open' : '')
+            }
+            aria-hidden="true"
+          >
+            ▸
+          </span>
+        ) : null}
+      </span>
+    </>
+  )
+
+  return (
+    <li className="standings-schedule__fixture-item">
+      {expandable ? (
+        <button
+          type="button"
+          className="standings-schedule__fixture standings-schedule__fixture--clickable"
+          aria-expanded={expanded}
+          aria-controls={bodyId}
+          onClick={() => onToggle(expandedKey)}
+        >
+          {rowChildren}
+        </button>
+      ) : (
+        <div className="standings-schedule__fixture">{rowChildren}</div>
+      )}
+      {expandable && expanded ? (
+        <div className="standings-schedule__expanded" id={bodyId}>
+          <ScheduleFixtureExpandedBody
+            fx={fx}
+            fplEntryByLeagueId={fplEntryByLeagueId}
+          />
+        </div>
+      ) : null}
+    </li>
+  )
+}
+
+/**
+ * Expanded body for a finished fixture — fetches both squads' picks via
+ * {@link useHistoricGwFixtureSquads} and renders the player breakdown
+ * via the same {@link LiveExpandedFixture} component the Live tab uses
+ * (which already handles tab view on mobile + side-by-side on desktop).
+ */
+function ScheduleFixtureExpandedBody({ fx, fplEntryByLeagueId }) {
+  const narrow = useNarrowViewport()
+  const homeFplEntryId = fplEntryByLeagueId.get(Number(fx.homeId)) ?? null
+  const awayFplEntryId = fplEntryByLeagueId.get(Number(fx.awayId)) ?? null
+  const { status, homeSquad, awaySquad, error } = useHistoricGwFixtureSquads({
+    gw: Number(fx.event),
+    homeFplEntryId,
+    awayFplEntryId,
+    homeLeagueEntryId: Number(fx.homeId),
+    awayLeagueEntryId: Number(fx.awayId),
+    homeName: fx.homeName,
+    awayName: fx.awayName,
+  })
+
+  if (status === 'loading') {
+    return (
+      <p className="muted muted--tight standings-schedule__expanded-status">
+        Loading GW {fx.event} lineups…
+      </p>
+    )
+  }
+  if (status === 'error') {
+    return (
+      <p className="muted muted--tight standings-schedule__expanded-status">
+        Couldn’t load GW {fx.event} lineups: {error}
+      </p>
+    )
+  }
+  return (
+    <LiveExpandedFixture
+      homeSquad={homeSquad}
+      awaySquad={awaySquad}
+      homeName={fx.homeName}
+      awayName={fx.awayName}
+      viewport={narrow ? 'mobile' : 'desktop'}
+    />
   )
 }
 

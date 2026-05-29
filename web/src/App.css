@@ -13924,17 +13924,82 @@ button.live-xp__player-name:focus-visible {
   padding: 4px 0;
 }
 
+/* Each row + its (optional) expanded body live inside `.standings-schedule__fixture-item`.
+ * The row chrome (1fr · auto · 1fr grid) stays on `.standings-schedule__fixture`, but the
+ * per-row border moves up to the wrapper so the expanded panel sits flush underneath without
+ * doubling separators. */
+.standings-schedule__fixture-item {
+  list-style: none;
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
+}
+
+.standings-schedule__fixture-item:first-child {
+  border-top: 0;
+}
+
 .standings-schedule__fixture {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
 }
 
-.standings-schedule__fixture:first-child {
-  border-top: 0;
+/* Clickable variant — the row is rendered as a `<button>` for finished
+ * fixtures so the FPL player breakdown can drop down underneath. Reset
+ * the default button chrome so it visually matches the inert `<div>`
+ * variant, and add hover / focus affordances. */
+.standings-schedule__fixture--clickable {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.standings-schedule__fixture--clickable:hover {
+  background: color-mix(in srgb, var(--tclot-logo-purple) 4%, transparent);
+}
+
+.standings-schedule__fixture--clickable:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: -2px;
+}
+
+/* Chevron at the end of the row — rotates 90° when the row is open. */
+.standings-schedule__fixture-chev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  font-size: 0.78rem;
+  color: var(--fm-muted);
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+
+.standings-schedule__fixture-chev--open {
+  transform: rotate(90deg);
+  color: var(--fm-text-strong);
+}
+
+/* Expanded panel under a finished fixture row — hosts the per-team FPL
+ * player tables (desktop: side-by-side; mobile: tabbed) via
+ * `<LiveExpandedFixture>`. Sits inside the row's wrapper `<li>` so the
+ * row's hover/border treatment encloses it. */
+.standings-schedule__expanded {
+  padding: 8px 12px 14px;
+  background: color-mix(in srgb, var(--fm-surface-2) 35%, var(--fm-card));
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 50%, transparent);
+}
+
+.standings-schedule__expanded-status {
+  margin: 6px 0;
 }
 
 .standings-schedule__fixture-side {

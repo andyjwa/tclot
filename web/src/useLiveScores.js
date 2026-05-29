@@ -25,7 +25,7 @@ import { gameWeekSelectLabel } from './gwLabel.js';
 import { countEffectiveXiPlayersRemaining } from './liveScoresDerivations.js';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
-function classicResourceUrl(pathAndQuery) {
+export function classicResourceUrl(pathAndQuery) {
   const pq = String(pathAndQuery).replace(/^\/+/, '');
   const base = fplApiBase();
   if (base !== FPL_DIRECT) {
@@ -38,7 +38,7 @@ function classicResourceUrl(pathAndQuery) {
 }
 
 /** Draft bootstrap nests gameweeks in `events.data`; classic uses `events` array. */
-function bootstrapEventList(boot) {
+export function bootstrapEventList(boot) {
   const ev = boot?.events;
   if (ev && Array.isArray(ev.data)) return ev.data;
   if (Array.isArray(ev)) return ev;
@@ -46,7 +46,7 @@ function bootstrapEventList(boot) {
 }
 
 /** Draft `event/{gw}/live` returns `elements` as an id → { stats } map. */
-function liveStatsByElementId(draftLiveJson) {
+export function liveStatsByElementId(draftLiveJson) {
   const raw = draftLiveJson?.elements;
   const out = {};
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
@@ -68,7 +68,7 @@ function liveStatsByElementId(draftLiveJson) {
 }
 
 /** Draft + classic live payloads: id → full element row (stats + explain). */
-function liveFullByElementId(liveJson) {
+export function liveFullByElementId(liveJson) {
   const raw = liveJson?.elements;
   const out = {};
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
@@ -179,7 +179,7 @@ function countUnfinishedGwFixturesForTeam(teamId, gwFixtures) {
   return n;
 }
 
-function mapPickRows(
+export function mapPickRows(
   picks,
   liveByElementId,
   liveFullByElementId,
@@ -328,7 +328,7 @@ function xiRowsForLeftToPlayCount(starters, bench, displayStarters, displayBench
   return starters;
 }
 
-function applyBonusColumn(rows, provisionalByElement, elementById, gwFixtures) {
+export function applyBonusColumn(rows, provisionalByElement, elementById, gwFixtures) {
   return rows.map((r) => {
     const prov = provisionalByElement.get(r.element) ?? 0;
     const el = elementById?.[r.element];
