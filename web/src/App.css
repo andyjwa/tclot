@@ -17057,7 +17057,7 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, var(--fm-text, #fff) 2.5%, transparent);
 }
 .draft-grid__cell:not(.draft-grid__cell--empty):hover {
-  background: color-mix(in srgb, var(--fm-text, #fff) 6%, transparent);
+  background: color-mix(in srgb, var(--brand, #795bfb) 6%, transparent);
 }
 .draft-grid__pick {
   position: absolute;
