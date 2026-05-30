@@ -1974,6 +1974,40 @@
   max-width: 8rem;
 }
 
+/* Mobile: fit all three filter pills (Team / Round / Pos) on a single
+ * row in the default "All / All / All" state. Each pill sizes to its
+ * `max-content` so values aren't truncated; the scroll affordance
+ * (already without a visible scrollbar) only kicks in if a long active
+ * filter value (e.g. team = "Hanson of York AFC") overflows. */
+@media (max-width: 560px) {
+  .draft-board-filters {
+    width: 100%;
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .draft-board-filters > .draft-board-filter-pill {
+    flex: 0 1 auto;
+    min-width: max-content;
+  }
+
+  .draft-board-filter-pill .cpsp,
+  .draft-board-filter-pill .cpsp__btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .draft-board-filter-pill .cpsp__btn {
+    padding-left: 10px;
+    padding-right: 8px;
+    gap: 4px;
+  }
+
+  .draft-board-filter-pill .cpsp__value {
+    max-width: none;
+  }
+}
+
 .draft-board-hint {
   margin: 0 16px 10px;
   font-size: 0.75rem;
@@ -2348,19 +2382,45 @@
   }
 }
 
-/* Draft quality (team totals + expandable drafted squad) */
+/* ============================================================ */
+/* Draft Quality — Phase 2 redesign                             */
+/* ============================================================ */
+/*
+ * Shares the typography, spacing, and surface chrome of the FPL
+ * Live Table redesign (`.tile--live-standings` / `.standings-
+ * table--live`): Inter for labels, Geist Mono for tabular numerics
+ * in the column headers + numeric cells, and the --space-* token
+ * scale for paddings so it reads as part of the same visual system.
+ *
+ * Tile uses the standard `tile tile--compact tile--draft-quality`
+ * chrome; the table itself uses the `--space-*` / `--text-*` tokens
+ * directly (no `--fm-*` rem-based sizes).
+ */
+.tile.tile--draft-quality {
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-radius: var(--r-lg, 14px);
+}
+.tile.tile--draft-quality > .tile-head-row {
+  margin-bottom: var(--space-2);
+}
+.tile.tile--draft-quality .tile-title--sm {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.01em;
+}
+
 .draft-quality-hint {
-  margin: 0 16px 12px;
-  font-size: 0.78rem;
-  line-height: 1.45;
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm, 13px);
+  line-height: var(--lh-snug, 1.3);
+  color: var(--fm-muted);
 }
 
 .draft-quality-loading {
-  margin: 16px;
+  margin: var(--space-3) 0 0;
 }
 
 .draft-quality-table-wrap {
-  border-top: 1px solid var(--fm-border);
+  margin: 0 calc(-1 * var(--space-2));
   overflow: visible;
 }
 
@@ -2368,108 +2428,118 @@
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: var(--text-sm, 13px);
+  font-variant-numeric: tabular-nums;
 }
 
 .draft-quality-col--rank {
-  width: 2.75rem;
+  width: 2.5rem;
 }
 
 .draft-quality-col--pts {
-  width: 5.25rem;
+  width: 4.75rem;
 }
 
 .draft-quality-col--delta {
-  width: 4.5rem;
+  width: 4rem;
 }
 
 .draft-quality-col--og {
-  width: 5rem;
+  width: 4.5rem;
 }
 
 /* Team column uses remaining width (no col width) */
 
 .draft-quality-th {
   text-align: left;
-  padding: 10px 12px 9px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs, 11px);
+  font-weight: 600;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fm-text, #fff) 58%, transparent);
-  background: var(--fm-card, #1e1e1e);
-  border-bottom: 1px solid color-mix(in srgb, var(--fm-border, #333) 85%, transparent);
+  color: var(--fm-muted);
+  background: transparent;
+  border-bottom: 1px solid var(--fm-border);
   vertical-align: bottom;
 }
 
 .draft-quality-th--rank {
   text-align: center;
-  padding-left: 14px;
-  padding-right: 8px;
+  padding-left: var(--space-2);
+  padding-right: var(--space-1);
 }
 
 .draft-quality-th--team {
   text-align: left;
-  padding-left: 10px;
+  padding-left: var(--space-2);
 }
 
 .draft-quality-th--pts {
   text-align: right;
-  padding-right: 14px;
+  padding-right: var(--space-3);
 }
 
 .draft-quality-th--delta {
   text-align: right;
-  padding-right: 14px;
+  padding-right: var(--space-3);
 }
 
 .draft-quality-th--og {
   text-align: right;
-  padding-right: 16px;
-  letter-spacing: 0.04em;
+  padding-right: var(--space-3);
 }
 
 .draft-quality-row--team {
-  border-bottom: 1px dotted var(--fm-border, #333);
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
+  transition: background-color var(--dur-fast, 120ms) var(--ease, ease);
+}
+
+.draft-quality-row--team:last-child {
+  border-bottom: none;
+}
+
+.draft-quality-row--team:hover td {
+  background: color-mix(in srgb, var(--brand, #795bfb) 6%, transparent);
 }
 
 .draft-quality-row--team td {
-  padding: 9px 12px;
+  padding: var(--space-2) var(--space-2);
   vertical-align: middle;
-  font-weight: 600;
-  color: var(--fm-text-strong);
+  font-weight: 500;
+  color: var(--fm-text);
+  line-height: var(--lh-snug, 1.3);
 }
 
 .draft-quality-row--team .draft-quality-td--rank {
-  padding-left: 14px;
-  padding-right: 8px;
+  padding-left: var(--space-2);
+  padding-right: var(--space-1);
 }
 
 .draft-quality-row--team .draft-quality-td--team {
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
 }
 
 .draft-quality-row--team .draft-quality-td--pts,
 .draft-quality-row--team .draft-quality-td--delta,
 .draft-quality-row--team .draft-quality-td--og {
-  padding-right: 14px;
-}
-
-.draft-quality-row--team .draft-quality-td--og {
-  padding-right: 16px;
+  padding-right: var(--space-3);
 }
 
 .draft-quality-td--rank {
   text-align: center;
+  font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--fm-text-strong, #fff) 78%, transparent);
+  font-weight: 600;
+  color: var(--fm-muted);
 }
 
 .draft-quality-team-toggle {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   width: 100%;
   max-width: 100%;
   padding: 0;
@@ -2478,34 +2548,36 @@
   background: transparent;
   font: inherit;
   font-weight: 600;
-  color: inherit;
+  color: var(--fm-text-strong);
   text-align: left;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--r-sm, 6px);
+  transition: color var(--dur-fast, 120ms) var(--ease, ease);
 }
 
 .draft-quality-team-toggle:hover {
-  color: var(--fm-accent, #12a15a);
+  color: var(--fm-text-strong);
 }
 
 .draft-quality-team-toggle:focus-visible {
-  outline: 2px solid var(--fm-accent, #12a15a);
+  outline: 2px solid var(--brand, #795bfb);
   outline-offset: 2px;
 }
 
 .draft-quality-chevron {
   display: inline-flex;
   flex-shrink: 0;
-  width: 1.1rem;
+  width: 0.95rem;
   justify-content: center;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   line-height: 1;
-  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
-  transition: transform 0.15s ease;
+  color: var(--fm-muted);
+  transition: transform var(--dur-fast, 120ms) var(--ease, ease);
 }
 
 .draft-quality-chevron--open {
   transform: rotate(90deg);
+  color: var(--brand, #795bfb);
 }
 
 .draft-quality-team-name {
@@ -2513,22 +2585,29 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .draft-quality-td--pts {
   text-align: right;
+  font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--fm-text-strong);
   white-space: nowrap;
 }
 
 .draft-quality-td--og {
   text-align: right;
+  font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .draft-quality-td--delta {
   text-align: right;
+  font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   white-space: nowrap;
@@ -2542,25 +2621,29 @@
 
 /* Beat `.draft-quality-row--team td { color }` so +/- shows green/red */
 .draft-quality-row--team td.draft-quality-td--delta-pos {
-  color: var(--fm-win, #34d399);
+  color: var(--data-positive, #12a15a);
 }
 
 .draft-quality-row--team td.draft-quality-td--delta-neg {
-  color: var(--fm-loss, #f87171);
+  color: var(--data-negative, #ef4444);
 }
 
 .draft-quality-row--team td.draft-quality-td--delta-zero {
-  color: color-mix(in srgb, var(--fm-text-strong, #fff) 72%, transparent);
+  color: var(--fm-muted);
 }
 
 .draft-quality-row--detail td {
   padding: 0;
-  border-bottom: 1px dotted var(--fm-border, #333);
-  background: color-mix(in srgb, var(--fm-bg, #121212) 55%, var(--fm-card, #1e1e1e));
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
+  background: color-mix(in srgb, var(--brand) 4%, transparent);
+}
+
+.draft-quality-row--team:has(+ .draft-quality-row--detail) {
+  border-bottom-color: color-mix(in srgb, var(--fm-border) 30%, transparent);
 }
 
 .draft-quality-pick-panel {
-  padding: 8px 12px 14px 16px;
+  padding: var(--space-2) var(--space-3) var(--space-3) var(--space-5);
 }
 
 .draft-quality-pick-list {
@@ -2571,38 +2654,45 @@
 
 .draft-quality-pick-item {
   display: grid;
-  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) minmax(2.5rem, auto);
-  gap: 10px 12px;
+  grid-template-columns:
+    minmax(0, 7rem)
+    minmax(0, 1fr)
+    minmax(0, max-content)
+    minmax(2.5rem, auto);
+  gap: var(--space-2) var(--space-3);
   align-items: center;
-  padding: 8px 0 8px 1.5rem;
-  border-top: 1px dotted color-mix(in srgb, var(--fm-border, #333) 70%, transparent);
-  font-size: 0.8rem;
+  padding: var(--space-2) 0;
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 35%, transparent);
+  font-size: var(--text-sm, 13px);
   font-weight: 500;
   color: var(--fm-text);
 }
 
 .draft-quality-pick-item:first-child {
   border-top: none;
-  padding-top: 4px;
+  padding-top: var(--space-1);
 }
 
 .draft-quality-pick-round {
-  font-size: 0.76rem;
-  color: color-mix(in srgb, var(--fm-text, #fff) 72%, transparent);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs, 11px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
   white-space: nowrap;
 }
 
 .draft-quality-pick-player {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   min-width: 0;
 }
 
 .draft-quality__club-badge {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   display: block;
 }
@@ -2612,60 +2702,121 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 600;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 500;
   color: var(--fm-text-strong);
+}
+
+/* Full vs short — desktop shows full, mobile swaps to web_name. */
+.draft-quality-pick-name__short {
+  display: none;
+}
+
+.draft-quality-pick-status {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .draft-quality-pick-pts {
   text-align: right;
+  font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fm-text-strong);
 }
 
 @media (max-width: 560px) {
+  .tile.tile--draft-quality {
+    padding: var(--space-3) var(--space-3) var(--space-2);
+  }
+
+  .draft-quality-table-wrap {
+    margin: 0 calc(-1 * var(--space-1));
+  }
+
   .draft-quality-col--pts {
-    width: 4.5rem;
+    width: 4rem;
   }
 
   .draft-quality-col--delta {
-    width: 3.85rem;
+    width: 3.5rem;
   }
 
   .draft-quality-col--og {
-    width: 4.35rem;
+    width: 3.85rem;
   }
 
   .draft-quality-th,
   .draft-quality-row--team td {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: var(--space-1);
+    padding-right: var(--space-1);
   }
 
+  .draft-quality-row--team .draft-quality-td--pts,
+  .draft-quality-row--team .draft-quality-td--delta,
   .draft-quality-row--team .draft-quality-td--og {
-    padding-right: 10px;
+    padding-right: var(--space-2);
+  }
+
+  .draft-quality-th--pts,
+  .draft-quality-th--delta,
+  .draft-quality-th--og {
+    padding-right: var(--space-2);
   }
 
   .draft-quality-th--og {
-    font-size: 0.62rem;
+    font-size: 10px;
+  }
+
+  .draft-quality-pick-panel {
+    padding-left: var(--space-3);
+    padding-right: var(--space-2);
   }
 
   .draft-quality-pick-item {
-    grid-template-columns: 1fr;
-    gap: 4px;
-    padding-left: 0.75rem;
+    /* Tight horizontal row on mobile: 1.1 | crest+web_name | ● status | pts */
+    grid-template-columns:
+      2.25rem
+      minmax(0, 1fr)
+      minmax(0, auto)
+      minmax(2rem, auto);
+    gap: var(--space-1) var(--space-2);
+    padding: var(--space-2) 0;
+    font-size: 12px;
   }
 
   .draft-quality-pick-round {
-    white-space: normal;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   .draft-quality-pick-player {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+  }
+
+  .draft-quality__club-badge {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Mobile: drop to web_name short label, hide full */
+  .draft-quality-pick-name__full {
+    display: none;
+  }
+
+  .draft-quality-pick-name__short {
+    display: inline;
+  }
+
+  .draft-quality-pick-status {
+    font-size: 10px;
   }
 
   .draft-quality-pick-pts {
-    text-align: left;
+    text-align: right;
   }
 }
 

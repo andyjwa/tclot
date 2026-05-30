@@ -22,6 +22,53 @@ function ClubBadge({ src }) {
   )
 }
 
+/** Mirrors the snake-board `DraftStatusPill`: dot + "On squad / Cut · GW# / Traded · GW#". */
+function DraftPickStatus({ pick }) {
+  if (pick.rosterOnSquad === true) {
+    return (
+      <span className="draft-status draft-status--kept" title="Still on squad">
+        <span className="draft-status__dot" />
+        On squad
+      </span>
+    )
+  }
+  if (pick.rosterOnSquad === false) {
+    if (pick.rosterLeftGameweek != null) {
+      if (pick.rosterLeftKind === 'trade') {
+        return (
+          <span
+            className="draft-status draft-status--traded"
+            title={`Traded at Game Week ${pick.rosterLeftGameweek}`}
+          >
+            <span className="draft-status__dot" />
+            Traded · GW{pick.rosterLeftGameweek}
+          </span>
+        )
+      }
+      return (
+        <span
+          className="draft-status draft-status--dropped"
+          title={`Dropped at Game Week ${pick.rosterLeftGameweek}`}
+        >
+          <span className="draft-status__dot" />
+          Cut · GW{pick.rosterLeftGameweek}
+        </span>
+      )
+    }
+    return (
+      <span className="draft-status draft-status--dropped" title="No longer on squad">
+        <span className="draft-status__dot" />
+        Off squad
+      </span>
+    )
+  }
+  return (
+    <span className="draft-status draft-status--unknown" title="Status unknown">
+      <span className="draft-status__dot" />—
+    </span>
+  )
+}
+
 function deltaVersusDrafted(pointsFor, draftedTotal) {
   if (pointsFor == null || draftedTotal == null) {
     return { text: '—', tone: null }
@@ -114,13 +161,13 @@ export function DraftQuality({
   }, [])
 
   return (
-    <section className="tile tile--standings draft-quality-tile" aria-labelledby="draft-quality-heading">
+    <section className="tile tile--compact tile--draft-quality" aria-labelledby="draft-quality-heading">
       <div className="tile-head-row tile-head-row--tight">
         <h2 id="draft-quality-heading" className="tile-title tile-title--sm">
           Draft Quality
         </h2>
       </div>
-      <p className="draft-quality-hint muted">
+      <p className="draft-quality-hint">
         Total fantasy points if drafted team kept.
       </p>
 
@@ -278,9 +325,17 @@ export function DraftQuality({
                                         web_name={p.playerName}
                                         teamShort={p.teamShort}
                                       >
-                                        {displayFull(p)}
+                                        <span className="draft-quality-pick-name__full">
+                                          {displayFull(p)}
+                                        </span>
+                                        <span className="draft-quality-pick-name__short">
+                                          {p.playerName}
+                                        </span>
                                       </ClickablePlayerName>
                                     </span>
+                                  </span>
+                                  <span className="draft-quality-pick-status">
+                                    <DraftPickStatus pick={p} />
                                   </span>
                                   <span className="draft-quality-pick-pts tabular">
                                     {p.totalPoints != null ? p.totalPoints : '—'}
