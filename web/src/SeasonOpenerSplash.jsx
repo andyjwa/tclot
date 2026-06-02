@@ -1,18 +1,30 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EPISODE_NUMBER, SEASON_THEME, VADER_LINES, SEASON_OPENER_MANAGERS } from './seasonOpener.js';
 import './SeasonOpenerSplash.css';
 
-// Cross-browser fullscreen request that gracefully degrades — older iOS
-// Safari etc. simply no-op and the cinematic plays in-place.
-function requestSplashFullscreen(el) {
-  if (!el) return;
+// Native fullscreen attempt — returns a promise so callers can fall
+// back to CSS pseudo-fullscreen when the platform rejects (iOS Safari
+// on iPhone refuses requestFullscreen() on non-<video> elements).
+function tryNativeFullscreen(el) {
+  if (!el) return Promise.reject(new Error('no element'));
   const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-  if (!fn) return;
+  if (!fn) return Promise.reject(new Error('no api'));
   try {
     const result = fn.call(el);
+    return Promise.resolve(result);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
+function tryExitFullscreen() {
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  if (!fn) return;
+  try {
+    const result = fn.call(document);
     if (result && typeof result.catch === 'function') result.catch(() => {});
   } catch {
-    // Swallow — fullscreen is best-effort.
+    // Swallow — best-effort.
   }
 }
 
@@ -39,13 +51,52 @@ export function SeasonOpenerSplash({ onDismiss }) {
   const [playId, setPlayId] = useState(0);
   const splashRef = useRef(null);
   const isPlaying = playId > 0;
-  // Both play and replay route through here. We try to enter native
-  // fullscreen so the bottom nav / browser chrome stops competing with
-  // the cinematic in landscape; if the platform refuses it just plays
-  // in-place. Esc / back gesture exits as usual.
+  // Fullscreen state — `isNativeFullscreen` tracks the actual native
+  // fullscreen API (works on Android Chrome, desktop browsers, iPad
+  // Safari). `isPseudoFullscreen` is the CSS-only fallback used when
+  // the native API rejects or isn't present (iOS Safari on iPhone).
+  const [isPseudoFullscreen, setIsPseudoFullscreen] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const isFullscreen = isPseudoFullscreen || isNativeFullscreen;
+
   const handlePlay = () => {
-    requestSplashFullscreen(splashRef.current);
     setPlayId((id) => id + 1);
+  };
+
+  // Mirror the browser's native fullscreen state into local state so
+  // the button can render the correct icon when the user enters/exits
+  // via the button OR via Esc / browser chrome.
+  useEffect(() => {
+    const onChange = () => {
+      const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      setIsNativeFullscreen(fsEl === splashRef.current);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('webkitfullscreenchange', onChange);
+    };
+  }, []);
+
+  // While pseudo-fullscreen is active: lock body scroll and let Esc
+  // exit. Native fullscreen handles both of those itself.
+  useEffect(() => {
+    if (!isPseudoFullscreen) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => { if (e.key === 'Escape') setIsPseudoFullscreen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [isPseudoFullscreen]);
+
+  const handleFullscreenToggle = () => {
+    if (isNativeFullscreen) { tryExitFullscreen(); return; }
+    if (isPseudoFullscreen) { setIsPseudoFullscreen(false); return; }
+    tryNativeFullscreen(splashRef.current).catch(() => setIsPseudoFullscreen(true));
   };
 
   return (
@@ -54,6 +105,7 @@ export function SeasonOpenerSplash({ onDismiss }) {
       className={
         'so-splash' +
         (isPlaying ? ' so-splash--playing' : '') +
+        (isPseudoFullscreen ? ' so-splash--pseudo-fullscreen' : '') +
         (onDismiss ? '' : ' so-splash--no-dismiss')
       }
       role="region"
@@ -66,6 +118,28 @@ export function SeasonOpenerSplash({ onDismiss }) {
       ) : null}
       <button type="button" className="so-splash__replay" onClick={handlePlay} aria-label="Replay">
         <span className="so-splash__replay-icon" aria-hidden="true">↻</span>
+      </button>
+      <button
+        type="button"
+        className="so-splash__fullscreen"
+        onClick={handleFullscreenToggle}
+        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+      >
+        {isFullscreen ? (
+          <svg className="so-splash__fullscreen-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 4 V10 H4" />
+            <path d="M14 4 V10 H20" />
+            <path d="M10 20 V14 H4" />
+            <path d="M14 20 V14 H20" />
+          </svg>
+        ) : (
+          <svg className="so-splash__fullscreen-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 10 V4 H10" />
+            <path d="M20 10 V4 H14" />
+            <path d="M4 14 V20 H10" />
+            <path d="M20 14 V20 H14" />
+          </svg>
+        )}
       </button>
       {/* Play overlay — vignette + big centred play button + label.
        * Visible only in the POSTER state (CSS gates display via

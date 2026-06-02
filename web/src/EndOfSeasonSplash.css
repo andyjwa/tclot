@@ -365,6 +365,70 @@
 .eos-splash:not(.eos-splash--playing) .eos-splash__replay { display: none; }
 
 /* ------------------------------------------------------------------ */
+/* Fullscreen button + pseudo-fullscreen.                              */
+/* Bottom-right corner of the splash, same chrome family as the        */
+/* dismiss/replay controls. Visible in both POSTER and PLAYING states  */
+/* so the user can toggle fullscreen any time.                         */
+/* Pseudo-fullscreen is the CSS-only fallback used when native         */
+/* requestFullscreen() rejects or isn't present — iOS Safari refuses   */
+/* the native API on non-<video> elements, so the iPhone path is       */
+/* always this branch.                                                 */
+/* ------------------------------------------------------------------ */
+
+.eos-splash__fullscreen {
+  position: absolute;
+  bottom: clamp(6px, 1.5vw, 10px);
+  right: clamp(6px, 1.5vw, 10px);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(34px, 8vw, 40px);
+  height: clamp(34px, 8vw, 40px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, rgba(0,0,0,0.4));
+  background: rgba(255,255,255,0.96);
+  color: #1a1a1c;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.8);
+  -webkit-tap-highlight-color: transparent;
+}
+.eos-splash__fullscreen-icon {
+  width: 60%;
+  height: 60%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.eos-splash--pseudo-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0e0a1c;
+}
+.eos-splash--pseudo-fullscreen .eos-splash__svg {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+
+/* ------------------------------------------------------------------ */
 /* Play overlay — POSTER state only.                                   */
 /* Big centred play button + label sitting on a subtle vignette so     */
 /* the affordance pops against the static title-card poster. Hidden    */
