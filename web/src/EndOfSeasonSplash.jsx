@@ -1,6 +1,20 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { WOODEN_SPOON_MANAGER_SURNAME, REIGNING_CHAMPION_MANAGER_SURNAME } from './championOfRecord.js';
 import './EndOfSeasonSplash.css';
+
+// Cross-browser fullscreen request that gracefully degrades — older iOS
+// Safari etc. simply no-op and the cinematic plays in-place.
+function requestSplashFullscreen(el) {
+  if (!el) return;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if (!fn) return;
+  try {
+    const result = fn.call(el);
+    if (result && typeof result.catch === 'function') result.catch(() => {});
+  } catch {
+    // Swallow — fullscreen is best-effort.
+  }
+}
 
 /**
  * Three-act End-of-Season cinematic that plays on the live scores page
@@ -55,11 +69,20 @@ export function EndOfSeasonSplash({ onDismiss }) {
   // button to bump playId — the SVG's React `key` then forces a fresh
   // mount and every CSS animation restarts from t=0.
   const [playId, setPlayId] = useState(0);
+  const splashRef = useRef(null);
   const isPlaying = playId > 0;
-  const handlePlay = () => setPlayId((id) => id + 1);
+  // Both play and replay route through here. We try to enter native
+  // fullscreen so the bottom nav / browser chrome stops competing with
+  // the cinematic in landscape; if the platform refuses it just plays
+  // in-place. Esc / back gesture exits as usual.
+  const handlePlay = () => {
+    requestSplashFullscreen(splashRef.current);
+    setPlayId((id) => id + 1);
+  };
 
   return (
     <div
+      ref={splashRef}
       className={
         'eos-splash' +
         (isPlaying ? ' eos-splash--playing' : '') +

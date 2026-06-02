@@ -46,6 +46,31 @@
   vertical-align: top;
 }
 
+/* Fullscreen mode — kicked by handlePlay() calling requestFullscreen()
+ * on the wrapper. Strips card chrome so the SVG can fill the viewport;
+ * preserveAspectRatio letterboxes against the dark background. Doubled
+ * selectors so the iOS/Safari prefix doesn't break the standard one. */
+.eos-splash:fullscreen,
+.eos-splash:-webkit-full-screen {
+  max-width: none;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0e0a1c;
+}
+.eos-splash:fullscreen .eos-splash__svg,
+.eos-splash:-webkit-full-screen .eos-splash__svg {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+
 /* ------------------------------------------------------------------ */
 /* Typography — three roles share styling with their GoH equivalents
  * so the two splashes feel like the same family.                    */

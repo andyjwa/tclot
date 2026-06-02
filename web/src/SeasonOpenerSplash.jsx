@@ -1,6 +1,20 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EPISODE_NUMBER, SEASON_THEME, VADER_LINES, SEASON_OPENER_MANAGERS } from './seasonOpener.js';
 import './SeasonOpenerSplash.css';
+
+// Cross-browser fullscreen request that gracefully degrades — older iOS
+// Safari etc. simply no-op and the cinematic plays in-place.
+function requestSplashFullscreen(el) {
+  if (!el) return;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if (!fn) return;
+  try {
+    const result = fn.call(el);
+    if (result && typeof result.catch === 'function') result.catch(() => {});
+  } catch {
+    // Swallow — fullscreen is best-effort.
+  }
+}
 
 /*
  * Season Opener cinematic — six scenes mounted on FPL Live → Vibes.
@@ -23,11 +37,20 @@ export function SeasonOpenerSplash({ onDismiss }) {
   // button to bump playId, which re-mounts the SVG via `key={playId}`
   // and kicks every CSS keyframe from t=0.
   const [playId, setPlayId] = useState(0);
+  const splashRef = useRef(null);
   const isPlaying = playId > 0;
-  const handlePlay = () => setPlayId((id) => id + 1);
+  // Both play and replay route through here. We try to enter native
+  // fullscreen so the bottom nav / browser chrome stops competing with
+  // the cinematic in landscape; if the platform refuses it just plays
+  // in-place. Esc / back gesture exits as usual.
+  const handlePlay = () => {
+    requestSplashFullscreen(splashRef.current);
+    setPlayId((id) => id + 1);
+  };
 
   return (
     <div
+      ref={splashRef}
       className={
         'so-splash' +
         (isPlaying ? ' so-splash--playing' : '') +
