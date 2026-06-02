@@ -1,0 +1,282 @@
+/*
+ * Season Opener cinematic banner — four-scene splash mounted on the
+ * FPL Live → Vibes sub-tab. Timeline (absolute from playId mount):
+ *   0–6s    title card
+ *   6–13s   dark forest, 8 manager dots file through
+ *   13–22s  Hobbiton + scattered walk to Bag End door
+ *   22–28s  door swings open, amber glow + Vader silhouette in doorway
+ *   28–36s  Vader hero shot + 4-line caption stack
+ */
+
+.so-splash {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: min(960px, 100%);
+  margin: clamp(0.5rem, 1.8vw, 0.9rem) auto;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0e0a1c;
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.22),
+    0 0 0 1px color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, transparent);
+  outline: 1px solid color-mix(in srgb, #ffd166 35%, transparent);
+  outline-offset: -1px;
+}
+.so-splash__svg { display: block; width: 100%; height: auto; vertical-align: top; }
+
+/* Scene stack — all 5 scenes are rendered to the same SVG. Per-scene
+ * opacity is driven by *-fade keyframes when .so-splash--playing is set;
+ * outside playback we snap to the Hobbiton + open-door tableau. */
+.so-splash__scene--title,
+.so-splash__scene--forest,
+.so-splash__scene--vader { opacity: 0; }
+.so-splash__scene--hobbiton,
+.so-splash__scene--door { opacity: 1; }
+
+/* Dismiss + replay buttons — same chrome pattern as EndOfSeasonSplash. */
+.so-splash__dismiss {
+  position: absolute; top: clamp(6px,1.5vw,10px); right: clamp(6px,1.5vw,10px); z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  width: clamp(34px,8vw,40px); height: clamp(34px,8vw,40px); padding: 0; margin: 0;
+  border-radius: 50%; border: 2px solid color-mix(in srgb, var(--fm-border,#d4d4d8) 55%, rgba(0,0,0,0.4));
+  background: rgba(255,255,255,0.96); color: #1a1a1c; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.8);
+  -webkit-tap-highlight-color: transparent;
+}
+.so-splash__dismiss-x { font-size: 1.4rem; font-weight: 700; line-height: 1; margin-top: -0.06em; }
+.so-splash__replay {
+  position: absolute; top: calc(clamp(6px,1.5vw,10px) + clamp(34px,8vw,40px) + 6px);
+  right: clamp(6px,1.5vw,10px); z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  width: clamp(30px,7vw,34px); height: clamp(30px,7vw,34px); padding: 0; margin: 0;
+  border-radius: 50%; border: 2px solid color-mix(in srgb, var(--fm-border,#d4d4d8) 55%, rgba(0,0,0,0.4));
+  background: rgba(255,255,255,0.9); color: #1a1a1c; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.8);
+  font-family: inherit;
+}
+.so-splash--no-dismiss .so-splash__replay { top: clamp(6px,1.5vw,10px); }
+.so-splash__replay-icon { font-size: 1.05rem; font-weight: 700; line-height: 1; display: block; transform: translateY(-1px); }
+
+/* ──────────────────────────────────────────────────────────────────── */
+/*  Per-scene fade gates                                                */
+/* ──────────────────────────────────────────────────────────────────── */
+
+.so-splash--playing .so-splash__scene--title    { animation: so-title-fade    6s ease-out  0s both; }
+.so-splash--playing .so-splash__scene--forest   { animation: so-forest-fade   7s ease-out  6s both; }
+.so-splash--playing .so-splash__scene--hobbiton { animation: so-hobbiton-fade 9s ease-out 13s both; }
+.so-splash--playing .so-splash__scene--door     { animation: so-door-fade     6s ease-out 22s both; }
+.so-splash--playing .so-splash__scene--vader    { animation: so-vader-fade    8s ease-out 28s both; }
+
+@keyframes so-title-fade {
+  0%, 6%  { opacity: 0; }
+  10%     { opacity: 1; }
+  88%     { opacity: 1; }
+  100%    { opacity: 0; }
+}
+@keyframes so-forest-fade {
+  0%    { opacity: 0; }
+  14%   { opacity: 1; }
+  86%   { opacity: 1; }
+  100%  { opacity: 0; }
+}
+@keyframes so-hobbiton-fade {
+  0%    { opacity: 0; }
+  11%   { opacity: 1; }
+  89%   { opacity: 1; }
+  100%  { opacity: 0; }
+}
+@keyframes so-door-fade {
+  0%    { opacity: 0; }
+  17%   { opacity: 1; }
+  83%   { opacity: 1; }
+  100%  { opacity: 0; }
+}
+@keyframes so-vader-fade {
+  0%    { opacity: 0; }
+  13%   { opacity: 1; }
+  100%  { opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+/*  Title scene                                                         */
+/* ──────────────────────────────────────────────────────────────────── */
+
+.so-splash__title-eyebrow {
+  font-family: inherit;
+  font-size: clamp(20px, 3.4vw, 36px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  fill: #ffd166;
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,0.45);
+  stroke-width: 0.6px;
+}
+.so-splash__title-sub {
+  font-family: inherit;
+  font-size: clamp(16px, 2.6vw, 26px);
+  font-weight: 600;
+  font-style: italic;
+  fill: #d8c8ff;
+}
+.so-splash__title-line { opacity: 0; }
+.so-splash--playing .so-splash__title-line {
+  animation: so-title-line-in 1.4s ease-out calc(0.6s + var(--i, 0) * 0.9s) both;
+}
+@keyframes so-title-line-in {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+/*  Manager dots — used in BOTH forest and hobbiton scenes              */
+/* ──────────────────────────────────────────────────────────────────── */
+
+.so-splash__manager-label {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  fill: #ffffff;
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,0.7);
+  stroke-width: 0.9px;
+  letter-spacing: 0.01em;
+}
+
+@keyframes so-forest-walk {
+  0%   { transform: translate(var(--enter-dx, 0), var(--enter-dy, 0)); opacity: 0; }
+  6%   { opacity: 1; }
+  100% { transform: translate(1100px, 0); opacity: 1; }
+}
+@keyframes so-hobbiton-walk {
+  0%   { transform: translate(var(--enter-dx, 0), var(--enter-dy, 0)); opacity: 0; }
+  4%   { opacity: 1; }
+  55%  { transform: translate(var(--w1-dx, 0), var(--w1-dy, 0)); opacity: 1; }
+  100% { transform: translate(0, 0); opacity: 1; }
+}
+
+.so-splash--playing .so-splash__manager--forest .so-splash__manager-walk {
+  animation: so-forest-walk 7s linear calc(6s + var(--i, 0) * 0.18s) both;
+}
+.so-splash--playing .so-splash__manager--hobbiton .so-splash__manager-walk {
+  animation: so-hobbiton-walk 6s cubic-bezier(0.3, 0.9, 0.55, 1) calc(13.5s + var(--i, 0) * 0.25s) both;
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+/*  Door reveal scene                                                   */
+/* ──────────────────────────────────────────────────────────────────── */
+
+/* The door panel hinges on its left edge. transform-box: fill-box makes
+ * the bounding box (a 132×132 square around the r=66 circle at
+ * cx=780, cy=300) the origin space; "left center" = (714, 300). */
+.so-splash__door-panel {
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+.so-splash:not(.so-splash--playing) .so-splash__door-panel {
+  transform: rotate(-85deg);
+}
+.so-splash--playing .so-splash__door-panel {
+  animation: so-door-swing 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) 23s both;
+}
+@keyframes so-door-swing {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(-85deg); }
+}
+
+/* Amber glow fades in as the door swings; only animates during playback. */
+.so-splash--playing .so-splash__amber-glow {
+  animation: so-amber-glow-in 1.5s ease-out 24s both;
+}
+@keyframes so-amber-glow-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Vader silhouette inside the doorway materialises as the door reaches
+ * full open. Static fallback leaves it at full opacity. */
+.so-splash--playing .so-splash__doorway-vader {
+  animation: so-doorway-vader-in 1.5s ease-out 24.5s both;
+}
+@keyframes so-doorway-vader-in {
+  0%, 30% { opacity: 0; }
+  100%    { opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+/*  Vader hero scene                                                    */
+/* ──────────────────────────────────────────────────────────────────── */
+
+.so-splash__ring {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.so-splash--playing .so-splash__ring {
+  animation: so-ring-pulse 2.4s ease-in-out 30s infinite;
+}
+@keyframes so-ring-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.04); opacity: 0.85; }
+}
+
+.so-splash__ring-inscription {
+  font-family: inherit;
+  font-size: 8px;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  fill: #d4af37;
+  opacity: 0.85;
+}
+
+.so-splash__vader-line {
+  font-family: inherit;
+  font-size: clamp(15px, 2.4vw, 22px);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  fill: #f4eaff;
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,0.6);
+  stroke-width: 0.6px;
+  opacity: 0;
+}
+
+/* Each caption line gets its own absolute-time window. Lines 0–2 fade
+ * in, hold, then fade out; line 3 fades in and holds to the end. */
+.so-splash--playing .so-splash__vader-line--0 {
+  animation: so-vader-line 1.9s ease-out 28.6s both;
+}
+.so-splash--playing .so-splash__vader-line--1 {
+  animation: so-vader-line 1.9s ease-out 30.5s both;
+}
+.so-splash--playing .so-splash__vader-line--2 {
+  animation: so-vader-line 1.9s ease-out 32.4s both;
+}
+.so-splash--playing .so-splash__vader-line--3 {
+  animation: so-vader-line-final 1.7s ease-out 34.3s both;
+}
+@keyframes so-vader-line {
+  0%     { opacity: 0; }
+  15.8%  { opacity: 1; }
+  84.2%  { opacity: 1; }
+  100%   { opacity: 0; }
+}
+@keyframes so-vader-line-final {
+  0%     { opacity: 0; }
+  17.6%  { opacity: 1; }
+  100%   { opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+/*  Reduced-motion: kill all keyframes; snap to Hobbiton + open-door.   */
+/* ──────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .so-splash--playing,
+  .so-splash--playing * { animation: none !important; }
+  .so-splash--playing .so-splash__scene--title,
+  .so-splash--playing .so-splash__scene--forest,
+  .so-splash--playing .so-splash__scene--vader { opacity: 0; }
+  .so-splash--playing .so-splash__scene--hobbiton,
+  .so-splash--playing .so-splash__scene--door   { opacity: 1; }
+  .so-splash--playing .so-splash__door-panel { transform: rotate(-85deg); }
+}

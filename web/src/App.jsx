@@ -253,6 +253,7 @@ import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
 import { EndOfSeasonSplash } from './EndOfSeasonSplash.jsx'
+import { SeasonOpenerSplash } from './SeasonOpenerSplash.jsx'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
@@ -3771,14 +3772,18 @@ function App() {
                 />
               ) : null}
               {fplLiveTab === 'vibes' ? (
-                /* "Vibes" tab — standalone home for the End-of-Season
-                   cinematic. Mounted on its own (no surrounding ticker /
-                   live-scores chrome) so the splash gets the full sub-tab
-                   body to itself. The component handles its own session
-                   playback cap + Replay button; dismiss is intentionally
-                   omitted here so the splash stays in the tab as a
-                   permanent feature rather than a one-shot. */
-                <EndOfSeasonSplash />
+                /* "Vibes" tab — permanent home for TCLOT cinematics.
+                   Season Opener (announces the upcoming themed season,
+                   currently Episode 1: Lord of the Rings) plays first;
+                   End-of-Season cinematic (recaps last season) below.
+                   Each splash handles its own session playback cap +
+                   Replay button; dismiss is intentionally omitted so
+                   they remain a permanent feature rather than a
+                   one-shot. */
+                <>
+                  <SeasonOpenerSplash />
+                  <EndOfSeasonSplash />
+                </>
               ) : null}
               </div>
             </section>
