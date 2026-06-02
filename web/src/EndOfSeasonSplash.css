@@ -52,16 +52,18 @@
  * selectors so the iOS/Safari prefix doesn't break the standard one. */
 .eos-splash:fullscreen,
 .eos-splash:-webkit-full-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
   max-width: none;
-  width: 100vw;
-  height: 100vh;
   margin: 0;
   border-radius: 0;
   outline: none;
   box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: #0e0a1c;
 }
 .eos-splash:fullscreen .eos-splash__svg,
@@ -69,6 +71,7 @@
   width: 100%;
   height: 100%;
   max-height: 100%;
+  display: block;
 }
 
 /* ------------------------------------------------------------------ */
@@ -406,26 +409,59 @@
   stroke-linejoin: round;
 }
 
+/* Top-right X close button — only rendered while fullscreened so iOS
+ * users (no Esc key, no browser chrome) have an obvious exit. */
+.eos-splash__fs-close {
+  position: absolute;
+  top: clamp(10px, 2.4vw, 18px);
+  right: clamp(10px, 2.4vw, 18px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(40px, 9vw, 48px);
+  height: clamp(40px, 9vw, 48px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.55);
+  background: rgba(255, 255, 255, 0.96);
+  color: #1a1a1c;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  -webkit-tap-highlight-color: transparent;
+}
+.eos-splash__fs-close-x {
+  font-size: clamp(22px, 5vw, 28px);
+  font-weight: 700;
+  line-height: 1;
+  margin-top: -0.06em;
+}
+
+/* Pseudo-fullscreen — iOS Safari fallback. top/right/bottom/left:0
+ * (instead of width/height vh) so iOS Safari's URL-bar collapse +
+ * landscape rotation don't leave a stale stretched canvas. */
 .eos-splash--pseudo-fullscreen {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
   z-index: 9999;
-  width: 100vw;
-  height: 100vh;
   max-width: none;
   margin: 0;
   border-radius: 0;
   outline: none;
   box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: #0e0a1c;
 }
 .eos-splash--pseudo-fullscreen .eos-splash__svg {
   width: 100%;
   height: 100%;
   max-height: 100%;
+  display: block;
 }
 
 /* ------------------------------------------------------------------ */

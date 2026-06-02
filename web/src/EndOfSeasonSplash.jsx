@@ -163,28 +163,37 @@ export function EndOfSeasonSplash({ onDismiss }) {
         <span className="eos-splash__replay-icon" aria-hidden="true">↻</span>
       </button>
 
-      <button
-        type="button"
-        className="eos-splash__fullscreen"
-        onClick={handleFullscreenToggle}
-        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-      >
-        {isFullscreen ? (
-          <svg className="eos-splash__fullscreen-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M10 4 V10 H4" />
-            <path d="M14 4 V10 H20" />
-            <path d="M10 20 V14 H4" />
-            <path d="M14 20 V14 H20" />
-          </svg>
-        ) : (
+      {/* Bottom-right fullscreen toggle — only rendered when NOT
+       * fullscreened. Once fullscreen we swap to the more obvious
+       * top-right X close button below. */}
+      {!isFullscreen ? (
+        <button
+          type="button"
+          className="eos-splash__fullscreen"
+          onClick={handleFullscreenToggle}
+          aria-label="Enter fullscreen"
+        >
           <svg className="eos-splash__fullscreen-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 10 V4 H10" />
             <path d="M20 10 V4 H14" />
             <path d="M4 14 V20 H10" />
             <path d="M20 14 V20 H14" />
           </svg>
-        )}
-      </button>
+        </button>
+      ) : null}
+      {/* Top-right close button — only rendered when fullscreen so
+       * iOS users (no Esc key, no browser chrome) have an obvious
+       * way to exit. */}
+      {isFullscreen ? (
+        <button
+          type="button"
+          className="eos-splash__fs-close"
+          onClick={handleFullscreenToggle}
+          aria-label="Exit fullscreen"
+        >
+          <span className="eos-splash__fs-close-x" aria-hidden="true">×</span>
+        </button>
+      ) : null}
 
       {/* Play overlay — vignette + big centred play button + label.
        * Visible only in the POSTER state (CSS gates display via
