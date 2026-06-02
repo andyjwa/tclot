@@ -477,39 +477,53 @@ function TlcRingScene() {
         <circle cx={512} cy={120} r={44} fill="none" stroke="#d4af37" strokeWidth={8} />
         <circle cx={512} cy={120} r={44} fill="none" stroke="#fff3b0" strokeWidth={1.5} opacity={0.7} />
       </g>
-      {/* Apron (base) */}
-      <rect x={212} y={470} width={600} height={40} fill="#1a1a26" stroke="#0a0a0a" strokeWidth={2} />
-      <rect x={212} y={470} width={600} height={4}  fill="#3a3a4a" />
-      {/* Ring mat */}
-      <rect x={222} y={330} width={580} height={140} fill="#7a1a24" stroke="#0a0a0a" strokeWidth={2} />
-      {/* Corner posts + yellow turnbuckles */}
-      {[
-        { x: 216, y: 230 }, { x: 796, y: 230 },
-        { x: 240, y: 230 }, { x: 772, y: 230 },
-      ].slice(0, 2).map((p, idx) => (
-        <g key={`post-${idx}`}>
-          <rect x={p.x} y={p.y} width={12} height={240} fill="#1a1a26" stroke="#0a0a0a" strokeWidth={1.5} />
-          <rect x={p.x - 1} y={p.y - 6} width={14} height={16} fill="#ffd23f" stroke="#0a0a0a" strokeWidth={1.5} />
-        </g>
-      ))}
-      {/* Ropes — top, middle, bottom */}
-      {[
-        { y: 250 }, { y: 290 }, { y: 320 },
-      ].map((r, idx) => (
-        <g key={`rope-${idx}`}>
-          <line x1={228} y1={r.y + 2} x2={808} y2={r.y + 2} stroke="#5a5a64" strokeWidth={2} />
-          <line x1={228} y1={r.y}     x2={808} y2={r.y}     stroke="#ffffff" strokeWidth={3} />
-        </g>
-      ))}
+      {/* ──────────────────────────────────────────────────────────────── */}
+      {/* 3/4 perspective wrestling ring                                   */}
+      {/* ──────────────────────────────────────────────────────────────── */}
+      {/* Layering note: mat + apron + accessories render BEFORE the dots; */}
+      {/* all 4 posts and all 12 rope segments render AFTER the dots so    */}
+      {/* the dots appear contained inside the ring. Ropes are thin enough */}
+      {/* that dots remain readable through them.                          */}
+
+      {/* Side aprons (left/right faces of the platform below the mat) — */}
+      {/* drawn first so the front apron rect sits in front of them.     */}
+      <polygon
+        points="170,480 260,340 260,376 170,516"
+        fill="#1a1a26"
+        stroke="#0a0a0a"
+        strokeWidth={1.5}
+      />
+      <polygon
+        points="854,480 764,340 764,376 854,516"
+        fill="#1a1a26"
+        stroke="#0a0a0a"
+        strokeWidth={1.5}
+      />
+      {/* Front apron band */}
+      <polygon
+        points="170,480 854,480 854,516 170,516"
+        fill="#1a1a26"
+        stroke="#0a0a0a"
+        strokeWidth={2}
+      />
+      {/* Front apron top-edge highlight */}
+      <line x1={170} y1={480} x2={854} y2={480} stroke="#3a3a4a" strokeWidth={2} />
+      {/* Ring mat trapezoid (back edge shorter than front to imply depth) */}
+      <polygon
+        points="260,340 764,340 854,480 170,480"
+        fill="#7a1a24"
+        stroke="#1a1a26"
+        strokeWidth={3}
+      />
       {/* Cartoony TLC accessories OUTSIDE the ring */}
-      <CartoonLadder x={80}  y={360} rot={-12} />
-      <CartoonLadder x={900} y={360} rot={10} />
-      <CartoonTable  x={40}  y={500} />
-      <CartoonTable  x={870} y={510} />
-      <CartoonChair  x={170} y={488} rot={-6} />
-      <CartoonChair  x={830} y={486} rot={5} />
-      <CartoonChair  x={460} y={520} rot={-2} />
-      {/* All 8 manager dots filing into the ring */}
+      <CartoonLadder x={72}  y={350} rot={12} />
+      <CartoonLadder x={908} y={350} rot={-10} />
+      <CartoonTable  x={30}  y={520} />
+      <CartoonTable  x={880} y={520} />
+      <CartoonChair  x={160} y={508} rot={-6} />
+      <CartoonChair  x={836} y={506} rot={5} />
+      <CartoonChair  x={460} y={534} rot={-2} />
+      {/* All 8 manager dots filing into the ring (two rows for depth) */}
       <g className="so-splash__tlc-managers">
         {SEASON_OPENER_MANAGERS.map((m, i) => {
           const pos = TLC_DOT_POSITIONS[i];
@@ -521,14 +535,71 @@ function TlcRingScene() {
               finalX={pos.x}
               finalY={pos.y}
               enterDx={pos.enterDx}
-              enterDy={0}
+              enterDy={pos.enterDy}
               w1Dx={0}
               w1Dy={0}
+              scale={pos.scale}
               sceneClass="so-splash__manager--tlc"
             />
           );
         })}
       </g>
+      {/* Posts + ropes rendered AFTER dots so the ring visually frames them */}
+      {/* Back posts (smaller — further away) */}
+      {[
+        { x: 254, y: 240 },
+        { x: 758, y: 240 },
+      ].map((p, idx) => (
+        <g key={`back-post-${idx}`}>
+          <rect x={p.x} y={p.y} width={12} height={100} fill="#1a1a26" stroke="#0a0a0a" strokeWidth={1.5} />
+          <rect x={p.x - 2} y={p.y - 14} width={16} height={14} fill="#ffd23f" stroke="#0a0a0a" strokeWidth={1.5} />
+        </g>
+      ))}
+      {/* Front posts (larger — closer) */}
+      {[
+        { x: 164, y: 360 },
+        { x: 848, y: 360 },
+      ].map((p, idx) => (
+        <g key={`front-post-${idx}`}>
+          <rect x={p.x} y={p.y} width={14} height={120} fill="#1a1a26" stroke="#0a0a0a" strokeWidth={1.5} />
+          <rect x={p.x - 2} y={p.y - 16} width={18} height={16} fill="#ffd23f" stroke="#0a0a0a" strokeWidth={1.5} />
+        </g>
+      ))}
+      {/* Ropes — three tiers, each tier connects all 4 corner anchors so */}
+      {/* every side of the ring reads. Corner anchors per tier:          */}
+      {/*   tier 1 (top):    BL(260,240) BR(764,240) FR(855,360) FL(171,360) */}
+      {/*   tier 2 (middle): BL(260,280) BR(764,280) FR(855,400) FL(171,400) */}
+      {/*   tier 3 (bottom): BL(260,320) BR(764,320) FR(855,440) FL(171,440) */}
+      {[
+        { bl: [260, 240], br: [764, 240], fr: [855, 360], fl: [171, 360] },
+        { bl: [260, 280], br: [764, 280], fr: [855, 400], fl: [171, 400] },
+        { bl: [260, 320], br: [764, 320], fr: [855, 440], fl: [171, 440] },
+      ].map((t, idx) => {
+        const segs = [
+          { a: t.bl, b: t.br }, // back
+          { a: t.br, b: t.fr }, // right side
+          { a: t.fr, b: t.fl }, // front
+          { a: t.fl, b: t.bl }, // left side
+        ];
+        return (
+          <g key={`rope-tier-${idx}`}>
+            {segs.map((s, sidx) => (
+              <g key={sidx}>
+                <line
+                  x1={s.a[0]} y1={s.a[1] + 2}
+                  x2={s.b[0]} y2={s.b[1] + 2}
+                  stroke="#3a3a4a" strokeWidth={2}
+                />
+                <line
+                  x1={s.a[0]} y1={s.a[1]}
+                  x2={s.b[0]} y2={s.b[1]}
+                  stroke="#ffffff" strokeWidth={3}
+                />
+              </g>
+            ))}
+          </g>
+        );
+      })}
     </g>
   );
 }
@@ -602,7 +673,13 @@ function VaderChibi({ cx, cy, w, h, withSaber = false, className }) {
   );
 }
 
-function ManagerDot({ manager, i, finalX, finalY, enterDx, enterDy, w1Dx, w1Dy, sceneClass }) {
+function ManagerDot({ manager, i, finalX, finalY, enterDx, enterDy, w1Dx, w1Dy, sceneClass, scale = 1 }) {
+  // Scale is composed AFTER the translate in the CSS transform string so the
+  // dot scales around its own local origin (0,0) and then settles at
+  // (finalX, finalY) — used by TLC back-row dots to imply distance.
+  const transform = scale === 1
+    ? `translate(${finalX}px, ${finalY}px)`
+    : `translate(${finalX}px, ${finalY}px) scale(${scale})`;
   return (
     <g
       className={`so-splash__manager ${sceneClass}`}
@@ -613,7 +690,7 @@ function ManagerDot({ manager, i, finalX, finalY, enterDx, enterDy, w1Dx, w1Dy, 
         '--enter-dy': `${enterDy}px`,
         '--w1-dx': `${w1Dx}px`,
         '--w1-dy': `${w1Dy}px`,
-        transform: `translate(${finalX}px, ${finalY}px)`,
+        transform,
       }}
     >
       <g className="so-splash__manager-walk">
@@ -762,15 +839,21 @@ const HOBBITON_FLOWERS = [
   { x: 906, y: 478, colour: '#ffffff', r: 2 },
 ];
 
-// TLC final dot positions inside the ring mat (x:222–802, y:330–470),
-// with off-screen enter offsets: 4 from the left, 4 from the right.
+// TLC final dot positions on the 3/4 perspective mat. Two rows:
+//   • Back row (first 4) sits high on the trapezoid and is scaled down
+//     to 0.85 to imply distance; enters diagonally from the upper
+//     off-screen corners (upstage).
+//   • Front row (last 4) sits low on the trapezoid at full scale and
+//     enters horizontally from the left/right wings as before.
 const TLC_DOT_POSITIONS = [
-  { x: 290, y: 380, enterDx: -420 },
-  { x: 360, y: 420, enterDx: -520 },
-  { x: 420, y: 380, enterDx: -620 },
-  { x: 490, y: 430, enterDx: -720 },
-  { x: 560, y: 380, enterDx:  520 },
-  { x: 630, y: 430, enterDx:  420 },
-  { x: 700, y: 390, enterDx:  520 },
-  { x: 760, y: 425, enterDx:  620 },
+  // BACK row — y in 370–385, x spread between ~310 and ~710
+  { x: 310, y: 372, scale: 0.85, enterDx: -380, enterDy: -300 },
+  { x: 443, y: 378, scale: 0.85, enterDx: -200, enterDy: -360 },
+  { x: 577, y: 374, scale: 0.85, enterDx:  200, enterDy: -360 },
+  { x: 710, y: 380, scale: 0.85, enterDx:  380, enterDy: -300 },
+  // FRONT row — y in 440–455, x spread between ~230 and ~790
+  { x: 230, y: 444, scale: 1,    enterDx: -380, enterDy: 0    },
+  { x: 417, y: 450, scale: 1,    enterDx: -520, enterDy: 0    },
+  { x: 603, y: 446, scale: 1,    enterDx:  520, enterDy: 0    },
+  { x: 790, y: 452, scale: 1,    enterDx:  380, enterDy: 0    },
 ];

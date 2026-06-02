@@ -188,9 +188,11 @@
   animation: so-hobbiton-walk 6s cubic-bezier(0.3, 0.9, 0.55, 1) calc(18.5s + var(--i, 0) * 0.25s) both;
 }
 
-/* TLC dots: enter horizontally from off-screen, then bounce ready-to-fight. */
+/* TLC dots: front-row enters horizontally from off-screen; back-row
+ * enters diagonally from the upper corners (upstage), then both rows
+ * bounce ready-to-fight in place. */
 @keyframes so-tlc-walk {
-  0%   { transform: translate(var(--enter-dx, 0), 0); opacity: 0; }
+  0%   { transform: translate(var(--enter-dx, 0), var(--enter-dy, 0)); opacity: 0; }
   6%   { opacity: 1; }
   100% { transform: translate(0, 0); opacity: 1; }
 }
