@@ -50,6 +50,7 @@ export function SeasonOpenerSplash({ onDismiss }) {
        * is pointer-events: none so the vignette doesn't swallow
        * clicks on the dismiss/replay buttons in the corner. */}
       <div className="so-splash__play-overlay" aria-hidden={isPlaying}>
+        <p className="so-splash__play-teaser">Nomenclature decided…</p>
         <button
           type="button"
           className="so-splash__play-button"

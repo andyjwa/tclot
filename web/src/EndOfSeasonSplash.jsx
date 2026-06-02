@@ -94,6 +94,7 @@ export function EndOfSeasonSplash({ onDismiss }) {
        * is pointer-events: none so the vignette doesn't swallow
        * clicks on the dismiss/replay buttons in the corner. */}
       <div className="eos-splash__play-overlay" aria-hidden={isPlaying}>
+        <p className="eos-splash__play-teaser">The 25/26 season has ended…</p>
         <button
           type="button"
           className="eos-splash__play-button"
