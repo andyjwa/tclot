@@ -105,7 +105,6 @@ export function EndOfSeasonSplash({ onDismiss }) {
             <polygon points="7,5 7,19 20,12" fill="#0a0a0a" />
           </svg>
         </button>
-        <span className="eos-splash__play-label">Watch the end-of-season recap</span>
       </div>
 
       <svg

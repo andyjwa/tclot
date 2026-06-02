@@ -61,7 +61,6 @@ export function SeasonOpenerSplash({ onDismiss }) {
             <polygon points="7,5 7,19 20,12" fill="#0a0a0a" />
           </svg>
         </button>
-        <span className="so-splash__play-label">Watch the season opener</span>
       </div>
       <svg
         key={playId}

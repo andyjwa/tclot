@@ -420,20 +420,6 @@
   display: block;
 }
 
-.eos-splash__play-label {
-  pointer-events: auto;
-  display: inline-block;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.7);
-  font-family: inherit;
-  font-size: clamp(13px, 2.4vw, 16px);
-  font-weight: 600;
-  padding: 0.45em 0.9em;
-  border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  letter-spacing: 0.01em;
-}
-
 /* ------------------------------------------------------------------ */
 /* Three-act timeline. All keyframe-driven motion is scoped under
  * `.eos-splash--playing` so:
