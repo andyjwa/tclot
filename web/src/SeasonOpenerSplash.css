@@ -1,13 +1,13 @@
 /*
  * Season Opener cinematic banner — six-scene splash mounted on the
  * FPL Live → Vibes sub-tab. Timeline (cinematic seconds from playId mount):
- *   0–6s    title card
- *   6–18s   dark forest side-scroller (12s) — backdrop pans past walking dots
- *   18–28s  Hobbiton / Bag End approach (10s)
- *   28–34s  door swings open, amber glow + chibi Vader in doorway (6s)
- *   34–42s  chibi Vader hero + 4-line caption stack (8s)
- *   42–52s  TLC wrestling ring outro (10s) — dots enter the ring
- * Total ≈ 52s.
+ *   0–8s    title card (8s — extra dwell for the hero copy)
+ *   8–20s   dark forest side-scroller (12s) — backdrop pans past walking dots
+ *   20–30s  Hobbiton / Bag End approach (10s)
+ *   30–36s  door swings open, amber glow + chibi Vader in doorway (6s)
+ *   36–44s  chibi Vader hero + 4-line caption stack (8s)
+ *   44–54s  TLC wrestling ring outro (10s) — dots enter the ring
+ * Total ≈ 54s.
  */
 
 .so-splash {
@@ -60,22 +60,96 @@
 }
 .so-splash--no-dismiss .so-splash__replay { top: clamp(6px,1.5vw,10px); }
 .so-splash__replay-icon { font-size: 1.05rem; font-weight: 700; line-height: 1; display: block; transform: translateY(-1px); }
+/* Hide the replay button in the POSTER state — showing "replay"
+ * before the cinematic has played even once is confusing. */
+.so-splash:not(.so-splash--playing) .so-splash__replay { display: none; }
+
+/* ──────────────────────────────────────────────────────────────────── */
+/*  Play overlay — POSTER state only                                    */
+/*  Big centred play button + label sitting on a subtle vignette so     */
+/*  the affordance pops against the (busy) Hobbiton + open-door         */
+/*  static. Hidden as soon as the cinematic starts.                     */
+/* ──────────────────────────────────────────────────────────────────── */
+
+.so-splash__play-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 16px);
+  /* Vignette: transparent at the centre so the poster reads, darkening
+   * out toward the corners so the play button stands out against the
+   * busy Hobbiton tableau. */
+  background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.55) 100%);
+  /* The overlay shouldn't swallow clicks on the corner dismiss/replay
+   * controls — only the inner button + label re-enable pointer events. */
+  pointer-events: none;
+}
+.so-splash:not(.so-splash--playing) .so-splash__play-overlay { display: flex; }
+
+.so-splash__play-button {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(72px, 14vw, 116px);
+  height: clamp(72px, 14vw, 116px);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(0,0,0,0.55);
+  background: rgba(255,255,255,0.96);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+  cursor: pointer;
+  transition: transform 160ms ease-out, box-shadow 160ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+.so-splash__play-button:hover {
+  transform: scale(1.06);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+}
+.so-splash__play-button:active { transform: scale(0.98); }
+.so-splash__play-button:focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 2px;
+}
+.so-splash__play-icon {
+  width: clamp(28px, 5.5vw, 42px);
+  height: clamp(28px, 5.5vw, 42px);
+  display: block;
+}
+.so-splash__play-label {
+  pointer-events: auto;
+  display: inline-block;
+  color: #ffffff;
+  background: rgba(0,0,0,0.7);
+  font-family: inherit;
+  font-size: clamp(13px, 2.4vw, 16px);
+  font-weight: 600;
+  padding: 0.45em 0.9em;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  letter-spacing: 0.01em;
+}
 
 /* ──────────────────────────────────────────────────────────────────── */
 /*  Per-scene fade gates                                                */
 /* ──────────────────────────────────────────────────────────────────── */
 
-.so-splash--playing .so-splash__scene--title    { animation: so-title-fade    6s  ease-out  0s both; }
-.so-splash--playing .so-splash__scene--forest   { animation: so-forest-fade  12s  ease-out  6s both; }
-.so-splash--playing .so-splash__scene--hobbiton { animation: so-hobbiton-fade 10s ease-out 18s both; }
-.so-splash--playing .so-splash__scene--door     { animation: so-door-fade     6s  ease-out 28s both; }
-.so-splash--playing .so-splash__scene--vader    { animation: so-vader-fade    8s  ease-out 34s both; }
-.so-splash--playing .so-splash__scene--tlc      { animation: so-tlc-fade     10s  ease-out 42s both; }
+.so-splash--playing .so-splash__scene--title    { animation: so-title-fade    8s  ease-out  0s both; }
+.so-splash--playing .so-splash__scene--forest   { animation: so-forest-fade  12s  ease-out  8s both; }
+.so-splash--playing .so-splash__scene--hobbiton { animation: so-hobbiton-fade 10s ease-out 20s both; }
+.so-splash--playing .so-splash__scene--door     { animation: so-door-fade     6s  ease-out 30s both; }
+.so-splash--playing .so-splash__scene--vader    { animation: so-vader-fade    8s  ease-out 36s both; }
+.so-splash--playing .so-splash__scene--tlc      { animation: so-tlc-fade     10s  ease-out 44s both; }
 
 @keyframes so-title-fade {
-  0%, 6%  { opacity: 0; }
-  10%     { opacity: 1; }
-  88%     { opacity: 1; }
+  0%, 4%  { opacity: 0; }
+  8%      { opacity: 1; }
+  90%     { opacity: 1; }
   100%    { opacity: 0; }
 }
 @keyframes so-forest-fade {
@@ -113,24 +187,24 @@
 
 .so-splash__title-eyebrow {
   font-family: inherit;
-  font-size: clamp(20px, 3.4vw, 36px);
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-size: clamp(34px, 6.4vw, 64px);
+  font-weight: 800;
+  letter-spacing: 0.005em;
   fill: #ffd166;
   paint-order: stroke fill;
-  stroke: rgba(0,0,0,0.45);
-  stroke-width: 0.6px;
+  stroke: rgba(0,0,0,0.5);
+  stroke-width: 0.9px;
 }
 .so-splash__title-sub {
   font-family: inherit;
-  font-size: clamp(16px, 2.6vw, 26px);
+  font-size: clamp(24px, 4.4vw, 46px);
   font-weight: 600;
   font-style: italic;
   fill: #d8c8ff;
 }
 .so-splash__title-line { opacity: 0; }
 .so-splash--playing .so-splash__title-line {
-  animation: so-title-line-in 1.4s ease-out calc(0.6s + var(--i, 0) * 0.9s) both;
+  animation: so-title-line-in 1.4s ease-out calc(0.5s + var(--i, 0) * 0.9s) both;
 }
 @keyframes so-title-line-in {
   0%   { opacity: 0; transform: translateY(8px); }
@@ -146,7 +220,7 @@
   transform-origin: 0 0;
 }
 .so-splash--playing .so-splash__forest-backdrop {
-  animation: so-forest-pan 12s linear 6s both;
+  animation: so-forest-pan 12s linear 8s both;
 }
 @keyframes so-forest-pan {
   0%   { transform: translate(0, 0); }
@@ -174,7 +248,7 @@
   50%      { transform: translateY( 2px); }
 }
 .so-splash--playing .so-splash__manager--forest .so-splash__manager-walk {
-  animation: so-forest-bob 0.6s ease-in-out calc(6s + var(--i, 0) * 0.07s) infinite;
+  animation: so-forest-bob 0.6s ease-in-out calc(8s + var(--i, 0) * 0.07s) infinite;
 }
 
 /* Hobbiton dots: curved walk from off-screen entry to semicircle final. */
@@ -185,7 +259,7 @@
   100% { transform: translate(0, 0); opacity: 1; }
 }
 .so-splash--playing .so-splash__manager--hobbiton .so-splash__manager-walk {
-  animation: so-hobbiton-walk 6s cubic-bezier(0.3, 0.9, 0.55, 1) calc(18.5s + var(--i, 0) * 0.25s) both;
+  animation: so-hobbiton-walk 6s cubic-bezier(0.3, 0.9, 0.55, 1) calc(20.5s + var(--i, 0) * 0.25s) both;
 }
 
 /* TLC dots: front-row enters horizontally from off-screen; back-row
@@ -201,10 +275,10 @@
   50%      { transform: translateY(-2px) scale(1.04); }
 }
 .so-splash--playing .so-splash__manager--tlc .so-splash__manager-walk {
-  animation: so-tlc-walk 1.6s cubic-bezier(0.3, 0.9, 0.55, 1) calc(43s + var(--i, 0) * 0.55s) both;
+  animation: so-tlc-walk 1.6s cubic-bezier(0.3, 0.9, 0.55, 1) calc(45s + var(--i, 0) * 0.55s) both;
 }
 .so-splash--playing .so-splash__manager--tlc .so-splash__manager-ready {
-  animation: so-tlc-ready 0.8s ease-in-out calc(44.8s + var(--i, 0) * 0.55s) infinite;
+  animation: so-tlc-ready 0.8s ease-in-out calc(46.8s + var(--i, 0) * 0.55s) infinite;
 }
 
 /* ──────────────────────────────────────────────────────────────────── */
@@ -219,7 +293,7 @@
   transform: rotate(-85deg);
 }
 .so-splash--playing .so-splash__door-panel {
-  animation: so-door-swing 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) 29s both;
+  animation: so-door-swing 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) 31s both;
 }
 @keyframes so-door-swing {
   0%   { transform: rotate(0deg); }
@@ -227,7 +301,7 @@
 }
 
 .so-splash--playing .so-splash__amber-glow {
-  animation: so-amber-glow-in 1.5s ease-out 30s both;
+  animation: so-amber-glow-in 1.5s ease-out 32s both;
 }
 @keyframes so-amber-glow-in {
   0%   { opacity: 0; }
@@ -235,7 +309,7 @@
 }
 
 .so-splash--playing .so-splash__doorway-vader {
-  animation: so-doorway-vader-in 1.5s ease-out 30.5s both;
+  animation: so-doorway-vader-in 1.5s ease-out 32.5s both;
 }
 @keyframes so-doorway-vader-in {
   0%, 30% { opacity: 0; }
@@ -260,16 +334,16 @@
 /* Lines 0–2 fade in, hold, fade out; line 3 fades in and holds. Each
  * line gets its own absolute-time window in the 8s vader window. */
 .so-splash--playing .so-splash__vader-line--0 {
-  animation: so-vader-line 1.9s ease-out 34.6s both;
+  animation: so-vader-line 1.9s ease-out 36.6s both;
 }
 .so-splash--playing .so-splash__vader-line--1 {
-  animation: so-vader-line 1.9s ease-out 36.5s both;
+  animation: so-vader-line 1.9s ease-out 38.5s both;
 }
 .so-splash--playing .so-splash__vader-line--2 {
-  animation: so-vader-line 1.9s ease-out 38.4s both;
+  animation: so-vader-line 1.9s ease-out 40.4s both;
 }
 .so-splash--playing .so-splash__vader-line--3 {
-  animation: so-vader-line-final 1.7s ease-out 40.3s both;
+  animation: so-vader-line-final 1.7s ease-out 42.3s both;
 }
 @keyframes so-vader-line {
   0%     { opacity: 0; }
@@ -292,7 +366,7 @@
   transform-origin: 512px 0;
 }
 .so-splash--playing .so-splash__tlc-ring {
-  animation: so-tlc-ring-swing 3s ease-in-out 42s infinite;
+  animation: so-tlc-ring-swing 3s ease-in-out 44s infinite;
 }
 @keyframes so-tlc-ring-swing {
   0%, 100% { transform: rotate(-0.96deg); }

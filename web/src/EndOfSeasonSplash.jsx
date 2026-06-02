@@ -3,15 +3,6 @@ import { WOODEN_SPOON_MANAGER_SURNAME, REIGNING_CHAMPION_MANAGER_SURNAME } from 
 import './EndOfSeasonSplash.css';
 
 /**
- * Per-tab session cap on how many times the End-of-Season cinematic plays
- * back automatically. After the cap is reached the splash still shows, but
- * as a static title card (TCLOT brand banner + END OF SEASON tagline
- * stack) — the user can still hit Replay manually.
- */
-const SESSION_PLAY_KEY = 'tclot:eos:plays:v1';
-const SESSION_PLAY_CAP = 2;
-
-/**
  * Three-act End-of-Season cinematic that plays on the live scores page
  * once the FPL season is complete. See EndOfSeasonSplash.css for the
  * full keyframe timeline; the structure mirrors GuardOfHonourSplash:
@@ -45,37 +36,27 @@ const SESSION_PLAY_CAP = 2;
  *     Caption stack ("THE PUNISHMENT" / "Couldn't find space") is held
  *     for the rest of the run.
  *
- * The cinematic auto-plays up to SESSION_PLAY_CAP times per browser
- * tab, with manual Replay always available, and respects
- * `prefers-reduced-motion: reduce` by snapping to the static title
- * card (TCLOT brand banner + END OF SEASON tagline stack). Trigger /
- * mount lives in LiveScores.jsx — production trigger is "season
- * complete" (`liveStatus.status === 'idle' && nextGw == null`),
+ * Playback is opt-in: the splash mounts in a POSTER state showing the
+ * TCLOT brand banner + tagline stack, with a centred play button
+ * overlay encouraging the viewer to click. Clicking play (or the
+ * always-available Replay button once the cinematic has run) bumps
+ * `playId`, re-mounting the inner SVG via React `key` and kicking
+ * every CSS animation from t=0. `prefers-reduced-motion: reduce` is
+ * still respected — the play button stays available, clicking it just
+ * snaps to the static final-frame tableau instead of animating.
+ * Trigger / mount lives in LiveScores.jsx — production trigger is
+ * "season complete" (`liveStatus.status === 'idle' && nextGw == null`),
  * previewable any time via the `?eosSplash=1` URL flag.
  *
  * @param {{ onDismiss?: () => void }} props
  */
 export function EndOfSeasonSplash({ onDismiss }) {
-  /**
-   * Playback state machine — same lazy-init session-cap reader the
-   * Guard of Honour splash uses. Manual Replay always bumps `playId`
-   * regardless of the cap so the user can re-watch on demand; the
-   * `playId` becomes the SVG element's React `key`, forcing a fresh
-   * mount and therefore a fresh run of every CSS animation.
-   */
-  const [playId, setPlayId] = useState(() => {
-    if (typeof window === 'undefined') return 0;
-    try {
-      const n = Number(window.sessionStorage.getItem(SESSION_PLAY_KEY) ?? '0');
-      if (!Number.isFinite(n) || n >= SESSION_PLAY_CAP) return 0;
-      window.sessionStorage.setItem(SESSION_PLAY_KEY, String(n + 1));
-      return n + 1;
-    } catch {
-      return 1;
-    }
-  });
+  // Starts at 0 (POSTER state). Click the play button OR the replay
+  // button to bump playId — the SVG's React `key` then forces a fresh
+  // mount and every CSS animation restarts from t=0.
+  const [playId, setPlayId] = useState(0);
   const isPlaying = playId > 0;
-  const handleReplay = () => setPlayId((id) => id + 1);
+  const handlePlay = () => setPlayId((id) => id + 1);
 
   return (
     <div
@@ -101,11 +82,30 @@ export function EndOfSeasonSplash({ onDismiss }) {
       <button
         type="button"
         className="eos-splash__replay"
-        onClick={handleReplay}
+        onClick={handlePlay}
         aria-label="Replay end-of-season animation"
       >
         <span className="eos-splash__replay-icon" aria-hidden="true">↻</span>
       </button>
+
+      {/* Play overlay — vignette + big centred play button + label.
+       * Visible only in the POSTER state (CSS gates display via
+       * `.eos-splash:not(.eos-splash--playing)`). The overlay itself
+       * is pointer-events: none so the vignette doesn't swallow
+       * clicks on the dismiss/replay buttons in the corner. */}
+      <div className="eos-splash__play-overlay" aria-hidden={isPlaying}>
+        <button
+          type="button"
+          className="eos-splash__play-button"
+          onClick={handlePlay}
+          aria-label="Play end-of-season cinematic"
+        >
+          <svg className="eos-splash__play-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <polygon points="7,5 7,19 20,12" fill="#0a0a0a" />
+          </svg>
+        </button>
+        <span className="eos-splash__play-label">Watch the end-of-season recap</span>
+      </div>
 
       <svg
         key={playId}

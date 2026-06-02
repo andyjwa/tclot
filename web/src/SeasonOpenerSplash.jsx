@@ -2,32 +2,29 @@ import { useState } from 'react';
 import { EPISODE_NUMBER, SEASON_THEME, VADER_LINES, SEASON_OPENER_MANAGERS } from './seasonOpener.js';
 import './SeasonOpenerSplash.css';
 
-const SESSION_PLAY_KEY = 'tclot:so:plays:v1';
-const SESSION_PLAY_CAP = 2;
-
 /*
  * Season Opener cinematic — six scenes mounted on FPL Live → Vibes.
- * Timeline (cinematic seconds from playId mount):
- *   0–6s    title card
- *   6–18s   dark forest, dots walk in place while backdrop pans (signpost passes by)
- *   18–28s  Hobbiton + Bag End approach
- *   28–34s  door swings open, amber glow + chibi Vader in doorway
- *   34–42s  chibi Vader hero shot + 4-line caption stack
- *   42–52s  TLC wrestling ring outro — all 8 dots ring up for the title
- * Total ≈ 52s. See SeasonOpenerSplash.css for keyframes.
+ * Cinematic is opt-in: mounts in a POSTER state (Hobbiton + open-door
+ * tableau with a centred play overlay), and only kicks the timeline
+ * once the user clicks play. The Replay button re-mounts the same
+ * cinematic on demand.
+ *
+ * Timeline (cinematic seconds from playId remount):
+ *   0–8s    title card (extra dwell so the hero copy can read)
+ *   8–20s   dark forest, dots walk in place while backdrop pans (signpost passes by)
+ *   20–30s  Hobbiton + Bag End approach
+ *   30–36s  door swings open, amber glow + chibi Vader in doorway
+ *   36–44s  chibi Vader hero shot + 4-line caption stack
+ *   44–54s  TLC wrestling ring outro — all 8 dots ring up for the title
+ * Total ≈ 54s. See SeasonOpenerSplash.css for keyframes.
  */
 export function SeasonOpenerSplash({ onDismiss }) {
-  const [playId, setPlayId] = useState(() => {
-    if (typeof window === 'undefined') return 0;
-    try {
-      const n = Number(window.sessionStorage.getItem(SESSION_PLAY_KEY) ?? '0');
-      if (!Number.isFinite(n) || n >= SESSION_PLAY_CAP) return 0;
-      window.sessionStorage.setItem(SESSION_PLAY_KEY, String(n + 1));
-      return n + 1;
-    } catch { return 1; }
-  });
+  // Starts at 0 (POSTER state). Click the play button OR the replay
+  // button to bump playId, which re-mounts the SVG via `key={playId}`
+  // and kicks every CSS keyframe from t=0.
+  const [playId, setPlayId] = useState(0);
   const isPlaying = playId > 0;
-  const handleReplay = () => setPlayId((id) => id + 1);
+  const handlePlay = () => setPlayId((id) => id + 1);
 
   return (
     <div
@@ -44,9 +41,27 @@ export function SeasonOpenerSplash({ onDismiss }) {
           <span className="so-splash__dismiss-x" aria-hidden="true">×</span>
         </button>
       ) : null}
-      <button type="button" className="so-splash__replay" onClick={handleReplay} aria-label="Replay">
+      <button type="button" className="so-splash__replay" onClick={handlePlay} aria-label="Replay">
         <span className="so-splash__replay-icon" aria-hidden="true">↻</span>
       </button>
+      {/* Play overlay — vignette + big centred play button + label.
+       * Visible only in the POSTER state (CSS gates display via
+       * `.so-splash:not(.so-splash--playing)`). The overlay itself
+       * is pointer-events: none so the vignette doesn't swallow
+       * clicks on the dismiss/replay buttons in the corner. */}
+      <div className="so-splash__play-overlay" aria-hidden={isPlaying}>
+        <button
+          type="button"
+          className="so-splash__play-button"
+          onClick={handlePlay}
+          aria-label="Play season opener cinematic"
+        >
+          <svg className="so-splash__play-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <polygon points="7,5 7,19 20,12" fill="#0a0a0a" />
+          </svg>
+        </button>
+        <span className="so-splash__play-label">Watch the season opener</span>
+      </div>
       <svg
         key={playId}
         className="so-splash__svg"
@@ -97,13 +112,16 @@ export function SeasonOpenerSplash({ onDismiss }) {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// Scene 1 — Title card (0–6s)
+// Scene 1 — Title card (0–8s)
 // ───────────────────────────────────────────────────────────────────────────
 
 function TitleScene() {
+  // Hero copy is split across three lines so the eyebrow can scale up
+  // without overflowing the 1024-wide viewBox.
   const lines = [
-    { text: 'Nomenclature has been chosen for the season ahead.', cls: 'so-splash__title-eyebrow', y: 270 },
-    { text: 'Which path will you choose?', cls: 'so-splash__title-sub', y: 330 },
+    { text: 'Nomenclature has been chosen', cls: 'so-splash__title-eyebrow', y: 230 },
+    { text: 'for the season ahead.',         cls: 'so-splash__title-eyebrow', y: 310 },
+    { text: 'Which path will you choose?',   cls: 'so-splash__title-sub',     y: 430 },
   ];
   return (
     <g className="so-splash__scene so-splash__scene--title">
