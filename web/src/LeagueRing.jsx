@@ -4,8 +4,10 @@ import './LeagueRing.css'
 /**
  * Canonical Black Speech inscription from the One Ring. Repeated with a
  * decorative middot separator so the text wraps continuously around the
- * inner gold band — anything past the end of the textPath simply gets
- * clipped by SVG, so over-supplying is safer than coming up short.
+ * inscription circle — anything past the end of the textPath simply gets
+ * clipped by SVG, so over-supplying is safer than coming up short. The
+ * inscription is the only "ring" element in the centerpiece: there is no
+ * gold band or stroked outline; the glowing letters define the circle.
  */
 const BLACK_SPEECH =
   'Ash nazg durbatulûk, ash nazg gimbatul, ash nazg thrakatulûk agh burzum-ishi krimpatul.'
@@ -18,6 +20,16 @@ const INSCRIPTION_TEXT = `${BLACK_SPEECH}  ·  ${BLACK_SPEECH}  ·  `
  */
 const PILL_HOLD_MS = 3000
 const PILL_FADE_MS = 220
+
+/**
+ * Inscription radius in SVG user units. The viewBox is 360×360 so this
+ * places the letters at 142/180 ≈ 0.789 of the half-width, leaving room
+ * for the soft glow filter to bleed without clipping. Badge centres sit
+ * on the same radius (converted to a percentage of the container) so the
+ * medallions visually seat themselves on the inscription circle.
+ */
+const INSCRIPTION_RADIUS = 142
+const BADGE_RADIUS_PCT = (INSCRIPTION_RADIUS / 360) * 100
 
 export function LeagueRing() {
   const [teams, setTeams] = useState([])
@@ -44,7 +56,7 @@ export function LeagueRing() {
       })
       .catch(() => {
         // Manifest missing or malformed — leave the ring empty rather than
-        // throwing; the gold band + wordmark still render the centerpiece.
+        // throwing; the inscription + brand banner still render the centerpiece.
       })
     return () => {
       cancelled = true
@@ -77,9 +89,8 @@ export function LeagueRing() {
   const badges = useMemo(() => {
     return teams.map((t, i) => {
       const angle = (i * 45 - 90) * (Math.PI / 180)
-      const radiusPct = 38
-      const x = 50 + Math.cos(angle) * radiusPct
-      const y = 50 + Math.sin(angle) * radiusPct
+      const x = 50 + Math.cos(angle) * BADGE_RADIUS_PCT
+      const y = 50 + Math.sin(angle) * BADGE_RADIUS_PCT
       return { ...t, x, y }
     })
   }, [teams])
@@ -117,94 +128,40 @@ export function LeagueRing() {
         <div className="league-ring__backdrop" aria-hidden="true" />
 
         <svg
-          className="league-ring__svg"
+          className="league-ring__inscription"
           viewBox="0 0 360 360"
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="lr-gold" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#d4a23c" />
-              <stop offset="50%" stopColor="#fff4c8" />
-              <stop offset="100%" stopColor="#a87a1f" />
-            </linearGradient>
             <filter id="lr-ember" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="1.4" />
             </filter>
             <path
-              id="lr-inscription"
-              d="M 38 180 A 142 142 0 1 1 322 180 A 142 142 0 1 1 38 180"
+              id="lr-inscription-path"
+              d={`M ${180 - INSCRIPTION_RADIUS} 180 A ${INSCRIPTION_RADIUS} ${INSCRIPTION_RADIUS} 0 1 1 ${180 + INSCRIPTION_RADIUS} 180 A ${INSCRIPTION_RADIUS} ${INSCRIPTION_RADIUS} 0 1 1 ${180 - INSCRIPTION_RADIUS} 180`}
               fill="none"
             />
           </defs>
-
-          <circle
-            cx="180"
-            cy="180"
-            r="155"
-            fill="none"
-            stroke="url(#lr-gold)"
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
-          <circle
-            cx="180"
-            cy="180"
-            r="155"
-            fill="none"
-            stroke="rgba(255, 140, 40, 0.35)"
-            strokeWidth="6"
-            strokeLinecap="round"
-          />
 
           <text
             fill="#ff8c2a"
             fontSize="9"
             letterSpacing="0.5"
-            opacity="0.85"
+            opacity="0.9"
             filter="url(#lr-ember)"
           >
-            <textPath href="#lr-inscription" startOffset="0">
+            <textPath href="#lr-inscription-path" startOffset="0">
               {INSCRIPTION_TEXT}
             </textPath>
           </text>
         </svg>
 
-        <svg
-          className="league-ring__wordmark"
-          viewBox="0 0 320 200"
-          preserveAspectRatio="xMidYMid meet"
-          aria-label="The Tri-Continental League of Titans"
-        >
-          <defs>
-            <linearGradient id="lr-wordmark" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#e0b04a" />
-              <stop offset="50%" stopColor="#fff4c8" />
-              <stop offset="100%" stopColor="#b8881e" />
-            </linearGradient>
-          </defs>
-          <g
-            fontFamily="'Cinzel Decorative', 'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif"
-            textAnchor="middle"
-            fill="url(#lr-wordmark)"
-            stroke="rgba(0, 0, 0, 0.65)"
-            strokeWidth="0.6"
-            paintOrder="stroke fill"
-            letterSpacing="0.05em"
-          >
-            <text x="160" y="28" fontSize="22" fontWeight="900">
-              THE
-            </text>
-            <text x="160" y="62" fontSize="30" fontWeight="900">
-              TRI-CONTINENTAL
-            </text>
-            <text x="160" y="96" fontSize="22" fontWeight="700">
-              LEAGUE OF
-            </text>
-            <text x="160" y="170" fontSize="56" fontWeight="900">
-              TITANS
-            </text>
-          </g>
-        </svg>
+        <img
+          className="league-ring__banner"
+          src={`${baseUrl}brand/tclot-header.jpg`}
+          alt="TCLOT — Tri-Continental League of Titans"
+          draggable="false"
+        />
 
         <div className="league-ring__badges">
           {badges.map((b) => (
