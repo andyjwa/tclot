@@ -1,12 +1,17 @@
 {
   "teams": [
-    { "name": "Atlético Bilbo",                "file": "Bilbo.JPG"     },
-    { "name": "Toronto Gimli",                  "file": "Toronto.JPG"   },
-    { "name": "Hackney Rohirrim",               "file": "Hackney.PNG"   },
-    { "name": "Suffolk Sméagol",                "file": "Smeagol.png"   },
-    { "name": "Mordorlicious School For Girls", "file": "MMSFG.JPG"     },
-    { "name": "Rokesly Rego Rasu",              "file": "Rokesly.JPG"   },
-    { "name": "Seoul Shire",                    "file": "Shire.PNG"     },
-    { "name": "Brampton Balrogs",               "file": "Brampton.jpeg" }
+    { "name": "Atlético Bilbo",                   "file": "Bilbo.JPG",     "manager": "Nick Goodacre"   },
+    { "name": "Toronto Gimli",                     "file": "Toronto.JPG",   "manager": "Andy Ward"       },
+    { "name": "Hackney Rohirrim",                  "file": "Hackney.PNG",   "manager": "Michael Sutton"  },
+    { "name": "Suffolk Sméagol",                   "file": "Smeagol.png",   "manager": "Jon Ward"        },
+    {
+      "name": "Mr Mordorlicious School for Girls",
+      "shortName": "Mr. MSFG",
+      "file": "MMSFG.JPG",
+      "manager": "Nick Mottershead"
+    },
+    { "name": "Rokesly Regorasu",                  "file": "Rokesly.JPG",   "manager": "David Higman"    },
+    { "name": "Seoul Shire",                       "file": "Shire.PNG",     "manager": "Luke Buther"     },
+    { "name": "Brampton Balrogs",                  "file": "Brampton.jpeg", "manager": "Tery Webster"    }
   ]
 }

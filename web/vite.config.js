@@ -76,6 +76,11 @@ export default defineConfig(({ command }) => {
   plugins: [react(), redirectRootToBasePath(base)].filter(Boolean),
   server: {
     host: true,
+    /** Allow tunnel hostnames (serveo, ngrok, cloudflare, etc.) so phones
+     *  / external devices can reach the dev server through a public URL
+     *  when the local Wi-Fi path is blocked by macOS firewall stealth
+     *  mode. Dev-only — production builds aren't affected. */
+    allowedHosts: true,
     /** Avoid clash with bowls-web (and other Vite apps) on default 5173 — use http://127.0.0.1:5175/ */
     port: 5175,
     strictPort: true,

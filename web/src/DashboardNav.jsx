@@ -175,16 +175,17 @@ export function DashboardMorePanel({
   teamLogoMap = {},
   kitIndexByEntry = {},
 }) {
-  // The mobile bottom nav now only surfaces 26/27, More, and Heritage at the
-  // top level — so the demoted top-level tabs (Live, Standings, Moves,
-  // Players) have to be reachable from here. We accept the slight redundancy
-  // on desktop (those tabs are also in the top nav) because keeping the More
-  // panel functioning as a complete sitemap is the higher-value tradeoff.
+  // The mobile bottom nav now surfaces 26/27, Heritage, Players, and More
+  // at the top level — so the demoted top-level tabs (Live, Standings,
+  // Moves) need to be reachable from here. Players is no longer included
+  // since it has its own bottom-nav slot. We accept the slight redundancy
+  // on desktop (Live/Standings/Moves are also in the top nav) because
+  // keeping the More panel functioning as a complete sitemap is the
+  // higher-value tradeoff.
   const rows = [
     { id: /** @type {const} */ ('fplLive'),       label: 'FPL Live',  emoji: '🟢' },
     { id: /** @type {const} */ ('standings'),     label: 'Standings', emoji: '📊' },
     { id: /** @type {const} */ ('teamSelection'), label: 'Moves',     emoji: '🔁' },
-    { id: /** @type {const} */ ('players'),       label: 'Players',   emoji: '⚽' },
     { id: /** @type {const} */ ('settings'),      label: 'Settings',  emoji: '⚙️' },
   ]
 

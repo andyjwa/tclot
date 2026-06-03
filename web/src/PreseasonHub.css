@@ -8,15 +8,176 @@
  * into the existing `.tile`, `.dashboard-*`, or `.heritage-*` namespaces.
  */
 
+/*
+ * Outer hub element. Stretches edge-to-edge inside the dashboard
+ * content tile (the area below the top headers + nav) and carries
+ * the dark backdrop. Negative-margin breakout reaches the parent
+ * tile's full width even if the parent has horizontal padding —
+ * the backdrop should fill the tile, not just the centred column.
+ *
+ * `min-height: calc(100dvh - 200px)` gives it enough vertical
+ * presence to feel like a "tile filling the screen" on both mobile
+ * portrait (100dvh accounts for the dynamic viewport / URL bar
+ * collapse) and desktop. The 200px slack is a pragmatic estimate
+ * for the top header band + nav row above; if the content is
+ * taller, the hub grows with it.
+ */
 .preseason-hub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: calc(100dvh - 200px);
+  /* Green parchment backdrop — the same textured surface used by the
+   * LotR header image baked at the top, extended down through the
+   * badge grid so the whole hub reads as one continuous canvas. The
+   * `#1f2a17` fallback colour matches the dark-olive base of the
+   * texture so any momentary flash before the image loads is in the
+   * right palette. `cover` keeps the texture crisp at any width;
+   * `fixed` gives a subtle parallax on scroll without jitter. */
+  /* `--preseason-bg-image` is injected by PreseasonHub.jsx so the URL
+   * respects `import.meta.env.BASE_URL` (works in dev `/` AND prod
+   * `/TCLOT/` — CSS `url('/...')` would otherwise bypass the base
+   * rewrite and 404 on GitHub Pages). */
+  background:
+    var(--preseason-bg-image, none) center / cover no-repeat fixed,
+    #1f2a17;
+  padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px) clamp(28px, 5vw, 48px);
+}
+
+/*
+ * Inner wrapper — centres content at a comfortable reading width
+ * regardless of how wide the dashboard tile gets. The outer hub
+ * paints the backdrop; this column sits on top.
+ */
+.preseason-hub__inner {
   display: flex;
   flex-direction: column;
   gap: clamp(20px, 4vw, 36px);
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px) clamp(28px, 5vw, 48px);
   box-sizing: border-box;
+}
+
+/* —— Countdown plate ——
+ *
+ * Sits above the LotR header. Tone family stays continuous with the
+ * page parchment — a faintly darker veil + thin gold rule above and
+ * below — so the panel reads as a "scribed banner" on the parchment
+ * rather than a UI card. Numbers are large gold Cinzel; vertical
+ * gold dividers separate days / hours / minutes.
+ */
+.preseason-countdown {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1.6vw, 14px);
+  padding: clamp(14px, 2.6vw, 22px) clamp(16px, 3vw, 28px);
+  border-top: 1px solid rgba(214, 178, 101, 0.45);
+  border-bottom: 1px solid rgba(214, 178, 101, 0.45);
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(8, 14, 6, 0.18),
+      rgba(8, 14, 6, 0.32)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 130, 0.08),
+    inset 0 -1px 0 rgba(255, 220, 130, 0.08);
+}
+
+.preseason-countdown__label {
+  font-family: 'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: clamp(0.78rem, 2vw, 1.05rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ffd166;
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.7),
+    0 0 14px rgba(255, 175, 60, 0.18);
+}
+
+.preseason-countdown__display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 3.2vw, 28px);
+}
+
+.preseason-countdown__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2px, 0.5vw, 6px);
+  min-width: clamp(48px, 12vw, 78px);
+}
+
+.preseason-countdown__value {
+  font-family: 'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif;
+  font-weight: 500;
+  /* Tabular numerals keep the digits a fixed width so `09 → 10`
+   * doesn't jitter the layout each minute. */
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2rem, 7.2vw, 3.6rem);
+  line-height: 1;
+  color: #ffd166;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 0 22px rgba(255, 175, 60, 0.32);
+  letter-spacing: 0.01em;
+}
+
+.preseason-countdown__unit {
+  font-family: 'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(0.62rem, 1.4vw, 0.78rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 224, 152, 0.78);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.preseason-countdown__sep {
+  display: block;
+  width: 1px;
+  align-self: stretch;
+  /* Soft gold divider, thicker in the middle and feathered at top
+   * and bottom so it looks like an inscribed rule rather than a
+   * harsh UI divider. */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(214, 178, 101, 0.55) 25%,
+    rgba(255, 220, 130, 0.7) 50%,
+    rgba(214, 178, 101, 0.55) 75%,
+    transparent 100%
+  );
+  /* Match the height of the value+unit stack approximately. */
+  min-height: clamp(48px, 9vw, 72px);
+}
+
+.preseason-countdown--live {
+  padding: clamp(16px, 3vw, 26px) clamp(18px, 3vw, 28px);
+}
+
+.preseason-countdown__live {
+  font-family: 'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(1.4rem, 4.4vw, 2.2rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffd166;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 0 24px rgba(255, 175, 60, 0.4);
 }
 
 /* —— Cinematics stack —— */

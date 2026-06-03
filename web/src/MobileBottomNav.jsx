@@ -8,12 +8,13 @@
  * (`.glass-bottom-nav`) so it does not collide with the existing
  * `.dashboard-nav--bottom` rules in App.css.
  *
- * Order (left → right): 26/27 · More · Heritage. The previous top-level
- * tabs (Live, Standings, Moves, Players) are now accessible from the More
- * panel rather than directly from the bottom nav — the goal is to give the
- * preseason hub the lead spot ahead of the 26/27 season while keeping the
- * full sitemap one tap away. Heritage stays at the right edge so the
- * Doric-column icon continues to anchor the trailing side of the pill.
+ * Order (left → right): 26/27 · Heritage · Players · More. The remaining
+ * top-level tabs (Live, Standings, Moves, Settings) are accessible from
+ * the More panel rather than directly from the bottom nav — the goal is
+ * to give the preseason hub the lead spot ahead of the 26/27 season,
+ * keep the historical archive (Heritage) prominent, and surface the
+ * Players wire as a one-tap destination, while keeping the full sitemap
+ * one tap away through More.
  *
  * Auto-hide on scroll piggybacks off the existing
  * `data-bottom-nav-hidden="true"` attribute set on the outer `.app.fotmob`
@@ -25,8 +26,9 @@ import './MobileBottomNav.css'
 
 const NAV_ITEMS = [
   { id: /** @type {const} */ ('preseason'), label: '26/27',    icon: /** @type {const} */ ('pulsing-dot'), pulse: true },
-  { id: /** @type {const} */ ('more'),      label: 'More',     icon: /** @type {const} */ ('more') },
   { id: /** @type {const} */ ('hall'),      label: 'Heritage', icon: /** @type {const} */ ('column') },
+  { id: /** @type {const} */ ('players'),   label: 'Players',  icon: /** @type {const} */ ('shuffle') },
+  { id: /** @type {const} */ ('more'),      label: 'More',     icon: /** @type {const} */ ('more') },
 ]
 
 /**
@@ -44,17 +46,15 @@ export function MobileBottomNav({ dashboardView, onSelect }) {
       {NAV_ITEMS.map((item) => {
         // The "More" pill should also light up while the user is on any of
         // the demoted sub-pages reached through it (Live, Standings, Moves,
-        // Players, Settings) — those don't have their own bottom-nav slot
-        // anymore, so without this carve-out the pill would read as if no
-        // tab is selected while on those pages.
+        // Settings). Players has its own slot now, so it's no longer part
+        // of the More carve-out.
         const active =
           item.id === 'more'
             ? dashboardView === 'more' ||
               dashboardView === 'settings' ||
               dashboardView === 'fplLive' ||
               dashboardView === 'standings' ||
-              dashboardView === 'teamSelection' ||
-              dashboardView === 'players'
+              dashboardView === 'teamSelection'
             : dashboardView === item.id
         const iconClass =
           'glass-bottom-nav__icon' +
