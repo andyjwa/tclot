@@ -6,6 +6,7 @@
 
 /** Mirrors `dashboardView` IDs in App.jsx — keep these in sync. */
 export const DEFAULT_TAB_OPTIONS = /** @type {const} */ ([
+  { id: 'preseason',     label: '26/27' },
   { id: 'standings',     label: 'Standings' },
   { id: 'fplLive',       label: 'FPL Live' },
   { id: 'teamSelection', label: 'Moves' },
@@ -14,7 +15,11 @@ export const DEFAULT_TAB_OPTIONS = /** @type {const} */ ([
 ])
 
 export const DEFAULT_TAB_STORAGE_KEY = 'tclot:settings:default-tab'
-export const DEFAULT_TAB_FALLBACK = 'fplLive'
+/* New default for the 26/27 pre-season window — the Preseason hub hosts the
+ * countdown and cinematics, so it makes the most sense as the landing tab
+ * while the league is in the offseason. Stored prefs from earlier sessions
+ * still override this fallback. */
+export const DEFAULT_TAB_FALLBACK = 'preseason'
 
 const VALID_TAB_IDS = new Set(DEFAULT_TAB_OPTIONS.map((o) => o.id))
 

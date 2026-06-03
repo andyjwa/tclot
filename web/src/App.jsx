@@ -252,8 +252,7 @@ import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
-import { EndOfSeasonSplash } from './EndOfSeasonSplash.jsx'
-import { SeasonOpenerSplash } from './SeasonOpenerSplash.jsx'
+import { PreseasonHub } from './PreseasonHub.jsx'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
@@ -2156,12 +2155,13 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
   )
 }
 
-/** Resolve initial dashboard view: players hash > stored default-tab pref > Standings.
- * Standings is the new global default (PR #3 deliberate change). The viewport-based
- * mobile-defaults-to-Live behaviour from PR #1 is intentionally dropped — users who
- * want Live as their landing page can pick it in Settings. */
+/** Resolve initial dashboard view: players hash > stored default-tab pref > Preseason.
+ * Ahead of the 26/27 PL season the new global default is the `'preseason'` hub
+ * (countdown + cinematics) — see `DEFAULT_TAB_FALLBACK` in `settingsStorage.js`.
+ * Existing users with a stored default-tab pref keep whatever they picked.
+ * Users who want a different landing tab can still pick one in Settings. */
 function initialDashboardViewForViewport() {
-  if (typeof window === 'undefined') return 'fplLive'
+  if (typeof window === 'undefined') return 'preseason'
   if (parsePlayersHash()) return /** @type {const} */ ('players')
   return readStoredDefaultTab()
 }
@@ -2292,13 +2292,21 @@ function App() {
     gwWeeksAtLast = [],
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // preseason | standings | teamSelection | hall | fplLive | players | more | settings
   const [teamSelectionTab, setTeamSelectionTab] = useState(
     /** @type {'waivers' | 'trades' | 'draft'} */ ('waivers'),
   )
-  const [fplLiveTab, setFplLiveTab] = useState(
-    /** @type {'squads' | 'live' | 'vibes'} */ ('vibes'),
+  /* FPL Live sub-tab. The legacy `'vibes'` value (which hosted the
+   * cinematics) is gone — that content moved to the new Preseason hub.
+   * `setFplLiveTab` below coerces any incoming `'vibes'` to `'live'` so a
+   * persisted pref or stale deep link cannot leave the Live tab blank. */
+  const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
+    /** @type {'squads' | 'live'} */ ('live'),
   )
+  const fplLiveTab = fplLiveTabRaw === 'vibes' ? 'live' : fplLiveTabRaw
+  const setFplLiveTab = useCallback((next) => {
+    setFplLiveTabRaw(next === 'vibes' ? 'live' : next)
+  }, [])
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
   /** Mobile (≤767px) renders a separate condensed Standings table with
@@ -2954,6 +2962,8 @@ function App() {
           onSelect={selectDashboardView}
         />
         <div className="dashboard-content">
+          {dashboardView === 'preseason' ? <PreseasonHub /> : null}
+
           {dashboardView === 'standings' && (
             <>
               <div className="standings-subnav-strip">
@@ -3728,19 +3738,6 @@ function App() {
                 >
                   Lineups
                 </button>
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-fpl-live-vibes"
-                  aria-selected={fplLiveTab === 'vibes'}
-                  className={
-                    'subnav__tab' +
-                    (fplLiveTab === 'vibes' ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => setFplLiveTab('vibes')}
-                >
-                  Vibes
-                </button>
               </div>
               </div>
               <div className="section-body">
@@ -3770,20 +3767,6 @@ function App() {
                   liveStatus={brandHeaderStatus}
                   compactMobileChrome
                 />
-              ) : null}
-              {fplLiveTab === 'vibes' ? (
-                /* "Vibes" tab — permanent home for TCLOT cinematics.
-                   Season Opener (announces the upcoming themed season,
-                   currently Episode 1: Lord of the Rings) plays first;
-                   End-of-Season cinematic (recaps last season) below.
-                   Each splash handles its own session playback cap +
-                   Replay button; dismiss is intentionally omitted so
-                   they remain a permanent feature rather than a
-                   one-shot. */
-                <>
-                  <SeasonOpenerSplash />
-                  <EndOfSeasonSplash />
-                </>
               ) : null}
               </div>
             </section>

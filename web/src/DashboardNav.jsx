@@ -1,7 +1,7 @@
 import { TeamAvatar } from './TeamAvatar'
 import { NavIcon } from './NavIcon'
 
-/** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
+/** @typedef {'preseason' | 'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
 
 /** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'more' | 'settings'} NavIconName */
 
@@ -11,12 +11,16 @@ import { NavIcon } from './NavIcon'
  * user-visible label has gone Team Selection → Transactions → Moves, but
  * the internal id is load-bearing for saved preferences and is preserved.
  *
+ * Items may provide either an `icon` (Lucide-style NavIcon) or an `emoji`
+ * glyph (used by the 26/27 preseason tab). Exactly one is rendered.
+ *
  * @param {{
  *   item: {
  *     id: DashboardViewId,
  *     label: string,
  *     shortLabel: string,
- *     icon: NavIconName,
+ *     icon?: NavIconName,
+ *     emoji?: string,
  *     pulse?: boolean,
  *     bottomOnly?: boolean,
  *   },
@@ -42,7 +46,13 @@ function NavButton({ item, active, onSelect, variant }) {
       aria-label={isBottom ? item.label : undefined}
       title={isBottom ? item.label : undefined}
     >
-      <NavIcon name={item.icon} className={iconClass} />
+      {item.emoji ? (
+        <span className="dashboard-nav__emoji" aria-hidden="true">
+          {item.emoji}
+        </span>
+      ) : (
+        <NavIcon name={item.icon} className={iconClass} />
+      )}
       <span className="dashboard-nav__label">
         {isBottom ? item.shortLabel : item.label}
       </span>
@@ -57,12 +67,21 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
   const isBottom = variant === 'bottom'
 
   // Single source of truth for nav order (left → right on desktop, also the
-  // mobile bottom-pill order): FPL Live · Standings · Moves ·
-  // Players · TCLOT Heritage · More. `More` is `bottomOnly` so it only
-  // renders in the mobile bottom nav; desktop gets a separate Settings gear
-  // button (rendered below the .map() loop), kept out of this array so its
-  // hairline-divider + margin-left:auto styling stays local to that button.
+  // bottom-pill order on legacy mobile callers): 26/27 · FPL Live ·
+  // Standings · Moves · Players · TCLOT Heritage · More. The new mobile
+  // bottom nav (MobileBottomNav.jsx) supplies its own collapsed item list
+  // (26/27 · More · Heritage); the items defined here drive only the
+  // desktop top nav now. `More` is `bottomOnly` so it never renders on
+  // desktop; desktop gets a separate Settings gear button (rendered below
+  // the .map() loop), kept out of this array so its hairline-divider +
+  // margin-left:auto styling stays local to that button.
   const primaryItems = [
+    {
+      id: /** @type {const} */ ('preseason'),
+      label: '26/27',
+      shortLabel: '26/27',
+      emoji: '🎬',
+    },
     {
       id: /** @type {const} */ ('fplLive'),
       label: 'FPL Live',
@@ -156,8 +175,17 @@ export function DashboardMorePanel({
   teamLogoMap = {},
   kitIndexByEntry = {},
 }) {
+  // The mobile bottom nav now only surfaces 26/27, More, and Heritage at the
+  // top level — so the demoted top-level tabs (Live, Standings, Moves,
+  // Players) have to be reachable from here. We accept the slight redundancy
+  // on desktop (those tabs are also in the top nav) because keeping the More
+  // panel functioning as a complete sitemap is the higher-value tradeoff.
   const rows = [
-    { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },
+    { id: /** @type {const} */ ('fplLive'),       label: 'FPL Live',  emoji: '🟢' },
+    { id: /** @type {const} */ ('standings'),     label: 'Standings', emoji: '📊' },
+    { id: /** @type {const} */ ('teamSelection'), label: 'Moves',     emoji: '🔁' },
+    { id: /** @type {const} */ ('players'),       label: 'Players',   emoji: '⚽' },
+    { id: /** @type {const} */ ('settings'),      label: 'Settings',  emoji: '⚙️' },
   ]
 
   return (
