@@ -1,0 +1,159 @@
+.league-ring-wrap {
+  text-align: center;
+  margin: clamp(8px, 2vw, 20px) auto;
+}
+
+.league-ring {
+  position: relative;
+  width: clamp(280px, 92vw, 600px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  isolation: isolate;
+}
+
+.league-ring__backdrop {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(255, 140, 40, 0.18) 0%, transparent 60%),
+    #0a0a14;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.league-ring__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.league-ring__wordmark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58%;
+  height: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.league-ring__badges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: league-ring-spin 90s linear infinite;
+  z-index: 3;
+}
+
+.league-ring__badge {
+  position: absolute;
+  width: clamp(48px, 14%, 92px);
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  animation: league-ring-counter-spin 90s linear infinite;
+}
+
+.league-ring__badge:focus-visible {
+  outline: none;
+}
+
+.league-ring__badge-disc {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2.5px solid #d4a23c;
+  background: #0a0a14;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 200, 80, 0.2) inset;
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  overflow: hidden;
+}
+
+.league-ring__badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.league-ring__badge:hover .league-ring__badge-disc,
+.league-ring__badge:focus-visible .league-ring__badge-disc {
+  transform: scale(1.08);
+  box-shadow:
+    0 0 24px rgba(255, 180, 80, 0.65),
+    0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.league-ring__badge:focus-visible .league-ring__badge-disc {
+  outline: 2px solid #fff4c8;
+  outline-offset: 2px;
+}
+
+.league-ring:hover .league-ring__badges,
+.league-ring:hover .league-ring__badge,
+.league-ring:focus-within .league-ring__badges,
+.league-ring:focus-within .league-ring__badge,
+.league-ring--paused .league-ring__badges,
+.league-ring--paused .league-ring__badge {
+  animation-play-state: paused !important;
+}
+
+@keyframes league-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes league-ring-counter-spin {
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+.league-ring__pill {
+  display: inline-block;
+  margin-top: clamp(8px, 1.6vw, 14px);
+  padding: 0.45em 0.95em;
+  border-radius: 999px;
+  font-family: 'Cinzel Decorative', 'Cinzel', 'Trajan Pro', 'Cormorant Garamond', serif;
+  font-size: clamp(13px, 2.6vw, 17px);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff4c8;
+  background: rgba(0, 0, 0, 0.78);
+  border: 1px solid rgba(255, 200, 80, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+  pointer-events: none;
+  min-width: 6em;
+  min-height: 1.6em;
+}
+
+.league-ring__pill--visible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .league-ring__badges,
+  .league-ring__badge {
+    animation: none !important;
+  }
+}

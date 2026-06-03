@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SeasonOpenerSplash } from './SeasonOpenerSplash.jsx'
 import { EndOfSeasonSplash } from './EndOfSeasonSplash.jsx'
+import { LeagueRing } from './LeagueRing.jsx'
 import './PreseasonHub.css'
 
 /**
@@ -91,6 +92,8 @@ export function PreseasonHub() {
         <h1 className="preseason-hub__title">Season 26/27</h1>
         <p className="preseason-hub__note">{HERO_NOTE}</p>
       </header>
+
+      <LeagueRing />
 
       <PreseasonCountdown />
 
