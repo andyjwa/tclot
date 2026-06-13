@@ -15,6 +15,8 @@
  *                    rename — the heritage tab now uses `column`)
  *   - more         : More menu (three horizontal dots)
  *   - settings     : Settings gear (desktop-only entry on right edge of nav)
+ *   - menu         : Hamburger (three lines) — collapsed trigger for the mobile FAB nav
+ *   - close        : X — expanded-state trigger for the mobile FAB nav
  *
  * Stroke color is `currentColor` so the icon inherits CSS color from its
  * surrounding button (active vs. idle). pulsing-dot is the lone exception:
@@ -23,7 +25,7 @@
 
 /**
  * @param {{
- *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings',
+ *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close',
  *   className?: string,
  *   size?: number,
  * }} props
@@ -135,6 +137,21 @@ export function NavIcon({ name, className, size = 20 }) {
         <svg {...common}>
           <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
           <circle cx="12" cy="12" r="3" />
+        </svg>
+      )
+    case 'menu':
+      return (
+        <svg {...common}>
+          <path d="M3 6h18" />
+          <path d="M3 12h18" />
+          <path d="M3 18h18" />
+        </svg>
+      )
+    case 'close':
+      return (
+        <svg {...common}>
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
         </svg>
       )
     default:

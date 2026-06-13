@@ -1,99 +1,90 @@
 /* ================================================================== */
-/* Mobile bottom nav — Variant 3 (stacked icon + label, glass pill).     */
+/* Mobile bottom nav — expanding FAB ("speed dial").                   */
 /* ------------------------------------------------------------------ */
-/* Ported from `.mockup-wgn--stacked-glass` in Mockup.css. Visible on   */
-/* mobile only (≤1080px) — desktop uses the top `<DashboardNav        */
-/* variant="top" />`. Uses a unique `.glass-bottom-nav` class prefix    */
-/* so it does not collide with the legacy `.dashboard-nav--bottom`     */
-/* rules in App.css.                                                   */
+/* A single circular glass trigger anchored bottom-right. Tapping it   */
+/* fans the menu items upward as a vertical stack of glass pills.      */
+/* Visible on mobile only (≤1080px) — desktop uses the top            */
+/* `<DashboardNav variant="top" />`. Unique `.glass-bottom-nav` class  */
+/* prefix so it does not collide with legacy `.dashboard-nav--bottom`. */
 /* ================================================================== */
 
 @media (max-width: 1080px) {
   .glass-bottom-nav {
     position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     z-index: 100;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    align-items: stretch;
-    gap: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
     margin: 0;
-    padding: 8px 8px;
-    min-height: 60px;
-    border-radius: 28px;
+    padding: 0;
     box-sizing: border-box;
-    color: var(--fm-muted);
-    background: color-mix(in srgb, #ffffff 62%, transparent);
-    border: 1px solid color-mix(in srgb, var(--fm-border) 50%, transparent);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    transition: transform 0.22s ease, opacity 0.22s ease;
-  }
-
-  /* Backdrop-filter fallback — opaque-ish white so the pill still reads. */
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .glass-bottom-nav {
-      background: color-mix(in srgb, #ffffff 92%, transparent);
-    }
-  }
-
-  /* Dark theme — frosted near-black glass with hairline highlight. */
-  .fotmob[data-theme='dark'] .glass-bottom-nav {
-    color: rgba(255, 255, 255, 0.7);
-    background: color-mix(in srgb, #14141e 62%, transparent);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .fotmob[data-theme='dark'] .glass-bottom-nav {
-      background: color-mix(in srgb, #14141e 94%, transparent);
-    }
-  }
-
-  /* Honour the App's auto-hide attribute (set by useAutoHideBottomNav). */
-  .app.fotmob[data-bottom-nav-hidden='true'] .glass-bottom-nav {
-    transform: translateY(calc(100% + 12px + env(safe-area-inset-bottom, 0px)));
-    opacity: 0;
+    /* Let taps fall through the empty column gaps; children re-enable. */
     pointer-events: none;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .glass-bottom-nav {
-      transition: none;
-    }
+  /* ---- Fanned item stack -------------------------------------------- */
+  .glass-bottom-nav__items {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    margin: 0 2px 2px 0;
   }
 
   .glass-bottom-nav__item {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
+    pointer-events: auto;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 2px;
-    padding: 4px 2px;
-    margin: 0;
-    background: transparent;
-    border: 0;
-    color: inherit;
+    justify-content: flex-end;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 10px 8px 16px;
+    border: 1px solid color-mix(in srgb, var(--fm-border) 50%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, #ffffff 72%, transparent);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    color: var(--fm-text-strong);
     font: inherit;
     cursor: pointer;
-    border-radius: 18px;
+    white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
-    transition: color 120ms ease;
+    /* Promote to a dedicated compositor layer so the backdrop blur is
+     * composited rather than re-rasterised on every animation frame —
+     * this is what removes the open-stutter on mobile GPUs. */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transition:
+      opacity 0.24s linear,
+      transform 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+      color 120ms ease;
   }
 
   .glass-bottom-nav__item.is-active {
     color: var(--tclot-logo-purple);
   }
+
+  /* Collapsed: items fade + drop slightly and stop catching taps. */
+  .glass-bottom-nav:not([data-expanded='true']) .glass-bottom-nav__items {
+    pointer-events: none;
+  }
+  .glass-bottom-nav:not([data-expanded='true']) .glass-bottom-nav__item {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+    pointer-events: none;
+  }
+
+  /* Expand stagger — items nearest the trigger appear first. */
+  .glass-bottom-nav[data-expanded='true'] .glass-bottom-nav__item:nth-last-child(1) { transition-delay: 0ms; }
+  .glass-bottom-nav[data-expanded='true'] .glass-bottom-nav__item:nth-last-child(2) { transition-delay: 30ms; }
+  .glass-bottom-nav[data-expanded='true'] .glass-bottom-nav__item:nth-last-child(3) { transition-delay: 60ms; }
+  .glass-bottom-nav[data-expanded='true'] .glass-bottom-nav__item:nth-last-child(4) { transition-delay: 90ms; }
 
   .glass-bottom-nav__icon-wrap {
     display: inline-flex;
@@ -103,8 +94,7 @@
     height: 32px;
     border-radius: 999px;
     transition: background-color 160ms ease, color 160ms ease;
-    position: relative;
-    z-index: 1;
+    flex: 0 0 auto;
   }
 
   .glass-bottom-nav__item.is-active .glass-bottom-nav__icon-wrap {
@@ -112,32 +102,117 @@
   }
 
   .glass-bottom-nav__icon {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     display: block;
   }
 
-  /* Match the desktop FPL-Live pulse-dot behaviour: when active the green
-   * dot recolours to brand purple so the active-tab indicator is visually
-   * consistent across the 5 buttons. */
+  /* Match the desktop FPL-Live pulse-dot: recolour to brand purple when the
+   * 26/27 item is the active view, for a consistent active indicator. */
   .glass-bottom-nav__item.is-active .glass-bottom-nav__icon--pulse {
     --nav-pulse-dot-fill: var(--tclot-logo-purple);
   }
 
   .glass-bottom-nav__label {
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
     line-height: 1.1;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  }
+
+  /* ---- Circular trigger (FAB) --------------------------------------- */
+  .glass-bottom-nav__trigger {
+    pointer-events: auto;
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--fm-border) 50%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, #ffffff 66%, transparent);
+    color: var(--tclot-logo-purple);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .glass-bottom-nav__trigger:active {
+    transform: scale(0.93);
+  }
+
+  .glass-bottom-nav[data-expanded='true'] .glass-bottom-nav__trigger {
+    background: var(--brand-tint);
+  }
+
+  .glass-bottom-nav__trigger-icon {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+
+  /* Backdrop-filter fallback — opaque-ish white so glass still reads. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-bottom-nav__item,
+    .glass-bottom-nav__trigger {
+      background: color-mix(in srgb, #ffffff 94%, transparent);
+    }
+  }
+
+  /* ---- Dark theme — frosted near-black glass with hairline highlight. */
+  .fotmob[data-theme='dark'] .glass-bottom-nav__item {
+    color: var(--fm-text-strong);
+    background: color-mix(in srgb, #14141e 62%, transparent);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .fotmob[data-theme='dark'] .glass-bottom-nav__item.is-active {
+    color: var(--tclot-logo-purple);
+  }
+
+  .fotmob[data-theme='dark'] .glass-bottom-nav__trigger {
+    background: color-mix(in srgb, #14141e 62%, transparent);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .fotmob[data-theme='dark'][data-theme] .glass-bottom-nav[data-expanded='true'] .glass-bottom-nav__trigger {
+    background: var(--brand-tint);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .fotmob[data-theme='dark'] .glass-bottom-nav__item,
+    .fotmob[data-theme='dark'] .glass-bottom-nav__trigger {
+      background: color-mix(in srgb, #14141e 94%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glass-bottom-nav__item,
+    .glass-bottom-nav__trigger {
+      transition: none;
+    }
+    .glass-bottom-nav[data-expanded='true'] .glass-bottom-nav__item {
+      transition-delay: 0ms;
+    }
   }
 }
 
-/* Desktop — explicitly remove the floating pill (top nav handles it). */
+/* Desktop — explicitly remove the FAB (top nav handles it). */
 @media (min-width: 1081px) {
   .glass-bottom-nav {
     display: none;

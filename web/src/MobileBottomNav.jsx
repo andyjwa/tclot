@@ -1,27 +1,27 @@
 /**
- * Mobile bottom nav — Variant 3 (stacked icon + label, glass pill).
+ * Mobile bottom nav — expanding FAB ("speed dial").
  *
- * Replaces `<DashboardNav variant="bottom" />` on mobile. Design spec lives in
- * `Mockup.jsx` under `WordsGlassNavShowcase` / Variant 3, and the matching
- * `.mockup-wgn--stacked-glass` CSS in `Mockup.css`. This component carries
- * that visual into production, scoped to a unique class prefix
- * (`.glass-bottom-nav`) so it does not collide with the existing
- * `.dashboard-nav--bottom` rules in App.css.
+ * Replaces `<DashboardNav variant="bottom" />` on mobile (≤1080px). Instead of
+ * a full-width floating pill that auto-hides on scroll, this renders a single
+ * circular trigger anchored bottom-right. Tapping it fans the menu items
+ * upward as a vertical stack of glass pills; the trigger morphs from a
+ * hamburger into an X. The trigger itself never disappears — only the fanned
+ * items collapse, which happens on: outside tap, Escape, scroll, or selecting
+ * a destination.
  *
- * Order (left → right): 26/27 · Heritage · Players · More. The remaining
- * top-level tabs (Live, Standings, Moves, Settings) are accessible from
- * the More panel rather than directly from the bottom nav — the goal is
- * to give the preseason hub the lead spot ahead of the 26/27 season,
- * keep the historical archive (Heritage) prominent, and surface the
- * Players wire as a one-tap destination, while keeping the full sitemap
- * one tap away through More.
+ * Order (top → bottom of the fan): 26/27 · Heritage · Players · More. The
+ * remaining top-level tabs (Live, Standings, Moves, Settings) live behind the
+ * More panel, as before.
  *
- * Auto-hide on scroll piggybacks off the existing
- * `data-bottom-nav-hidden="true"` attribute set on the outer `.app.fotmob`
- * element (driven by `useAutoHideBottomNav` in App.jsx) — no rewiring needed.
+ * Visuals are scoped to the `.glass-bottom-nav` class prefix (see
+ * `MobileBottomNav.css`) so they do not collide with the legacy
+ * `.dashboard-nav--bottom` rules in App.css. Desktop (≥1081px) hides the whole
+ * thing and uses the top `<DashboardNav variant="top" />`.
  */
 
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { NavIcon } from './NavIcon'
+import { useDismissOnOutsidePointer } from './useDismissOnOutsidePointer'
 import './MobileBottomNav.css'
 
 const NAV_ITEMS = [
@@ -38,46 +38,100 @@ const NAV_ITEMS = [
  * }} props
  */
 export function MobileBottomNav({ dashboardView, onSelect }) {
+  const [expanded, setExpanded] = useState(false)
+  const rootRef = useRef(/** @type {HTMLElement | null} */ (null))
+
+  const collapse = useCallback(() => setExpanded(false), [])
+
+  // Tap anywhere outside the FAB closes the fan (deferred so the opening tap
+  // does not immediately dismiss it — handled inside the hook).
+  useDismissOnOutsidePointer(rootRef, expanded, collapse)
+
+  // Collapse the fan as soon as the user scrolls — the trigger stays put, so
+  // the menu tucks away without the whole nav disappearing.
+  useEffect(() => {
+    if (!expanded) return undefined
+    const onScroll = () => setExpanded(false)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [expanded])
+
+  // Escape closes the fan (keyboard / external keyboard users).
+  useEffect(() => {
+    if (!expanded) return undefined
+    const onKey = (/** @type {KeyboardEvent} */ ev) => {
+      if (ev.key === 'Escape') setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
+
+  const handleSelect = (/** @type {string} */ id) => {
+    setExpanded(false)
+    onSelect(id)
+  }
+
   return (
     <nav
+      ref={rootRef}
       className="glass-bottom-nav"
+      data-expanded={expanded ? 'true' : undefined}
       aria-label="App navigation"
     >
-      {NAV_ITEMS.map((item) => {
-        // The "More" pill should also light up while the user is on any of
-        // the demoted sub-pages reached through it (Live, Standings, Moves,
-        // Settings). Players has its own slot now, so it's no longer part
-        // of the More carve-out.
-        const active =
-          item.id === 'more'
-            ? dashboardView === 'more' ||
-              dashboardView === 'settings' ||
-              dashboardView === 'fplLive' ||
-              dashboardView === 'standings' ||
-              dashboardView === 'teamSelection'
-            : dashboardView === item.id
-        const iconClass =
-          'glass-bottom-nav__icon' +
-          (item.pulse ? ' glass-bottom-nav__icon--pulse' : '')
-        return (
-          <button
-            key={item.id}
-            type="button"
-            className={
-              'glass-bottom-nav__item' + (active ? ' is-active' : '')
-            }
-            onClick={() => onSelect(item.id)}
-            aria-current={active ? 'page' : undefined}
-            aria-label={item.label}
-            title={item.label}
-          >
-            <span className="glass-bottom-nav__icon-wrap" aria-hidden>
-              <NavIcon name={item.icon} size={22} className={iconClass} />
-            </span>
-            <span className="glass-bottom-nav__label">{item.label}</span>
-          </button>
-        )
-      })}
+      <div
+        className="glass-bottom-nav__items"
+        role="menu"
+        aria-hidden={expanded ? undefined : true}
+      >
+        {NAV_ITEMS.map((item) => {
+          // "More" stays lit while the user is on any of the demoted sub-pages
+          // reached through it (Live, Standings, Moves, Settings).
+          const active =
+            item.id === 'more'
+              ? dashboardView === 'more' ||
+                dashboardView === 'settings' ||
+                dashboardView === 'fplLive' ||
+                dashboardView === 'standings' ||
+                dashboardView === 'teamSelection'
+              : dashboardView === item.id
+          const iconClass =
+            'glass-bottom-nav__icon' +
+            (item.pulse ? ' glass-bottom-nav__icon--pulse' : '')
+          return (
+            <button
+              key={item.id}
+              type="button"
+              role="menuitem"
+              tabIndex={expanded ? 0 : -1}
+              className={
+                'glass-bottom-nav__item' + (active ? ' is-active' : '')
+              }
+              onClick={() => handleSelect(item.id)}
+              aria-current={active ? 'page' : undefined}
+            >
+              <span className="glass-bottom-nav__label">{item.label}</span>
+              <span className="glass-bottom-nav__icon-wrap" aria-hidden>
+                <NavIcon name={item.icon} size={20} className={iconClass} />
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <button
+        type="button"
+        className="glass-bottom-nav__trigger"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-haspopup="menu"
+        aria-label={expanded ? 'Close menu' : 'Open menu'}
+      >
+        <NavIcon
+          name={expanded ? 'close' : 'menu'}
+          size={24}
+          className="glass-bottom-nav__trigger-icon"
+        />
+      </button>
     </nav>
   )
 }
