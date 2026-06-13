@@ -74,6 +74,10 @@
  */
 .preseason-countdown {
   width: 100%;
+  /* Without this, the default content-box adds the horizontal padding
+   * on top of `width: 100%`, making the plate wider than its parent —
+   * the gold rules then spill past the green hub edge at narrow widths. */
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
