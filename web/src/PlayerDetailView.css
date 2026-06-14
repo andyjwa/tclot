@@ -1577,16 +1577,20 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 
 .pdetail-p__hero {
   display: grid;
-  grid-template-columns: 54px 1fr;
+  grid-template-columns: 40px 44px 1fr;
   align-items: center;
-  gap: 13px;
-  padding: 12px 12px 16px;
+  gap: 10px;
+  padding: 8px 12px 10px;
   background: linear-gradient(180deg, var(--brand-tint), var(--surface) 80%);
   border-bottom: 1px solid var(--border);
 }
+/* Back chevron folded into the portrait hero row (replaces the standalone
+   `pdetail__topbar` for portrait). Reuses the `.pdetail__back` look; the
+   grid's `align-items: center` keeps it vertically centered against the
+   name + meta body. */
 .pdetail-p__hero-crest {
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

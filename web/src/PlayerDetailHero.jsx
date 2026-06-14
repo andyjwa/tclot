@@ -150,12 +150,13 @@ function PlayerDetailHeroDesktop({
 }
 
 /**
- * Portrait hero — 56 px crest with XI/BN/OUT pill on the right, then
- * the owner strip ("On {fantasy badge} {team name}"). The Back
- * chevron + title strip is rendered at the `PlayerDetailView` level
- * so it shows for every mobile-layout width, not just narrow phones.
- * 1:1 port of `PlayerDetailPortrait` hero from `web/src/Mockup.jsx`
- * (~line 4661), minus the legacy Compare chip which was removed
+ * Portrait hero — single compact header that folds the Back chevron,
+ * club crest and player name onto one row (`[‹] [crest] [name]`), with
+ * the meta row (position pill · club · fantasy owner badge) beneath it.
+ * The standalone "Player" top bar is dropped for portrait (it is still
+ * rendered at the `PlayerDetailView` level for the tablet/landscape
+ * case). Derived from the `PlayerDetailPortrait` hero in
+ * `web/src/Mockup.jsx`, minus the legacy Compare chip which was removed
  * across the site.
  *
  * @param {object} props
@@ -164,6 +165,7 @@ function PlayerDetailHeroPortrait({
   el,
   team,
   ownerLabel,
+  onBack,
   logoMap,
   kitIndexByEntry,
 }) {
@@ -175,10 +177,21 @@ function PlayerDetailHeroPortrait({
   const ownerName = ownerLabel?.name ?? null
   return (
     <div className="pdetail-p__chrome">
-      {/* Club crest top-left; the fantasy owner badge now sits inline in the
-          meta row (no separate "On {owner}" strip, no XI/BN/OUT status pill) —
-          matching the mobile fixture card design. */}
+      {/* Single compact header: Back chevron + club crest + player name on
+          one row, meta row beneath. The standalone "Player" top bar is
+          dropped for portrait (still used for tablet/landscape). The fantasy
+          owner badge sits inline in the meta row (no separate "On {owner}"
+          strip, no XI/BN/OUT status pill) — matching the mobile fixture
+          card design. */}
       <div className="pdetail-p__hero">
+        <button
+          type="button"
+          className="pdetail__back pdetail-p__hero-back"
+          aria-label="Back"
+          onClick={onBack}
+        >
+          <span aria-hidden>‹</span>
+        </button>
         <span className="pdetail-p__hero-crest" aria-hidden>
           <CrestImg
             url={badgeUrl}
@@ -219,10 +232,10 @@ function PlayerDetailHeroPortrait({
 
 /**
  * Hero shell — chooses desktop or portrait variant based on `portrait`.
- * The Back-button header bar (formerly inline in the portrait hero) now
- * lives at `PlayerDetailView` level so it shows for ALL mobile-layout
- * widths (≤1080px), not just narrow portrait phones (≤600px). See
- * `PlayerDetailView.jsx` → `pdetail__topbar`.
+ * For portrait phones the Back chevron lives inside the hero row
+ * (`onBack`); for the tablet/landscape mobile case the standalone
+ * `pdetail__topbar` carries the chevron instead. See
+ * `PlayerDetailView.jsx`.
  *
  * @param {{
  *   el: object,
@@ -230,6 +243,7 @@ function PlayerDetailHeroPortrait({
  *   ownerLabel: { leagueEntryId: number | null, code: string, name: string } | null,
  *   xiKind: 'xi' | 'bench' | 'absent',
  *   portrait: boolean,
+ *   onBack?: () => void,
  *   logoMap?: Record<string, string>,
  *   kitIndexByEntry?: Record<number, number>,
  * }} props
@@ -240,6 +254,7 @@ export function PlayerDetailHero({
   ownerLabel,
   xiKind,
   portrait,
+  onBack,
   logoMap,
   kitIndexByEntry,
 }) {
@@ -250,6 +265,7 @@ export function PlayerDetailHero({
         team={team}
         ownerLabel={ownerLabel}
         xiKind={xiKind}
+        onBack={onBack}
         logoMap={logoMap}
         kitIndexByEntry={kitIndexByEntry}
       />

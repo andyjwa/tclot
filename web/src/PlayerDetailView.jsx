@@ -269,16 +269,15 @@ export function PlayerDetailView({
       aria-label={`${fplElementWebName(playerEl, playerId)} player detail`}
     >
       {/*
-       * Top header bar — Back chevron + "Player" title. Renders for every
-       * mobile-layout width (≤1080px), not just narrow portrait phones, so
-       * tablets and landscape phones get the same chevron-anchored exit
-       * affordance instead of a bottom "BACK" link. Mockup parity:
-       * `mockup-pdetail-p__h` from the locked PlayerDetailPortrait. Round 3
-       * polish: also serves the swipe-right gesture target on the surface
-       * itself; clicking the chevron closes via the same path
+       * Top header bar — Back chevron + "Player" title. Renders only for the
+       * tablet / landscape mobile case (≤1080px but NOT portrait ≤600px), so
+       * those widths keep the chevron-anchored exit affordance + desktop hero.
+       * Narrow portrait phones instead fold the Back chevron into the hero row
+       * itself (`[‹] [crest] [name]`) — see `PlayerDetailHeroPortrait` — for a
+       * single compact header. Clicking the chevron closes via the same path
        * (`onBack` → `requestDetailClose`).
        */}
-      {mobileLayout ? (
+      {mobileLayout && !portrait ? (
         <div className="pdetail__topbar">
           <button
             type="button"
@@ -299,6 +298,7 @@ export function PlayerDetailView({
         ownerLabel={ownerLabel}
         xiKind={xiKind}
         portrait={portrait}
+        onBack={onBack}
         logoMap={logoMap}
         kitIndexByEntry={kitIndexByEntry}
       />
