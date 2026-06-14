@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>TCLOT · Apple Sports-style Scores Mockup</title>
+<style>
+  :root {
+    --list-bg: #f1f2f5;
+    --row-bg: #ffffff;
+    --ink: #1c1c1e;
+    --ink-soft: #6b7280;
+    --green: #1f9d55;
+    --accent: #795bfb;
+    --sheet-radius: 22px;
+  }
+
+  /* App theme tokens (mirror web/src/App.css --fm-* + --tclot-logo-purple).
+     The card CONTENT sheet reads these so it matches the real app per data-theme. */
+  .phone {
+    --fm-bg: #f2f2f2;
+    --fm-card: #ffffff;
+    --fm-text: rgba(51,51,51,0.92);
+    --fm-text-strong: #1a1a1a;
+    --fm-muted: rgba(0,0,0,0.48);
+    --fm-win: #059669;
+    --fm-bench: #f59e0b;
+    --fm-absent: #dc2626;
+    --purple: #795bfb;
+    --line: rgba(0,0,0,0.08);
+    --track: rgba(0,0,0,0.10);
+    --onpitch: #d97706;
+  }
+  .phone[data-theme="dark"] {
+    --fm-bg: #121212;
+    --fm-card: #1c1c1e;
+    --fm-text: rgba(255,255,255,0.87);
+    --fm-text-strong: #ffffff;
+    --fm-muted: rgba(255,255,255,0.55);
+    --fm-win: #34d399;
+    --fm-bench: #fbbf24;
+    --fm-absent: #fca5a5;
+    --purple: #8f7bff;
+    --line: rgba(255,255,255,0.10);
+    --track: rgba(255,255,255,0.16);
+    --onpitch: #f59e0b;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: #1c1d22;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; overflow: hidden;
+  }
+
+  /* ---------- Phone frame ---------- */
+  .phone {
+    position: relative; width: 390px; height: 844px; max-height: calc(100vh - 32px);
+    background: var(--list-bg); border-radius: 46px; border: 12px solid #08090c;
+    box-shadow: 0 40px 90px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(255,255,255,0.04);
+    overflow: hidden;
+  }
+  @media (max-width: 480px) {
+    body { padding: 0; }
+    .phone { width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; border: 0; }
+  }
+
+  .statusbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 50px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 26px 8px; font-size: 14px; font-weight: 600; color: var(--ink);
+    z-index: 5; pointer-events: none;
+  }
+  .statusbar .right { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+
+  /* ---------- Background scores list (stays the app's light Scores screen) ---------- */
+  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--list-bg); }
+  .nav { padding: 58px 18px 10px; display:flex; align-items:flex-end; justify-content:space-between; }
+  .nav h1 { font-size: 26px; margin: 0; letter-spacing: -0.5px; }
+  .nav .gw { font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+  .theme-toggle {
+    border: 1px solid #d7d8de; background:#fff; color: var(--ink); font-size: 12px; font-weight: 700;
+    border-radius: 20px; padding: 7px 12px; cursor: pointer;
+  }
+  .seg {
+    margin: 4px 16px 12px; background: #e3e4e9; border-radius: 11px; padding: 3px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 13px; font-weight: 600; color: var(--ink-soft);
+  }
+  .seg span { text-align:center; padding: 7px 0; border-radius: 9px; }
+  .seg span.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+
+  .list { flex: 1; overflow-y: auto; padding: 4px 12px 24px; }
+  .row {
+    background: var(--row-bg); border-radius: 16px; margin-bottom: 10px;
+    padding: 14px 14px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; transition: transform .12s ease;
+  }
+  .row:active { transform: scale(0.985); }
+  .row .team { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .row .team.away { flex-direction: row-reverse; text-align: right; }
+  .row .badge { width: 30px; height: 30px; border-radius: 50%; flex: none; display:grid; place-items:center; font-size: 11px; font-weight: 800; color:#fff; }
+  .row .tn { min-width: 0; }
+  .row .tn .name { font-size: 13.5px; font-weight: 600; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .tn .status { font-size: 11px; color: var(--green); font-weight: 600; display:flex; align-items:center; gap:4px; }
+  .row .team.away .status { flex-direction: row-reverse; }
+  .dot { width:6px; height:6px; border-radius:50%; background: var(--green); display:inline-block; }
+  .row .center { text-align: center; padding: 0 10px; }
+  .row .score { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; white-space: nowrap; }
+  .row .score .w { color: var(--accent); }
+  .row .score .l { color: #b4b7bf; }
+  .row .tag { margin-top: 3px; font-size: 9px; font-weight: 800; letter-spacing: .6px; color: #d9663f; text-transform: uppercase; }
+  .row .tag--live { color: #d23b3b; }
+  .status--live { color: #d97a2b !important; }
+  .dot--live { background: #d97a2b !important; }
+  .hint { text-align:center; font-size: 12px; color: var(--ink-soft); padding: 2px 0 14px; }
+
+  /* ---------- Modal sheet ---------- */
+  .scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.001); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .28s ease; }
+  .scrim.show { opacity: 1; pointer-events: auto; background: rgba(0,0,0,0.35); }
+
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 94%;
+    z-index: 30; transform: translateY(100%);
+    transition: transform .42s cubic-bezier(.22,.9,.28,1); will-change: transform;
+  }
+  .sheet.open { transform: translateY(0); }
+  .sheet.dragging { transition: none; }
+
+  .deck { position: absolute; inset: 0; display: flex; transition: transform .38s cubic-bezier(.3,.9,.3,1); will-change: transform; }
+  .deck.dragging { transition: none; }
+  .card { flex: 0 0 100%; height: 100%; padding: 0 6px; }
+
+  /* ===== Card colour-treatment system — switch via .phone[data-style] =====
+     Layout / sizing / coloured pills are identical across options; only these
+     tokens (and a couple of backgrounds) change. Defaults below = Option A. */
+  .card-inner {
+    height: 100%; border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+    overflow-y: auto; position: relative;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.4);
+    /* Option A "App light" defaults */
+    --card-bg: #fafafa;
+    --card-ink: #1a1a1a;
+    --card-ink-soft: rgba(0,0,0,0.5);
+    --grab: rgba(0,0,0,0.22);
+    --sel-ring: rgba(121,91,251,0.9);
+    --tab-underline: #795bfb;
+    --live-accent: #c2410c;
+    --block-bg: #ffffff;
+    --block-border: #e8e8ec;
+    --block-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    --fm-text: rgba(51,51,51,0.92);
+    --fm-text-strong: #1a1a1a;
+    --fm-muted: rgba(0,0,0,0.48);
+    --fm-win: #059669;
+    --fm-bench: #d97706;
+    --fm-absent: #dc2626;
+    --purple: #795bfb;
+    --line: rgba(0,0,0,0.08);
+    --track: rgba(0,0,0,0.10);
+    --onpitch: #d97706;
+    --pill-strength: 15%;
+    --pill-text: #1a1a1a;
+    --pill-absent-text: rgba(0,0,0,0.45);
+    --min-low-text: #b91c1c;
+    --min-full-text: #047857;
+    --chip-text: #15803d;
+    --chip-bg: color-mix(in srgb, #16a34a 13%, transparent);
+    --lt-me-bg: color-mix(in srgb, #795bfb 9%, transparent);
+    --lt-villain-bg: rgba(220,38,38,0.08);
+    --dots-fade: #fafafa;
+    --dots-color: rgba(0,0,0,0.28);
+    --dots-on: #1a1a1a;
+    background: var(--card-bg); color: var(--card-ink);
+  }
+  .card-top { color: var(--card-ink); padding-bottom: 2px; }
+  .card-body { position: relative; min-height: 50%; padding-top: 6px; }
+
+  /* Option A — clean white card, thin team-colour accent bar at the very top */
+  .phone[data-style="A"] .card-top { background: linear-gradient(var(--c1),var(--c1)) top/100% 4px no-repeat; }
+
+  /* Option B — crisp neutral dark (site dark tokens) */
+  .phone[data-style="B"] .card-inner {
+    --card-bg: #141416; --card-ink: #ffffff; --card-ink-soft: rgba(255,255,255,0.6);
+    --grab: rgba(255,255,255,0.4); --sel-ring: rgba(255,255,255,0.85); --tab-underline: #ffffff;
+    --live-accent: #fbbf24;
+    --block-bg: #1e1e1e; --block-border: #2f2f2f; --block-shadow: none;
+    --fm-text: rgba(255,255,255,0.87); --fm-text-strong: #ffffff; --fm-muted: rgba(255,255,255,0.55);
+    --fm-win: #34d399; --fm-bench: #fbbf24; --fm-absent: #f87171; --purple: #9b86ff;
+    --line: rgba(255,255,255,0.10); --track: rgba(255,255,255,0.16); --onpitch: #fbbf24;
+    --pill-strength: 22%; --pill-text: #ffffff; --pill-absent-text: rgba(255,255,255,0.6);
+    --min-low-text: #ffb4b4; --min-full-text: #34d399;
+    --chip-text: #8ef0b4; --chip-bg: color-mix(in srgb, #34d399 22%, transparent);
+    --lt-me-bg: rgba(255,255,255,0.10); --lt-villain-bg: rgba(248,113,113,0.10);
+    --dots-fade: #141416; --dots-color: rgba(255,255,255,0.4); --dots-on: #ffffff;
+  }
+
+  /* Option C — clean light card; ONLY the lineup table sits in a team-tinted glass */
+  .phone[data-style="C"] .block[data-team-table] {
+    background: color-mix(in srgb, var(--c1) 12%, #ffffff);
+    border-color: color-mix(in srgb, var(--c1) 26%, #e8e8ec);
+  }
+
+  /* Option D — clean light content, single restrained brand-violet header wash */
+  .phone[data-style="D"] .card-top {
+    background: linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%);
+    border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+    padding-bottom: 6px;
+    --card-ink: #ffffff; --card-ink-soft: rgba(255,255,255,0.82);
+    --grab: rgba(255,255,255,0.5); --sel-ring: rgba(255,255,255,0.92); --tab-underline: #ffffff;
+    --live-accent: #ffd27a;
+    color: var(--card-ink);
+  }
+
+  .grab { display:flex; justify-content:center; padding: 9px 0 4px; }
+  .grab i { width: 38px; height: 5px; border-radius: 3px; background: var(--grab); }
+
+  .card-head { padding: 2px 20px 8px; text-align:center; }
+  .comp { font-size: 11px; font-weight: 600; color: var(--card-ink-soft); margin-bottom: 8px; }
+  .scorehead { display:grid; grid-template-columns: 1fr auto 1fr; align-items:start; gap: 8px; }
+  .mid { align-self:start; padding-top: 17px; min-width: 60px; text-align:center; font-size: 13px; font-weight: 700; color: var(--card-ink); }
+  .mid .final { font-size: 10.5px; color: var(--card-ink-soft); font-weight:600; }
+  .teamblock {
+    border:0; background:none; color: var(--card-ink); font:inherit; cursor:pointer;
+    display:flex; flex-direction: column; align-items: center; gap: 7px; transition: opacity .15s; min-width:0; width:100%;
+  }
+  .teamblock .big { font-size: 56px; font-weight: 800; letter-spacing: -2.5px; line-height: .95; }
+  .teamblock .b2 { width: 42px; height: 42px; border-radius: 50%; display:grid; place-items:center; font-size: 14px; font-weight: 800; color:#fff; box-shadow: 0 4px 14px rgba(0,0,0,.28); margin-top: 4px; transition: box-shadow .15s, transform .15s; }
+  .teamblock .nm { font-size: 12px; font-weight: 700; text-align:center; line-height: 1.1; letter-spacing: -.1px; }
+  .teamblock .sub { font-size: 9.5px; color: var(--card-ink-soft); min-height: 12px; }
+  /* Both teams stay fully bright; the SELECTED lineup is shown additively
+     (brand ring around the badge + a tab-style indicator bar under the name). */
+  .teamblock--dim { opacity: 1; }
+  .teamblock--sel .b2 { box-shadow: 0 0 0 3px var(--sel-ring), 0 4px 14px rgba(0,0,0,.32); transform: translateY(-1px); }
+  .teamblock .nm { position: relative; }
+  .teamblock .nm::after {
+    content: ""; position: absolute; left: 50%; transform: translateX(-50%); bottom: -5px;
+    width: 22px; height: 3px; border-radius: 2px; background: var(--tab-underline);
+    opacity: 0; transition: opacity .15s;
+  }
+  .teamblock--sel .nm::after { opacity: 1; }
+  .sub-live { color: var(--live-accent); font-weight: 800; }
+  .live-pill { color: var(--live-accent); font-weight: 800; }
+  .final--live { color: var(--live-accent) !important; }
+
+  .tabs { display:flex; gap: 18px; padding: 4px 22px 10px; font-size: 14.5px; font-weight: 700; }
+  .tabs span { color: var(--card-ink-soft); padding-bottom: 7px; cursor: pointer; white-space: nowrap; }
+  .tabs span.on { color: var(--card-ink); border-bottom: 2px solid var(--tab-underline); }
+
+  /* ---------- Content panes (themed by the card-level tokens above) ---------- */
+  .panel { padding: 0 12px 64px; color: var(--fm-text); }
+  .block { background: var(--block-bg); border: 1px solid var(--block-border); border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; box-shadow: var(--block-shadow); }
+  .block h3 { margin: 0 0 10px; font-size: 12px; text-align:center; color: var(--fm-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+
+  .stat { margin-bottom: 12px; }
+  .stat .nums { display:flex; justify-content:space-between; font-size: 14px; font-weight: 800; color: var(--purple); }
+  .stat .lbl { text-align:center; font-size: 11px; color: var(--fm-muted); margin-bottom: 5px; }
+  .bar { height: 5px; border-radius: 3px; background: var(--track); display:flex; overflow:hidden; }
+  .bar .h { background: var(--purple); }
+  .bar .a { background: color-mix(in srgb, var(--purple) 38%, transparent); margin-left:auto; }
+
+  /* ---------- Lineup table (mirrors LiveExpandedFixture mobile) ---------- */
+  .xp-head, .xp-row {
+    display: grid; grid-template-columns: 1fr 24px 30px 24px 18px 18px 18px 26px;
+    align-items: center; gap: 3px;
+  }
+  .xp-head { font-size: 9px; color: var(--fm-muted); text-transform: uppercase; letter-spacing: .3px; padding: 4px 0 6px; font-weight: 700; }
+  .xp-head span { text-align: center; }
+  .xp-head span:first-child { text-align: left; }
+  .xp-head span:last-child { text-align: right; }
+  .xp-row { padding: 3px 0; border-bottom: 1px solid var(--line); }
+  .xp-namewrap { min-width: 0; }
+  .xp-name {
+    display: inline-flex; align-items: center; gap: 5px; max-width: 100%;
+    padding: 2px 8px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--pill-text);
+  }
+  .xp-name span.t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .xp-name--xi { background: color-mix(in srgb, var(--fm-win) var(--pill-strength), transparent); }
+  .xp-name--bench { background: color-mix(in srgb, var(--fm-bench) var(--pill-strength), transparent); }
+  .xp-name--absent { background: color-mix(in srgb, var(--fm-absent) var(--pill-strength), transparent); color: var(--pill-absent-text); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--fm-absent) 60%, transparent); }
+  .xp-dotlive { width: 6px; height: 6px; border-radius: 50%; background: var(--onpitch); flex: none; }
+  .xp-pos { text-align: center; font-size: 10px; color: var(--fm-muted); text-transform: uppercase; font-weight: 600; }
+  .xp-min { text-align: center; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 0; }
+  .xp-min--none { color: var(--fm-muted); }
+  .xp-min--low { background: color-mix(in srgb, var(--fm-absent) var(--pill-strength), transparent); color: var(--min-low-text); }
+  .xp-min--partial { background: color-mix(in srgb, var(--fm-bench) var(--pill-strength), transparent); color: var(--fm-text-strong); }
+  .xp-min--good { background: color-mix(in srgb, var(--fm-win) var(--pill-strength), transparent); color: var(--fm-text-strong); }
+  .xp-min--full { background: color-mix(in srgb, var(--fm-win) var(--pill-strength), transparent); color: var(--min-full-text); }
+  .xp-c { text-align: center; font-size: 11.5px; color: var(--fm-text); }
+  .xp-c.xp-g { color: var(--fm-win); font-weight: 700; }
+  .xp-c.xp-a { color: var(--purple); font-weight: 700; }
+  .xp-z { color: color-mix(in srgb, var(--fm-muted) 65%, transparent); }
+  .xp-pts { text-align: right; font-weight: 800; font-size: 12.5px; color: var(--fm-text-strong); }
+  .xp-group { font-size: 9.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: var(--fm-muted); padding: 9px 0 3px; }
+  .xp-autosubs { font-size: 11px; color: var(--fm-muted); padding: 9px 2px 2px; line-height: 1.55; border-top: 1px solid var(--line); margin-top: 6px; }
+  .xp-autosubs strong { color: var(--fm-text-strong); }
+  .xp-autosubs--proj strong { color: var(--fm-bench); }
+  .xp-note { opacity: .8; font-style: italic; }
+
+  /* ---------- Live table (mirrors LiveStandingsTable mobile) ---------- */
+  .lt2-head, .lt2-row {
+    display: grid; grid-template-columns: 22px 1fr 46px 36px 30px; align-items: center; gap: 5px;
+  }
+  .lt2-head { font-size: 9.5px; color: var(--fm-muted); text-transform: uppercase; letter-spacing: .4px; padding: 2px 6px 6px; font-weight: 700; }
+  .lt2-head .lt2-for, .lt2-head .lt2-pts { font-size: 9.5px; color: var(--fm-muted); font-weight: 700; }
+  .lt2-head .lt2-gw { font-size: 9.5px; text-align: center; }
+  .lt2-row { font-size: 13px; padding: 7px 6px; border-bottom: 1px solid var(--line); color: var(--fm-text-strong); }
+  .lt2-pos { text-align: center; font-weight: 800; color: var(--fm-text-strong); }
+  .lt2-team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .lt2-badge { width: 22px; height: 22px; border-radius: 50%; flex: none; display:grid; place-items:center; font-size: 8px; font-weight: 800; color:#fff; }
+  .lt2-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+  .lt2-chip { font-size: 9px; font-weight: 800; color: var(--chip-text); background: var(--chip-bg); padding: 1px 4px; border-radius: 8px; flex: none; }
+  .lt2-for { text-align: right; color: var(--fm-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .lt2-pts { text-align: right; color: var(--purple); font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .lt2-gw { display: flex; justify-content: center; }
+  .lt2-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .lt2-dot--w { background: #22c55e; }
+  .lt2-dot--l { background: #ef4444; }
+  .lt2-dot--d { background: #f59e0b; }
+  .lt2-dot--live { background: #f59e0b; box-shadow: 0 0 0 3px color-mix(in srgb, #f59e0b 30%, transparent); }
+  .lt2-row--me { background: var(--lt-me-bg); border-radius: 10px; border-bottom-color: transparent; }
+  .lt2-row--villain { background: var(--lt-villain-bg); }
+  .lt2-div { padding: 7px 8px 3px; font-size: 9.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--purple); opacity: .85; }
+
+  .dots { position:absolute; bottom: 0; left:0; right:0; display:flex; gap:6px; justify-content:center; z-index: 31; padding: 18px 0 14px; background: linear-gradient(to top, var(--dots-fade), transparent); pointer-events:none; }
+  .dots i { width:6px; height:6px; border-radius:50%; background: var(--dots-color); transition: all .2s; }
+  .dots i.on { background: var(--dots-on); width: 18px; border-radius: 3px; }
+
+  /* ---------- Player detail pull-over (mirrors PlayerDetailOverlay) ----------
+     Sibling of the fixture sheet, so it escapes the card's stacking/paging —
+     just like the production overlay portals to document.body. Slides in from
+     the RIGHT; dismiss via Back, scrim tap, swipe-right, or ESC. Always a clean
+     white/brand surface (the real overlay is white in every theme). */
+  .xp-name[data-pd] { cursor: pointer; }
+  .pd-scrim { position:absolute; inset:0; background:rgba(0,0,0,0.001); z-index:40; opacity:0; pointer-events:none; transition:opacity .3s ease; }
+  .pd-scrim.show { opacity:1; pointer-events:auto; background:rgba(0,0,0,0.4); }
+  .pd-sheet {
+    position:absolute; inset:0; z-index:41; background:#fafafa; color:#1a1a1a;
+    transform:translateX(100%); transition:transform .32s cubic-bezier(.32,.72,0,1);
+    will-change:transform; display:flex; flex-direction:column;
+    border-radius: var(--sheet-radius) 0 0 var(--sheet-radius);
+  }
+  .pd-sheet.open { transform:translateX(0); }
+  .pd-sheet.dragging { transition:none; }
+  /* Top bar: back chevron left, centred "PLAYER" title (matches prod) */
+  .pd-top { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:14px 14px 8px; flex:none; }
+  .pd-back { border:0; background:none; font:inherit; font-size:22px; font-weight:700; color:#1a1a1a; cursor:pointer; padding:2px 8px; justify-self:start; line-height:1; border-radius:9px; }
+  .pd-back:hover { background:rgba(0,0,0,.05); }
+  .pd-title { font-size:12px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:rgba(0,0,0,.45); }
+  .pd-body { padding:4px 18px 28px; overflow-y:auto; }
+
+  /* Hero: club crest top-left, name, then pos + club + (small) fantasy badge inline */
+  .pd-hero { display:flex; align-items:center; gap:13px; padding:8px 2px 16px; border-bottom:1px solid #ececf0; margin-bottom:14px; }
+  .pd-club { width:54px; height:54px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:800; font-size:15px; flex:none; box-shadow:0 4px 14px rgba(0,0,0,.2); }
+  .pd-id { min-width:0; }
+  .pd-name { font-size:23px; font-weight:800; letter-spacing:-.5px; line-height:1.02; }
+  .pd-meta { margin-top:7px; display:flex; gap:7px; align-items:center; flex-wrap:wrap; font-size:12px; font-weight:600; color:rgba(0,0,0,.55); }
+  .pd-chip { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; padding:2px 8px; border-radius:999px; background:color-mix(in srgb,#795bfb 12%, #fff); color:#795bfb; }
+  .pd-fant { display:inline-flex; align-items:center; gap:5px; font-weight:700; color:rgba(0,0,0,.6); }
+  .pd-fbadge { width:18px; height:18px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:800; font-size:7.5px; flex:none; box-shadow:0 1px 4px rgba(0,0,0,.22); }
+  .pd-sep { color:rgba(0,0,0,.22); }
+
+  /* Overview / Performance tabs */
+  .pd-tabs { display:flex; gap:22px; padding:2px 2px 0; border-bottom:1px solid #ececf0; margin-bottom:16px; }
+  .pd-tabs span { font-size:14.5px; font-weight:800; color:rgba(0,0,0,.4); cursor:pointer; padding:0 0 9px; position:relative; }
+  .pd-tabs span.on { color:#1a1a1a; }
+  .pd-tabs span.on::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2.5px; border-radius:2px; background:#795bfb; }
+  .pd-pane[hidden] { display:none; }
+
+  .pd-section-h { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:rgba(0,0,0,.45); margin:4px 0 9px; }
+
+  /* Season summary cards (POINTS in violet, rest dark — matches prod) */
+  .pd-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-bottom:20px; }
+  .pd-stat { background:#fff; border:1px solid #ececf0; border-radius:14px; padding:12px 10px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .pd-stat .v { font-size:22px; font-weight:800; color:#1a1a1a; line-height:1; font-variant-numeric:tabular-nums; }
+  .pd-stat .v--pts { color:#795bfb; }
+  .pd-stat .k { margin-top:6px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:rgba(0,0,0,.45); }
+
+  /* Last 5 gameweeks — 5 mini cards: GW · opponent + result dot · points/DNP */
+  .pd-gws { display:flex; gap:7px; margin-bottom:20px; }
+  .pd-gw { flex:1; min-width:0; background:#fff; border:1px solid #ececf0; border-radius:12px; padding:9px 4px 10px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .pd-gw .gw { font-size:8.5px; font-weight:800; letter-spacing:.3px; color:rgba(0,0,0,.4); text-transform:uppercase; }
+  .pd-gw .opp { margin-top:7px; font-size:11px; font-weight:800; color:#1a1a1a; display:flex; align-items:center; justify-content:center; gap:4px; }
+  .pd-gw .rdot { width:7px; height:7px; border-radius:50%; flex:none; }
+  .pd-gw .rdot--w { background:#16a34a; }
+  .pd-gw .rdot--l { background:#dc2626; }
+  .pd-gw .pts { margin-top:8px; font-size:15px; font-weight:800; color:#795bfb; font-variant-numeric:tabular-nums; }
+  .pd-gw .dnp { margin-top:8px; font-size:8.5px; font-weight:800; color:rgba(0,0,0,.42); border:1px solid #e6e6ec; border-radius:6px; padding:2px 0; text-transform:uppercase; letter-spacing:.4px; }
+
+  /* Next 5 fixtures (season-complete state mirrors prod) */
+  .pd-next { background:#fff; border:1px solid #ececf0; border-radius:14px; padding:26px 18px; text-align:center; font-size:12.5px; font-weight:600; color:rgba(0,0,0,.5); line-height:1.5; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+
+  /* Performance pane placeholder ("as it is in main when we get there") */
+  .pd-perf { background:#fff; border:1px solid #ececf0; border-radius:14px; padding:34px 22px; text-align:center; color:rgba(0,0,0,.5); font-size:12.5px; line-height:1.6; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .pd-perf b { color:#1a1a1a; }
+</style>
+</head>
+<body>
+  <div class="phone" data-theme="light" data-style="D">
+    <div class="statusbar">
+      <span>13:33</span>
+      <span class="right">●●●● &nbsp; 📶 &nbsp; 55</span>
+    </div>
+
+    <!-- Background list -->
+    <div class="screen">
+      <div class="nav">
+        <div>
+          <h1>Scores</h1>
+          <div class="gw">TCLOT · Gameweek 38</div>
+        </div>
+        <button id="styleToggle" class="theme-toggle">Style D · Brand accent</button>
+      </div>
+      <div class="seg">
+        <span>Standings</span><span class="on">Scores</span><span>Schedule</span>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="hint">Tap a fixture · swipe ⟷ between games · swipe ↓ to close</div>
+    </div>
+
+    <!-- Sheet -->
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" id="sheet">
+      <div class="deck" id="deck"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+
+    <!-- Player detail pull-over (slides in from the right, above the card) -->
+    <div class="pd-scrim" id="pdScrim"></div>
+    <div class="pd-sheet" id="pdSheet" role="dialog" aria-modal="true" aria-label="Player detail">
+      <div class="pd-top">
+        <button type="button" class="pd-back" id="pdBack" aria-label="Back to fixture">‹</button>
+        <span class="pd-title">Player</span>
+        <span></span>
+      </div>
+      <div class="pd-body" id="pdBody"></div>
+    </div>
+  </div>
+
+<script>
+const GW_NO = 38;
+
+const FIXTURES = [
+  {
+    home: { name: "Toronto Oizo", short: "TO", c1:"#3b82f6", c2:"#1e3a8a", pts: 44, won: false,
+            lineup:["Raya 6","Gabriel 8","Saliba 7","Palmer 18","Saka 11","Salah 9","Watkins 4","Mbeumo 5","Wood 0","Gordon 2","Muñoz 1"],
+            autosubs:[["R. Lewis","Wood"]] },
+    away: { name: "Hanson of York AFC", short: "HY", c1:"#ef4444", c2:"#7f1d1d", pts: 53, won: true,
+            lineup:["Sánchez 5","Gvardiol 9","Van Dijk 7","Haaland 24","Gakpo 12","Díaz 8","Rogers 6","Semenyo 4","Iwobi 3","Tarkowski 2","Pickford 1"] },
+    tag: "Hero defeat", comp:"TCLOT · Gameweek 38",
+    c1:"#6d4df0", c2:"#221848",
+    stats: [
+      {l:"Players 60+", h:10, a:11}, {l:"Goals", h:3, a:5}, {l:"Assists", h:2, a:4},
+      {l:"Def Con", h:7, a:9}, {l:"Clean Sheets", h:1, a:2},
+      {l:"Yellow Cards", h:2, a:1}, {l:"Red Cards", h:0, a:0},
+    ]
+  },
+  {
+    home: { name: "Brampton II Men", short: "BM", c1:"#10b981", c2:"#065f46", pts: 41, won: true,
+            lineup:["Pope 4","Konsa 6","Branthwaite 7","Watkins 16","Foden 10","Bowen 7","Mbeumo 5","Eze 3","Gordon 2","Digne 1","Lacroix 0"] },
+    away: { name: "Morpeth Jamiroquai", short: "MJ", c1:"#f59e0b", c2:"#92400e", pts: 36, won: false,
+            lineup:["Flekken 5","James 6","Botman 6","Mbeumo 14","Núñez 9","Isak 7","Kluivert 4","Wissa 3","Schade 2","Burn 1","Cucurella 0"] },
+    tag: null, comp:"TCLOT · Gameweek 38",
+    c1:"#0e9b89", c2:"#0a2b30",
+    stats: [
+      {l:"Players 60+", h:11, a:10}, {l:"Goals", h:4, a:3}, {l:"Assists", h:3, a:2},
+      {l:"Def Con", h:8, a:6}, {l:"Clean Sheets", h:2, a:1},
+      {l:"Yellow Cards", h:1, a:3}, {l:"Red Cards", h:0, a:1},
+    ]
+  },
+  {
+    live: true,
+    home: { name: "Hackney Meat Loaf", short: "HM", c1:"#a855f7", c2:"#581c87", pts: 36, won: false, toPlay: 3,
+            lineup:["Raya 3","Gabriel 7","Saliba 6","Salah 14","Semenyo 4","Larsen *","Rice *","Murphy 2","Welbeck *","Hall 0","Aina 0"],
+            autosubs:[["Mazraoui","Hall"]] },
+    away: { name: "Clapton Cornershop", short: "CC", c1:"#06b6d4", c2:"#155e75", pts: 29, won: false, toPlay: 4,
+            lineup:["Sels 4","Aké 6","Colwill 5","Palmer 12","Highmore *","Lewis *","Anderson *","Sarr 2","Wood *","Murillo 0","Robinson 0"],
+            autosubs:[["L. Gomes","Robinson"]] },
+    tag: null, comp:"TCLOT · Gameweek 38 · LIVE",
+    c1:"#1c7ea0", c2:"#0b2636",
+    stats: [
+      {l:"Players 60+", h:6, a:5}, {l:"Goals", h:2, a:2}, {l:"Assists", h:1, a:2},
+      {l:"Def Con", h:6, a:4}, {l:"Clean Sheets", h:1, a:0},
+      {l:"Yellow Cards", h:2, a:2}, {l:"Red Cards", h:0, a:0},
+    ]
+  },
+  {
+    home: { name: "Crouch End Oashisu", short: "CE", c1:"#64748b", c2:"#1e293b", pts: 19, won: false,
+            lineup:["Petrović 2","Mings 5","Andersen 4","Solanke 8","Tavernier 6","Semenyo 3","Tielemans 2","Smith Rowe 1","Adingra 0","Faes 0","Dúbravka 0"] },
+    away: { name: "Seoul Club 7", short: "S7", c1:"#eab308", c2:"#854d0e", pts: 32, won: true, trophy:true,
+            lineup:["Sánchez 3","Gvardiol 7","Saliba 6","Haaland 18","Saka 9","Gakpo 5","Rogers 4","Mbeumo 3","Díaz 2","Van Dijk 1","Pickford 0"] },
+    tag: null, comp:"TCLOT · Gameweek 38",
+    c1:"#565d92", c2:"#181a2e",
+    stats: [
+      {l:"Players 60+", h:9, a:11}, {l:"Goals", h:2, a:4}, {l:"Assists", h:1, a:3},
+      {l:"Def Con", h:5, a:8}, {l:"Clean Sheets", h:1, a:2},
+      {l:"Yellow Cards", h:3, a:1}, {l:"Red Cards", h:1, a:0},
+    ]
+  },
+];
+
+/* Per-team status: "All done" or live "N to play". */
+function statusBits(team) {
+  const tp = team.toPlay || 0;
+  return { live: tp > 0, label: tp > 0 ? `${tp} to play` : 'All done' };
+}
+const firstWord = (s) => s.split(' ')[0];
+
+/* ---------- Background list ---------- */
+const listEl = document.getElementById('list');
+FIXTURES.forEach((f, i) => {
+  const homeW = f.home.won, awayW = f.away.won;
+  const hs = statusBits(f.home), as = statusBits(f.away);
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.innerHTML = `
+    <div class="team home">
+      <span class="badge" style="background:linear-gradient(135deg,${f.home.c1},${f.home.c2})">${f.home.short}</span>
+      <div class="tn"><div class="name">${f.home.name}</div><div class="status${hs.live?' status--live':''}"><span class="dot${hs.live?' dot--live':''}"></span>${hs.label}</div></div>
+    </div>
+    <div class="center">
+      <div class="score"><span class="${homeW?'w':'l'}">${f.home.pts}</span> – <span class="${awayW?'w':'l'}">${f.away.pts}</span></div>
+      ${f.tag ? `<div class="tag">${f.tag}</div>` : (f.live ? `<div class="tag tag--live">● LIVE</div>` : '')}
+    </div>
+    <div class="team away">
+      <span class="badge" style="background:linear-gradient(135deg,${f.away.c1},${f.away.c2})">${f.away.short}</span>
+      <div class="tn"><div class="name">${f.away.name}${f.away.trophy?' 🏆':''}</div><div class="status${as.live?' status--live':''}">${as.label}<span class="dot${as.live?' dot--live':''}"></span></div></div>
+    </div>`;
+  row.addEventListener('click', () => openSheet(i));
+  listEl.appendChild(row);
+});
+
+/* ---------- Lineup (mirrors LiveExpandedFixture mobile) ---------- */
+const deck = document.getElementById('deck');
+const dotsEl = document.getElementById('dots');
+const XI_POS = ['GK','DEF','DEF','DEF','MID','MID','MID','MID','FWD','FWD','FWD'];
+const BENCH_POOL = [['Areola',0],['Mazraoui',2],['L. Gomes',1],['Rodon',0],['R. Lewis',3],['Kelleher',1],['Richards',2],['Onana',0],['Doku',2],['Schär',1],['Mateta',3],['D. Jota',0]];
+
+function minTone(min) {
+  if (min == null || min === 0) return 'none';
+  if (min < 30) return 'low';
+  if (min < 60) return 'partial';
+  if (min < 90) return 'good';
+  return 'full';
+}
+function lineupRows(team, live) {
+  return team.lineup.map((p, idx) => {
+    const pos = XI_POS[idx] || 'MID';
+    if (/\*\s*$/.test(p)) {
+      return { name: p.replace(/\s*\*\s*$/, ''), pos, status:'xi', toPlay:true, min:null, dc:null, g:0, a:0, b:0, pts:0, onPitch:false };
+    }
+    const m = p.match(/^(.*) (\d+)$/);
+    const name = m ? m[1] : p, pts = m ? +m[2] : 0;
+    let min;
+    if (pts === 0) min = idx % 2 ? 0 : 14;   // show none + low tones
+    else if (idx === 6) min = 58;            // partial
+    else min = 90;                           // full / good
+    const played = min > 0;
+    const dc = (pos === 'DEF' || pos === 'MID') ? (played ? 8 + (idx % 4) : null) : (played ? 0 : null);
+    const g = (pos === 'FWD' && pts >= 7) || (pos === 'MID' && pts >= 10) ? 1 : 0;
+    const a = pts >= 5 && pts < 12 && pos !== 'GK' ? 1 : 0;
+    const b = pts >= 14 ? 3 : pts >= 9 ? 1 : 0;
+    const onPitch = !!live && played && idx >= 3 && idx <= 5;
+    return { name, pos, status:'xi', toPlay:false, min, dc, g, a, b, pts, onPitch };
+  });
+}
+function benchRows(seed) {
+  const POSB = ['GK','DEF','MID','FWD'];
+  return [0,1,2].map((k) => {
+    const b = BENCH_POOL[(seed * 3 + k) % BENCH_POOL.length];
+    const absent = k === 2;                  // last = not in squad
+    const min = absent ? null : (b[1] > 0 ? 22 : 0);
+    return { name: b[0], pos: POSB[k % 4], status: absent ? 'absent' : 'bench', toPlay:false, min, dc: min ? 6 : null, g:0, a: b[1] >= 3 ? 1 : 0, b:0, pts: absent ? 0 : b[1], onPitch:false };
+  });
+}
+function xpRow(x) {
+  const cls = x.status === 'absent' ? 'xp-name--absent' : (x.status === 'bench' ? 'xp-name--bench' : 'xp-name--xi');
+  const z = (v) => (v === 0 || v == null) ? '<span class="xp-z">–</span>' : v;
+  return `<div class="xp-row">
+    <span class="xp-namewrap"><span class="xp-name ${cls}" data-pd="1" role="button" tabindex="0" data-name="${x.name}" data-pos="${x.pos}" data-status="${x.status}" data-min="${x.min == null ? '' : x.min}" data-dc="${x.dc == null ? '' : x.dc}" data-g="${x.g}" data-a="${x.a}" data-b="${x.b}" data-pts="${x.toPlay ? '' : x.pts}" data-toplay="${x.toPlay ? '1' : ''}" data-onpitch="${x.onPitch ? '1' : ''}"><span class="t">${x.name}</span>${x.onPitch ? '<span class="xp-dotlive"></span>' : ''}</span></span>
+    <span class="xp-pos">${x.pos}</span>
+    <span class="xp-min xp-min--${minTone(x.min)}">${x.min == null ? '–' : x.min}</span>
+    <span class="xp-c">${x.dc == null ? '–' : x.dc}</span>
+    <span class="xp-c xp-g">${z(x.g)}</span>
+    <span class="xp-c xp-a">${z(x.a)}</span>
+    <span class="xp-c">${z(x.b)}</span>
+    <span class="xp-pts">${x.toPlay ? '–' : x.pts}</span>
+  </div>`;
+}
+function autosubsHtml(team, live) {
+  if (!team.autosubs || !team.autosubs.length) return '';
+  const label = live ? 'Projected auto subs:' : 'Auto subs:';
+  const pairs = team.autosubs.map(([i, o]) => `${i} ↔ ${o}`).join(', ');
+  const note = live ? ' <span class="xp-note">Provisional until FPL posts official autosubs.</span>' : '';
+  return `<div class="xp-autosubs${live ? ' xp-autosubs--proj' : ''}"><strong>${label}</strong> ${pairs}${note}</div>`;
+}
+function teamTableHtml(team, seed, live) {
+  const starters = lineupRows(team, live);
+  const bench = benchRows(seed);
+  return `<div class="xp-head"><span>Player</span><span>Pos</span><span>Min</span><span>DC</span><span>G</span><span>A</span><span>B</span><span>Pts</span></div>
+    <div class="xp-group">Starting XI</div>${starters.map(xpRow).join('')}
+    <div class="xp-group">Bench</div>${bench.map(xpRow).join('')}
+    ${autosubsHtml(team, live)}`;
+}
+
+/* ---------- Live table (mirrors LiveStandingsTable mobile) ---------- */
+const STANDINGS = [
+  { r:1, name:'Seoul Club 7',       short:'S7', c1:'#eab308', c2:'#854d0e', for:1556, pts:67, res:'w',    chip:'+3', trophy:true },
+  { r:2, name:'Hanson of York AFC', short:'HY', c1:'#ef4444', c2:'#7f1d1d', for:1812, pts:66, res:'w',    chip:'+3' },
+  { r:3, name:'Brampton II Men',    short:'BM', c1:'#10b981', c2:'#065f46', for:1616, pts:64, res:'w',    chip:'+3' },
+  { r:4, name:'Hackney Meat Loaf',  short:'HM', c1:'#a855f7', c2:'#581c87', for:1710, pts:60, res:'live', chip:'+3' },
+  { r:5, name:'Toronto Oizo',       short:'TO', c1:'#3b82f6', c2:'#1e3a8a', for:1635, pts:58, res:'l' },
+  { r:6, name:'Morpeth Jamiroquai', short:'MJ', c1:'#f59e0b', c2:'#92400e', for:1586, pts:54, res:'l' },
+  { r:7, name:'Clapton Cornershop', short:'CC', c1:'#06b6d4', c2:'#155e75', for:1740, pts:50, res:'live' },
+  { r:8, name:'Crouch End Oashisu', short:'CE', c1:'#64748b', c2:'#1e293b', for:1673, pts:45, res:'l' },
+];
+function buildTableHtml(f) {
+  const mine = new Set([f.home.short, f.away.short]);
+  const rows = STANDINGS.map((t) => {
+    const me = mine.has(t.short);
+    const villain = t.r === 8;
+    const dotCls = t.res === 'w' ? 'lt2-dot--w' : t.res === 'l' ? 'lt2-dot--l' : t.res === 'd' ? 'lt2-dot--d' : 'lt2-dot--live';
+    const rowHtml = `<div class="lt2-row${me ? ' lt2-row--me' : ''}${villain ? ' lt2-row--villain' : ''}">
+      <span class="lt2-pos">${villain ? '🧩' : t.r}</span>
+      <span class="lt2-team"><span class="lt2-badge" style="background:linear-gradient(135deg,${t.c1},${t.c2})">${t.short}</span><span class="lt2-name">${firstWord(t.name)}${t.trophy ? ' 🏆' : ''}</span>${t.chip ? `<span class="lt2-chip">${t.chip}</span>` : ''}</span>
+      <span class="lt2-for">${t.for}</span>
+      <span class="lt2-pts">${t.pts}</span>
+      <span class="lt2-gw"><span class="lt2-dot ${dotCls}"></span></span>
+    </div>`;
+    return rowHtml + (t.r === 4 ? `<div class="lt2-div">Minnows</div>` : '');
+  }).join('');
+  return `<div class="lt2-head"><span class="lt2-pos">#</span><span>Team</span><span class="lt2-for">For</span><span class="lt2-pts">PTS</span><span class="lt2-gw">GW ${GW_NO}</span></div>${rows}`;
+}
+
+/* ---------- Build cards ---------- */
+FIXTURES.forEach((f, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const live = !!f.live || (f.home.toPlay || 0) > 0 || (f.away.toPlay || 0) > 0;
+
+  const statsHtml = f.stats.map((s) => {
+    const tot = (s.h + s.a) || 1;
+    const hp = Math.round(s.h / tot * 100), ap = 100 - hp;
+    return `<div class="stat">
+      <div class="lbl">${s.l}</div>
+      <div class="nums"><span>${s.h}</span><span>${s.a}</span></div>
+      <div class="bar"><span class="h" style="width:${hp}%"></span><span class="a" style="width:${ap}%"></span></div>
+    </div>`;
+  }).join('');
+
+  const homeTable = teamTableHtml(f.home, i, live);
+  const awayTable = teamTableHtml(f.away, i + 1, live);
+  const tableHtml = buildTableHtml(f);
+
+  const sub = (t) => (t.toPlay || 0) > 0
+    ? `<span class="sub-live">${t.toPlay} to play</span>`
+    : (t.won ? 'Winner' : '&nbsp;');
+  const midMain = f.tag ? f.tag.toUpperCase() : (live ? '<span class="live-pill">● LIVE</span>' : 'FT');
+  const midFinal = live ? `${(f.home.toPlay || 0) + (f.away.toPlay || 0)} to play` : 'All done';
+
+  card.innerHTML = `
+    <div class="card-inner" style="--c1:${f.c1};--c2:${f.c2}">
+      <div class="card-top">
+        <div class="grab"><i></i></div>
+        <div class="card-head">
+          <div class="comp">${f.comp}</div>
+          <div class="scorehead" role="tablist" aria-label="Tap a team to view its lineup">
+            <button type="button" class="teamblock teamblock--sel" data-team="home" aria-label="Show ${f.home.name} lineup">
+              <span class="big">${f.home.pts}</span>
+              <span class="b2" style="background:linear-gradient(135deg,${f.home.c1},${f.home.c2})">${f.home.short}</span>
+              <span class="nm">${f.home.name}</span><span class="sub">${sub(f.home)}</span>
+            </button>
+            <div class="mid">${midMain}<div class="final${live ? ' final--live' : ''}">${midFinal}</div></div>
+            <button type="button" class="teamblock teamblock--dim" data-team="away" aria-label="Show ${f.away.name} lineup">
+              <span class="big">${f.away.pts}</span>
+              <span class="b2" style="background:linear-gradient(135deg,${f.away.c1},${f.away.c2})">${f.away.short}</span>
+              <span class="nm">${f.away.name}${f.away.trophy ? ' 🏆' : ''}</span><span class="sub">${sub(f.away)}</span>
+            </button>
+          </div>
+        </div>
+        <div class="tabs" data-card="${i}">
+          <span class="on" data-tab="lineup">Lineups</span>
+          <span data-tab="stats">Key Stats</span>
+          <span data-tab="h2h">H2H</span>
+          <span data-tab="table">Table</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="panel">
+          <div data-pane="lineup">
+            <div class="block" data-team-table="home">${homeTable}</div>
+            <div class="block" data-team-table="away" style="display:none">${awayTable}</div>
+          </div>
+          <div data-pane="stats" style="display:none"><div class="block"><h3>Key Stats</h3>${statsHtml}</div></div>
+          <div data-pane="h2h" style="display:none"><div class="block"><h3>Season head-to-head</h3>
+            <div class="stat"><div class="lbl">Meetings this season</div><div class="nums"><span>1W</span><span>1W</span></div><div class="bar"><span class="h" style="width:50%"></span><span class="a" style="width:50%"></span></div></div>
+            <div class="stat"><div class="lbl">Avg points</div><div class="nums"><span>${f.home.pts-2}</span><span>${f.away.pts-3}</span></div><div class="bar"><span class="h" style="width:52%"></span><span class="a" style="width:48%"></span></div></div>
+          </div></div>
+          <div data-pane="table" style="display:none"><div class="block"><h3>Live Table</h3>${tableHtml}</div></div>
+        </div>
+      </div>
+    </div>`;
+  deck.appendChild(card);
+
+  const dot = document.createElement('i');
+  dotsEl.appendChild(dot);
+});
+
+/* tap a player pill → open the player detail pull-over */
+deck.addEventListener('click', (e) => {
+  const pill = e.target.closest('.xp-name[data-pd]');
+  if (pill) { openPlayer(pill); }
+});
+
+/* tab + team-selector delegation */
+deck.addEventListener('click', (e) => {
+  const tab = e.target.closest('.tabs span');
+  if (tab) {
+    const tabs = tab.parentElement;
+    const body = tab.closest('.card-inner').querySelector('.panel');
+    tabs.querySelectorAll('span').forEach((s) => s.classList.toggle('on', s === tab));
+    body.querySelectorAll('[data-pane]').forEach((p) => {
+      p.style.display = p.dataset.pane === tab.dataset.tab ? '' : 'none';
+    });
+    return;
+  }
+  const tb = e.target.closest('.teamblock');
+  if (tb) {
+    const cardInner = tb.closest('.card-inner');
+    cardInner.querySelectorAll('.teamblock').forEach((b) => {
+      const on = b === tb;
+      b.classList.toggle('teamblock--sel', on);
+      b.classList.toggle('teamblock--dim', !on);
+    });
+    cardInner.querySelectorAll('[data-team-table]').forEach((t) => {
+      t.style.display = t.dataset.teamTable === tb.dataset.team ? '' : 'none';
+    });
+    const tabsEl = cardInner.querySelector('.tabs');
+    const body = cardInner.querySelector('.panel');
+    tabsEl.querySelectorAll('span').forEach((s) => s.classList.toggle('on', s.dataset.tab === 'lineup'));
+    body.querySelectorAll('[data-pane]').forEach((p) => {
+      p.style.display = p.dataset.pane === 'lineup' ? '' : 'none';
+    });
+  }
+});
+
+/* ---------- Sheet open/close + swipe ---------- */
+const sheet = document.getElementById('sheet');
+const scrim = document.getElementById('scrim');
+let index = 0;
+const N = FIXTURES.length;
+
+function renderDots() {
+  [...dotsEl.children].forEach((d, i) => d.classList.toggle('on', i === index));
+}
+function setDeck(animate = true) {
+  deck.classList.toggle('dragging', !animate);
+  deck.style.transform = `translateX(${-index * 100}%)`;
+  renderDots();
+}
+function openSheet(i) {
+  index = i;
+  setDeck(false);
+  requestAnimationFrame(() => { scrim.classList.add('show'); sheet.classList.add('open'); });
+}
+function closeSheet() {
+  scrim.classList.remove('show');
+  sheet.classList.remove('dragging');
+  sheet.style.transform = '';
+  sheet.classList.remove('open');
+}
+scrim.addEventListener('click', closeSheet);
+
+let startX = 0, startY = 0, dx = 0, dy = 0, axis = null, active = false;
+const TH_AXIS = 8, TH_PAGE = 70, TH_CLOSE = 110;
+
+function onDown(e) {
+  active = true; axis = null; dx = 0; dy = 0;
+  startX = e.touches ? e.touches[0].clientX : e.clientX;
+  startY = e.touches ? e.touches[0].clientY : e.clientY;
+}
+function onMove(e) {
+  if (!active) return;
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  dx = x - startX; dy = y - startY;
+  if (!axis && (Math.abs(dx) > TH_AXIS || Math.abs(dy) > TH_AXIS)) {
+    axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+  }
+  if (axis === 'x') {
+    if (e.cancelable) e.preventDefault();
+    deck.classList.add('dragging');
+    let d = dx;
+    if ((index === 0 && dx > 0) || (index === N - 1 && dx < 0)) d = dx * 0.3;
+    deck.style.transform = `translateX(calc(${-index * 100}% + ${d}px))`;
+  } else if (axis === 'y') {
+    const cardInner = deck.querySelectorAll('.card-inner')[index];
+    if (dy > 0 && cardInner.scrollTop <= 0) {
+      if (e.cancelable) e.preventDefault();
+      sheet.classList.add('dragging');
+      sheet.style.transform = `translateY(${dy}px)`;
+      scrim.style.opacity = String(Math.max(0, 1 - dy / 500));
+    }
+  }
+}
+function onUp() {
+  if (!active) return;
+  active = false;
+  if (axis === 'x') {
+    deck.classList.remove('dragging');
+    if (dx < -TH_PAGE && index < N - 1) index++;
+    else if (dx > TH_PAGE && index > 0) index--;
+    setDeck(true);
+  } else if (axis === 'y') {
+    sheet.classList.remove('dragging');
+    scrim.style.opacity = '';
+    if (dy > TH_CLOSE) closeSheet();
+    else { sheet.style.transform = 'translateY(0)'; }
+  }
+  axis = null;
+}
+sheet.addEventListener('touchstart', onDown, { passive: true });
+sheet.addEventListener('touchmove', onMove, { passive: false });
+sheet.addEventListener('touchend', onUp);
+sheet.addEventListener('mousedown', onDown);
+window.addEventListener('mousemove', onMove);
+window.addEventListener('mouseup', onUp);
+
+window.addEventListener('keydown', (e) => {
+  // Player sheet takes priority: ESC closes it first, and it swallows paging.
+  if (pdSheet.classList.contains('open')) {
+    if (e.key === 'Escape') closePlayer();
+    return;
+  }
+  if (!sheet.classList.contains('open')) return;
+  if (e.key === 'ArrowRight' && index < N - 1) { index++; setDeck(true); }
+  if (e.key === 'ArrowLeft' && index > 0) { index--; setDeck(true); }
+  if (e.key === 'Escape') closeSheet();
+});
+
+/* ---------- Player detail pull-over: open / close / swipe-right ---------- */
+const pdScrim = document.getElementById('pdScrim');
+const pdSheet = document.getElementById('pdSheet');
+const pdBody = document.getElementById('pdBody');
+const pdBack = document.getElementById('pdBack');
+
+/* The player's REAL football club (top-left crest) is synthetic for the demo —
+   in production this comes from the player record. Deterministic per name. */
+const CLUBS = [
+  { code:'ARS', name:'Arsenal',    c1:'#f43f5e', c2:'#9f1239' },
+  { code:'CHE', name:'Chelsea',    c1:'#2563eb', c2:'#0b1f5e' },
+  { code:'LIV', name:'Liverpool',  c1:'#ef4444', c2:'#7f1d1d' },
+  { code:'MCI', name:'Man City',   c1:'#38bdf8', c2:'#0c4a6e' },
+  { code:'MUN', name:'Man Utd',    c1:'#dc2626', c2:'#450a0a' },
+  { code:'NEW', name:'Newcastle',  c1:'#475569', c2:'#0f172a' },
+  { code:'TOT', name:'Spurs',      c1:'#334155', c2:'#0f172a' },
+  { code:'AVL', name:'Aston Villa',c1:'#7c3aed', c2:'#4a1d96' },
+  { code:'WHU', name:'West Ham',   c1:'#9f1239', c2:'#450a14' },
+  { code:'BHA', name:'Brighton',   c1:'#2563eb', c2:'#1e3a8a' },
+  { code:'NFO', name:'Forest',     c1:'#dc2626', c2:'#7f1d1d' },
+  { code:'BOU', name:'Bournemouth',c1:'#b91c1c', c2:'#450a0a' },
+  { code:'CRY', name:'Palace',     c1:'#2563eb', c2:'#172554' },
+  { code:'EVE', name:'Everton',    c1:'#2563eb', c2:'#172554' },
+  { code:'WOL', name:'Wolves',     c1:'#d97706', c2:'#78350f' },
+  { code:'FUL', name:'Fulham',     c1:'#334155', c2:'#0f172a' },
+  { code:'BRE', name:'Brentford',  c1:'#dc2626', c2:'#7f1d1d' },
+  { code:'LEI', name:'Leicester',  c1:'#3b82f6', c2:'#1e3a8a' },
+  { code:'SUN', name:'Sunderland', c1:'#e11d48', c2:'#881337' },
+];
+const CLUB_BY_CODE = Object.fromEntries(CLUBS.map(c => [c.code, c]));
+/* Real-club lookup for the demo so well-known players read correctly. */
+const PLAYER_CLUB = {
+  'Raya':'ARS','Gabriel':'ARS','Saliba':'ARS','Saka':'ARS','Rice':'ARS',
+  'Palmer':'CHE','Salah':'LIV',
+  'Watkins':'AVL','Konsa':'AVL','Tielemans':'AVL','Digne':'AVL','Mings':'AVL',
+  'Mbeumo':'MUN','Mazraoui':'MUN','Onana':'MUN',
+  'Wood':'NFO','Aina':'NFO',
+  'Gordon':'NEW','Pope':'NEW','Schär':'NEW','Hall':'NEW','Murphy':'NEW',
+  'Muñoz':'CRY','Eze':'CRY','Mateta':'CRY','Richards':'CRY','Lacroix':'CRY',
+  'Areola':'WHU','Bowen':'WHU',
+  'Foden':'MCI','Doku':'MCI','R. Lewis':'MCI',
+  'Branthwaite':'EVE',
+  'Semenyo':'BOU','Tavernier':'BOU','Petrović':'BOU',
+  'Welbeck':'BHA','Adingra':'BHA',
+  'Solanke':'TOT','Smith Rowe':'FUL','Andersen':'FUL',
+  'Larsen':'WOL','L. Gomes':'WOL','Faes':'LEI','Kelleher':'BRE',
+};
+function pdHash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 131 + s.charCodeAt(i)) >>> 0; return h; }
+function clubFor(name) { return CLUB_BY_CODE[PLAYER_CLUB[name]] || CLUBS[pdHash(name) % CLUBS.length]; }
+
+function seasonSummary(name, pos) {
+  const h = pdHash(name);
+  const defy = (pos === 'GK' || pos === 'DEF');
+  return {
+    points: 60 + (h % 130),
+    m60:    14 + (h % 18),
+    goals:  defy ? (h % 4) : ((h >> 2) % 14),
+    assists:(h >> 3) % 9,
+    cs:     defy ? (h % 9) : ((h >> 4) % 4),
+    dc:     2 + (h % 34),
+    bonus:  (h >> 5) % 18,
+  };
+}
+function last5(name) {
+  const h = pdHash(name);
+  return [34, 35, 36, 37, 38].map((gw, i) => {
+    const opp = CLUBS[(h + i * 5) % CLUBS.length];
+    const win = ((h >> i) & 1) === 1;
+    const dnp = (i === 0) && (h % 4 === 0);
+    const pts = dnp ? null : ((h >> (i * 2)) % 13);
+    return { gw, opp: opp.code, win, dnp, pts };
+  });
+}
+
+function openPlayer(pill) {
+  const d = pill.dataset;
+  const tableEl = pill.closest('[data-team-table]');
+  const side = tableEl ? tableEl.dataset.teamTable : 'home';
+  const fx = FIXTURES[index];
+  const team = side === 'away' ? fx.away : fx.home;   // fantasy club
+  const club = clubFor(d.name);                       // real football club
+  const ss = seasonSummary(d.name, d.pos);
+  const gws = last5(d.name);
+
+  const gwCards = gws.map(w => `
+    <div class="pd-gw">
+      <div class="gw">GW${w.gw}</div>
+      <div class="opp">${w.opp}<span class="rdot rdot--${w.win ? 'w' : 'l'}"></span></div>
+      ${w.dnp ? '<div class="dnp">DNP</div>' : `<div class="pts">${w.pts}</div>`}
+    </div>`).join('');
+
+  pdBody.innerHTML = `
+    <div class="pd-hero">
+      <span class="pd-club" style="background:linear-gradient(135deg,${club.c1},${club.c2})">${club.code}</span>
+      <div class="pd-id">
+        <div class="pd-name">${d.name}</div>
+        <div class="pd-meta">
+          <span class="pd-chip">${d.pos}</span>
+          <span>${club.name}</span>
+          <span class="pd-sep">·</span>
+          <span class="pd-fant"><span class="pd-fbadge" style="background:linear-gradient(135deg,${team.c1},${team.c2})">${team.short}</span>${team.name}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-tabs">
+      <span class="on" data-pdtab="overview">Overview</span>
+      <span data-pdtab="performance">Performance</span>
+    </div>
+
+    <div class="pd-pane" data-pdpane="overview">
+      <div class="pd-section-h">Season Summary</div>
+      <div class="pd-grid">
+        <div class="pd-stat"><div class="v v--pts">${ss.points}</div><div class="k">Points</div></div>
+        <div class="pd-stat"><div class="v">${ss.m60}</div><div class="k">60+ Mins</div></div>
+        <div class="pd-stat"><div class="v">${ss.goals}</div><div class="k">Goals</div></div>
+        <div class="pd-stat"><div class="v">${ss.assists}</div><div class="k">Assists</div></div>
+        <div class="pd-stat"><div class="v">${ss.cs}</div><div class="k">Clean Sheets</div></div>
+        <div class="pd-stat"><div class="v">${ss.dc}</div><div class="k">DC</div></div>
+        <div class="pd-stat"><div class="v">${ss.bonus}</div><div class="k">Bonus</div></div>
+      </div>
+
+      <div class="pd-section-h">Last 5 Gameweeks</div>
+      <div class="pd-gws">${gwCards}</div>
+
+      <div class="pd-section-h">Next 5 Fixtures</div>
+      <div class="pd-next">Season complete — fixtures resume next season</div>
+    </div>
+
+    <div class="pd-pane" data-pdpane="performance" hidden>
+      <div class="pd-perf">The <b>Performance</b> tab opens here, kept exactly as it is in the main app.</div>
+    </div>`;
+  pdScrim.classList.add('show');
+  requestAnimationFrame(() => pdSheet.classList.add('open'));
+}
+
+/* Overview / Performance tab switch inside the player sheet */
+pdBody.addEventListener('click', (e) => {
+  const tab = e.target.closest('[data-pdtab]');
+  if (!tab) return;
+  pdBody.querySelectorAll('[data-pdtab]').forEach(t => t.classList.toggle('on', t === tab));
+  const target = tab.dataset.pdtab;
+  pdBody.querySelectorAll('[data-pdpane]').forEach(p => { p.hidden = p.dataset.pdpane !== target; });
+});
+function closePlayer() {
+  pdScrim.classList.remove('show');
+  pdSheet.classList.remove('dragging');
+  pdSheet.style.transform = '';
+  pdSheet.classList.remove('open');
+}
+pdBack.addEventListener('click', closePlayer);
+pdScrim.addEventListener('click', closePlayer);
+
+/* swipe-right-to-dismiss (mirrors PlayerDetailOverlay): claim only rightward
+   horizontal intent; follow the finger; close past threshold else snap back. */
+let pStartX = 0, pStartY = 0, pDx = 0, pDy = 0, pAxis = null, pActive = false;
+function pdDown(e) {
+  if (!pdSheet.classList.contains('open')) return;
+  pActive = true; pAxis = null; pDx = 0; pDy = 0;
+  pStartX = e.touches ? e.touches[0].clientX : e.clientX;
+  pStartY = e.touches ? e.touches[0].clientY : e.clientY;
+}
+function pdMove(e) {
+  if (!pActive) return;
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  pDx = x - pStartX; pDy = y - pStartY;
+  if (!pAxis && (Math.abs(pDx) > 8 || Math.abs(pDy) > 8)) {
+    pAxis = (Math.abs(pDx) > Math.abs(pDy) && pDx > 0) ? 'x' : 'other';
+  }
+  if (pAxis === 'x') {
+    if (e.cancelable) e.preventDefault();
+    pDx = pDx > 0 ? pDx : 0;
+    pdSheet.classList.add('dragging');
+    pdSheet.style.transform = `translateX(${pDx}px)`;
+  }
+}
+function pdUp() {
+  if (!pActive) return;
+  pActive = false;
+  pdSheet.classList.remove('dragging');
+  if (pAxis === 'x' && pDx > 90) { closePlayer(); }
+  else if (pdSheet.classList.contains('open')) { pdSheet.style.transform = 'translateX(0)'; }
+  pAxis = null;
+}
+pdSheet.addEventListener('touchstart', pdDown, { passive: true });
+pdSheet.addEventListener('touchmove', pdMove, { passive: false });
+pdSheet.addEventListener('touchend', pdUp);
+pdSheet.addEventListener('mousedown', pdDown);
+window.addEventListener('mousemove', pdMove);
+window.addEventListener('mouseup', pdUp);
+
+/* theme toggle — demonstrates "follow the app theme" (light/dark) */
+const phone = document.querySelector('.phone');
+const STYLES = [
+  ['A', 'App light'],
+  ['B', 'Crisp dark'],
+  ['C', 'Glass band'],
+  ['D', 'Brand accent'],
+];
+const styleBtn = document.getElementById('styleToggle');
+let styleIdx = 3;
+styleBtn.addEventListener('click', () => {
+  styleIdx = (styleIdx + 1) % STYLES.length;
+  const [key, label] = STYLES[styleIdx];
+  phone.setAttribute('data-style', key);
+  styleBtn.textContent = 'Style ' + key + ' · ' + label;
+});
+</script>
+</body>
+</html>
