@@ -12350,6 +12350,19 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-xp__th--player {
   text-align: left;
 }
+/* When the Player header carries the selected team's name (mobile fixture
+   card), present it as a readable brand-tinted label rather than the small
+   uppercase column heading. Stays on one line with an ellipsis if long. */
+.live-xp__th--player-team {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--tclot-logo-purple);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .live-xp__th--pos {
   text-align: center;
 }

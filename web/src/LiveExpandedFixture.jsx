@@ -246,10 +246,19 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
  * Column header row above each team's table. Matches mockup
  * `mockup-table__head`.
  */
-function LiveExpandedTableHead() {
+function LiveExpandedTableHead({ playerLabel = 'Player' }) {
+  const isTeamLabel = playerLabel !== 'Player';
   return (
     <div className="live-xp__thead" role="row">
-      <div className="live-xp__th live-xp__th--player">Player</div>
+      <div
+        className={
+          'live-xp__th live-xp__th--player' +
+          (isTeamLabel ? ' live-xp__th--player-team' : '')
+        }
+        title={isTeamLabel ? playerLabel : undefined}
+      >
+        {playerLabel}
+      </div>
       <div className="live-xp__th live-xp__th--pos">Pos</div>
       <div className="live-xp__th">Min</div>
       <div className="live-xp__th">DC</div>
@@ -265,7 +274,7 @@ function LiveExpandedTableHead() {
  * One team's player table: optional auto-subs note, column header, then
  * STARTING XI rows and BENCH rows sorted by points contributed.
  */
-function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
+function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds, playerLabel }) {
   // Starting XI is sorted by FPL position (GK → DEF → MID → FWD) so the
   // user can scan "best players at each position" across the two team
   // columns. Bench keeps points-contributed sort — order is independent.
@@ -288,7 +297,7 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
   return (
     <div className="live-xp__team">
       <div className="live-xp__table" role="table">
-        <LiveExpandedTableHead />
+        <LiveExpandedTableHead playerLabel={playerLabel} />
         <div className="live-xp__group live-xp__group--xi" role="row">Starting XI</div>
         {startersSorted.map((r) => (
           <LiveExpandedTableRow
@@ -425,6 +434,7 @@ export function LiveExpandedFixture({
           squad={activeSquad}
           onOpenPlayer={onPick ? (r) => onPick(r, activeSquad) : undefined}
           autosubInIds={activeAutoIn}
+          playerLabel={activeTab === 'home' ? homeName : awayName}
         />
       </div>
     );

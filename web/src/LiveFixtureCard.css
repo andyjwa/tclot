@@ -28,7 +28,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  top: max(8px, env(safe-area-inset-top, 8px));
+  top: 6px;
   display: flex;
   flex-direction: column;
   background: var(--fm-bg);
@@ -50,7 +50,9 @@
   flex: none;
   display: flex;
   justify-content: center;
-  padding: 6px 0 3px;
+  /* Top padding spans the safe-area inset so the purple grip background
+     fills the status-bar / notch area and the handle sits below it. */
+  padding: calc(env(safe-area-inset-top, 8px) + 6px) 0 3px;
   background: var(--lfc-header);
 }
 .lfc-grip i {
@@ -62,7 +64,7 @@
 
 .lfc-close {
   position: absolute;
-  top: 7px;
+  top: calc(env(safe-area-inset-top, 8px) + 7px);
   right: 10px;
   z-index: 6;
   border: 0;
@@ -161,11 +163,11 @@
 }
 /* Smaller, app-style badge inside the scorehead (TeamAvatar lg is 64px). */
 .lfc-team__badge .team-avatar-frame--lg {
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
 }
 .lfc-team.is-sel .lfc-team__badge {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.92), 0 4px 14px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   transform: translateY(-1px);
 }
 .lfc-team__name {
