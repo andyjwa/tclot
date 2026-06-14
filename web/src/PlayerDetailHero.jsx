@@ -164,7 +164,6 @@ function PlayerDetailHeroPortrait({
   el,
   team,
   ownerLabel,
-  xiKind,
   logoMap,
   kitIndexByEntry,
 }) {
@@ -172,11 +171,13 @@ function PlayerDetailHeroPortrait({
   const posLabel = POS_LABEL[el?.element_type] ?? '?'
   const webName = fplElementWebName(el, el?.id)
   const fullName = fplElementFullName(el, el?.id)
-  const xiSuffix = xiClassSuffix(xiKind)
   const ownerLeagueEntryId = ownerLabel?.leagueEntryId ?? null
   const ownerName = ownerLabel?.name ?? null
   return (
     <div className="pdetail-p__chrome">
+      {/* Club crest top-left; the fantasy owner badge now sits inline in the
+          meta row (no separate "On {owner}" strip, no XI/BN/OUT status pill) —
+          matching the mobile fixture card design. */}
       <div className="pdetail-p__hero">
         <span className="pdetail-p__hero-crest" aria-hidden>
           <CrestImg
@@ -190,34 +191,27 @@ function PlayerDetailHeroPortrait({
           <div className="pdetail-p__hero-meta">
             <span className="pdetail-p__hero-pos">{posLabel}</span>
             {team?.name ? <span>{team.name}</span> : null}
+            {ownerName ? (
+              <span className="pdetail-p__hero-fant">
+                <span className="pdetail-p__owner-crest" aria-hidden>
+                  <TeamAvatar
+                    entryId={ownerLeagueEntryId}
+                    name={ownerName}
+                    size="sm"
+                    logoMap={logoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </span>
+                <span className="pdetail-p__owner-name">{ownerName}</span>
+              </span>
+            ) : (
+              <span className="pdetail-p__hero-fant">
+                <span className="pdetail-p__owner-free-dot" aria-hidden />
+                <span>Free agent</span>
+              </span>
+            )}
           </div>
         </div>
-        <span className={`pdetail-p__hero-xi pdetail-xi--${xiSuffix}`}>
-          {statusPillText(xiKind, true)}
-        </span>
-      </div>
-
-      <div className="pdetail-p__owner">
-        {ownerName ? (
-          <>
-            <span>On</span>
-            <span className="pdetail-p__owner-crest" aria-hidden>
-              <TeamAvatar
-                entryId={ownerLeagueEntryId}
-                name={ownerName}
-                size="sm"
-                logoMap={logoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            </span>
-            <span className="pdetail-p__owner-name">{ownerName}</span>
-          </>
-        ) : (
-          <>
-            <span className="pdetail-p__owner-free-dot" aria-hidden />
-            <span>Free agent</span>
-          </>
-        )}
       </div>
     </div>
   )

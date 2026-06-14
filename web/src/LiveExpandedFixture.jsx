@@ -336,6 +336,11 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
  * expanded body carries the matchup + status, and clicking it toggles
  * the collapse — so no in-body sticky header / back-chevron is needed.
  *
+ * The mobile team selector can be driven externally (e.g. the live
+ * fixture card's scorehead badges) by passing `selectedSide` +
+ * `onSelectSide`, and the internal tab bar can be hidden with
+ * `showTabs={false}`.
+ *
  * @param {{
  *   homeSquad: object,
  *   awaySquad: object,
@@ -343,6 +348,9 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
  *   awayName: string,
  *   viewport?: 'desktop' | 'mobile',
  *   onOpenPlayer?: (row: object, squad: object) => void,
+ *   selectedSide?: 'home' | 'away',
+ *   onSelectSide?: (side: 'home' | 'away') => void,
+ *   showTabs?: boolean,
  * }} props
  */
 export function LiveExpandedFixture({
@@ -352,6 +360,9 @@ export function LiveExpandedFixture({
   awayName,
   viewport = 'desktop',
   onOpenPlayer,
+  selectedSide,
+  onSelectSide,
+  showTabs = true,
 }) {
   const homeAutoSubs = pickAutoSubs(homeSquad);
   const awayAutoSubs = pickAutoSubs(awaySquad);
@@ -374,36 +385,42 @@ export function LiveExpandedFixture({
     : undefined;
 
   if (viewport === 'mobile') {
-    const activeSquad = tab === 'home' ? homeSquad : awaySquad;
-    const activeAutoIn = tab === 'home' ? homeAutoIn : awayAutoIn;
+    // Controlled (scorehead-driven) selection when `selectedSide` is passed,
+    // otherwise fall back to the internal tab state.
+    const activeTab = selectedSide ?? tab;
+    const selectSide = onSelectSide ?? setTab;
+    const activeSquad = activeTab === 'home' ? homeSquad : awaySquad;
+    const activeAutoIn = activeTab === 'home' ? homeAutoIn : awayAutoIn;
     return (
       <div className="live-xp live-xp--mobile">
-        <div className="live-xp__tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'home'}
-            className={'live-xp__tab' + (tab === 'home' ? ' is-active' : '')}
-            onClick={() => setTab('home')}
-          >
-            <span className="live-xp__tab-name">{homeName}</span>
-            <span className="live-xp__tab-pts tabular">
-              {homeTotal != null ? `${homeTotal} pts` : '—'}
-            </span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'away'}
-            className={'live-xp__tab' + (tab === 'away' ? ' is-active' : '')}
-            onClick={() => setTab('away')}
-          >
-            <span className="live-xp__tab-name">{awayName}</span>
-            <span className="live-xp__tab-pts tabular">
-              {awayTotal != null ? `${awayTotal} pts` : '—'}
-            </span>
-          </button>
-        </div>
+        {showTabs ? (
+          <div className="live-xp__tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'home'}
+              className={'live-xp__tab' + (activeTab === 'home' ? ' is-active' : '')}
+              onClick={() => selectSide('home')}
+            >
+              <span className="live-xp__tab-name">{homeName}</span>
+              <span className="live-xp__tab-pts tabular">
+                {homeTotal != null ? `${homeTotal} pts` : '—'}
+              </span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'away'}
+              className={'live-xp__tab' + (activeTab === 'away' ? ' is-active' : '')}
+              onClick={() => selectSide('away')}
+            >
+              <span className="live-xp__tab-name">{awayName}</span>
+              <span className="live-xp__tab-pts tabular">
+                {awayTotal != null ? `${awayTotal} pts` : '—'}
+              </span>
+            </button>
+          </div>
+        ) : null}
         <LiveExpandedTeamTable
           squad={activeSquad}
           onOpenPlayer={onPick ? (r) => onPick(r, activeSquad) : undefined}

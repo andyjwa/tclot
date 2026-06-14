@@ -202,6 +202,9 @@ export function mapPickRows(
     const mins = st.minutes ?? 0;
     const goalsScored = Number(st.goals_scored) || 0;
     const assists = Number(st.assists) || 0;
+    const cleanSheets = Number(st.clean_sheets) || 0;
+    const yellowCards = Number(st.yellow_cards) || 0;
+    const redCards = Number(st.red_cards) || 0;
     const pts = st.total_points ?? 0;
     const bps = st.bps ?? 0;
     const bonusApi = st.bonus ?? 0;
@@ -262,6 +265,9 @@ export function mapPickRows(
       minutes: mins,
       goalsScored,
       assists,
+      cleanSheets,
+      yellowCards,
+      redCards,
       total_points: pts,
       bps,
       bonusApi,

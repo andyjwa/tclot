@@ -1577,7 +1577,7 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 
 .pdetail-p__hero {
   display: grid;
-  grid-template-columns: 56px 1fr auto;
+  grid-template-columns: 56px 1fr;
   align-items: center;
   gap: 12px;
   padding: 14px 12px;
@@ -1627,11 +1627,19 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   text-overflow: ellipsis;
 }
 .pdetail-p__hero-meta {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   font-size: 11px;
   color: var(--text-muted);
+}
+/* Fantasy owner badge inlined into the meta row (replaces the old
+   "On {owner}" strip + the XI/BN/OUT status pill). */
+.pdetail-p__hero-fant {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .pdetail-p__hero-pos {
   display: inline-flex;

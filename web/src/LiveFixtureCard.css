@@ -1,0 +1,377 @@
+/* Mobile live fixture card deck — Apple-Sports-style swipeable sheet.
+   Themed via the shared .fotmob tokens (light/dark aware); the header keeps
+   a restrained brand-violet wash (Style D · Brand accent). */
+
+.lfc-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10000; /* below PlayerDetailOverlay (10050) */
+  --lfc-header: linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%);
+}
+
+.lfc-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+.lfc-root.is-open .lfc-scrim {
+  opacity: 1;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.lfc-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 96%;
+  display: flex;
+  flex-direction: column;
+  background: var(--fm-bg);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  transform: translateY(100%);
+  transition: transform 0.42s cubic-bezier(0.22, 0.9, 0.28, 1);
+  will-change: transform;
+}
+.lfc-root.is-open .lfc-sheet {
+  transform: translateY(0);
+}
+.lfc-sheet.is-dragging {
+  transition: none;
+}
+
+.lfc-grip {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding: 9px 0 4px;
+  background: var(--lfc-header);
+}
+.lfc-grip i {
+  width: 38px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.lfc-close {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  z-index: 6;
+  border: 0;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.lfc-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.lfc-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+.lfc-deck {
+  display: flex;
+  height: 100%;
+  transition: transform 0.38s cubic-bezier(0.3, 0.9, 0.3, 1);
+  will-change: transform;
+}
+.lfc-deck.is-dragging {
+  transition: none;
+}
+.lfc-page {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lfc-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ---- Header (violet wash) ---- */
+.lfc-card__top {
+  flex: none;
+  background: var(--lfc-header);
+  color: #fff;
+  padding-bottom: 6px;
+}
+.lfc-comp {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+  padding: 4px 0 8px;
+}
+
+.lfc-scorehead {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 8px;
+  padding: 0 16px 4px;
+}
+.lfc-team {
+  border: 0;
+  background: none;
+  font: inherit;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+.lfc-team__score {
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 0.95;
+}
+.lfc-team__badge {
+  display: inline-flex;
+  border-radius: 50%;
+  margin-top: 2px;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.lfc-team.is-sel .lfc-team__badge {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.92), 0 4px 14px rgba(0, 0, 0, 0.32);
+  transform: translateY(-1px);
+}
+.lfc-team__name {
+  position: relative;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-team__name::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -5px;
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.lfc-team.is-sel .lfc-team__name::after {
+  opacity: 1;
+}
+.lfc-team__sub {
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, 0.82);
+  min-height: 12px;
+}
+.lfc-team__sub--live {
+  color: #ffd27a;
+  font-weight: 800;
+}
+
+.lfc-mid {
+  text-align: center;
+  min-width: 54px;
+  padding-top: 14px;
+  color: #fff;
+}
+.lfc-mid__main {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+}
+.lfc-mid__main--live {
+  color: #ffd27a;
+}
+.lfc-mid__sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+}
+.lfc-mid__sub--live {
+  color: #ffd27a;
+}
+
+.lfc-tabs {
+  display: flex;
+  gap: 16px;
+  padding: 8px 20px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.lfc-tabs::-webkit-scrollbar {
+  display: none;
+}
+.lfc-tab {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 4px 0 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.lfc-tab.is-active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+/* ---- Scrollable pane ---- */
+.lfc-card__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 12px 76px;
+  background: var(--fm-bg);
+  color: var(--fm-text);
+}
+
+/* ---- Key Stats / H2H blocks ---- */
+.lfc-block {
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.lfc-block__h {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--fm-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.lfc-h2h__meta,
+.lfc-h2h__empty {
+  text-align: center;
+  font-size: 12px;
+  color: var(--fm-muted);
+  margin: 0 0 14px;
+}
+
+.lfc-cmp {
+  margin-bottom: 13px;
+}
+.lfc-cmp:last-child {
+  margin-bottom: 2px;
+}
+.lfc-cmp__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.lfc-cmp__val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--tclot-logo-purple);
+  min-width: 28px;
+}
+.lfc-cmp__head .lfc-cmp__val:last-child {
+  text-align: right;
+}
+.lfc-cmp__label {
+  font-size: 11px;
+  color: var(--fm-muted);
+  font-weight: 600;
+  text-align: center;
+}
+.lfc-cmp__bars {
+  display: flex;
+  gap: 4px;
+  height: 5px;
+}
+.lfc-cmp__bar {
+  flex: 1;
+  display: flex;
+  background: var(--fm-surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.lfc-cmp__bar--home {
+  justify-content: flex-end;
+}
+.lfc-cmp__bar--away {
+  justify-content: flex-start;
+}
+.lfc-cmp__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--tclot-logo-purple);
+}
+.lfc-cmp__bar--away .lfc-cmp__fill {
+  background: color-mix(in srgb, var(--tclot-logo-purple) 45%, transparent);
+}
+
+/* ---- Dots ---- */
+.lfc-dots {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 16px 0 14px;
+  background: linear-gradient(to top, var(--fm-bg), transparent);
+  pointer-events: auto;
+}
+.lfc-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fm-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lfc-dot.is-on {
+  width: 18px;
+  border-radius: 3px;
+  background: var(--fm-text-strong);
+}
+
+/* Lineup pane reuses LiveExpandedFixture (.live-xp) styling from App.css;
+   no team tabs are rendered here (showTabs=false), so trim its top gap. */
+.lfc-card__scroll .live-xp--mobile {
+  margin-top: 2px;
+}
