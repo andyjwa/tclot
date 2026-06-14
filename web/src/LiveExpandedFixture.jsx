@@ -289,7 +289,7 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
     <div className="live-xp__team">
       <div className="live-xp__table" role="table">
         <LiveExpandedTableHead />
-        <div className="live-xp__group" role="row">Starting XI</div>
+        <div className="live-xp__group live-xp__group--xi" role="row">Starting XI</div>
         {startersSorted.map((r) => (
           <LiveExpandedTableRow
             key={`s-${r.element}-${r.pickPosition}`}
@@ -300,7 +300,7 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
         ))}
         {benchSorted.length ? (
           <>
-            <div className="live-xp__group" role="row">Bench</div>
+            <div className="live-xp__group live-xp__group--bench" role="row">Bench</div>
             {benchSorted.map((r) => (
               <LiveExpandedTableRow
                 key={`b-${r.element}-${r.pickPosition}`}
