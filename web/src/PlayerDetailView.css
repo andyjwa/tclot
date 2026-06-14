@@ -1577,16 +1577,16 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 
 .pdetail-p__hero {
   display: grid;
-  grid-template-columns: 56px 1fr;
+  grid-template-columns: 54px 1fr;
   align-items: center;
-  gap: 12px;
-  padding: 14px 12px;
+  gap: 13px;
+  padding: 12px 12px 16px;
   background: linear-gradient(180deg, var(--brand-tint), var(--surface) 80%);
   border-bottom: 1px solid var(--border);
 }
 .pdetail-p__hero-crest {
-  width: 56px;
-  height: 56px;
+  width: 54px;
+  height: 54px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1617,11 +1617,11 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   min-width: 0;
 }
 .pdetail-p__hero-name {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 23px;
+  font-weight: 800;
   color: var(--text-strong);
-  letter-spacing: -0.01em;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1725,25 +1725,48 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   background: var(--surface);
 }
 .pdetail-p__section-h {
-  padding: 12px 12px 6px;
-  font-size: 10px;
-  font-weight: 700;
+  padding: 12px 12px 9px;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
 }
 .pdetail-p__tiles {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 6px;
+  gap: 9px;
   padding: 0 12px 6px;
 }
+/*
+ * Portrait tiles match the locked mockup `.pd-stat`: white surface boxes
+ * with a 14px radius, subtle border + shadow, and the Points value in the
+ * brand violet. The shared base `.pdetail-tile` (and `--brand` modifier)
+ * carry a violet-tinted fill for the desktop stat block, so portrait
+ * resets background/border to the plain surface + border tokens here so
+ * every tile reads as a clean white card (purple lives only on the value).
+ */
 .pdetail-p__tiles .pdetail-tile {
-  padding: 8px 10px;
-  border-radius: var(--pdetail-r-sm);
+  gap: 6px;
+  padding: 12px 10px;
+  border-radius: 14px;
+  border-color: var(--border);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-.pdetail-p__tiles .pdetail-tile__v { font-size: 17px; }
-.pdetail-p__tiles .pdetail-tile__k { font-size: 9px; }
+.pdetail-p__tiles .pdetail-tile--brand {
+  border-color: var(--border);
+  background: var(--surface);
+}
+.pdetail-p__tiles .pdetail-tile__v {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+.pdetail-p__tiles .pdetail-tile__k {
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+}
 .pdetail-p__chart-wrap {
   padding: 6px 12px 12px;
 }
@@ -2206,8 +2229,9 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   gap: 4px;
   padding: 10px 6px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--pdetail-r-md);
+  border-radius: 12px;
   background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   min-width: 0;
   min-height: 96px;
 }
@@ -2328,17 +2352,20 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   grid-template-columns: 1fr;
 }
 .pdetail-n5__empty-card {
-  /* Override card flex flow → centred prose, no crest/dot/GW eyebrow. */
+  /* Override card flex flow → centred prose, no crest/dot/GW eyebrow.
+     Matches the locked mockup `.pd-next` season-complete card: white
+     surface, 14px radius, roomy padding, subtle shadow (inherited). */
   flex-direction: row;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 18px 14px;
+  padding: 24px 18px;
+  border-radius: 14px;
   color: var(--text-muted);
   font-size: var(--pdetail-text-sm);
-  line-height: 1.4;
+  line-height: 1.5;
   min-height: 96px;
-  background: color-mix(in srgb, var(--surface-2) 60%, var(--surface));
+  background: var(--surface);
 }
 @media (max-width: 600px) {
   .pdetail-n5__empty-card { min-height: 80px; padding: 14px 12px; }
@@ -2347,11 +2374,16 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 /* Portrait: keep 5-column grid but tighten paddings. Mobile sheets are
    ~360-420 wide → 5 × 56-72 px cards fit cleanly. */
 @media (max-width: 600px) {
-  .pdetail-l5 { gap: 6px; }
-  .pdetail-l5__card { padding: 8px 3px 10px; gap: 3px; min-height: 86px; }
+  /* Phone portrait — match the locked mockup `.pd-gw` mini-card scale:
+     ~15px brand-violet points, 11px opponent code, small uppercase GW
+     eyebrow + DNP pill. */
+  .pdetail-l5 { gap: 7px; }
+  .pdetail-l5__card { padding: 9px 4px 10px; gap: 3px; min-height: 86px; }
   .pdetail-l5__crest, .pdetail-l5__crest-fallback { width: 24px; height: 24px; }
-  .pdetail-l5__pts { font-size: 18px; }
-  .pdetail-l5__opp { font-size: 10px; }
+  .pdetail-l5__gw { font-size: 8.5px; }
+  .pdetail-l5__pts { font-size: 15px; }
+  .pdetail-l5__opp { font-size: 11px; }
+  .pdetail-l5__dnp { font-size: 8.5px; }
   .pdetail-n5__spacer { height: 18px; }
 }
 
