@@ -139,6 +139,7 @@ export function LiveFixtureCard({ fixture, ctx }) {
             selectedSide={side}
             onSelectSide={setSide}
             showTabs={false}
+            showAutosubs={false}
             onOpenPlayer={ctx.onOpenPlayer}
           />
         ) : null}
