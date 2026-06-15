@@ -40,6 +40,16 @@
   bottom: 0;
   top: 0;
   height: 100%;
+  /* Clamp the content stack to the *visible* (dynamic) viewport. The root is
+     `inset: 0` (layout viewport) to cover the page behind, but on iOS the
+     layout viewport is taller than the visible area: iOS Chrome's persistent
+     bottom toolbar would otherwise clip the last bench row, and because the
+     too-tall column reports no overflow the inner pane can't scroll. Clamping
+     here bounds the flex column to what's actually visible so
+     `.lfc-card__scroll` overflows and scrolls correctly in both Chrome and
+     Safari; the solid-bg root still covers any area below the clamp. */
+  max-height: 100svh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--fm-bg);
