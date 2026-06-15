@@ -3031,13 +3031,8 @@ function App() {
                   <>
                   <section
                     className="tile tile--standings tile--standings-c"
-                    aria-labelledby="standings-heading"
+                    aria-label="Standings"
                   >
-                <div className="tile-head-row tile-head-row--tight">
-                  <h2 id="standings-heading" className="tile-title tile-title--sm">
-                    Standings
-                  </h2>
-                </div>
                 {leaderStandingsRow && (() => {
                   const leader = leaderStandingsRow
                   const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
