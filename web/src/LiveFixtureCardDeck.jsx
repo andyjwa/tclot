@@ -81,13 +81,37 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     onClose?.();
   }, [onClose]);
 
-  // Body scroll lock while open.
+  // Body scroll lock while open. `overflow: hidden` alone does NOT stop iOS
+  // Safari from scrolling/rubber-banding the page behind a fixed overlay,
+  // which let the previous page peek through the bottom strip. Pin the body
+  // with `position: fixed` (offsetting the saved scroll position) so the page
+  // physically can't move, then restore the scroll position on close.
   useEffect(() => {
     if (!mounted) return undefined;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const { body } = document;
+    const scrollY = window.scrollY;
+    const prev = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+    };
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
     return () => {
-      document.body.style.overflow = prev;
+      body.style.overflow = prev.overflow;
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.left = prev.left;
+      body.style.right = prev.right;
+      body.style.width = prev.width;
+      window.scrollTo(0, scrollY);
     };
   }, [mounted]);
 
@@ -177,9 +201,17 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         sheet.classList.remove('is-dragging');
         if (scrim) scrim.style.opacity = '';
         if (dy > TH_CLOSE) {
+          // Finish the swipe-down off-screen. The inline transform set during
+          // the drag overrides the class-based rules, so we must animate it to
+          // translateY(100%) here — otherwise removing `is-open` on close can't
+          // move the sheet and it stays frozen at the release position.
+          sheet.style.transform = 'translateY(100%)';
           requestClose();
         } else {
-          sheet.style.transform = 'translateY(0)';
+          // Spring back: clear the inline transform so the `is-open` class
+          // rule (translateY(0)) drives the snap-back and no inline override
+          // lingers to block a later close animation.
+          sheet.style.transform = '';
         }
       }
       axis = null;
