@@ -4,6 +4,13 @@
  * bar metrics between the two managers. Kept framework-free and pure so
  * they can be unit-tested without React.
  */
+import { dcThresholdReached } from './liveScoresDerivations.js';
+
+/** True for the goalkeeper position singular (`'GK'` / `'GKP'`). */
+function isGkPos(pos) {
+  const p = String(pos ?? '').toUpperCase();
+  return p === 'GK' || p === 'GKP';
+}
 
 /**
  * Effective starters (post-autosub when the display lineup is complete),
@@ -26,7 +33,7 @@ const num = (v) => Number(v) || 0;
 /**
  * Aggregate one team's effective XI into the Key Stats totals.
  * @param {object} squad
- * @returns {{ players60: number, goals: number, assists: number, defcon: number, cleanSheets: number, yellow: number, red: number }}
+ * @returns {{ players60: number, goals: number, assists: number, defcon: number, defconPoints: number, cleanSheets: number, saves: number, yellow: number, red: number }}
  */
 export function teamKeyStatTotals(squad) {
   const xi = effectiveStartersForCard(squad);
@@ -35,7 +42,9 @@ export function teamKeyStatTotals(squad) {
     goals: 0,
     assists: 0,
     defcon: 0,
+    defconPoints: 0,
     cleanSheets: 0,
+    saves: 0,
     yellow: 0,
     red: 0,
   };
@@ -44,7 +53,12 @@ export function teamKeyStatTotals(squad) {
     totals.goals += num(r.goalsScored);
     totals.assists += num(r.assists);
     totals.defcon += num(r.dcCount);
+    // 2 FPL points per player who hit the defensive-contribution threshold.
+    if (dcThresholdReached(r.posSingular, r.dcCount)) totals.defconPoints += 2;
     totals.cleanSheets += num(r.cleanSheets);
+    // Saves only count for the starting goalkeeper (the only position that
+    // earns save points).
+    if (isGkPos(r.posSingular)) totals.saves += num(r.saves);
     totals.yellow += num(r.yellowCards);
     totals.red += num(r.redCards);
   }
@@ -53,7 +67,9 @@ export function teamKeyStatTotals(squad) {
 
 /**
  * Key Stats rows for the card, in the user-specified order:
- * Players 60+, Goals, Assists, Def Con, Clean Sheets, Yellow Cards, Red Cards.
+ * Players 60+, Goals, Assists, Def Con, Def Con Points, Clean Sheets, Saves,
+ * Yellow Cards, Red Cards. "Def Con Points" is 2 pts per XI player who hit the
+ * defensive-contribution threshold; "Saves" counts the starting GK only.
  * @returns {Array<{ key: string, label: string, home: number, away: number }>}
  */
 export function keyStatRows(homeSquad, awaySquad) {
@@ -64,7 +80,9 @@ export function keyStatRows(homeSquad, awaySquad) {
     { key: 'goals', label: 'Goals', home: h.goals, away: a.goals },
     { key: 'assists', label: 'Assists', home: h.assists, away: a.assists },
     { key: 'defcon', label: 'Def Con', home: h.defcon, away: a.defcon },
+    { key: 'defconPoints', label: 'Def Con Points', home: h.defconPoints, away: a.defconPoints },
     { key: 'cleanSheets', label: 'Clean Sheets', home: h.cleanSheets, away: a.cleanSheets },
+    { key: 'saves', label: 'Saves', home: h.saves, away: a.saves },
     { key: 'yellow', label: 'Yellow Cards', home: h.yellow, away: a.yellow },
     { key: 'red', label: 'Red Cards', home: h.red, away: a.red },
   ];

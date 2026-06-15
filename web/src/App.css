@@ -1171,6 +1171,54 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
+@media (max-width: 720px) {
+  /* —— Underline tab bar (mobile) — mockup "Option 2" ——
+   * The segmented capsule becomes flat text tabs with a purple underline
+   * under the active tab. Applied to every sub-nav tablist (FPL Live, Moves,
+   * Standings, sub-views, Heritage) for one consistent, lightweight menu.
+   * The :not() guards skip the two inline toggles that sit beside a title
+   * (CofC Live/Algorithm) or inside the league-info modal, which must stay
+   * compact capsules. The sticky full-bleed "track" (page bg + bottom
+   * hairline that the underline rests on) is set on each tablist's wrapper —
+   * see the "Sub-nav tab tracks" block later in this file. */
+  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) {
+    display: inline-flex;
+    width: auto;
+    min-width: 100%;
+    gap: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
+  }
+  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) .subnav__tab {
+    flex: 0 0 auto;
+    position: relative;
+    min-height: 0;
+    padding: 13px 14px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: none;
+    border-radius: 0;
+  }
+  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) .subnav__tab--active {
+    background: none;
+    box-shadow: none;
+    color: var(--text-strong);
+  }
+  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) .subnav__tab--active::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: var(--tclot-logo-purple);
+  }
+}
+
 /* Pulsing-dot prefix on the Live GW tab — same green dot as the main nav,
  * scaled to ~12px to fit the smaller sub-nav hierarchy. Pulse animation
  * piggy-backs on `dashboard-nav-icon-pulse` (defined above). */
@@ -1934,6 +1982,24 @@
 .draft-board-tile__title {
   margin: 0;
   flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  /* The sticky underline tab already labels this view "Draft", so the
+   * redundant in-card heading is hidden on mobile. Kept in the DOM
+   * (visually-hidden, not display:none) so the section's
+   * aria-labelledby="draft-board-heading" still resolves for screen readers. */
+  .draft-board-tile__title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 .draft-board-filter-scroll {
@@ -4291,6 +4357,18 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   border: 1px solid var(--fm-border);
   border-radius: 12px;
   overflow: hidden;
+}
+
+/* Mobile full-bleed: each trade becomes an edge-to-edge band. The
+   GW header inside still delineates trades; the page-bg gap between
+   them keeps them separated in both themes. */
+@media (max-width: 720px) {
+  .trade2 {
+    margin-inline: -16px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
 }
 .trade2__head {
   display: flex;
@@ -8775,6 +8853,13 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
    * a single purple gradient band with light text. Desktop keeps the
    * original transparent header / surface-2 status strip / muted text. */
   .tile.tile--brand-header {
+    /* Full-bleed era: bleed the purple band to all three top edges so it
+     * frames the screen like the edge-to-edge content below, instead of
+     * floating inside the page's 16px side gutter + 20px top padding.
+     * -20px top cancels `.app.fotmob` padding-top; -16px sides cancel the
+     * page gutter (same offset the content bands use). Desktop (>720px)
+     * keeps the original inset header untouched. */
+    margin: -20px -16px 0;
     background: var(--brand-grad);
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
     color: #ffffff;
@@ -8933,6 +9018,47 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   border-radius: 12px;
   padding: 16px 18px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* ============================================================
+   Mobile full-bleed sections (≤720px).
+   Flatten the floating .tile cards into edge-to-edge bands:
+   drop the side gutter (margin-inline:-16px cancels the page's
+   16px horizontal padding), the corner radius, the side borders
+   and the drop shadow. Each band keeps a top + bottom hairline
+   and the inter-tile page-bg gap, so sections stay grouped in
+   BOTH themes (dark cards #1e1e1e on #121212 still separate via
+   the gap + hairline — flattening to a single slab would merge
+   them). Inner padding is untouched, so text keeps its ~16px
+   reading inset and never touches the glass.
+
+   This generalises the pre-existing full-bleed treatment already
+   used by .heritage-trophy-room and .merged-history-mv--transposed
+   to every section tile, across all tabs. Desktop (>720px) is
+   completely unaffected. box-shadow uses !important to beat the
+   theme-specific shadow rules (.fotmob[data-theme=…] .tile, which
+   carry equal-or-higher specificity).
+   ============================================================ */
+@media (max-width: 720px) {
+  .dashboard-content .tile {
+    margin-inline: -16px;
+    border-radius: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    box-shadow: none !important;
+  }
+
+  /* The brand header is not a real card — it manages its own chrome
+     (purple wash, rounded pill) via .tile--brand-header. Leave it be. */
+  .dashboard-content .tile--brand-header {
+    margin-inline: 0;
+  }
+
+  /* Two-up tile grids collapse to a single column at this width, so the
+     children can safely bleed like every other band (no track to overflow). */
+  .dashboard-content .dashboard-gw-two {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tile-title {
@@ -11676,6 +11802,18 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   padding: var(--space-5, 20px);
 }
 
+/* Mobile full-bleed: the settings group becomes an edge-to-edge band
+   (iOS full-width grouped-list style) with its rows inset by padding. */
+@media (max-width: 720px) {
+  .settings-card {
+    margin-inline: -16px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    padding: 16px;
+  }
+}
+
 .settings-row {
   display: flex;
   align-items: center;
@@ -11811,11 +11949,23 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   border-color: color-mix(in srgb, var(--fm-text) 18%, var(--fm-border));
 }
 @media (max-width: 720px) {
+  /* Full-bleed Scores band: the per-fixture cards collapse into a single
+     continuous list. Adjacent items share the --fm-card background to form
+     one band; a top hairline divides them (skipped on the first row). The
+     row's own 12px/14px padding keeps the content inset from the glass. */
   .live-banner-group__list {
-    gap: 12px;
+    gap: 0;
   }
   .live-banner-group__item {
-    border-radius: 10px;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .live-banner-group__item + .live-banner-group__item {
+    border-top: 1px solid var(--fm-border);
   }
 }
 /* Villain / hero tints layer on top of the base `var(--fm-card)` tile
@@ -14102,6 +14252,18 @@ button.live-xp__player-name:focus-visible {
   overflow: hidden;
 }
 
+/* Mobile full-bleed: each GW result block becomes an edge-to-edge band.
+   The lavender "GW NN" header still delineates groups, and the page-bg
+   gap between groups keeps them grouped in both themes. */
+@media (max-width: 720px) {
+  .standings-schedule__gw-group {
+    margin-inline: -16px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+}
+
 .standings-schedule__gw-band {
   display: flex;
   align-items: baseline;
@@ -14797,7 +14959,11 @@ button.live-xp__player-name:focus-visible {
  * scroll. Desktop (≥768px) is untouched. */
 @media (max-width: 767px) {
   .standings-stats__section {
-    padding: 12px 10px;
+    padding: 12px 16px;
+    margin-inline: -16px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
   }
 
   /* Wins-by-margin / Weeks-at-1st-or-Last tables */
@@ -14957,23 +15123,72 @@ button.live-xp__player-name:focus-visible {
 }
 
 @media (max-width: 720px) {
-  /* `Champion of Champions` is too long to share a 360px row with the other 2 pills
-   * without ellipses, so the strip keeps `overflow-x: auto` and only the strip
-   * scrolls horizontally — the page beneath does not. */
-  .heritage-subnav-strip {
+  /* ============================================================== */
+  /*  Sub-nav tab tracks (mobile) — one consistent, persistent bar  */
+  /* -------------------------------------------------------------- */
+  /*  Every sub-nav tablist (FPL Live, Moves, Standings, sub-views, */
+  /*  Heritage) sits in a sticky, edge-to-edge bar with the page    */
+  /*  background + a bottom hairline that the active-tab underline   */
+  /*  rests on. Normalised here (late in the file so it wins over    */
+  /*  each wrapper's base rule) so they read identically and stay    */
+  /*  pinned to the top of the viewport as the page scrolls.         */
+  /*  The tab/underline visuals live in the "Underline tab bar"      */
+  /*  block earlier in this file.                                    */
+  .standings-subnav-strip,
+  .subview-subnav-strip,
+  .heritage-subnav-strip,
+  .tile--team-selection > .section-chrome--sticky {
+    position: sticky;
+    top: 0;
+    z-index: 31;
+    padding: 0 4px;
+    background: var(--fm-bg);
+    border: 0;
+    border-bottom: 1px solid var(--border);
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: visible;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
-  .heritage-subnav-strip::-webkit-scrollbar { display: none; }
-  .heritage-subnav {
-    flex-wrap: nowrap;
-    max-width: 100%;
+  .standings-subnav-strip::-webkit-scrollbar,
+  .subview-subnav-strip::-webkit-scrollbar,
+  .heritage-subnav-strip::-webkit-scrollbar,
+  .tile--team-selection > .section-chrome--sticky::-webkit-scrollbar {
+    display: none;
   }
-  .heritage-subnav .subnav__tab {
-    padding-inline: 12px;
-    font-size: 12px;
+
+  /* Direct children of dashboard-content bleed to both edges with no
+   * vertical pull (header sits above, content gap handles spacing below). */
+  .standings-subnav-strip,
+  .subview-subnav-strip,
+  .heritage-subnav-strip {
+    margin: 0 -16px;
   }
+
+  /* FPL Live / Moves bar lives inside a card: keep cancelling the card's
+   * top + side padding so the bar sits flush at the card's top edge, and
+   * drop the bottom padding so the underline lands on the hairline. */
+  .tile--team-selection > .section-chrome--sticky {
+    margin: -17px -16px 0;
+    padding-bottom: 0;
+    box-shadow: none;
+  }
+
+  /* Subtle separation shadow once the bar is pinned (always-on but faint). */
+  .fotmob[data-theme='dark'] .standings-subnav-strip,
+  .fotmob[data-theme='dark'] .subview-subnav-strip,
+  .fotmob[data-theme='dark'] .heritage-subnav-strip,
+  .fotmob[data-theme='dark'] .tile--team-selection > .section-chrome--sticky {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+  .fotmob[data-theme='light'] .standings-subnav-strip,
+  .fotmob[data-theme='light'] .subview-subnav-strip,
+  .fotmob[data-theme='light'] .heritage-subnav-strip,
+  .fotmob[data-theme='light'] .tile--team-selection > .section-chrome--sticky {
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+  }
+
+  .heritage-subnav { flex-wrap: nowrap; max-width: 100%; }
 }
 
 /* Manager-initial bubble shared by Historic Standings + CofC + Team History */
@@ -15390,6 +15605,17 @@ button.live-xp__player-name:focus-visible {
     margin-inline: -16px;
     border-radius: 0;
     max-width: none;
+  }
+  /* Other Heritage sections (Historic Standings, Team Journeys, Champion
+     of Champions) bleed to edge-to-edge bands like the rest of the app.
+     Scoped tighter than `.heritage-subview-panel > .tile { margin: 0 }`
+     via the :not() so the negative margin wins. */
+  .heritage-subview-panel > .tile:not(.heritage-trophy-room) {
+    margin-inline: -16px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
   .hof-troom--swipe {
     border-radius: 0;
@@ -16044,6 +16270,24 @@ button.live-xp__player-name:focus-visible {
   background: var(--fm-card);
 }
 
+/* Mobile full-bleed: Team Journeys collapse into one edge-to-edge band
+   with hairline dividers between managers. */
+@media (max-width: 720px) {
+  .merged-history-mv--accordion .merged-history-mv__accordion-list {
+    gap: 0;
+    margin-inline: -16px;
+  }
+  .merged-history-mv--accordion .merged-history-mv__accordion-item {
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    border-radius: 0;
+  }
+  .merged-history-mv--accordion .merged-history-mv__accordion-item:first-child {
+    border-top: 1px solid var(--fm-border);
+  }
+}
+
 .merged-history-mv__accordion-toggle {
   appearance: none;
   background: var(--fm-card);
@@ -16560,6 +16804,23 @@ button.live-xp__player-name:focus-visible {
 }
 
 .heritage-cofc-algo-lb__item { display: block; }
+
+/* Mobile full-bleed: Champion-of-Champions leaderboard collapses into one
+   edge-to-edge band; the per-row border becomes a hairline divider. */
+@media (max-width: 720px) {
+  .heritage-cofc-algo-lb {
+    margin-inline: -16px;
+  }
+  .heritage-cofc-algo-lb__btn {
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    border-radius: 0;
+  }
+  .heritage-cofc-algo-lb__item:first-child .heritage-cofc-algo-lb__btn {
+    border-top: 1px solid var(--fm-border);
+  }
+}
 
 .heritage-cofc-algo-lb__btn {
   appearance: none;

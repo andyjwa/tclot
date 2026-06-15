@@ -49,6 +49,19 @@
   padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px) clamp(28px, 5vw, 48px);
 }
 
+@media (max-width: 720px) {
+  /* Full-bleed on mobile: cancel the dashboard's 16px side gutter so the
+   * parchment backdrop + LotR art reach both screen edges like the rest of
+   * the edge-to-edge mobile app. The width grows by the two 16px gutters it
+   * reclaims so the backdrop fills 0 → 100vw. Inner column stays centred via
+   * its own max-width + the hub's existing padding, so content never touches
+   * the screen edge. Desktop (>720px) keeps the inset hub. */
+  .preseason-hub {
+    width: calc(100% + 32px);
+    margin-inline: -16px;
+  }
+}
+
 /*
  * Inner wrapper — centres content at a comfortable reading width
  * regardless of how wide the dashboard tile gets. The outer hub

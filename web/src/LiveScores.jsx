@@ -1438,9 +1438,15 @@ export function LiveScores({
                     }
                     ariaControls={fixtureBodyId}
                     chevronEnd={
-                      <span className="live-banner-row__chev" aria-hidden="true">
-                        {lineupOpen ? '▾' : '▸'}
-                      </span>
+                      // On mobile the row pops open as a card-deck sheet rather
+                      // than expanding inline below, so the expand/collapse
+                      // chevron is misleading — drop it there. Desktop keeps it
+                      // since the fixture still expands below in place.
+                      mobileNarrowViewport ? null : (
+                        <span className="live-banner-row__chev" aria-hidden="true">
+                          {lineupOpen ? '▾' : '▸'}
+                        </span>
+                      )
                     }
                   />
 

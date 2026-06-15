@@ -258,6 +258,25 @@
   overflow: hidden;
   background: var(--fm-card);
 }
+
+/* Mobile full-bleed: the per-team waiver rows collapse into one
+   edge-to-edge band with hairline dividers (matches the site-wide
+   mobile section treatment). */
+@media (max-width: 720px) {
+  .waivers-glance__list {
+    gap: 0;
+    margin-inline: -16px;
+  }
+  .waivers-glance__item {
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    border-radius: 0;
+  }
+  .waivers-glance__item:first-child {
+    border-top: 1px solid var(--fm-border);
+  }
+}
 .waivers-glance__row {
   display: flex;
   align-items: center;

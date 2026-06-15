@@ -200,10 +200,11 @@ function PlayerDetailHeroPortrait({
           />
         </span>
         <div className="pdetail-p__hero-body">
-          <div className="pdetail-p__hero-name" title={fullName}>{webName}</div>
-          <div className="pdetail-p__hero-meta">
+          <div className="pdetail-p__hero-name-row">
+            <div className="pdetail-p__hero-name" title={fullName}>{webName}</div>
             <span className="pdetail-p__hero-pos">{posLabel}</span>
-            {team?.name ? <span>{team.name}</span> : null}
+          </div>
+          <div className="pdetail-p__hero-meta">
             {ownerName ? (
               <span className="pdetail-p__hero-fant">
                 <span className="pdetail-p__owner-crest" aria-hidden>

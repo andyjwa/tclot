@@ -60,21 +60,46 @@ test('teamKeyStatTotals — empty / error squad yields zeros', () => {
     goals: 0,
     assists: 0,
     defcon: 0,
+    defconPoints: 0,
     cleanSheets: 0,
+    saves: 0,
     yellow: 0,
     red: 0,
   })
   assert.equal(teamKeyStatTotals({ error: 'x', starters: [player({ minutes: 90 })] }).players60, 0)
 })
 
+test('teamKeyStatTotals — Def Con Points (2 per XI player past threshold) + GK-only saves', () => {
+  const squad = {
+    starters: [
+      // DEF threshold is 10 → hit (2 pts)
+      player({ element: 1, posSingular: 'DEF', dcCount: 11 }),
+      // MID threshold is 12 → not hit (10 < 12), no pts
+      player({ element: 2, posSingular: 'MID', dcCount: 10 }),
+      // MID threshold is 12 → hit (2 pts)
+      player({ element: 3, posSingular: 'MID', dcCount: 12 }),
+      // GK: saves count only for the keeper; GK threshold 10 → hit (2 pts)
+      player({ element: 4, posSingular: 'GK', dcCount: 10, saves: 5 }),
+      // Outfield saves must NOT count toward the Saves row
+      player({ element: 5, posSingular: 'FWD', dcCount: 0, saves: 3 }),
+    ],
+    bench: [],
+  }
+  const t = teamKeyStatTotals(squad)
+  assert.equal(t.defconPoints, 6) // DEF + MID + GK each cleared threshold → 3 × 2
+  assert.equal(t.saves, 5) // only the GK's saves
+})
+
 test('keyStatRows — order and labels match the spec', () => {
   const rows = keyStatRows({ starters: [] }, { starters: [] })
   assert.deepEqual(
     rows.map((r) => r.key),
-    ['players60', 'goals', 'assists', 'defcon', 'cleanSheets', 'yellow', 'red'],
+    ['players60', 'goals', 'assists', 'defcon', 'defconPoints', 'cleanSheets', 'saves', 'yellow', 'red'],
   )
   assert.equal(rows[0].label, 'Players 60+')
-  assert.equal(rows[4].label, 'Clean Sheets')
+  assert.equal(rows[4].label, 'Def Con Points')
+  assert.equal(rows[5].label, 'Clean Sheets')
+  assert.equal(rows[6].label, 'Saves')
 })
 
 test('h2hSeasonSummary — wins/draws/points across meetings, excludes 0-0', () => {

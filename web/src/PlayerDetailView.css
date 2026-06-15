@@ -947,6 +947,11 @@
    */
   --brand: var(--tclot-logo-purple, #795bfb);
   --brand-tint: color-mix(in srgb, var(--brand) 14%, transparent);
+  /* Brand gradient — same violet→indigo ramp as the `.fotmob` shell. Must be
+   * redeclared here because the overlay portals outside `.fotmob`, where the
+   * shell's `--brand-grad` is out of scope (its absence is why the purple
+   * hero band rendered as nothing). Shared light/dark, like the shell. */
+  --brand-grad: linear-gradient(135deg, #8a6dff 0%, #6246f0 55%, #4b2dd6 100%);
   --surface: var(--fm-card, #1e1e1e);
   --surface-2: var(--fm-surface-2, #252525);
   --border: var(--fm-border, #2f2f2f);
@@ -1581,8 +1586,62 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   align-items: center;
   gap: 10px;
   padding: 8px 12px 10px;
-  background: linear-gradient(180deg, var(--brand-tint), var(--surface) 80%);
-  border-bottom: 1px solid var(--border);
+  /* Full purple treatment — same brand gradient as the mobile brand header
+   * and the live fixture score cards (not the old faded brand-tint veil).
+   * White / frosted child elements below give the contrast on the band. */
+  background: var(--brand-grad);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  color: #ffffff;
+}
+/* —— On the purple band: white text + frosted controls —— */
+.pdetail-p__hero .pdetail-p__hero-name {
+  color: #ffffff;
+}
+.pdetail-p__hero .pdetail-p__hero-meta {
+  color: rgba(255, 255, 255, 0.82);
+}
+.pdetail-p__hero .pdetail-p__owner-name {
+  color: #ffffff;
+}
+.pdetail-p__hero .pdetail-p__hero-pos {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+}
+.pdetail-p__hero .pdetail-p__owner-crest {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+}
+/* Back chevron reads as a frosted control on the band (the shared
+ * `.pdetail__back` light-surface style is kept for the tablet topbar). */
+.pdetail-p__hero-back.pdetail__back {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+}
+.pdetail-p__hero-back.pdetail__back:hover {
+  background: rgba(255, 255, 255, 0.26);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+/* Fantasy owner chip — small + light. The badge and team name are a
+ * secondary detail next to the player, so shrink the crest and set the
+ * name to a small, regular (non-bold) weight. */
+.pdetail-p__hero-fant .pdetail-p__owner-crest {
+  width: 14px;
+  height: 14px;
+  border-width: 1px;
+}
+.pdetail-p__hero-fant .pdetail-p__owner-crest .team-avatar-frame,
+.pdetail-p__hero-fant .pdetail-p__owner-crest .team-avatar-frame img,
+.pdetail-p__hero-fant .pdetail-p__owner-crest .team-avatar,
+.pdetail-p__hero-fant .pdetail-p__owner-crest .team-shirt {
+  width: 14px;
+  height: 14px;
+}
+.pdetail-p__hero-fant .pdetail-p__owner-name {
+  font-size: 10px;
+  font-weight: 400;
 }
 /* Back chevron folded into the portrait hero row (replaces the standalone
    `pdetail__topbar` for portrait). Reuses the `.pdetail__back` look; the
@@ -1620,6 +1679,14 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   gap: 3px;
   min-width: 0;
 }
+/* Row 1: player name + position pill side by side. The pill is pinned to
+   its natural width so the name takes the remaining space and ellipsizes. */
+.pdetail-p__hero-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
 .pdetail-p__hero-name {
   font-size: 23px;
   font-weight: 800;
@@ -1629,6 +1696,9 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.pdetail-p__hero-name-row .pdetail-p__hero-pos {
+  flex: 0 0 auto;
 }
 .pdetail-p__hero-meta {
   display: flex;

@@ -1349,13 +1349,6 @@ export function PlayersWorkbench({
       <div className="players-bench-chrome section-chrome section-chrome--sticky">
         {portrait ? (
           <>
-            {/* Portrait header — just the "Players" title. */}
-            <div className="players-bench-header">
-              <div className="players-bench-header__titles">
-                <h2 className="players-bench-header__title">Players</h2>
-              </div>
-            </div>
-
             {/* Portrait toolbar — Row 1: search bar + Wire/Owned segmented toggle */}
             <div className="players-bench-search-row players-bench-search-row--portrait">
               {searchField}
