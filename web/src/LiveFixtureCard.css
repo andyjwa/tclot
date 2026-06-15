@@ -5,6 +5,11 @@
 .lfc-root {
   position: fixed;
   inset: 0;
+  /* iOS Safari: `inset: 0` alone tracks the large (toolbar-hidden) viewport,
+     leaving a band of the page visible above the bottom toolbar. Pin the
+     overlay to the dynamic viewport so it always covers the visible area. */
+  height: 100vh;
+  height: 100dvh;
   z-index: 10000; /* below PlayerDetailOverlay (10050) */
   --lfc-header: linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%);
 }
@@ -28,11 +33,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  top: 6px;
+  top: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--fm-bg);
-  border-radius: 18px 18px 0 0;
+  border-radius: 0;
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   transform: translateY(100%);
@@ -177,6 +183,10 @@
   text-align: center;
   line-height: 1.1;
   max-width: 100%;
+  /* Bottom padding keeps the selected-underline (::after) inside the
+     overflow:hidden box so it isn't clipped (it previously sat at
+     bottom:-5px and never rendered). */
+  padding-bottom: 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -186,9 +196,9 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: -5px;
-  width: 22px;
-  height: 3px;
+  bottom: 0;
+  width: 100%;
+  height: 2.5px;
   border-radius: 2px;
   background: #fff;
   opacity: 0;
@@ -264,7 +274,9 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 10px 12px 76px;
+  /* Extra bottom inset keeps the last bench row / auto-subs note clear of the
+     Safari bottom toolbar and the home indicator. */
+  padding: 10px 12px calc(76px + env(safe-area-inset-bottom, 0px));
   background: var(--fm-bg);
   color: var(--fm-text);
 }
