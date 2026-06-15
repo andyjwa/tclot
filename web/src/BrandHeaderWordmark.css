@@ -35,6 +35,15 @@
   outline-offset: 2px;
 }
 
+/* Mobile-only: the brand header becomes a purple band (see App.css
+ * `max-width: 720px` block), so the focus ring switches to white to stay
+ * visible against the gradient. Desktop keeps the brand-purple ring. */
+@media (max-width: 720px) {
+  .brand-header-wordmark:focus-visible {
+    outline-color: rgba(255, 255, 255, 0.9);
+  }
+}
+
 .brand-header-wordmark[aria-expanded='true'] .brand-header-wordmark__chevron {
   transform: rotate(180deg);
 }

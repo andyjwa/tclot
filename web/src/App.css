@@ -232,7 +232,11 @@
  * treatment here in light theme so the brand row gets a subtle
  * "presence" over the gradient (matches the visual character of the
  * approved mockup). The blur is only painted on the brand row itself,
- * not the status strip below (which has its own `--surface-2` bg). */
+ * not the status strip below (which has its own `--surface-2` bg).
+ *
+ * Mobile note: the purple-header treatment (see the `max-width: 720px`
+ * block below) repaints this tile with the brand gradient, so the
+ * frosted-white desktop frost is overridden there. */
 .fotmob[data-theme='light'] .tile.tile--brand-header {
   background: color-mix(in srgb, #ffffff 70%, transparent);
   backdrop-filter: blur(6px);
@@ -8766,6 +8770,24 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 }
 
 @media (max-width: 720px) {
+  /* —— Mobile-only purple header band ——
+   * On narrow screens the whole brand header (row + status strip) becomes
+   * a single purple gradient band with light text. Desktop keeps the
+   * original transparent header / surface-2 status strip / muted text. */
+  .tile.tile--brand-header {
+    background: var(--brand-grad);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+    color: #ffffff;
+  }
+  /* Override the desktop light-theme frosted-white frost so the purple
+   * band shows in light mode too. Matches the desktop rule's specificity
+   * so it reliably wins inside this later-source media query. */
+  .fotmob[data-theme='light'] .tile.tile--brand-header {
+    background: var(--brand-grad);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
   .brand-header__row {
     height: 56px;
     padding: 0 var(--space-3);
@@ -8778,6 +8800,14 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
     height: 30px;
     padding: 0 12px 0 8px;
     gap: 6px;
+    /* Frosted-glass chip so the pill stays distinct on the purple band. */
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.18) inset,
+      0 1px 2px rgba(0, 0, 0, 0.18);
   }
   .brand-header__wordmark {
     font-size: 12px;
@@ -8785,12 +8815,34 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   .brand-header__meta {
     font-size: 10px;
     justify-self: end;
+    color: rgba(255, 255, 255, 0.78);
   }
   .brand-header__crests {
     display: none;
   }
   .brand-header__status-strip {
     padding: var(--space-2) var(--space-3);
+    /* Translucent dark wash + hairline white border over the purple. */
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(0, 0, 0, 0.16);
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .brand-header__status-strong {
+    color: #ffffff;
+  }
+  .brand-header__status-mono {
+    color: #ffffff;
+  }
+
+  /* The top nav row is `display: none` on mobile (see the ≤1080px rule),
+   * so the dashboard grid's 8px row-gap was applied on BOTH sides of that
+   * empty row — leaving a 16px white band between the purple header and
+   * the first content section. Collapse the row-gap on mobile so content
+   * sits flush under the status strip. Column-gap is already 0 and the
+   * spacing between content sections lives inside `.dashboard-content`,
+   * so this only removes the dead space beneath the header band. */
+  .dashboard-layout--with-nav {
+    row-gap: 0;
   }
 }
 
