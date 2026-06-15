@@ -5,11 +5,16 @@
 .lfc-root {
   position: fixed;
   inset: 0;
-  /* iOS Safari: `inset: 0` alone tracks the large (toolbar-hidden) viewport,
-     leaving a band of the page visible above the bottom toolbar. Pin the
-     overlay to the dynamic viewport so it always covers the visible area. */
-  height: 100vh;
-  height: 100dvh;
+  /* iOS Safari: don't cap the height with `100dvh` — a fixed element is
+     positioned in the *layout* viewport (the large, toolbar-hidden one), so a
+     dynamic-viewport height anchored at top:0 ends short of the layout
+     bottom and exposes a strip of the page behind Safari's bottom toolbar.
+     Instead fill via `inset: 0` (top+bottom) like `.player-detail-overlay-shell`,
+     keep `100dvh` only as a floor, and paint a solid root background so no gap
+     can ever show the page through. */
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--fm-bg);
   z-index: 10000; /* below PlayerDetailOverlay (10050) */
   --lfc-header: linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%);
 }
@@ -364,7 +369,9 @@
   display: flex;
   gap: 6px;
   justify-content: center;
-  padding: 16px 0 14px;
+  /* Bottom padding clears the home indicator now that the sheet fills the
+     full layout viewport (reaches behind Safari's bottom toolbar). */
+  padding: 16px 0 calc(14px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(to top, var(--fm-bg), transparent);
   pointer-events: auto;
 }
