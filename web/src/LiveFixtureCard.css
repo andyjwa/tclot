@@ -242,8 +242,8 @@
 
 .lfc-tabs {
   display: flex;
-  gap: 16px;
-  padding: 8px 20px 0;
+  gap: 8px;
+  padding: 6px 14px 2px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -251,20 +251,27 @@
   display: none;
 }
 .lfc-tab {
-  border: 0;
+  border: 1px solid transparent;
   background: none;
   font: inherit;
   font-size: 14px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.78);
-  padding: 4px 0 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
-  border-bottom: 2px solid transparent;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
 }
+/* "Sel 2" glass treatment: frosted pill behind the active tab — mirrors the
+   selected team-name pill in the scorehead, and drops the underline so the
+   header occupies less vertical space. */
 .lfc-tab.is-active {
   color: #fff;
-  border-bottom-color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* ---- Scrollable pane ---- */
@@ -401,4 +408,16 @@
    inline expand keeps both labels. */
 .lfc-card__scroll .live-xp__group--xi {
   display: none;
+}
+
+/* Pin the column header (Player · Pos · Min · DC · G · A · B · Pts) to the
+   top of the scrolling pane so the stat labels stay visible while the rows
+   scroll under it on mobile. `top: 0` pins it flush to the scrollport top
+   once the container's 10px top padding has scrolled away. */
+.lfc-card__scroll .live-xp__thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--fm-surface-2);
+  box-shadow: 0 1px 0 var(--fm-border);
 }
