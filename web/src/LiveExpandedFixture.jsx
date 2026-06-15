@@ -274,7 +274,7 @@ function LiveExpandedTableHead({ playerLabel = 'Player' }) {
  * One team's player table: optional auto-subs note, column header, then
  * STARTING XI rows and BENCH rows sorted by points contributed.
  */
-function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds, playerLabel }) {
+function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds, playerLabel, showAutosubs = true }) {
   // Starting XI is sorted by FPL position (GK → DEF → MID → FWD) so the
   // user can scan "best players at each position" across the two team
   // columns. Bench keeps points-contributed sort — order is independent.
@@ -327,7 +327,7 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds, playerLabel 
        * layout — only the trailing autosub note adds tail height to one
        * column when the other team has no autosubs.
        */}
-      <AutoSubsNote squad={squad} />
+      {showAutosubs ? <AutoSubsNote squad={squad} /> : null}
     </div>
   );
 }
@@ -372,6 +372,7 @@ export function LiveExpandedFixture({
   selectedSide,
   onSelectSide,
   showTabs = true,
+  showAutosubs = true,
 }) {
   const homeAutoSubs = pickAutoSubs(homeSquad);
   const awayAutoSubs = pickAutoSubs(awaySquad);
@@ -435,6 +436,7 @@ export function LiveExpandedFixture({
           onOpenPlayer={onPick ? (r) => onPick(r, activeSquad) : undefined}
           autosubInIds={activeAutoIn}
           playerLabel={activeTab === 'home' ? homeName : awayName}
+          showAutosubs={showAutosubs}
         />
       </div>
     );
@@ -448,6 +450,7 @@ export function LiveExpandedFixture({
             squad={homeSquad}
             onOpenPlayer={onPick ? (r) => onPick(r, homeSquad) : undefined}
             autosubInIds={homeAutoIn}
+            showAutosubs={showAutosubs}
           />
         </section>
         <section className="live-xp__column">
@@ -455,6 +458,7 @@ export function LiveExpandedFixture({
             squad={awaySquad}
             onOpenPlayer={onPick ? (r) => onPick(r, awaySquad) : undefined}
             autosubInIds={awayAutoIn}
+            showAutosubs={showAutosubs}
           />
         </section>
       </div>
