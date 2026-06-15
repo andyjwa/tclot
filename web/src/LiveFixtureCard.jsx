@@ -99,16 +99,13 @@ export function LiveFixtureCard({ fixture, ctx }) {
   return (
     <div className="lfc-card">
       <div className="lfc-card__top">
-        {comp ? <div className="lfc-comp">{comp}</div> : null}
         <div className="lfc-scorehead" role="group" aria-label="Tap a team to view its lineup">
           {teamButton('home')}
           <div className="lfc-mid">
             <span className={'lfc-mid__main' + (live ? ' lfc-mid__main--live' : '')}>
               {live ? '● LIVE' : 'FT'}
             </span>
-            <span className={'lfc-mid__sub' + (live ? ' lfc-mid__sub--live' : '')}>
-              {live ? `${toPlay} to play` : 'All done'}
-            </span>
+            {comp ? <span className="lfc-mid__sub">{comp}</span> : null}
           </div>
           {teamButton('away')}
         </div>

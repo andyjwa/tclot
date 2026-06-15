@@ -73,27 +73,6 @@
   background: rgba(255, 255, 255, 0.55);
 }
 
-.lfc-close {
-  position: absolute;
-  top: calc(env(safe-area-inset-top, 8px) + 7px);
-  right: 10px;
-  z-index: 6;
-  border: 0;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.lfc-close:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
 .lfc-viewport {
   flex: 1;
   position: relative;
@@ -132,20 +111,13 @@
   color: #fff;
   padding-bottom: 6px;
 }
-.lfc-comp {
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.82);
-  padding: 2px 0 5px;
-}
 
 .lfc-scorehead {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: start;
   gap: 8px;
-  padding: 0 16px 2px;
+  padding: 6px 16px 2px;
 }
 .lfc-team {
   border: 0;
@@ -235,9 +207,6 @@
   font-size: 10.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.82);
-}
-.lfc-mid__sub--live {
-  color: #ffd27a;
 }
 
 .lfc-tabs {

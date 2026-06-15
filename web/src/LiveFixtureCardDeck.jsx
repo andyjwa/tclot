@@ -81,6 +81,11 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     onClose?.();
   }, [onClose]);
 
+  // Stable handle to the latest close callback so the popstate effect below can
+  // depend on `mounted` alone (and thus push exactly one history entry per open).
+  const closeRef = useRef(requestClose);
+  closeRef.current = requestClose;
+
   // Body scroll lock while open. `overflow: hidden` alone does NOT stop iOS
   // Safari from scrolling/rubber-banding the page behind a fixed overlay,
   // which let the previous page peek through the bottom strip. Pin the body
@@ -124,6 +129,24 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [mounted, requestClose]);
+
+  // Android system back / browser back closes the sheet instead of navigating
+  // the page away. Push a sentinel history entry when the sheet opens and
+  // intercept the matching `popstate` to close. If the sheet is dismissed any
+  // other way (swipe-down / scrim / Esc), pop the sentinel on cleanup so the
+  // browser history stays balanced.
+  useEffect(() => {
+    if (!mounted) return undefined;
+    window.history.pushState({ lfcSheet: true }, '');
+    const onPop = () => closeRef.current?.();
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      if (window.history.state && window.history.state.lfcSheet) {
+        window.history.back();
+      }
+    };
+  }, [mounted]);
 
   // Keep the deck transform in sync with the resting index (dot clicks,
   // programmatic open, post-swipe settle).
@@ -253,14 +276,6 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         <div className="lfc-grip" aria-hidden="true">
           <i />
         </div>
-        <button
-          type="button"
-          className="lfc-close"
-          onClick={requestClose}
-          aria-label="Close"
-        >
-          ×
-        </button>
         <div className="lfc-viewport">
           <div ref={deckRef} className="lfc-deck">
             {fixtures.map((fx) => (
