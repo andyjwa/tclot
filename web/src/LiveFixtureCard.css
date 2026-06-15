@@ -172,9 +172,9 @@
   width: 40px;
   height: 40px;
 }
+/* "Sel 2" glass treatment: soft white glow on the selected badge. */
 .lfc-team.is-sel .lfc-team__badge {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45), 0 0 16px rgba(255, 255, 255, 0.4);
 }
 .lfc-team__name {
   position: relative;
@@ -183,29 +183,24 @@
   text-align: center;
   line-height: 1.1;
   max-width: 100%;
-  /* Bottom padding keeps the selected-underline (::after) inside the
-     overflow:hidden box so it isn't clipped (it previously sat at
-     bottom:-5px and never rendered). */
-  padding-bottom: 5px;
+  /* Match the selected pill's box metrics (padding + border + radius) so the
+     name never shifts between selected/unselected — only bg/blur/border-color
+     change when selected. */
+  padding: 2px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.lfc-team__name::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  width: 100%;
-  height: 2.5px;
-  border-radius: 2px;
-  background: #fff;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.lfc-team.is-sel .lfc-team__name::after {
-  opacity: 1;
+/* "Sel 2" glass treatment: frosted pill behind the selected team's name. */
+.lfc-team.is-sel .lfc-team__name {
+  background: rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 2px 12px;
 }
 .lfc-team__sub {
   font-size: 9.5px;
