@@ -12148,6 +12148,12 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   letter-spacing: 0.05em;
 }
 .live-banner-row__names {
+  /* Only the team name participates in vertical flow; the "to-play" sub-label
+     is anchored absolutely just beneath it (see `.live-banner-row__to-play`).
+     That keeps the names column the height of the name alone, so the name,
+     crest, and centre score all share a single vertical centre across every
+     row — the sub-label hangs below exactly like the score's caption pill. */
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -12159,7 +12165,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 }
 .live-banner-row__name {
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--fm-text);
   line-height: 1.2;
   overflow: hidden;
@@ -12168,7 +12174,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   max-width: 100%;
 }
 .live-banner-row--compact .live-banner-row__name {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 /* Option D winner indication: brand-violet score, names stay equal weight.
    No tinted background, no underline, no dot — see mockup decision matrix. */
@@ -12240,37 +12246,47 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
    inline green check next to the score (round 3 follow-up: count belongs
    under the team it describes, not bolted onto the score number). */
 .live-banner-row__to-play {
+  position: absolute;
+  top: 100%;
+  left: 0;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 2px;
-  max-width: 100%;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  margin-top: 1px;
+  max-width: none;
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   line-height: 1.2;
   color: var(--fm-muted);
+  opacity: 0.7;
   white-space: nowrap;
 }
 .live-banner-row--compact .live-banner-row__to-play {
-  font-size: 0.66rem;
-  gap: 4px;
+  font-size: 0.55rem;
+  gap: 3px;
+}
+.live-banner-row__names--away .live-banner-row__to-play {
+  left: auto;
+  right: 0;
 }
 .live-banner-row__to-play--done {
-  color: var(--data-positive, #12a15a);
+  /* Keep the marker quiet — the colored status dot carries the "done"
+     signal so the team name stays the dominant element in the row. */
+  color: var(--fm-muted);
 }
 .live-banner-row__to-play-dot {
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--data-warning, #f59e0b);
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--data-warning, #f59e0b) 25%, transparent);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--data-warning, #f59e0b) 22%, transparent);
 }
 .live-banner-row__to-play-dot--done {
   background: var(--data-positive, #12a15a);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--data-positive, #12a15a) 25%, transparent);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--data-positive, #12a15a) 22%, transparent);
   animation: live-banner-to-play-done-pulse 2.4s ease-in-out infinite;
 }
 @keyframes live-banner-to-play-done-pulse {
@@ -13352,7 +13368,12 @@ button.live-xp__player-name:focus-visible {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 10px 12px;
+  /* border-box keeps the 12px side padding inside the declared width so the
+     row can't overflow its container on the right (which previously shoved
+     the "next" chevron hard against the screen edge while the "prev" chevron
+     stayed inset — leaving the two arrows visibly inconsistent). */
+  box-sizing: border-box;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border);
 }
 
