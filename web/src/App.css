@@ -4342,7 +4342,7 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 }
 
 /* ================================================================== */
-/* Head-to-head trade card (locked-in Option 2) + trade ledger        */
+/* Head-to-head trade card (face-off layout) + trade ledger           */
 /* ================================================================== */
 .trade2 .tabular,
 .trade2-ledger .tabular {
@@ -4398,99 +4398,83 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   white-space: nowrap;
 }
 
-/* split body */
-.trade2__split {
+/* ---- Face-off body (Option 6 — dense results list) ---- */
+/* Team headers: crest + first-word name on each side, big total in the
+   centre. The centre total is the only place that carries the winner
+   colour; the per-swap scores below stay neutral. */
+.trade2__heads {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  /* Grow to fill any extra card height so the result bar always sits at the
-     same y-coordinate across cards in the same row (align-items: stretch). */
-  flex: 1 1 auto;
-}
-.trade2__rule { background: var(--fm-border); }
-.trade2__side {
-  display: flex;
-  flex-direction: column;
-  padding: 14px;
-  min-width: 0;
-}
-
-/* Portrait phones — stack the two sides into full-width bands so team and
-   player names have the whole card width to breathe (the 2-column split
-   left only ~150 px per side at 390 px viewport, which truncated even short
-   names). The 1px vertical rule becomes a 1px horizontal divider. */
-@media (max-width: 600px) {
-  .trade2__split {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1px auto;
-  }
-  .trade2__rule {
-    height: 1px;
-    width: auto;
-  }
-  /* Each band now spans full card width; min-height on .trade2__players was
-     there to align result bars across side-by-side rows — irrelevant when
-     stacked, and it just added empty space. */
-  .trade2__players {
-    min-height: 0;
-  }
-}
-.trade2__team {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  min-width: 0;
-  padding-bottom: 12px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+  padding: 12px 14px 10px;
 }
-.trade2__team .team-avatar-frame { width: 26px; height: 26px; }
-/* Team name — bold, sized to read as the card's headline. */
+.trade2__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.trade2__team--away { flex-direction: row-reverse; }
+.trade2__team .team-avatar-frame { width: 24px; height: 24px; flex-shrink: 0; }
+/* Team name — uppercase headline, trimmed to its first word in the markup. */
 .trade2__team-name {
   min-width: 0;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--fm-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Side total — same weight + colour as the team name so they read as a pair. */
+/* Centre total — winner number in brand purple. */
 .trade2__total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--fm-text-strong);
+  white-space: nowrap;
 }
+.trade2__total-num { color: color-mix(in srgb, var(--fm-text-strong) 88%, transparent); }
+.trade2__total-num.is-win { color: var(--brand); }
+.trade2__total-sep { font-weight: 500; color: var(--fm-muted); }
 
-/* Player rows — badge + name+position inline on row 1; tenure on row 2 under the name.
-   `min-height` + `justify-content: center` (plus `flex: 1` on .trade2__split)
-   locks every tile's bar to the same y-coordinate. The min-height is set above
-   the natural 2-player content height so 1-player tiles match 2-player tiles
-   across rows, and `flex: 1` makes any extra card height land in the players
-   area inside a row. */
-.trade2__players {
+/* Per-swap rows — one row per traded player: a player on each side of a
+   neutral centre score, with the kept/dropped tenure beneath each name
+   (right-aligned + mirrored on the received side). */
+.trade2__pairs {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1 1 auto;
-  min-height: 100px;
-  justify-content: center;
+  padding: 0 14px 12px;
+}
+.trade2__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.trade2__pair + .trade2__pair {
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 55%, transparent);
 }
 .trade2__pl {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  column-gap: 10px;
-  padding: 4px 0;
+  gap: 8px;
+  min-width: 0;
 }
+.trade2__pl--away { flex-direction: row-reverse; }
 .trade2__badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -4500,15 +4484,16 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   background: var(--fm-surface-2);
   border: 1px solid var(--fm-border);
   font-family: 'Geist Mono', monospace;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--fm-muted);
 }
-.trade2__pl-id { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.trade2__pl-name-line { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-/* Player name — still a header but lighter than the team name. */
+.trade2__pl-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.trade2__pl--away .trade2__pl-id { align-items: flex-end; text-align: right; }
+/* Player name — lighter weight so it reads calmer than the team headers. */
 .trade2__pl-name {
   min-width: 0;
+  max-width: 100%;
   font-size: 13px;
   font-weight: 500;
   color: var(--fm-text);
@@ -4519,19 +4504,20 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 }
 .trade2__pl-name:hover .trade2__pl-name-text { text-decoration: underline; }
 .trade2__pl-name-text { color: inherit; }
-.trade2__pos {
+/* Per-swap score — neutral + light; never carries the winner colour. */
+.trade2__pl-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
   flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--fm-muted);
+  white-space: nowrap;
 }
-.trade2__pl-pts {
-  justify-self: end;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--fm-text-strong);
+.trade2__pl-score-sep {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--fm-muted) 55%, transparent);
 }
 
 /* Tenure — single line: status dot + "on squad for X GWs" (kept)
@@ -4560,32 +4546,6 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 @media (max-width: 600px) {
   .trade2__tenure-weeks { display: none; }
 }
-
-/* result bar — purple winner on grey track */
-.trade2__bar {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--fm-border);
-}
-.trade2__bar-track {
-  display: flex;
-  gap: 2px;
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--fm-surface-2);
-}
-.trade2__bar-seg {
-  height: 100%;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--fm-muted) 28%, transparent);
-}
-.trade2__bar-seg.is-win { background: var(--brand); }
-.trade2__bar-legend { display: flex; justify-content: space-between; align-items: baseline; }
-.trade2__bar-pts { font-size: 12px; font-weight: 600; color: var(--fm-muted); }
-.trade2__bar-pts.is-win { color: var(--brand); font-weight: 700; }
 
 /* two columns on wide landscape (matches .trades-list grid) */
 @media (min-width: 1100px) and (orientation: landscape) {

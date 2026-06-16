@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trades — face-off layout options</title>
+<style>
+  :root{
+    --fm-bg:#121212; --fm-card:#1e1e1e; --fm-card-2:#262626; --fm-border:#2f2f2f;
+    --fm-text:rgba(255,255,255,.87); --fm-strong:#fff; --fm-muted:rgba(255,255,255,.55);
+    --purple:#795bfb; --purple-2:#5b21b6;
+    --green:#12a15a; --amber:#f59e0b; --red:#e0492f;
+    --kept:#12a15a; --gone:#8a909a;
+    --grad:linear-gradient(135deg,#8b6dff 0%,#5b21b6 100%);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0a0a0a;color:var(--fm-text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:28px 22px 60px}
+  h1{font-size:22px;margin:0 0 4px;color:#fff;font-weight:800;letter-spacing:-.01em}
+  .lede{color:#9aa0aa;font-size:13px;max-width:820px;margin:0 0 26px;line-height:1.55}
+  .lede b{color:#cdd2db}
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(384px,1fr));gap:26px;align-items:start}
+  .option{min-width:0}
+  .option__hd{margin:0 0 10px}
+  .option__t{font-size:14px;font-weight:700;color:#fff}
+  .option__t span{color:var(--purple);font-variant-numeric:tabular-nums}
+  .option__d{font-size:12px;color:#8a909a;line-height:1.45;margin-top:3px}
+
+  /* —— phone frame —— */
+  .phone{width:100%;max-width:392px;background:var(--fm-bg);border:1px solid #000;border-radius:22px;
+    overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.5)}
+  .phone__hd{background:var(--grad);padding:14px 16px 13px;display:flex;align-items:center;justify-content:space-between}
+  .phone__hd b{color:#fff;font-weight:800;font-size:15px;letter-spacing:.01em}
+  .phone__hd small{color:rgba(255,255,255,.82);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+  .tabs{display:flex;gap:18px;padding:9px 16px 0;border-bottom:1px solid var(--fm-border)}
+  .tabs span{font-size:13px;font-weight:600;color:var(--fm-muted);padding-bottom:9px}
+  .tabs span.on{color:var(--fm-strong);border-bottom:2px solid var(--purple)}
+  .secttl{padding:14px 16px 4px;font-weight:800;font-size:17px;color:#fff}
+
+  /* —— shared bits —— */
+  .bdg{width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+    font:800 9px/1 'Geist Mono',ui-monospace,monospace;color:#fff;letter-spacing:.02em;
+    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.34),transparent 60%),var(--c,#555);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+  .bdg--sm{width:22px;height:22px;font-size:7.5px}
+  .bdg--club{width:20px;height:20px;font-size:7px;border-radius:6px}
+  .nm{font-weight:700;color:var(--fm-strong);font-size:14px;white-space:nowrap}
+  .pos{font:700 9px/1 'Geist Mono',ui-monospace,monospace;color:var(--fm-muted);letter-spacing:.06em;text-transform:uppercase}
+  .ten{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:500;color:var(--fm-muted);white-space:nowrap}
+  .ten .d{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+  .ten.kept .d{background:var(--kept);box-shadow:0 0 0 2px rgba(18,161,90,.22)}
+  .ten.gone .d{background:var(--gone)}
+  .ten.kept{color:#7fd6a6}
+  .pts{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px;color:#cfd2d8}
+  .gwchip{font:800 10px/1 'Geist Mono',ui-monospace,monospace;letter-spacing:.04em;color:var(--fm-muted);
+    background:var(--fm-card-2);border-radius:7px;padding:5px 8px}
+  .date{font:600 11px/1 'Geist Mono',ui-monospace,monospace;color:var(--fm-muted);letter-spacing:.02em}
+
+  /* total score (the face-off number) */
+  .tot{display:inline-flex;align-items:baseline;gap:9px;font-variant-numeric:tabular-nums;font-weight:800}
+  .tot b{font-weight:900;color:#cfd2d8}
+  .tot b.w{color:var(--purple)}
+  .tot i{font-style:normal;color:var(--fm-muted);font-weight:500}
+
+  /* =========================================================
+     OPT 1 · Direct face-off port
+     ========================================================= */
+  .t-face .card{padding:12px 14px 14px}
+  .t-face .card + .card{border-top:1px solid var(--fm-border)}
+  .t-face .meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .t-face .top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:10px}
+  .t-face .team{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-face .team--a{flex-direction:row-reverse}
+  .t-face .tnm{font-weight:800;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .t-face .tot{font-size:24px}
+  .t-face .pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:6px 0}
+  .t-face .pair + .pair{border-top:1px dashed rgba(255,255,255,.07)}
+  .t-face .pl{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-face .pl--a{flex-direction:row-reverse;text-align:right}
+  .t-face .pcol{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .t-face .pl--a .pcol{align-items:flex-end}
+  .t-face .swap{font:800 9px/1 'Geist Mono',monospace;color:#4a505a;letter-spacing:.05em}
+
+  /* =========================================================
+     OPT 2 · Centre scorebug
+     ========================================================= */
+  .t-bug .card{padding:12px 14px 14px}
+  .t-bug .card + .card{border-top:1px solid var(--fm-border)}
+  .t-bug .meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .t-bug .top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:11px}
+  .t-bug .team{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-bug .team--a{flex-direction:row-reverse}
+  .t-bug .tnm{font-weight:800;font-size:13px;color:#fff;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis}
+  .t-bug .bug{background:linear-gradient(180deg,#101316,#0b0d10);border:1px solid #000;border-radius:11px;
+    padding:6px 13px;box-shadow:0 2px 8px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.04)}
+  .t-bug .bug .tot{font-size:21px}
+  .t-bug .pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:6px 0}
+  .t-bug .pair + .pair{border-top:1px dashed rgba(255,255,255,.07)}
+  .t-bug .pl{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-bug .pl--a{flex-direction:row-reverse;text-align:right}
+  .t-bug .pcol{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .t-bug .pl--a .pcol{align-items:flex-end}
+  .t-bug .vs{font:800 9px/1 'Geist Mono',monospace;color:#4a505a}
+
+  /* =========================================================
+     OPT 3 · Per-swap mini face-offs
+     ========================================================= */
+  .t-mini .card{padding:11px 14px 13px}
+  .t-mini .card + .card{border-top:1px solid var(--fm-border)}
+  .t-mini .meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .t-mini .teams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+  .t-mini .team{display:flex;align-items:center;gap:7px;min-width:0}
+  .t-mini .team--a{flex-direction:row-reverse}
+  .t-mini .tnm{font-weight:800;font-size:12px;color:#cdd2db;white-space:nowrap}
+  .t-mini .tbig{font-weight:900;font-size:15px;font-variant-numeric:tabular-nums}
+  .t-mini .tbig.w{color:var(--purple)}
+  .t-mini .swaprow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;
+    background:var(--fm-card);border:1px solid var(--fm-border);border-radius:10px;padding:8px 10px}
+  .t-mini .swaprow + .swaprow{margin-top:6px}
+  .t-mini .pl{display:flex;align-items:center;gap:7px;min-width:0}
+  .t-mini .pl--a{flex-direction:row-reverse;text-align:right}
+  .t-mini .pcol{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .t-mini .pl--a .pcol{align-items:flex-end}
+  .t-mini .mscore{display:inline-flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums;font-weight:800;font-size:16px}
+  .t-mini .mscore b.w{color:var(--purple)}
+  .t-mini .mscore b{color:#cfd2d8}
+  .t-mini .mscore i{font-style:normal;color:#4a505a;font-weight:500;font-size:11px}
+
+  /* =========================================================
+     OPT 4 · Winner split-tint
+     ========================================================= */
+  .t-split .card{padding:12px 14px 14px;position:relative;overflow:hidden}
+  .t-split .card + .card{border-top:1px solid var(--fm-border)}
+  .t-split .card::before,.t-split .card::after{content:"";position:absolute;top:0;bottom:0;width:50%;pointer-events:none;z-index:0}
+  .t-split .card::before{left:0;background:linear-gradient(90deg,var(--lt,transparent),transparent 78%)}
+  .t-split .card::after{right:0;background:linear-gradient(270deg,var(--rt,transparent),transparent 78%)}
+  .t-split .meta,.t-split .top,.t-split .pair{position:relative;z-index:1}
+  .t-split .meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .t-split .top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:10px}
+  .t-split .team{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-split .team--a{flex-direction:row-reverse}
+  .t-split .tnm{font-weight:800;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .t-split .tot{font-size:23px}
+  .t-split .pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:6px 0}
+  .t-split .pair + .pair{border-top:1px dashed rgba(255,255,255,.07)}
+  .t-split .pl{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-split .pl--a{flex-direction:row-reverse;text-align:right}
+  .t-split .pcol{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .t-split .pl--a .pcol{align-items:flex-end}
+  .t-split .swap{font:800 9px/1 'Geist Mono',monospace;color:#4a505a}
+
+  /* =========================================================
+     OPT 5 · Verdict-bar baseline
+     ========================================================= */
+  .t-bar .card{padding:12px 14px 12px}
+  .t-bar .card + .card{border-top:1px solid var(--fm-border)}
+  .t-bar .meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .t-bar .top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:10px}
+  .t-bar .team{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-bar .team--a{flex-direction:row-reverse}
+  .t-bar .tnm{font-weight:800;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .t-bar .tot{font-size:23px}
+  .t-bar .pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:5px 0}
+  .t-bar .pair + .pair{border-top:1px dashed rgba(255,255,255,.07)}
+  .t-bar .pl{display:flex;align-items:center;gap:8px;min-width:0}
+  .t-bar .pl--a{flex-direction:row-reverse;text-align:right}
+  .t-bar .pcol{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .t-bar .pl--a .pcol{align-items:flex-end}
+  .t-bar .swap{font:800 9px/1 'Geist Mono',monospace;color:#4a505a}
+  .t-bar .track{margin-top:10px;height:7px;border-radius:999px;background:var(--fm-card-2);display:flex;overflow:hidden}
+  .t-bar .seg{height:100%}
+  .t-bar .seg.l{background:linear-gradient(90deg,#6f54e6,#8b6dff)}
+  .t-bar .seg.r{background:#3a3f47}
+  .t-bar .seg.l.lose{background:#3a3f47}
+  .t-bar .seg.r.win{background:linear-gradient(90deg,#8b6dff,#6f54e6)}
+  .t-bar .legend{display:flex;justify-content:space-between;margin-top:5px}
+  .t-bar .legend b{font:800 11px/1 'Geist Mono',monospace;color:var(--fm-muted)}
+  .t-bar .legend b.w{color:var(--purple)}
+
+  /* =========================================================
+     OPT 6 · Dense results list
+     ========================================================= */
+  .t-list .card{padding:8px 14px 11px}
+  .t-list .card + .card{border-top:1px solid var(--fm-border)}
+  .t-list .meta{display:flex;align-items:center;justify-content:space-between;padding:4px 0 7px}
+  .t-list .heads{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:0 0 8px}
+  .t-list .team{display:flex;align-items:center;gap:7px;min-width:0}
+  .t-list .team--a{flex-direction:row-reverse}
+  .t-list .tnm{font-weight:800;font-size:13px;color:#cdd2db;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis}
+  .t-list .tot{font-size:18px}
+  .t-list .pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:7px 0}
+  .t-list .pair + .pair{border-top:1px solid rgba(255,255,255,.05)}
+  .t-list .pl{display:flex;align-items:center;gap:7px;min-width:0}
+  .t-list .pl--a{flex-direction:row-reverse}
+  .t-list .pcol{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .t-list .pl--a .pcol{align-items:flex-end}
+  .t-list .nm{font-size:13px;font-weight:600}
+  .t-list .tot b{font-weight:700}
+  .t-list .ps{display:inline-flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums;font-weight:500;font-size:13px}
+  .t-list .ps b{font-weight:500;color:#b6bac2}
+  .t-list .ps i{font-style:normal;color:#4a505a;font-weight:500;font-size:10px}
+</style>
+</head>
+<body>
+  <h1>Trades — 6 face-off layout options</h1>
+  <p class="lede">Reworked around your <b>live-score face-off</b> structure: each team's <b>trade total</b> sits at the top
+  centre (winner in purple), and every player that changed hands sits on its team's side of the centre axis, one
+  row per player so multi-player deals just add rows. Each row keeps the per-player points haul and the
+  <b>kept / dropped</b> tenure tag. Same three real trades shown six ways — a single-player swap (GW 9), and two
+  two-player deals (GW 13, GW 27).</p>
+  <div class="board" id="board"></div>
+
+<script>
+/* ---- real trade data (names resolved from bootstrap_draft) ---- */
+const CLUB={ARS:'#EF0107',LIV:'#C8102E',BRE:'#E30613',MCI:'#6CABDD',AVL:'#670E36',
+  BOU:'#DA291C',MUN:'#DA291C',LEE:'#1d428a',NFO:'#DD0000',CHE:'#034694'};
+
+/* each trade: two sides; each side = team + list of players GAINED (pts + tenure). */
+const TRADES=[
+ {gw:9,date:'Oct 20',
+  off:{team:'Toronto Oizo',abbr:'TOR',col:'#e0a32f',
+    pl:[{n:'Gyökeres',c:'ARS',pos:'FWD',pts:100,kept:true,ten:'on squad · 30 GWs'}]},
+  rec:{team:'Morpeth Jamiroquai',abbr:'MOR',col:'#b9924e',
+    pl:[{n:'Isak',c:'LIV',pos:'FWD',pts:30,kept:false,ten:'GW 9–35'}]}},
+
+ {gw:13,date:'Nov 23',
+  off:{team:'Toronto Oizo',abbr:'TOR',col:'#e0a32f',
+    pl:[{n:'Watkins',c:'AVL',pos:'FWD',pts:125,kept:false,ten:'GW 13–37'},
+        {n:'Kelleher',c:'BRE',pos:'GKP',pts:2,kept:false,ten:'GW 13'}]},
+  rec:{team:'Hackney Meat Loaf',abbr:'HAC',col:'#6b4a2b',
+    pl:[{n:'Donnarumma',c:'MCI',pos:'GKP',pts:103,kept:true,ten:'on squad · 26 GWs'},
+        {n:'Evanilson',c:'BOU',pos:'FWD',pts:64,kept:false,ten:'GW 13–31'}]}},
+
+ {gw:27,date:'Feb 13',
+  off:{team:'Crouch End Oashisu',abbr:'CRO',col:'#3b4250',
+    pl:[{n:'Calvert-Lewin',c:'LEE',pos:'FWD',pts:40,kept:true,ten:'on squad · 12 GWs'},
+        {n:'Dalot',c:'MUN',pos:'DEF',pts:13,kept:false,ten:'GW 27–32'}]},
+  rec:{team:'Hackney Meat Loaf',abbr:'HAC',col:'#6b4a2b',
+    pl:[{n:'Igor Jesus',c:'NFO',pos:'FWD',pts:51,kept:false,ten:'GW 27–36'},
+        {n:'J.Timber',c:'ARS',pos:'DEF',pts:25,kept:false,ten:'GW 27–33'}]}},
+];
+
+const sum=s=>s.pl.reduce((a,p)=>a+p.pts,0);
+const club=(c,cls='bdg bdg--club')=>`<span class="${cls}" style="--c:${CLUB[c]||'#555'}">${c}</span>`;
+const tbdg=(s,cls='bdg')=>`<span class="${cls}" style="--c:${s.col}">${s.abbr}</span>`;
+const ten=p=>`<span class="ten ${p.kept?'kept':'gone'}"><i class="d"></i>${p.ten}</span>`;
+const meta=t=>`<span class="gwchip">GW ${t.gw}</span><span class="date">${t.date}</span>`;
+/* pair up offered[i] vs received[i] */
+const pairs=t=>t.off.pl.map((p,i)=>[p,t.rec.pl[i]]);
+const totline=(t,big)=>{const o=sum(t.off),r=sum(t.rec);
+  return `<span class="tot" style="font-size:${big}px"><b class="${o>=r?'w':''}">${o}</b><i>–</i><b class="${r>o?'w':''}">${r}</b></span>`;};
+
+const R={};
+
+/* OPT 1 — direct face-off port */
+R.face=()=>TRADES.map(t=>{const o=sum(t.off),r=sum(t.rec);return `<div class="card">
+  <div class="meta">${meta(t)}</div>
+  <div class="top">
+    <div class="team">${tbdg(t.off)}<span class="tnm">${t.off.team}</span></div>
+    <span class="tot"><b class="${o>=r?'w':''}">${o}</b><i>–</i><b class="${r>o?'w':''}">${r}</b></span>
+    <div class="team team--a">${tbdg(t.rec)}<span class="tnm">${t.rec.team}</span></div>
+  </div>
+  ${pairs(t).map(([a,b])=>`<div class="pair">
+    <div class="pl">${club(a.c)}<div class="pcol"><span class="nm">${a.n} <span class="pos">${a.pos}</span></span>${ten(a)}</div><span class="pts">${a.pts}</span></div>
+    <span class="swap">⇄</span>
+    <div class="pl pl--a">${club(b.c)}<div class="pcol"><span class="nm"><span class="pos">${b.pos}</span> ${b.n}</span>${ten(b)}</div><span class="pts">${b.pts}</span></div>
+  </div>`).join('')}
+</div>`;}).join('');
+
+/* OPT 2 — centre scorebug */
+R.bug=()=>TRADES.map(t=>{const o=sum(t.off),r=sum(t.rec);return `<div class="card">
+  <div class="meta">${meta(t)}</div>
+  <div class="top">
+    <div class="team">${tbdg(t.off)}<span class="tnm">${t.off.team}</span></div>
+    <div class="bug"><span class="tot"><b class="${o>=r?'w':''}">${o}</b><i>–</i><b class="${r>o?'w':''}">${r}</b></span></div>
+    <div class="team team--a">${tbdg(t.rec)}<span class="tnm">${t.rec.team}</span></div>
+  </div>
+  ${pairs(t).map(([a,b])=>`<div class="pair">
+    <div class="pl">${club(a.c)}<div class="pcol"><span class="nm">${a.n}</span>${ten(a)}</div><span class="pts">${a.pts}</span></div>
+    <span class="vs">vs</span>
+    <div class="pl pl--a">${club(b.c)}<div class="pcol"><span class="nm">${b.n}</span>${ten(b)}</div><span class="pts">${b.pts}</span></div>
+  </div>`).join('')}
+</div>`;}).join('');
+
+/* OPT 3 — per-swap mini face-offs */
+R.mini=()=>TRADES.map(t=>{const o=sum(t.off),r=sum(t.rec);return `<div class="card">
+  <div class="meta">${meta(t)}</div>
+  <div class="teams">
+    <div class="team">${tbdg(t.off,'bdg bdg--sm')}<span class="tnm">${t.off.team}</span><span class="tbig ${o>=r?'w':''}">${o}</span></div>
+    <div class="team team--a">${tbdg(t.rec,'bdg bdg--sm')}<span class="tnm">${t.rec.team}</span><span class="tbig ${r>o?'w':''}">${r}</span></div>
+  </div>
+  ${pairs(t).map(([a,b])=>`<div class="swaprow">
+    <div class="pl">${club(a.c)}<div class="pcol"><span class="nm">${a.n}</span>${ten(a)}</div></div>
+    <span class="mscore"><b class="${a.pts>=b.pts?'w':''}">${a.pts}</b><i>–</i><b class="${b.pts>a.pts?'w':''}">${b.pts}</b></span>
+    <div class="pl pl--a">${club(b.c)}<div class="pcol"><span class="nm">${b.n}</span>${ten(b)}</div></div>
+  </div>`).join('')}
+</div>`;}).join('');
+
+/* OPT 4 — winner split-tint */
+R.split=()=>TRADES.map(t=>{const o=sum(t.off),r=sum(t.rec);
+  const lt=o>r?'rgba(121,91,251,.20)':'transparent';
+  const rt=r>o?'rgba(121,91,251,.20)':'transparent';
+  return `<div class="card" style="--lt:${lt};--rt:${rt}">
+  <div class="meta">${meta(t)}</div>
+  <div class="top">
+    <div class="team">${tbdg(t.off)}<span class="tnm">${t.off.team}</span></div>
+    <span class="tot"><b class="${o>=r?'w':''}">${o}</b><i>–</i><b class="${r>o?'w':''}">${r}</b></span>
+    <div class="team team--a">${tbdg(t.rec)}<span class="tnm">${t.rec.team}</span></div>
+  </div>
+  ${pairs(t).map(([a,b])=>`<div class="pair">
+    <div class="pl">${club(a.c)}<div class="pcol"><span class="nm">${a.n}</span>${ten(a)}</div><span class="pts">${a.pts}</span></div>
+    <span class="swap">⇄</span>
+    <div class="pl pl--a">${club(b.c)}<div class="pcol"><span class="nm">${b.n}</span>${ten(b)}</div><span class="pts">${b.pts}</span></div>
+  </div>`).join('')}
+</div>`;}).join('');
+
+/* OPT 5 — verdict-bar baseline */
+R.bar=()=>TRADES.map(t=>{const o=sum(t.off),r=sum(t.rec);const tot=Math.max(o+r,1);
+  const ol=Math.round(o/tot*100);return `<div class="card">
+  <div class="meta">${meta(t)}</div>
+  <div class="top">
+    <div class="team">${tbdg(t.off)}<span class="tnm">${t.off.team}</span></div>
+    <span class="tot"><b class="${o>=r?'w':''}">${o}</b><i>–</i><b class="${r>o?'w':''}">${r}</b></span>
+    <div class="team team--a">${tbdg(t.rec)}<span class="tnm">${t.rec.team}</span></div>
+  </div>
+  ${pairs(t).map(([a,b])=>`<div class="pair">
+    <div class="pl">${club(a.c)}<div class="pcol"><span class="nm">${a.n}</span>${ten(a)}</div><span class="pts">${a.pts}</span></div>
+    <span class="swap">⇄</span>
+    <div class="pl pl--a">${club(b.c)}<div class="pcol"><span class="nm">${b.n}</span>${ten(b)}</div><span class="pts">${b.pts}</span></div>
+  </div>`).join('')}
+  <div class="track"><span class="seg l ${o>=r?'':'lose'}" style="width:${ol}%"></span><span class="seg r ${r>o?'win':''}" style="width:${100-ol}%"></span></div>
+</div>`;}).join('');
+
+/* OPT 6 — dense results list */
+const first=s=>s.split(' ')[0];
+R.list=()=>TRADES.map(t=>{const o=sum(t.off),r=sum(t.rec);return `<div class="card">
+  <div class="meta">${meta(t)}</div>
+  <div class="heads">
+    <div class="team">${tbdg(t.off,'bdg bdg--sm')}<span class="tnm">${first(t.off.team)}</span></div>
+    <span class="tot" style="font-size:18px"><b class="${o>=r?'w':''}">${o}</b><i>–</i><b class="${r>o?'w':''}">${r}</b></span>
+    <div class="team team--a">${tbdg(t.rec,'bdg bdg--sm')}<span class="tnm">${first(t.rec.team)}</span></div>
+  </div>
+  ${pairs(t).map(([a,b])=>`<div class="pair">
+    <div class="pl">${club(a.c)}<div class="pcol"><span class="nm">${a.n}</span>${ten(a)}</div></div>
+    <span class="ps"><b>${a.pts}</b><i>–</i><b>${b.pts}</b></span>
+    <div class="pl pl--a">${club(b.c)}<div class="pcol"><span class="nm">${b.n}</span>${ten(b)}</div></div>
+  </div>`).join('')}
+</div>`;}).join('');
+
+const OPTIONS=[
+ ['Option 1 · Direct face-off','t-face','Live-score port','Your live row, 1:1: crest + name each side, the big total–total score centred on top, then one swap row per player (crest, name, position, tenure, points). Winner total in purple.'],
+ ['Option 2 · Centre scorebug','t-bug','Recessed total','Totals drop into a dark inset “bug” so the headline number pops; uppercase team names flank it. Players paired beneath with a quiet vs divider.'],
+ ['Option 3 · Per-swap mini face-offs','t-mini','Each swap scored','Team totals sit inline by the crest; every player swap becomes its own little carded face-off (player – player with the points as the mini score). Great for who-won-each-leg deals.'],
+ ['Option 4 · Winner split-tint','t-split','Colour tells it','Face-off totals up top; the winning team’s half gets a soft purple wash so the verdict reads at a glance without a separate bar.'],
+ ['Option 5 · Verdict-bar baseline','t-bar','Bar along the bottom','Face-off totals + paired players, with the proportional win bar running full-width along the base (purple fills toward the winner) — mirrors your “bars” live variation.'],
+ ['Option 6 · Dense results list','t-list','FotMob FT density','Tightest option: uppercase team headers with totals, then each swap on one line (name · pts–pts · name). Best when the league has lots of trades to scan.'],
+];
+
+const board=document.getElementById('board');
+board.innerHTML=OPTIONS.map(([title,cls,badge,desc])=>`<div class="option">
+  <div class="option__hd">
+    <div class="option__t">${title} <span>· ${badge}</span></div>
+    <div class="option__d">${desc}</div>
+  </div>
+  <div class="phone ${cls}">
+    <div class="phone__hd"><b>TCLOT</b><small>GW 38 · Season complete</small></div>
+    <div class="tabs"><span>Waivers</span><span class="on">Trades</span><span>Draft</span></div>
+    <div class="secttl">Trades</div>
+    ${R[cls.replace('t-','')]()}
+  </div>
+</div>`).join('');
+</script>
+</body>
+</html>

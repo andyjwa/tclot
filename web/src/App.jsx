@@ -1887,9 +1887,6 @@ function FormCircles({ form }) {
   )
 }
 
-/* FPL element_type → position label (GK shows as "GKP"). */
-const TRADE_POS_BY_TYPE = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
-
 /** Club crest badge (not a shirt) for a trade leg, with text fallback. */
 function TradeClubBadge({ player }) {
   const [err, setErr] = useState(false)
@@ -1906,13 +1903,6 @@ function TradeClubBadge({ player }) {
       <img src={url} alt="" loading="lazy" decoding="async" onError={() => setErr(true)} />
     </span>
   )
-}
-
-/** Plain-text position label (muted, no coloured pill). */
-function TradePosText({ typeId }) {
-  const pos = TRADE_POS_BY_TYPE[typeId]
-  if (!pos) return null
-  return <span className="trade2__pos">{pos}</span>
 }
 
 /** Tenure — single line: coloured status dot + either the GW range the
@@ -1950,93 +1940,85 @@ function tradeSumLegs(pairs, side) {
   return (pairs || []).reduce((s, p) => s + (Number(p?.[side]?.totalPoints) || 0), 0)
 }
 
-/** One side (team column) of a head-to-head trade card. */
-function TradeSplitSide({ trade, side, teamLogoMap, kitIndexByEntry }) {
+/** First word of a team name — keeps the face-off headers compact. */
+function tradeTeamFirstWord(name) {
+  const word = (name ?? '').trim().split(/\s+/)[0]
+  return word || name || ''
+}
+
+/** Team header for one side of the face-off (crest + first-word name). */
+function TradeTeamHead({ trade, side, teamLogoMap, kitIndexByEntry }) {
   const isOff = side === 'offered'
   const name = isOff ? trade.offeredTeamName : trade.receivedTeamName
   const entry = isOff
     ? trade.offeredLeagueEntry ?? trade.offeredFplEntry
     : trade.receivedLeagueEntry ?? trade.receivedFplEntry
-  const total = tradeSumLegs(trade.pairs, isOff ? 'offeredLeg' : 'receivedLeg')
-  const legs = (trade.pairs || [])
-    .map((p) => (isOff ? p.offeredLeg : p.receivedLeg))
-    .filter(Boolean)
   return (
-    <div className="trade2__side">
-      <div className="trade2__team">
-        <TeamAvatar
-          entryId={entry}
-          name={name}
-          size="sm"
-          logoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-        <span className="trade2__team-name" title={name}>
-          {name}
-        </span>
-        <span className="trade2__total tabular">{total}</span>
-      </div>
-      <div className="trade2__players">
-        {legs.map((leg, i) => (
-          <div className="trade2__pl" key={i}>
-            <TradeClubBadge player={leg.gained} />
-            <div className="trade2__pl-id">
-              <span className="trade2__pl-name-line">
-                <ClickablePlayerName
-                  element={leg.gained.elementId}
-                  web_name={leg.gained.web_name}
-                  teamShort={leg.gained.teamShort}
-                  className="trade2__pl-name"
-                >
-                  <span className="trade2__pl-name-text">{leg.gained.web_name}</span>
-                </ClickablePlayerName>
-                <TradePosText typeId={leg.gained.elementTypeId} />
-              </span>
-              <TradeTenure leg={leg} />
-            </div>
-            <span className="trade2__pl-pts tabular">{leg.totalPoints ?? 0}</span>
-          </div>
-        ))}
+    <div className={'trade2__team' + (isOff ? '' : ' trade2__team--away')}>
+      <TeamAvatar
+        entryId={entry}
+        name={name}
+        size="sm"
+        logoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+      <span className="trade2__team-name" title={name}>
+        {tradeTeamFirstWord(name)}
+      </span>
+    </div>
+  )
+}
+
+/** One traded player (crest + name + tenure); mirrored on the received side. */
+function TradePlayerCell({ leg, side }) {
+  const player = leg?.gained
+  const cls = 'trade2__pl' + (side === 'received' ? ' trade2__pl--away' : '')
+  if (!player) return <div className={cls} />
+  return (
+    <div className={cls}>
+      <TradeClubBadge player={player} />
+      <div className="trade2__pl-id">
+        <ClickablePlayerName
+          element={player.elementId}
+          web_name={player.web_name}
+          teamShort={player.teamShort}
+          className="trade2__pl-name"
+        >
+          <span className="trade2__pl-name-text">{player.web_name}</span>
+        </ClickablePlayerName>
+        <TradeTenure leg={leg} />
       </div>
     </div>
   )
 }
 
-/** Coloured result bar — purple winner segment on a grey track. */
-function TradeVerdictBar({ trade }) {
+/** Per-swap row: offered player · neutral pts–pts score · received player. */
+function TradePairRow({ pair }) {
+  const offPts = Number(pair?.offeredLeg?.totalPoints) || 0
+  const recPts = Number(pair?.receivedLeg?.totalPoints) || 0
+  return (
+    <div className="trade2__pair">
+      <TradePlayerCell leg={pair?.offeredLeg} side="offered" />
+      <span className="trade2__pl-score tabular" aria-label={`${offPts} to ${recPts}`}>
+        <span>{offPts}</span>
+        <span className="trade2__pl-score-sep" aria-hidden>
+          {'\u2013'}
+        </span>
+        <span>{recPts}</span>
+      </span>
+      <TradePlayerCell leg={pair?.receivedLeg} side="received" />
+    </div>
+  )
+}
+
+/** Single processed-trade card — face-off layout: team totals at the top
+ *  centre (winner in brand purple), then one row per swapped player with a
+ *  neutral per-swap score and the kept/dropped tenure beneath each name. */
+function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
   const offeredPts = tradeSumLegs(trade.pairs, 'offeredLeg')
   const receivedPts = tradeSumLegs(trade.pairs, 'receivedLeg')
-  const diff = offeredPts - receivedPts
-  const total = Math.max(offeredPts + receivedPts, 1)
-  const offShare = (offeredPts / total) * 100
-  const offWin = diff > 0
-  const recWin = diff < 0
-  return (
-    <div className="trade2__bar">
-      <div
-        className="trade2__bar-track"
-        role="img"
-        aria-label={`${trade.offeredTeamName} ${offeredPts} — ${receivedPts} ${trade.receivedTeamName}`}
-      >
-        <span
-          className={'trade2__bar-seg' + (offWin ? ' is-win' : '')}
-          style={{ width: `${offShare}%` }}
-        />
-        <span
-          className={'trade2__bar-seg' + (recWin ? ' is-win' : '')}
-          style={{ width: `${100 - offShare}%` }}
-        />
-      </div>
-      <div className="trade2__bar-legend">
-        <span className={'trade2__bar-pts tabular' + (offWin ? ' is-win' : '')}>{offeredPts}</span>
-        <span className={'trade2__bar-pts tabular' + (recWin ? ' is-win' : '')}>{receivedPts}</span>
-      </div>
-    </div>
-  )
-}
-
-/** Single processed-trade card — head-to-head split (GW chip, two team columns, result bar). */
-function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
+  const offWin = offeredPts >= receivedPts
+  const recWin = receivedPts > offeredPts
   return (
     <article className="trade2">
       <div className="trade2__head">
@@ -2054,22 +2036,35 @@ function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
           </time>
         ) : null}
       </div>
-      <div className="trade2__split">
-        <TradeSplitSide
+      <div className="trade2__heads">
+        <TradeTeamHead
           trade={trade}
           side="offered"
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
         />
-        <div className="trade2__rule" aria-hidden />
-        <TradeSplitSide
+        <span
+          className="trade2__total tabular"
+          aria-label={`${trade.offeredTeamName} ${offeredPts}, ${trade.receivedTeamName} ${receivedPts}`}
+        >
+          <span className={'trade2__total-num' + (offWin ? ' is-win' : '')}>{offeredPts}</span>
+          <span className="trade2__total-sep" aria-hidden>
+            {'\u2013'}
+          </span>
+          <span className={'trade2__total-num' + (recWin ? ' is-win' : '')}>{receivedPts}</span>
+        </span>
+        <TradeTeamHead
           trade={trade}
           side="received"
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
         />
       </div>
-      <TradeVerdictBar trade={trade} />
+      <div className="trade2__pairs">
+        {(trade.pairs || []).map((pair, i) => (
+          <TradePairRow key={i} pair={pair} />
+        ))}
+      </div>
     </article>
   )
 }
