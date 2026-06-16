@@ -6,6 +6,26 @@ import {
 import { liveFixtureLead } from './liveScoresDerivations.js';
 
 /**
+ * Small football-shirt glyph used by the "players still to play" cluster under
+ * each team name. One shirt == one starter who has not yet finished their
+ * fixture; the cluster shrinks as players complete and disappears (replaced by
+ * an `FT` tag) once every starter is done. `aria-hidden` because the parent
+ * `.live-banner-row__to-play` already carries a descriptive label.
+ */
+function ShirtIcon() {
+  return (
+    <svg
+      className="live-banner-row__shirt"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M9 2.5 C9 4 15 4 15 2.5 L19.5 5 L22 9.5 L18 12 L16.5 10.8 L16.5 21.5 L7.5 21.5 L7.5 10.8 L6 12 L2 9.5 L4.5 5 Z" />
+    </svg>
+  );
+}
+
+/**
  * Compact face-off row (desktop wide grid, or mobile compressed) — both
  * variants share a single 1-fr · auto · 1-fr grid and only the size class
  * differs. Used inside `LiveBannerGroup` and the mobile compressed list
@@ -44,7 +64,15 @@ import { liveFixtureLead } from './liveScoresDerivations.js';
  *   onToggle?: () => void,
  *   ariaControls?: string,
  *   chevronEnd?: React.ReactNode,
+ *   layout?: 'shirts' | 'bars',
  * }} props
+ *
+ * `layout` selects the "players still to play" presentation (feature-flagged
+ * via `readLiveScoreLayout()`):
+ *  - `shirts` (default): a shrinking jersey cluster under each team name.
+ *  - `bars`: mockup "Variation 3" — names + score on top, with two muted
+ *    progress bars running full-width along the bottom of the tile, filling
+ *    inward, and `FT` / a to-play count at the outer ends.
  */
 export function LiveFaceOffRow({
   homeId,
@@ -67,7 +95,9 @@ export function LiveFaceOffRow({
   onToggle,
   ariaControls,
   chevronEnd = null,
+  layout = 'shirts',
 }) {
+  const barsMode = layout === 'bars';
   const lead = liveFixtureLead(homeLive, awayLive);
   const homeWinner = lead === 'home';
   const awayWinner = lead === 'away';
@@ -87,22 +117,21 @@ export function LiveFaceOffRow({
     : {};
 
   /**
-   * Stylish "X to play" sub-row rendered under each team name. Replaces the
-   * older bracketed `(N)` next to the score so the to-play count lives in
-   * one place per team (under the name) and the score row stays clean
-   * (`44 – 53`). Amber pulse dot reads "still in play"; green pulse +
-   * "All done" once every starter has finished. Render nothing when the
-   * squad payload is missing (`null`) so an orphan / not-yet-ingested
-   * fixture doesn't render a misleading row.
+   * "Players still to play" cluster rendered under each team name. Each team
+   * starts the gameweek with 11 shirts and a shirt is removed as every starter
+   * finishes, so the shirts that remain are the starters still to play; the
+   * cluster physically shrinks toward full time. Once the last starter is done
+   * the shirts give way to a quiet `FT` tag. Render nothing when the squad
+   * payload is missing (`null`) so an orphan / not-yet-ingested fixture doesn't
+   * render a misleading row.
    */
   function renderToPlay(n, side) {
     if (n == null || !Number.isFinite(Number(n))) return null;
-    const count = Math.max(0, Math.floor(Number(n)));
-    const done = count === 0;
-    const label = done ? 'All done' : `${count} to play`;
+    const remaining = Math.max(0, Math.min(11, Math.floor(Number(n))));
+    const done = remaining === 0;
     const ariaLabel = done
       ? `${side === 'home' ? 'Home' : 'Away'} team — all 11 starters have finished their fixtures`
-      : `${count} starter${count === 1 ? '' : 's'} still to play`;
+      : `${remaining} starter${remaining === 1 ? '' : 's'} still to play`;
     return (
       <span
         className={
@@ -112,14 +141,77 @@ export function LiveFaceOffRow({
         aria-label={ariaLabel}
         title={ariaLabel}
       >
-        <span
-          className={
-            'live-banner-row__to-play-dot' +
-            (done ? ' live-banner-row__to-play-dot--done' : '')
-          }
-          aria-hidden="true"
-        />
-        <span className="live-banner-row__to-play-text">{label}</span>
+        {done ? (
+          <span className="live-banner-row__ft" aria-hidden="true">
+            FT
+          </span>
+        ) : (
+          <span className="live-banner-row__shirts" aria-hidden="true">
+            {Array.from({ length: remaining }, (_, i) => (
+              <ShirtIcon key={i} />
+            ))}
+          </span>
+        )}
+      </span>
+    );
+  }
+
+  /**
+   * One half of the baseline rail (mockup "Variation 3"). The track fills with
+   * the proportion of starters who have *finished* (`played / 11`) and the
+   * label at the outer end shows the to-play count, or `FT` once everyone is
+   * done. Orange while live, brand purple at full time; both kept muted so the
+   * bar stays informative without competing with the names and score. Renders
+   * an empty (unfilled) track when the squad payload is missing so the two
+   * halves stay symmetric.
+   */
+  function renderRailHalf(n, side) {
+    const away = side === 'away';
+    const hasData = n != null && Number.isFinite(Number(n));
+    const remaining = hasData
+      ? Math.max(0, Math.min(11, Math.floor(Number(n))))
+      : null;
+    const done = remaining === 0;
+    const played = remaining == null ? 0 : 11 - remaining;
+    const pct = Math.round((played / 11) * 100);
+    const ariaLabel = !hasData
+      ? undefined
+      : done
+        ? `${away ? 'Away' : 'Home'} team — all 11 starters have finished their fixtures`
+        : `${remaining} starter${remaining === 1 ? '' : 's'} still to play`;
+    return (
+      <span
+        className={
+          'live-banner-row__half' +
+          (away ? ' live-banner-row__half--away' : '')
+        }
+        aria-label={ariaLabel}
+        title={ariaLabel}
+      >
+        {hasData ? (
+          <span
+            className={
+              'live-banner-row__rail-status' +
+              (done ? ' live-banner-row__rail-status--ft' : '')
+            }
+            aria-hidden="true"
+          >
+            {done ? 'FT' : remaining}
+          </span>
+        ) : null}
+        <span className="live-banner-row__track" aria-hidden="true">
+          {hasData ? (
+            <span
+              className={
+                'live-banner-row__track-fill ' +
+                (done
+                  ? 'live-banner-row__track-fill--ft'
+                  : 'live-banner-row__track-fill--live')
+              }
+              style={{ width: `${pct}%` }}
+            />
+          ) : null}
+        </span>
       </span>
     );
   }
@@ -132,7 +224,8 @@ export function LiveFaceOffRow({
         (onToggle ? ' live-banner-row--toggle' : '') +
         (expanded ? ' live-banner-row--open' : '') +
         (hasStatus ? ' live-banner-row--has-status' : '') +
-        (hasBothStatus ? ' live-banner-row--has-status-both' : '')
+        (hasBothStatus ? ' live-banner-row--has-status-both' : '') +
+        (barsMode ? ' live-banner-row--bars' : '')
       }
       {...interactiveProps}
     >
@@ -160,7 +253,7 @@ export function LiveFaceOffRow({
           >
             {homeDisplayName ?? homeName}
           </span>
-          {renderToPlay(homeRemaining, 'home')}
+          {barsMode ? null : renderToPlay(homeRemaining, 'home')}
         </span>
       </div>
 
@@ -238,7 +331,7 @@ export function LiveFaceOffRow({
           >
             {awayDisplayName ?? awayName}
           </span>
-          {renderToPlay(awayRemaining, 'away')}
+          {barsMode ? null : renderToPlay(awayRemaining, 'away')}
         </span>
         <span className="live-banner-row__crest">
           <HeroVillainAvatarFrame status={awayStatus} size="default">
@@ -253,6 +346,13 @@ export function LiveFaceOffRow({
         </span>
         {bannerExtras.away ?? null}
       </div>
+
+      {barsMode ? (
+        <div className="live-banner-row__rail">
+          {renderRailHalf(homeRemaining, 'home')}
+          {renderRailHalf(awayRemaining, 'away')}
+        </div>
+      ) : null}
 
       {chevronEnd ?? null}
     </RowEl>

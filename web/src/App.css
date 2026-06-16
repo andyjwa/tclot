@@ -11967,6 +11967,17 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   .live-banner-group__item + .live-banner-group__item {
     border-top: 1px solid var(--fm-border);
   }
+  /* Sit the fixtures band flush against the gameweek-nav divider above and the
+     following section below. The .dashboard-stack/.live-scores-root flex `gap`
+     (12px) otherwise leaves a gap above the first fixture and below the last,
+     so the band's outer hairlines sit ~12px further from their rows than the
+     evenly-spaced inter-row dividers — reading as uneven top/bottom gaps.
+     Negative margins cancel exactly that one gap on each side so every divider
+     (nav line → row → row → row → next-section line) is uniformly spaced. */
+  .live-scores-root .live-banner-group-tile {
+    margin-top: -12px;
+    margin-bottom: -12px;
+  }
 }
 /* Villain / hero tints layer on top of the base `var(--fm-card)` tile
    background — use `background-image` so the surface beneath shows
@@ -11997,7 +12008,6 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
   font: inherit;
   color: inherit;
   text-align: left;
@@ -12005,6 +12015,11 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   border: none;
   width: 100%;
   cursor: default;
+  /* Extra bottom room (vs the 12px top) reserves the caption/"to-play" sub-band
+     beneath the centred main line. Applied uniformly so every row is the same
+     height and the dividers stay evenly spaced whether or not a row carries a
+     HERO DEFEAT / VILLAIN VICTORY caption. */
+  padding: 12px 14px 16px;
 }
 .live-banner-row--toggle {
   cursor: pointer;
@@ -12019,7 +12034,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   background: color-mix(in srgb, var(--fm-surface-2) 38%, transparent);
 }
 .live-banner-row--compact {
-  padding: 10px 12px;
+  padding: 10px 12px 14px;
   gap: 6px;
 }
 .live-banner-row__side {
@@ -12090,14 +12105,16 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   justify-self: center;
   min-width: 0;
 }
-/* Caption stack — HERO DEFEAT / VILLAIN VICTORY pill(s) centered directly
-   under the score. Absolutely positioned so it doesn't inflate the center
-   column; vertical room is reserved on the row via
-   `.live-banner-row--has-status { padding-bottom }`. When both sides carry
-   a status the two pills stack (column) under the score. */
+/* Caption stack — HERO DEFEAT / VILLAIN VICTORY pill(s) centered under the
+   score. Absolutely positioned so it doesn't inflate the centre column. It is
+   anchored a hair ABOVE the score's box bottom (`top: calc(100% - 2px)`) so it
+   lands in the same sub-label band as the teams' "ALL DONE" labels (which hang
+   below the shorter team name). Sitting in that existing band means a single
+   caption needs no extra row height — every row stays the same height and the
+   content stays vertically balanced (no reserved empty gap). */
 .live-banner-row__status-captions {
   position: absolute;
-  top: calc(100% + 2px);
+  top: calc(100% + 3px);
   left: 50%;
   transform: translateX(-50%);
   display: inline-flex;
@@ -12107,21 +12124,13 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   pointer-events: none;
   white-space: nowrap;
 }
-/* Reserve vertical space for the absolute caption stack. Single-pill case
-   (just home OR just away has a status) only needs ~one pill's height; the
-   `--has-status-both` modifier doubles the reservation when both sides
-   carry a status and the pills stack. */
-.live-banner-row--has-status {
-  padding-bottom: 18px;
-}
+/* Only the rare both-sides case (two pills stack under the score) needs a
+   deeper band reserved beneath the row. */
 .live-banner-row--has-status.live-banner-row--has-status-both {
-  padding-bottom: 32px;
-}
-.live-banner-row--compact.live-banner-row--has-status {
-  padding-bottom: 16px;
+  padding-bottom: 30px;
 }
 .live-banner-row--compact.live-banner-row--has-status.live-banner-row--has-status-both {
-  padding-bottom: 28px;
+  padding-bottom: 26px;
 }
 .live-banner-row__caption-pill {
   font-family: 'Geist Mono', monospace;
@@ -12252,7 +12261,11 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 1px;
+  /* Drop the "to-play" label onto the same baseline as the centre caption so
+     every row reads as: main line, then a single status sub-line just above
+     the divider. Larger than the old 1px because the score (which the caption
+     hangs from) sits lower than the name (which this hangs from). */
+  margin-top: 5px;
   max-width: none;
   font-size: 0.6rem;
   font-weight: 400;
@@ -12272,10 +12285,142 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   right: 0;
 }
 .live-banner-row__to-play--done {
-  /* Keep the marker quiet — the colored status dot carries the "done"
-     signal so the team name stays the dominant element in the row. */
+  /* Keep the marker quiet — the `FT` tag carries the "done" signal so the
+     team name stays the dominant element in the row. */
   color: var(--fm-muted);
 }
+
+/* "Players still to play" shirt cluster — one shirt per starter not yet
+   finished, clustered next to the badge and shrinking as players complete.
+   Muted orange so it reads as present-but-secondary to the name/score. */
+.live-banner-row__shirts {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.live-banner-row--compact .live-banner-row__shirts {
+  /* Tight enough that a full 11-shirt cluster still clears the centre score
+     on a narrow phone (measured ~110px budget per side). */
+  gap: 1px;
+}
+.live-banner-row__names--away .live-banner-row__shirts {
+  /* Reverse so a partial cluster still hugs the away badge (right edge). */
+  flex-direction: row-reverse;
+}
+.live-banner-row__shirt {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+}
+.live-banner-row--compact .live-banner-row__shirt {
+  width: 9px;
+  height: 9px;
+}
+.live-banner-row__shirt path {
+  fill: color-mix(in srgb, var(--data-warning, #f0922b) 62%, transparent);
+}
+/* Full-time tag that replaces the cluster once every starter is done. Soft
+   brand purple to echo the winner-score emphasis without shouting. */
+.live-banner-row__ft {
+  font-weight: 800;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 72%, #ffffff);
+}
+.live-banner-row--compact .live-banner-row__ft {
+  font-size: 0.56rem;
+}
+
+/* ===================================================================== */
+/* Baseline-bars layout (feature-flagged "Variation 3").                 */
+/* Names + score read clean on the top grid row; two muted progress bars */
+/* run full-width along the bottom, filling inward, with FT / a to-play  */
+/* count at the outer ends. Opt-in via `readLiveScoreLayout() === 'bars'` */
+/* — the default `shirts` layout is unaffected by everything below.      */
+/* ===================================================================== */
+.live-banner-row--bars {
+  /* Anchor the absolutely-positioned chevron to the bars row itself so it
+     stays centred against the (now taller) row rather than a parent. */
+  position: relative;
+}
+/* The rail spans every grid column on a fresh row beneath the score line. */
+.live-banner-row--bars .live-banner-row__rail {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+.live-banner-row--compact.live-banner-row--bars .live-banner-row__rail {
+  gap: 8px;
+}
+/* In this layout the hero/villain caption drops into normal flow under the
+   score (like the mockup legend) so it can't overlap the bottom rail. */
+.live-banner-row--bars .live-banner-row__status-captions {
+  position: static;
+  transform: none;
+  margin-top: 3px;
+}
+.live-banner-row__half {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.live-banner-row__half--away {
+  /* Status sits at the outer (right) end; bar fills inward toward centre. */
+  flex-direction: row-reverse;
+}
+.live-banner-row--compact .live-banner-row__half {
+  gap: 5px;
+}
+.live-banner-row__track {
+  position: relative;
+  flex: 1 1 0;
+  height: 4px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 13%, transparent);
+}
+.live-banner-row__track-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 3px;
+  /* Muted: present without competing with the names + score. */
+  opacity: 0.5;
+  filter: saturate(0.8);
+}
+.live-banner-row__half--away .live-banner-row__track-fill {
+  left: auto;
+  right: 0;
+}
+.live-banner-row__track-fill--live {
+  background: var(--data-warning, #f0922b);
+}
+.live-banner-row__track-fill--ft {
+  background: var(--tclot-logo-purple, #795bfb);
+}
+.live-banner-row__rail-status {
+  flex: 0 0 auto;
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, currentColor 42%, transparent);
+}
+.live-banner-row__rail-status--ft {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 72%, #ffffff);
+}
+.live-banner-row--compact .live-banner-row__rail-status {
+  font-size: 0.56rem;
+}
+
 .live-banner-row__to-play-dot {
   width: 5px;
   height: 5px;

@@ -18,6 +18,7 @@ import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
+import { readLiveScoreLayout } from './featureFlags.js';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
@@ -36,6 +37,16 @@ import {
   liveGwOutcomeDot,
   projectedH2HPoints,
 } from './liveScoresDerivations.js';
+
+/**
+ * Active live-scores face-off layout, resolved once at module load.
+ * Defaults to the shipped `shirts` cluster; flip to `bars` (mockup
+ * "Variation 3" baseline rail) for launch day via `VITE_LIVE_SCORE_LAYOUT=bars`
+ * or, to preview live, `localStorage['tclot:flags:live-score-layout'] = 'bars'`
+ * (reload to apply). See `featureFlags.js`.
+ */
+const LIVE_SCORE_LAYOUT = readLiveScoreLayout();
+
 /**
  * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
  */
@@ -1425,6 +1436,7 @@ export function LiveScores({
                     awayLive={awayLive}
                     homeRemaining={homeRemaining}
                     awayRemaining={awayRemaining}
+                    layout={LIVE_SCORE_LAYOUT}
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                     compact={narrowViewport}
