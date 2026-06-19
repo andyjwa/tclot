@@ -12285,7 +12285,12 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row__score-sep {
   color: var(--fm-muted);
   font-weight: 500;
-  padding: 0 0.14em;
+  /* Wider horizontal gap so the winner pill (a box-shadow spread around the
+     score, see `__score-half--winner`) clears the central "–" instead of
+     bleeding over it. The score grid is fixed-width and digits are aligned to
+     their outer edges, so widening this just nudges the numbers (and their
+     pills) away from the separator without shifting it. */
+  padding: 0 0.34em;
   text-align: center;
 }
 .live-banner-row__score-pending {
@@ -12308,7 +12313,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
    separator never shifts, keeping scores column-aligned row to row. */
 .live-banner-row__score-half--winner {
   background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
-  box-shadow: 0 0 0 0.2em
+  box-shadow: 0 0 0 0.15em
     color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 .live-banner-row__score-pending {
