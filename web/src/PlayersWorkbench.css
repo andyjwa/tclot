@@ -1543,9 +1543,13 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   }
 
   /* Variant C portrait toolbar — search row first, then filter scroll row.
-   * Both rows live on the tinted surface-2 band (same as header). */
+   * Both rows live on the tinted surface-2 band (same as header). The search
+   * row is the FIRST band on portrait (the desktop "Players" title strip is
+   * not rendered), so it carries the top inset itself — otherwise the white
+   * search pill butts straight up against the purple season banner above and
+   * the two read as merged. */
   .players-bench-search-row--portrait {
-    padding: 0 12px 8px;
+    padding: 12px 12px 8px;
     background: var(--surface-2);
     border-bottom: none;
   }
