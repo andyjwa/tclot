@@ -704,7 +704,9 @@ function PortraitWireTileList({
         return (
           <div
             key={el.id}
-            className={`players-wire-tile${tappable ? ' players-wire-tile--tappable' : ''}`}
+            className={`players-wire-tile${tappable ? ' players-wire-tile--tappable' : ''}${
+              rostersHealthy && owner ? ' players-wire-tile--has-owner' : ''
+            }`}
             role="listitem"
             tabIndex={tappable ? 0 : undefined}
             onClick={
@@ -749,9 +751,9 @@ function PortraitWireTileList({
                   {posLetter}
                 </span>
               </div>
-              {/* Single sub-row: owner avatar (when present) + injury dots +
-               * Next-3 fixtures. Position moved up next to the name; the
-               * previous standalone position/owner row was collapsed. */}
+              {/* Single sub-row: injury dots + Next-3 fixtures. Position moved
+               * up next to the name; the owner avatar now sits in its own
+               * column aligned with the points total on the right. */}
               <div className="players-wire-tile__sub-row">
                 <PlayerInlineIndicators
                   el={el}
@@ -763,24 +765,24 @@ function PortraitWireTileList({
                 <span className="players-wire-tile__fixtures">
                   <NextFixtureBadges fixtures={nextFixtures} />
                 </span>
-                {rostersHealthy && owner ? (
-                  <span
-                    className="players-wire-tile__owner"
-                    title={`Owned by ${owner.teamName}`}
-                    aria-label={`Owned by ${owner.teamName}`}
-                  >
-                    <TeamAvatar
-                      entryId={owner.leagueEntryId}
-                      name={owner.teamName}
-                      size="sm"
-                      logoMap={logoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                      badgeFallback
-                    />
-                  </span>
-                ) : null}
               </div>
             </div>
+            {rostersHealthy && owner ? (
+              <span
+                className="players-wire-tile__owner"
+                title={`Owned by ${owner.teamName}`}
+                aria-label={`Owned by ${owner.teamName}`}
+              >
+                <TeamAvatar
+                  entryId={owner.leagueEntryId}
+                  name={owner.teamName}
+                  size="sm"
+                  logoMap={logoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  badgeFallback
+                />
+              </span>
+            ) : null}
             <div
               className="players-wire-tile__right"
               style={{ gridTemplateColumns: rightTracks }}
@@ -1593,7 +1595,7 @@ export function PlayersWorkbench({
                             )}
                             role="cell"
                           >
-                            {pts}
+                            <span className="players-table__pts-pill">{pts}</span>
                           </span>
                         )
                       }

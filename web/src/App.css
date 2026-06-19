@@ -11975,10 +11975,10 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   border: none;
   width: 100%;
   cursor: default;
-  /* Extra bottom room (vs the 12px top) reserves the caption/"to-play" sub-band
-     beneath the centred main line. Applied uniformly so every row is the same
-     height and the dividers stay evenly spaced whether or not a row carries a
-     HERO DEFEAT / VILLAIN VICTORY caption. */
+  /* Extra bottom room (vs the 12px top) reserves the Hero / Villain caption
+     sub-band beneath the centred main line. Applied uniformly so every row is
+     the same height and the dividers stay evenly spaced whether or not a row
+     carries a Hero / Villain caption. */
   padding: 12px 14px 16px;
 }
 .live-banner-row--toggle {
@@ -12008,6 +12008,53 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 }
 .live-banner-row__side--away {
   justify-content: flex-end;
+}
+/* FotMob-style team block: name on the outer edge, crest hugging the centre
+   score. The block is pushed toward the centre with an auto margin so the
+   countdown pill (rendered as a sibling) sits flush at the far end and the
+   centre score stays optically centred even when a pill is absent. */
+.live-banner-row__teamblock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.live-banner-row__teamblock--home {
+  margin-left: auto;
+  flex-direction: row;
+}
+.live-banner-row__teamblock--away {
+  margin-right: auto;
+  flex-direction: row;
+}
+.live-banner-row--compact .live-banner-row__teamblock {
+  gap: 7px;
+}
+/* Per-team "players still to play" countdown pill at the far end of each side
+   (home far-left, away far-right). Grey, quiet — matches the `FT` tag styling
+   — showing the remaining starters, or `FT` once that team is done. */
+.live-banner-row__countdown {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 21px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-surface-2) 70%, transparent);
+  color: var(--fm-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.live-banner-row--compact .live-banner-row__countdown {
+  min-width: 26px;
+  height: 19px;
+  padding: 0 6px;
+  font-size: 9px;
 }
 /* Crest column simply wraps the avatar (+ its hero/villain ring). The
    narrative caption pill no longer lives here — it moved beneath the
@@ -12065,63 +12112,17 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   justify-self: center;
   min-width: 0;
 }
-/* Caption stack — HERO DEFEAT / VILLAIN VICTORY pill(s) centered under the
-   score. Absolutely positioned so it doesn't inflate the centre column. It is
-   anchored a hair ABOVE the score's box bottom (`top: calc(100% - 2px)`) so it
-   lands in the same sub-label band as the teams' "ALL DONE" labels (which hang
-   below the shorter team name). Sitting in that existing band means a single
-   caption needs no extra row height — every row stays the same height and the
-   content stays vertically balanced (no reserved empty gap). */
-.live-banner-row__status-captions {
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  pointer-events: none;
-  white-space: nowrap;
-}
-/* Only the rare both-sides case (two pills stack under the score) needs a
-   deeper band reserved beneath the row. */
-.live-banner-row--has-status.live-banner-row--has-status-both {
-  padding-bottom: 30px;
-}
-.live-banner-row--compact.live-banner-row--has-status.live-banner-row--has-status-both {
-  padding-bottom: 26px;
-}
-.live-banner-row__caption-pill {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 1;
-  padding: 2px 5px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-.live-banner-row__caption-pill--hero {
-  background: var(--live-hero-tint);
-  color: var(--live-hero-strong);
-}
-.live-banner-row__caption-pill--villain {
-  background: var(--live-villain-tint);
-  color: var(--live-villain-strong);
-}
-.live-banner-row--compact .live-banner-row__caption-pill {
-  font-size: 8px;
-  padding: 1px 4px;
-  letter-spacing: 0.05em;
-}
+/* The Hero / Villain caption now hangs under the relevant team name (see
+   `.live-banner-row__award`) and fits within the row's existing bottom padding
+   band, so no extra reserved height is needed even when both sides carry a
+   status. */
 .live-banner-row__names {
-  /* Only the team name participates in vertical flow; the "to-play" sub-label
-     is anchored absolutely just beneath it (see `.live-banner-row__to-play`).
-     That keeps the names column the height of the name alone, so the name,
-     crest, and centre score all share a single vertical centre across every
-     row — the sub-label hangs below exactly like the score's caption pill. */
+  /* Only the team name participates in vertical flow; the Hero / Villain
+     caption is anchored absolutely just beneath it (see
+     `.live-banner-row__award`). That keeps the names column the height of the
+     name alone, so the name, crest, and centre score all share a single
+     vertical centre across every row — the caption hangs below into the row's
+     reserved bottom padding band. */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -12145,11 +12146,49 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row--compact .live-banner-row__name {
   font-size: 0.9rem;
 }
-/* Option D winner indication: brand-violet score, names stay equal weight.
-   No tinted background, no underline, no dot — see mockup decision matrix. */
+/* Option C winner indication: a soft purple pill behind the winning score
+   (see `__score-half--winner`); team names stay equal weight — no name tint,
+   underline, or dot. */
 .live-banner-row__name--winner,
 .live-banner-row__name--loser {
   /* equal weight — name colour stays consistent regardless of result */
+}
+/* One-word Hero / Villain narrative caption, tucked under the relevant team's
+   name. Absolutely positioned beneath the name so it never shifts the name /
+   crest / score baseline (every row stays the same height; the caption hangs
+   into the row's reserved bottom padding band). */
+.live-banner-row__award {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 3px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.live-banner-row__names--away .live-banner-row__award {
+  left: auto;
+  right: 0;
+}
+.live-banner-row__award--hero {
+  background: var(--live-hero-tint);
+  color: var(--live-hero-strong);
+}
+.live-banner-row__award--villain {
+  background: var(--live-villain-tint);
+  color: var(--live-villain-strong);
+}
+.live-banner-row--compact .live-banner-row__award {
+  font-size: 8px;
+  padding: 1px 5px;
+  letter-spacing: 0.06em;
 }
 .live-banner-row__sub {
   font-size: 0.68rem;
@@ -12163,32 +12202,60 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   white-space: nowrap;
   max-width: 100%;
 }
+/* Fixed-width 3-column score grid (home · "–" · away). A constant width means
+   the central separator sits at the same x on every row and the digits stay
+   column-aligned regardless of digit count; home digits are right-aligned and
+   away digits left-aligned so they meet at the separator. */
 .live-banner-row__score {
   font-size: 1.55rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--fm-text-strong);
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: baseline;
-  gap: 6px;
+  width: 4.6em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .live-banner-row--compact .live-banner-row__score {
   font-size: 1.18rem;
-  gap: 4px;
+  width: 4.3em;
+}
+.live-banner-row__score-cell--home {
+  text-align: right;
+}
+.live-banner-row__score-cell--away {
+  text-align: left;
 }
 .live-banner-row__score-sep {
   color: var(--fm-muted);
   font-weight: 500;
+  padding: 0 0.14em;
+  text-align: center;
 }
-.live-banner-row__score-half--winner {
-  color: var(--tclot-logo-purple);
+.live-banner-row__score-pending {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+/* Option C: both scores share one strong ink colour; only the winning side
+   gets a soft purple "glass" pill behind it (matches the Players PTS pill and
+   the live-table PTS). The score grid is fixed-width (see `.live-banner-row__score`)
+   and the pill is a spread box-shadow, so the central "–" never shifts and
+   scores stay column-aligned row to row. */
+.live-banner-row__score-half {
+  display: inline-block;
+  color: var(--fm-text-strong);
   font-weight: 700;
+  border-radius: 0.3em;
 }
-.live-banner-row__score-half--loser {
-  color: var(--fm-muted);
-  font-weight: 500;
+/* Option C winner pill, painted as a spread box-shadow + matching background
+   so it adds NO layout width — the number stays in its grid cell and the
+   separator never shifts, keeping scores column-aligned row to row. */
+.live-banner-row__score-half--winner {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.22em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 .live-banner-row__score-pending {
   font-size: 0.95rem;
@@ -12196,102 +12263,6 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
-/* Score-side wrapper: groups the score number + bracketed (N) remaining /
-   "all done" indicator so they ride together on the row baseline and the
-   `–` separator stays centred between them. Inline-flex with a tiny gap
-   so `44 (3)` reads as a tight cluster, not two free-floating spans. */
-.live-banner-row__score-side {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  white-space: nowrap;
-}
-.live-banner-row--compact .live-banner-row__score-side {
-  gap: 3px;
-}
-/* "X to play" sub-row — rendered under each team name (inside `__names`).
-   Amber pulse dot reads "still in play"; flips to green pulse + "All done"
-   once every starter has finished. Replaces the older bracketed `(N)` /
-   inline green check next to the score (round 3 follow-up: count belongs
-   under the team it describes, not bolted onto the score number). */
-.live-banner-row__to-play {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  /* Drop the "to-play" label onto the same baseline as the centre caption so
-     every row reads as: main line, then a single status sub-line just above
-     the divider. Larger than the old 1px because the score (which the caption
-     hangs from) sits lower than the name (which this hangs from). */
-  margin-top: 5px;
-  max-width: none;
-  font-size: 0.6rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  line-height: 1.2;
-  color: var(--fm-muted);
-  opacity: 0.7;
-  white-space: nowrap;
-}
-.live-banner-row--compact .live-banner-row__to-play {
-  font-size: 0.55rem;
-  gap: 3px;
-}
-.live-banner-row__names--away .live-banner-row__to-play {
-  left: auto;
-  right: 0;
-}
-.live-banner-row__to-play--done {
-  /* Keep the marker quiet — the `FT` tag carries the "done" signal so the
-     team name stays the dominant element in the row. */
-  color: var(--fm-muted);
-}
-
-/* "Players still to play" shirt cluster — one shirt per starter not yet
-   finished, clustered next to the badge and shrinking as players complete.
-   Muted orange so it reads as present-but-secondary to the name/score. */
-.live-banner-row__shirts {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-.live-banner-row--compact .live-banner-row__shirts {
-  /* Tight enough that a full 11-shirt cluster still clears the centre score
-     on a narrow phone (measured ~110px budget per side). */
-  gap: 1px;
-}
-.live-banner-row__names--away .live-banner-row__shirts {
-  /* Reverse so a partial cluster still hugs the away badge (right edge). */
-  flex-direction: row-reverse;
-}
-.live-banner-row__shirt {
-  width: 11px;
-  height: 11px;
-  flex: 0 0 auto;
-}
-.live-banner-row--compact .live-banner-row__shirt {
-  width: 9px;
-  height: 9px;
-}
-.live-banner-row__shirt path {
-  fill: color-mix(in srgb, var(--data-warning, #f0922b) 62%, transparent);
-}
-/* Full-time tag that replaces the cluster once every starter is done. Soft
-   brand purple to echo the winner-score emphasis without shouting. */
-.live-banner-row__ft {
-  font-weight: 800;
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  color: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 72%, #ffffff);
-}
-.live-banner-row--compact .live-banner-row__ft {
-  font-size: 0.56rem;
-}
-
 /* ===================================================================== */
 /* Baseline-bars layout (feature-flagged "Variation 3").                 */
 /* Names + score read clean on the top grid row; two muted progress bars */
@@ -12314,13 +12285,6 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 }
 .live-banner-row--compact.live-banner-row--bars .live-banner-row__rail {
   gap: 8px;
-}
-/* In this layout the hero/villain caption drops into normal flow under the
-   score (like the mockup legend) so it can't overlap the bottom rail. */
-.live-banner-row--bars .live-banner-row__status-captions {
-  position: static;
-  transform: none;
-  margin-top: 3px;
 }
 .live-banner-row__half {
   flex: 1 1 0;
@@ -17073,6 +17037,22 @@ button.live-xp__player-name:focus-visible {
 .pts-cell--lg .pts-cell__value { font-size: 1.6rem; }
 
 .pts-cell--ink .pts-cell__value { color: var(--fm-text-strong); }
+
+/* Live Table (FPL live scores) PTS column: render the violet points value as a
+   soft purple "glass" pill to match the live face-off score (Option C) and the
+   Players PTS pill. The number drops to ink so the pill carries the purple.
+   Scoped to the live tables only — the production Standings / Historic / CofC
+   PointsCell stays plain violet. */
+.standings-table--live .pts-cell__value,
+.standings-table--live-mobile .pts-cell__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1em 0.4em;
+  border-radius: 0.35em;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  color: var(--fm-text-strong);
+}
 
 .heritage-cofc-algo-lb__chev {
   font-size: 18px;

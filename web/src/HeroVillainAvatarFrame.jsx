@@ -3,6 +3,17 @@ export const HERO_VILLAIN_LABEL = {
   villain: 'VILLAIN VICTORY',
 };
 
+/**
+ * One-word narrative labels used by the live face-off row, where the caption is
+ * tucked under the relevant team's name (rather than the longer two-word pill
+ * under the score). The team it sits beneath supplies the "defeat" / "victory"
+ * context, so only "Hero" / "Villain" is needed.
+ */
+export const HERO_VILLAIN_SHORT = {
+  hero: 'Hero',
+  villain: 'Villain',
+};
+
 export const HERO_VILLAIN_ARIA = {
   hero: 'Hero defeat: 2nd-highest raw gameweek score in the league but losing this head-to-head on live points',
   villain: 'Villain detected: winning this head-to-head gameweek on live points while ranked 7th in the league for raw gameweek total',

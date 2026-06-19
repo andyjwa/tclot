@@ -2,28 +2,9 @@ import { TeamAvatar } from './TeamAvatar';
 import {
   HeroVillainAvatarFrame,
   HERO_VILLAIN_LABEL,
+  HERO_VILLAIN_SHORT,
 } from './HeroVillainAvatarFrame';
 import { liveFixtureLead } from './liveScoresDerivations.js';
-
-/**
- * Small football-shirt glyph used by the "players still to play" cluster under
- * each team name. One shirt == one starter who has not yet finished their
- * fixture; the cluster shrinks as players complete and disappears (replaced by
- * an `FT` tag) once every starter is done. `aria-hidden` because the parent
- * `.live-banner-row__to-play` already carries a descriptive label.
- */
-function ShirtIcon() {
-  return (
-    <svg
-      className="live-banner-row__shirt"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M9 2.5 C9 4 15 4 15 2.5 L19.5 5 L22 9.5 L18 12 L16.5 10.8 L16.5 21.5 L7.5 21.5 L7.5 10.8 L6 12 L2 9.5 L4.5 5 Z" />
-    </svg>
-  );
-}
 
 /**
  * Compact face-off row (desktop wide grid, or mobile compressed) — both
@@ -31,17 +12,25 @@ function ShirtIcon() {
  * differs. Used inside `LiveBannerGroup` and the mobile compressed list
  * (mockup `mockup-live-group__row` and `mockup-live-compressed__row`).
  *
- * Winner emphasis follows mockup **Option D** (locked decision): winner's
- * score number rendered in `var(--tclot-logo-purple)`; team names stay
- * equal-weight; no tinted background; no underline.
+ * Layout follows the locked FotMob-style mockup: the team name sits on the
+ * OUTER edge and the crest hugs the central score (name · crest · score ·
+ * crest · name). A small grey "players still to play" countdown pill sits at
+ * the FAR END of each side (home far-left, away far-right) showing that team's
+ * remaining starters, flipping to `FT` once all 11 are done. The older shirt
+ * cluster under each name is retired in favour of these end pills.
  *
- * Hero defeat / villain victory narrative badge follows the Variant 1
- * treatment from the mockup HERO/VILLAIN BADGE showcase (locked): the
- * relevant team's avatar is wrapped in a 2px tinted ring so you can still
- * see *which* team carries the status. The narrative caption pill
- * (HERO DEFEAT / VILLAIN VICTORY) is rendered beneath the central score
- * column rather than under the crest. When both sides carry a status the
- * two pills stack under the score.
+ * Winner emphasis follows mockup **Option C** (locked decision): both score
+ * numbers share one strong ink colour and the winning side gets a soft purple
+ * "glass" pill behind it; team names stay equal-weight. The score lives in a
+ * fixed-width 3-column grid (home · "–" · away) so every separator and digit
+ * lines up vertically row to row, and the winner pill is painted as a spread
+ * box-shadow (zero layout impact) so it never nudges the numbers out of line.
+ *
+ * Hero defeat / villain victory narrative status: the relevant team's avatar
+ * keeps the Variant 1 tinted ring (marks *which* team), and a short one-word
+ * caption (Hero / Villain) is tucked under that team's name. The caption is
+ * absolutely positioned beneath the name so it leaves the name / crest / score
+ * baseline untouched.
  *
  * @param {{
  *   homeId: number,
@@ -117,15 +106,15 @@ export function LiveFaceOffRow({
     : {};
 
   /**
-   * "Players still to play" cluster rendered under each team name. Each team
-   * starts the gameweek with 11 shirts and a shirt is removed as every starter
-   * finishes, so the shirts that remain are the starters still to play; the
-   * cluster physically shrinks toward full time. Once the last starter is done
-   * the shirts give way to a quiet `FT` tag. Render nothing when the squad
-   * payload is missing (`null`) so an orphan / not-yet-ingested fixture doesn't
-   * render a misleading row.
+   * "Players still to play" countdown pill rendered at the far end of each
+   * side. Shows the number of starters that have not yet finished their
+   * fixture, counting down toward full time; once the last starter is done it
+   * flips to a quiet `FT` tag. Renders nothing when the squad payload is
+   * missing (`null`) so an orphan / not-yet-ingested fixture doesn't show a
+   * misleading count — the score stays centred regardless because the team
+   * block hugs the centre via `margin`, not this pill.
    */
-  function renderToPlay(n, side) {
+  function renderCountdownPill(n, side) {
     if (n == null || !Number.isFinite(Number(n))) return null;
     const remaining = Math.max(0, Math.min(11, Math.floor(Number(n))));
     const done = remaining === 0;
@@ -135,23 +124,30 @@ export function LiveFaceOffRow({
     return (
       <span
         className={
-          'live-banner-row__to-play' +
-          (done ? ' live-banner-row__to-play--done' : '')
+          'live-banner-row__countdown' +
+          (done ? ' live-banner-row__countdown--done' : '')
         }
         aria-label={ariaLabel}
         title={ariaLabel}
       >
-        {done ? (
-          <span className="live-banner-row__ft" aria-hidden="true">
-            FT
-          </span>
-        ) : (
-          <span className="live-banner-row__shirts" aria-hidden="true">
-            {Array.from({ length: remaining }, (_, i) => (
-              <ShirtIcon key={i} />
-            ))}
-          </span>
-        )}
+        {done ? 'FT' : remaining}
+      </span>
+    );
+  }
+
+  /**
+   * One-word narrative caption (Hero / Villain) tucked under a team's name.
+   * Returns nothing when the side carries no status. Absolutely positioned by
+   * CSS so it never shifts the name / crest / score baseline.
+   */
+  function renderAward(status, name) {
+    if (!status) return null;
+    return (
+      <span
+        className={'live-banner-row__award live-banner-row__award--' + status}
+        aria-label={`${name}: ${HERO_VILLAIN_LABEL[status]}`}
+      >
+        {HERO_VILLAIN_SHORT[status]}
       </span>
     );
   }
@@ -231,119 +227,97 @@ export function LiveFaceOffRow({
     >
       <div className="live-banner-row__side live-banner-row__side--home">
         {bannerExtras.home ?? null}
-        <span className="live-banner-row__crest">
-          <HeroVillainAvatarFrame status={homeStatus} size="default">
-            <TeamAvatar
-              entryId={homeId}
-              name={homeName}
-              size={compact ? 'sm' : 'md'}
-              logoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          </HeroVillainAvatarFrame>
-        </span>
-        <span className="live-banner-row__names">
-          <span
-            className={
-              'live-banner-row__name' +
-              (homeWinner ? ' live-banner-row__name--winner' : '') +
-              (awayWinner ? ' live-banner-row__name--loser' : '')
-            }
-            title={homeName}
-          >
-            {homeDisplayName ?? homeName}
+        {barsMode ? null : renderCountdownPill(homeRemaining, 'home')}
+        <span className="live-banner-row__teamblock live-banner-row__teamblock--home">
+          <span className="live-banner-row__names">
+            <span
+              className={
+                'live-banner-row__name' +
+                (homeWinner ? ' live-banner-row__name--winner' : '') +
+                (awayWinner ? ' live-banner-row__name--loser' : '')
+              }
+              title={homeName}
+            >
+              {homeDisplayName ?? homeName}
+            </span>
+            {renderAward(homeStatus, homeName)}
           </span>
-          {barsMode ? null : renderToPlay(homeRemaining, 'home')}
+          <span className="live-banner-row__crest">
+            <HeroVillainAvatarFrame status={homeStatus} size="default">
+              <TeamAvatar
+                entryId={homeId}
+                name={homeName}
+                size={compact ? 'sm' : 'md'}
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </HeroVillainAvatarFrame>
+          </span>
         </span>
       </div>
 
       <div className="live-banner-row__center">
-      <div className="live-banner-row__score tabular" aria-label="Gameweek score">
-        {homeScoreLive && awayScoreLive ? (
-          <>
-            <span className="live-banner-row__score-side live-banner-row__score-side--home">
-              <span
-                className={
-                  'live-banner-row__score-half' +
-                  (homeWinner ? ' live-banner-row__score-half--winner' : '') +
-                  (awayWinner ? ' live-banner-row__score-half--loser' : '')
-                }
-              >
-                {homeLive}
+        <div className="live-banner-row__score tabular" aria-label="Gameweek score">
+          {homeScoreLive && awayScoreLive ? (
+            <>
+              <span className="live-banner-row__score-cell live-banner-row__score-cell--home">
+                <span
+                  className={
+                    'live-banner-row__score-half' +
+                    (homeWinner ? ' live-banner-row__score-half--winner' : '')
+                  }
+                >
+                  {homeLive}
+                </span>
               </span>
-            </span>
-            <span className="live-banner-row__score-sep" aria-hidden="true">
-              –
-            </span>
-            <span className="live-banner-row__score-side live-banner-row__score-side--away">
-              <span
-                className={
-                  'live-banner-row__score-half' +
-                  (awayWinner ? ' live-banner-row__score-half--winner' : '') +
-                  (homeWinner ? ' live-banner-row__score-half--loser' : '')
-                }
-              >
-                {awayLive}
+              <span className="live-banner-row__score-sep" aria-hidden="true">
+                –
               </span>
-            </span>
-          </>
-        ) : (
-          <span className="live-banner-row__score-pending muted">vs</span>
-        )}
-      </div>
-        {hasStatus ? (
-          <span className="live-banner-row__status-captions">
-            {homeStatus ? (
-              <span
-                className={
-                  'live-banner-row__caption-pill live-banner-row__caption-pill--' +
-                  homeStatus
-                }
-                aria-label={`${homeName}: ${HERO_VILLAIN_LABEL[homeStatus]}`}
-              >
-                {HERO_VILLAIN_LABEL[homeStatus]}
+              <span className="live-banner-row__score-cell live-banner-row__score-cell--away">
+                <span
+                  className={
+                    'live-banner-row__score-half' +
+                    (awayWinner ? ' live-banner-row__score-half--winner' : '')
+                  }
+                >
+                  {awayLive}
+                </span>
               </span>
-            ) : null}
-            {awayStatus ? (
-              <span
-                className={
-                  'live-banner-row__caption-pill live-banner-row__caption-pill--' +
-                  awayStatus
-                }
-                aria-label={`${awayName}: ${HERO_VILLAIN_LABEL[awayStatus]}`}
-              >
-                {HERO_VILLAIN_LABEL[awayStatus]}
-              </span>
-            ) : null}
-          </span>
-        ) : null}
+            </>
+          ) : (
+            <span className="live-banner-row__score-pending muted">vs</span>
+          )}
+        </div>
       </div>
 
       <div className="live-banner-row__side live-banner-row__side--away">
-        <span className="live-banner-row__names live-banner-row__names--away">
-          <span
-            className={
-              'live-banner-row__name' +
-              (awayWinner ? ' live-banner-row__name--winner' : '') +
-              (homeWinner ? ' live-banner-row__name--loser' : '')
-            }
-            title={awayName}
-          >
-            {awayDisplayName ?? awayName}
+        <span className="live-banner-row__teamblock live-banner-row__teamblock--away">
+          <span className="live-banner-row__crest">
+            <HeroVillainAvatarFrame status={awayStatus} size="default">
+              <TeamAvatar
+                entryId={awayId}
+                name={awayName}
+                size={compact ? 'sm' : 'md'}
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </HeroVillainAvatarFrame>
           </span>
-          {barsMode ? null : renderToPlay(awayRemaining, 'away')}
+          <span className="live-banner-row__names live-banner-row__names--away">
+            <span
+              className={
+                'live-banner-row__name' +
+                (awayWinner ? ' live-banner-row__name--winner' : '') +
+                (homeWinner ? ' live-banner-row__name--loser' : '')
+              }
+              title={awayName}
+            >
+              {awayDisplayName ?? awayName}
+            </span>
+            {renderAward(awayStatus, awayName)}
+          </span>
         </span>
-        <span className="live-banner-row__crest">
-          <HeroVillainAvatarFrame status={awayStatus} size="default">
-            <TeamAvatar
-              entryId={awayId}
-              name={awayName}
-              size={compact ? 'sm' : 'md'}
-              logoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          </HeroVillainAvatarFrame>
-        </span>
+        {barsMode ? null : renderCountdownPill(awayRemaining, 'away')}
         {bannerExtras.away ?? null}
       </div>
 
