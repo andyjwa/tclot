@@ -20,12 +20,26 @@ export function estimateMinutes(
   _fixture: Fixture,
   config: ModelConfig,
 ): MinutesEstimate {
-  const doubt = player.injuryDoubtScore ?? 0;
-  const doubtAdj = clamp(1 - doubt * 0.08, 0.55, 1);
-  const startFromRate = clamp(player.recentStartRate, 0.05, 0.98);
-  const startFromMinutes =
-    player.minutesLast6 > 0 ? clamp(player.minutesLast6 / (6 * 90), 0.05, 0.98) : startFromRate;
-  const P_start = clamp((0.6 * startFromRate + 0.4 * startFromMinutes) * doubtAdj, 0.02, 0.99);
+  // Confirmed lineup overrides the historical estimate (see Player.confirmedRole).
+  if (player.confirmedRole === 'absent') {
+    return { P_start: 0, P_sixty_plus: 0, expectedMinutes: 0, P_bench_cameo: 0 };
+  }
+
+  let P_start: number;
+  if (player.confirmedRole === 'xi') {
+    // Confirmed starter: remove rotation/doubt discount, but keep early-sub variance below.
+    P_start = 0.99;
+  } else if (player.confirmedRole === 'bench') {
+    // Named sub: only cameo minutes if introduced.
+    P_start = 0.02;
+  } else {
+    const doubt = player.injuryDoubtScore ?? 0;
+    const doubtAdj = clamp(1 - doubt * 0.08, 0.55, 1);
+    const startFromRate = clamp(player.recentStartRate, 0.05, 0.98);
+    const startFromMinutes =
+      player.minutesLast6 > 0 ? clamp(player.minutesLast6 / (6 * 90), 0.05, 0.98) : startFromRate;
+    P_start = clamp((0.6 * startFromRate + 0.4 * startFromMinutes) * doubtAdj, 0.02, 0.99);
+  }
 
   // If starting: mixture of full match, early hook, small injury break.
   const EminGivenStart = 0.72 * 90 + 0.18 * 78 + 0.1 * 62;

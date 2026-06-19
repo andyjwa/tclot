@@ -44,9 +44,53 @@ describe('predictPlayerGameweek', () => {
     expect(pred.probabilitySixPlus).toBeLessThanOrEqual(1);
     expect(pred.explanation.length).toBeGreaterThan(0);
 
+    expect(pred.probabilityTwoOrLess).toBeGreaterThanOrEqual(0);
+    expect(pred.probabilityTwoOrLess).toBeLessThanOrEqual(1);
+
     const rec = formatPredictionRecord(pred, mid.name);
     expect(rec.playerName).toBe('Example Midfielder');
     expect(rec).toHaveProperty('probabilities');
     expect(rec).toHaveProperty('breakdown');
+  });
+});
+
+describe('confirmedRole minutes override', () => {
+  const teams = mockTeamsById();
+  const cfg = { ...DEFAULT_MODEL_CONFIG, simulationIterations: 1500 };
+  const base = mockPlayers.find((p) => p.id === 101)!;
+
+  it('absent → zero expected points and high blank probability', () => {
+    const rng = createSeedRandom(7);
+    const pred = predictForPlayerFromMap(
+      { ...base, confirmedRole: 'absent' },
+      mockFixture,
+      teams,
+      cfg,
+      () => rng.next(),
+    );
+    expect(pred.expectedMinutes).toBe(0);
+    expect(pred.expectedPoints).toBe(0);
+    expect(pred.probabilityTwoOrLess).toBe(1);
+  });
+
+  it('confirmed xi scores higher than confirmed bench', () => {
+    const xiRng = createSeedRandom(11);
+    const benchRng = createSeedRandom(11);
+    const xi = predictForPlayerFromMap(
+      { ...base, confirmedRole: 'xi' },
+      mockFixture,
+      teams,
+      cfg,
+      () => xiRng.next(),
+    );
+    const bench = predictForPlayerFromMap(
+      { ...base, confirmedRole: 'bench' },
+      mockFixture,
+      teams,
+      cfg,
+      () => benchRng.next(),
+    );
+    expect(xi.expectedMinutes).toBeGreaterThan(bench.expectedMinutes);
+    expect(xi.expectedPoints).toBeGreaterThan(bench.expectedPoints);
   });
 });

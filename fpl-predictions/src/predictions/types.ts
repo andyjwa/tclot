@@ -29,6 +29,15 @@ export interface Player {
   ballRecoveriesPer90: number;
   /** Optional flags: 0 = none, higher = more doubt. */
   injuryDoubtScore?: number;
+  /**
+   * Confirmed matchday role from an announced lineup (Pulselive T-75 / ESPN T-60).
+   * When set, overrides the historical minutes estimate:
+   *   'xi'     → confirmed starter (rotation/doubt discount removed)
+   *   'bench'  → named substitute (cameo minutes only)
+   *   'absent' → not in the matchday squad (zero minutes)
+   * Leave undefined pre-lineup to use the historical estimate.
+   */
+  confirmedRole?: 'xi' | 'bench' | 'absent';
 }
 
 export interface Team {
@@ -90,6 +99,7 @@ export interface Prediction {
   p10: number;
   p50: number;
   p90: number;
+  probabilityTwoOrLess: number;
   probabilitySixPlus: number;
   probabilityTenPlus: number;
   probabilityFifteenPlus: number;

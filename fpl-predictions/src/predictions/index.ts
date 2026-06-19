@@ -42,6 +42,23 @@ export function buildRateBundle(
   config: ModelConfig,
 ): RateBundle {
   const mins = estimateMinutes(player, playerTeam, fixture, config);
+  // No expected minutes (e.g. confirmed absent) → cannot accumulate anything.
+  if (mins.expectedMinutes <= 0) {
+    return {
+      P_start: 0,
+      P_bench_cameo: 0,
+      lambdaGoals: 0,
+      lambdaAssists: 0,
+      cleanSheetProbability: 0,
+      dcProbability: 0,
+      lambdaSaves: 0,
+      yellowP: 0,
+      redP: 0,
+      ownP: 0,
+      penP: 0,
+      expectedBonus: 0,
+    };
+  }
   const { lambda: lambdaGoals } = expectedGoalsRate(
     player,
     playerTeam,
@@ -186,6 +203,7 @@ export function predictPlayerGameweek(
     p10: sum.p10,
     p50: sum.p50,
     p90: sum.p90,
+    probabilityTwoOrLess: sum.p2OrLess,
     probabilitySixPlus: sum.p6,
     probabilityTenPlus: sum.p10h,
     probabilityFifteenPlus: sum.p15,

@@ -1,6 +1,24 @@
 import type { FplPosition, PointsBreakdown } from './types.js';
-import { clamp } from './stats.js';
+import { clamp, poissonTailGe } from './stats.js';
 import { cleanSheetPointsIfEligible, goalPointsPerGoal } from './bonusModel.js';
+
+/**
+ * Expected save points for a GW: 1 pt per 3 saves with official floor division.
+ * Uses E[X] = sum_{j>=1} P(X >= j) with X = floor(N/3) and N ~ Poisson(lambda),
+ * i.e. E[floor(N/3)] = sum_{j>=1} P(N >= 3j). This matches the Monte Carlo path
+ * (which floors per iteration); flooring the mean — Math.floor(E[N]/3) — under-counts.
+ */
+export function expectedSavePoints(lambda: number): number {
+  const lam = Math.max(0, lambda);
+  if (lam <= 0) return 0;
+  let sum = 0;
+  for (let j = 1; j <= 50; j++) {
+    const term = poissonTailGe(lam, 3 * j);
+    sum += term;
+    if (term < 1e-6) break;
+  }
+  return sum;
+}
 
 export interface ScoringOutcomes {
   minutes: number;
@@ -72,8 +90,7 @@ export function analyticExpectedBreakdown(
   const csPts = cleanSheetPointsIfEligible(position);
   const cleanSheet = args.cleanSheetProbability * csPts * pSixty;
 
-  const saves =
-    position === 'GK' ? Math.floor(Math.max(0, args.expectedSaves) / 3) : 0;
+  const saves = position === 'GK' ? expectedSavePoints(args.expectedSaves) : 0;
 
   const dc = args.dcProbability * 2;
   const cards = args.yellowP * -1 + args.redP * -3;

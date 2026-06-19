@@ -252,6 +252,7 @@ import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
+import ForecastPanel from './ForecastPanel.jsx'
 import { PreseasonHub } from './PreseasonHub.jsx'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
@@ -2297,7 +2298,7 @@ function App() {
    * `setFplLiveTab` below coerces any incoming `'vibes'` to `'live'` so a
    * persisted pref or stale deep link cannot leave the Live tab blank. */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {'squads' | 'live'} */ ('live'),
+    /** @type {'squads' | 'live' | 'forecast'} */ ('live'),
   )
   const fplLiveTab = fplLiveTabRaw === 'vibes' ? 'live' : fplLiveTabRaw
   const setFplLiveTab = useCallback((next) => {
@@ -3729,6 +3730,19 @@ function App() {
                 >
                   Lineups
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-forecast"
+                  aria-selected={fplLiveTab === 'forecast'}
+                  className={
+                    'subnav__tab' +
+                    (fplLiveTab === 'forecast' ? ' subnav__tab--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('forecast')}
+                >
+                  Forecast
+                </button>
               </div>
               </div>
               <div className="section-body">
@@ -3759,6 +3773,7 @@ function App() {
                   compactMobileChrome
                 />
               ) : null}
+              {fplLiveTab === 'forecast' ? <ForecastPanel /> : null}
               </div>
             </section>
           )}

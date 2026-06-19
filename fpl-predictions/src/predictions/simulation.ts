@@ -99,16 +99,19 @@ export function summarizeSamples(samples: number[]): {
   p10: number;
   p50: number;
   p90: number;
+  p2OrLess: number;
   p6: number;
   p10h: number;
   p15: number;
 } {
   const s = [...samples].sort((a, b) => a - b);
   const mean = samples.reduce((a, b) => a + b, 0) / Math.max(1, samples.length);
-  let c6 = 0,
+  let cBlank = 0,
+    c6 = 0,
     c10 = 0,
     c15 = 0;
   for (const x of samples) {
+    if (x <= 2) cBlank += 1;
     if (x >= 6) c6 += 1;
     if (x >= 10) c10 += 1;
     if (x >= 15) c15 += 1;
@@ -119,6 +122,7 @@ export function summarizeSamples(samples: number[]): {
     p10: percentile(s, 0.1),
     p50: percentile(s, 0.5),
     p90: percentile(s, 0.9),
+    p2OrLess: cBlank / n,
     p6: c6 / n,
     p10h: c10 / n,
     p15: c15 / n,

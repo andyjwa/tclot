@@ -1,0 +1,14 @@
+{
+  "gameweek": 31,
+  "updatedAt": "2026-06-19T20:21:52.030Z",
+  "idMismatches": {
+    "idSpaceDivergences": 80,
+    "nameFallback": 0,
+    "unresolved": 0
+  },
+  "understatAvailable": true,
+  "understatPlayerMatchRate": 0.586,
+  "teamsEnriched": 20,
+  "fixturesRun": 8,
+  "playerCount": 678
+}

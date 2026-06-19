@@ -18387,3 +18387,620 @@ button.live-xp__player-name:focus-visible {
   height: 18px;
 }
 
+/* ============================================================
+   Forecast view (FPL Live → Forecast sub-tab) — consumes the
+   static predictions.json artifact. Reuses --fm-* design tokens.
+   ============================================================ */
+.forecast-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.forecast-state {
+  padding: 18px 4px;
+}
+.forecast-state__empty {
+  margin-top: 10px;
+}
+
+/* Health / freshness strip */
+.forecast-health {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.forecast-health__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--fm-border);
+  border-radius: 999px;
+  background: var(--fm-card);
+  font-size: 12px;
+}
+.forecast-health__chip--warn {
+  border-color: color-mix(in srgb, #e6a23c 60%, var(--fm-border));
+  background: color-mix(in srgb, #e6a23c 12%, var(--fm-card));
+}
+.forecast-health__label {
+  color: var(--fm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+.forecast-health__value {
+  color: var(--fm-text-strong);
+  font-weight: 600;
+}
+
+/* Sections */
+.forecast-section__title {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fm-muted);
+}
+
+/* Matchup previews */
+.forecast-matchup__empty {
+  margin: 0;
+  font-size: 13px;
+}
+.forecast-matchups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+.forecast-matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  background: var(--fm-card);
+}
+.forecast-matchup__side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.forecast-matchup__side--away {
+  justify-content: flex-end;
+}
+.forecast-matchup__team {
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.forecast-matchup__xp {
+  font-weight: 700;
+  color: var(--fm-text-strong);
+}
+.forecast-matchup__lean {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-text-strong) 8%, var(--fm-card));
+  color: var(--fm-muted);
+}
+.forecast-matchup__lean--home {
+  color: #2e9e5b;
+}
+.forecast-matchup__lean--away {
+  color: #795bfb;
+}
+
+/* Toolbar: position pills + team select + search */
+.forecast-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.forecast-filters {
+  display: inline-flex;
+  gap: 6px;
+}
+.forecast-pill {
+  padding: 5px 12px;
+  border: 1px solid var(--fm-border);
+  border-radius: 999px;
+  background: var(--fm-card);
+  color: var(--fm-text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.forecast-pill--active {
+  background: var(--pill-active-bg);
+  color: var(--pill-active-fg);
+  border-color: var(--pill-active-border);
+}
+.forecast-controls {
+  display: inline-flex;
+  gap: 8px;
+}
+.forecast-select,
+.forecast-search {
+  padding: 6px 10px;
+  border: 1px solid var(--fm-border);
+  border-radius: 8px;
+  background: var(--fm-card);
+  color: var(--fm-text);
+  font-size: 13px;
+}
+.forecast-search {
+  min-width: 150px;
+}
+
+/* Leaderboard table */
+.forecast-table-wrap {
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  overflow: auto;
+}
+.forecast-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.forecast-table thead th {
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--fm-text-strong) 5%, var(--fm-card));
+  color: var(--fm-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: right;
+  padding: 8px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+.forecast-th--left {
+  text-align: left;
+}
+.forecast-th--sorted {
+  color: var(--fm-text-strong);
+}
+.forecast-row {
+  cursor: pointer;
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
+}
+.forecast-row:hover {
+  background: color-mix(in srgb, var(--tclot-logo-purple) 6%, transparent);
+}
+.forecast-row--open {
+  background: color-mix(in srgb, var(--tclot-logo-purple) 9%, transparent);
+}
+.forecast-row td {
+  padding: 7px 10px;
+  text-align: right;
+}
+.forecast-row__name {
+  text-align: left !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.forecast-row__toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--fm-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.forecast-row__chevron {
+  display: inline-block;
+  transition: transform 0.12s ease;
+}
+.forecast-row__chevron--open {
+  transform: rotate(90deg);
+}
+.forecast-row__player {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.forecast-row__web {
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+.forecast-row__team {
+  font-size: 11px;
+}
+.forecast-row__doubt {
+  color: #e6a23c;
+}
+.forecast-row__us {
+  color: #2e9e5b;
+}
+.forecast-row__xp {
+  font-weight: 700;
+  color: var(--fm-text-strong);
+}
+.forecast-num--range {
+  font-size: 12px;
+}
+.forecast-table__empty,
+.forecast-footnote {
+  padding: 10px;
+  font-size: 12px;
+}
+.forecast-footnote {
+  margin: 6px 2px 0;
+}
+
+/* Expanded breakdown */
+.forecast-row__detail td {
+  padding: 0 10px 12px;
+  text-align: left;
+  background: color-mix(in srgb, var(--tclot-logo-purple) 4%, transparent);
+}
+.forecast-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+.forecast-detail__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+.forecast-detail__full {
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+.forecast-detail__meta {
+  font-size: 12px;
+}
+.forecast-breakdown__bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--fm-text-strong) 8%, var(--fm-card));
+}
+.forecast-seg {
+  height: 100%;
+}
+.forecast-seg--mins {
+  background: #6b7280;
+}
+.forecast-seg--goals {
+  background: #2e9e5b;
+}
+.forecast-seg--assists {
+  background: #4f9bd9;
+}
+.forecast-seg--cs {
+  background: #795bfb;
+}
+.forecast-seg--saves {
+  background: #d98e3c;
+}
+.forecast-seg--dc {
+  background: #14b8a6;
+}
+.forecast-seg--bonus {
+  background: #e0b341;
+}
+.forecast-seg--other {
+  background: #9aa0a6;
+}
+.forecast-breakdown__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.forecast-breakdown__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.forecast-breakdown__item--neg .forecast-breakdown__seg-val {
+  color: #d9534f;
+}
+.forecast-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.forecast-breakdown__seg-label {
+  color: var(--fm-muted);
+}
+.forecast-breakdown__seg-val {
+  color: var(--fm-text-strong);
+  font-weight: 600;
+}
+.forecast-detail__note {
+  font-size: 12px;
+}
+
+/* ---- Likelihood-first presentation ---- */
+.forecast-row__tier,
+.forecast-row__rangecell {
+  white-space: nowrap;
+}
+.forecast-row__outlook {
+  min-width: 190px;
+}
+.forecast-tier {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.forecast-tier--elite {
+  background: color-mix(in srgb, #2e9e5b 18%, transparent);
+  color: #2e9e5b;
+  border-color: color-mix(in srgb, #2e9e5b 40%, transparent);
+}
+.forecast-tier--strong {
+  background: color-mix(in srgb, #14b8a6 16%, transparent);
+  color: #0f9c8c;
+  border-color: color-mix(in srgb, #14b8a6 38%, transparent);
+}
+.forecast-tier--solid {
+  background: color-mix(in srgb, #4f9bd9 16%, transparent);
+  color: #3d83bd;
+  border-color: color-mix(in srgb, #4f9bd9 36%, transparent);
+}
+.forecast-tier--risky {
+  background: color-mix(in srgb, #e6a23c 18%, transparent);
+  color: #c9842a;
+  border-color: color-mix(in srgb, #e6a23c 38%, transparent);
+}
+.forecast-tier--fringe,
+.forecast-tier--unknown {
+  background: color-mix(in srgb, var(--fm-text-strong) 8%, transparent);
+  color: var(--fm-muted);
+  border-color: color-mix(in srgb, var(--fm-text-strong) 16%, transparent);
+}
+
+/* Outcome bar (MID/FWD): blank / decent / haul */
+.forecast-outlook,
+.forecast-twoworld {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.forecast-outlook__bar,
+.forecast-twoworld__bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--fm-text-strong) 8%, var(--fm-card));
+}
+.forecast-band {
+  height: 100%;
+}
+.forecast-band--blank {
+  background: color-mix(in srgb, #d9534f 55%, transparent);
+}
+.forecast-band--mid {
+  background: #6b7280;
+}
+.forecast-band--haul {
+  background: #2e9e5b;
+}
+.forecast-outlook__legend,
+.forecast-twoworld__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  font-size: 11px;
+  color: var(--fm-text);
+}
+.forecast-outlook__haul {
+  color: #2e9e5b;
+  font-weight: 600;
+}
+.forecast-outlook__sep,
+.forecast-twoworld__sep {
+  color: var(--fm-muted);
+}
+
+/* Two-world bar (GK/DEF): no clean sheet vs clean sheet */
+.forecast-twoworld__nocs {
+  background: #6b7280;
+  height: 100%;
+}
+.forecast-twoworld__cs {
+  background: #795bfb;
+  height: 100%;
+}
+.forecast-twoworld__win {
+  color: #795bfb;
+  font-weight: 600;
+}
+.forecast-twoworld__legend b {
+  color: var(--fm-text-strong);
+}
+
+/* Range bar (floor / median / ceiling) */
+.forecast-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.forecast-range__track {
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fm-text-strong) 8%, var(--fm-card));
+}
+.forecast-range__fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--tclot-logo-purple) 45%, transparent);
+}
+.forecast-range__median {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--fm-text-strong);
+  transform: translateX(-1px);
+}
+.forecast-range__text {
+  font-size: 12px;
+  color: var(--fm-text);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Confirmed-lineup role badges + live delta */
+.forecast-role {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+.forecast-role--xi {
+  background: color-mix(in srgb, #2e9e5b 18%, transparent);
+  color: #2e9e5b;
+}
+.forecast-role--bench {
+  background: color-mix(in srgb, #e6a23c 18%, transparent);
+  color: #c9842a;
+}
+.forecast-role--absent {
+  background: color-mix(in srgb, #d9534f 18%, transparent);
+  color: #d9534f;
+}
+.forecast-row--absent {
+  opacity: 0.55;
+}
+.forecast-row__notstarting {
+  font-size: 12px;
+  color: var(--fm-muted);
+  font-style: italic;
+}
+.forecast-row__delta {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.forecast-row__delta--up {
+  color: #2e9e5b;
+}
+.forecast-row__delta--down {
+  color: #d9534f;
+}
+.forecast-health__chip--live .forecast-health__value {
+  color: #2e9e5b;
+}
+
+/* Matchup win/draw/loss odds */
+.forecast-matchup__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.forecast-matchup__range {
+  font-size: 11px;
+  font-weight: 400;
+}
+.forecast-matchup__odds {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.forecast-matchup__oddsbar {
+  display: flex;
+  height: 7px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--fm-text-strong) 8%, var(--fm-card));
+}
+.forecast-matchup__win-h {
+  background: #2e9e5b;
+  height: 100%;
+}
+.forecast-matchup__draw {
+  background: #9aa0a6;
+  height: 100%;
+}
+.forecast-matchup__win-a {
+  background: #4f9bd9;
+  height: 100%;
+}
+.forecast-matchup__oddslabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--fm-text);
+}
+
+/* Expander stats row */
+.forecast-detail__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+.forecast-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 12px;
+}
+.forecast-stat__k {
+  font-size: 11px;
+}
+.forecast-detail__why {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+@media (max-width: 600px) {
+  .forecast-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .forecast-controls {
+    width: 100%;
+  }
+  .forecast-search {
+    flex: 1;
+  }
+  .forecast-row__outlook {
+    min-width: 140px;
+  }
+}
+

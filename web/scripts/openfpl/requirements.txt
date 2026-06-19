@@ -1,0 +1,8 @@
+# OpenFPL inference add-on (disabled by default; only needed once OPENFPL_ENABLED=1 and a
+# trained model exists at scripts/openfpl/model/openfpl.joblib). Install with:
+#   pip install -r web/scripts/openfpl/requirements.txt
+numpy>=1.26
+pandas>=2.1
+scikit-learn>=1.4
+lightgbm>=4.3
+joblib>=1.3
