@@ -43,7 +43,14 @@
       ;(function () {
         try {
           var s = localStorage.getItem('tclot-theme')
-          document.body.dataset.tclotTheme = s === 'light' || s === 'dark' ? s : 'light'
+          var resolved =
+            s === 'light' || s === 'dark'
+              ? s
+              : window.matchMedia &&
+                  window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          document.body.dataset.tclotTheme = resolved
         } catch (e) {
           document.body.dataset.tclotTheme = 'light'
         }
