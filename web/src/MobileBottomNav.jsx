@@ -1,137 +1,159 @@
 /**
- * Mobile bottom nav — expanding FAB ("speed dial").
+ * Mobile bottom nav — persistent tab bar (design option 5e).
  *
- * Replaces `<DashboardNav variant="bottom" />` on mobile (≤1080px). Instead of
- * a full-width floating pill that auto-hides on scroll, this renders a single
- * circular trigger anchored bottom-right. Tapping it fans the menu items
- * upward as a vertical stack of glass pills; the trigger morphs from a
- * hamburger into an X. The trigger itself never disappears — only the fanned
- * items collapse, which happens on: outside tap, Escape, scroll, or selecting
- * a destination.
+ * Replaces the previous corner FAB "speed dial" on mobile (≤1080px) with a
+ * frosted, full-width tab bar pinned to the bottom edge. Five slots, in order:
  *
- * Order (top → bottom of the fan): 26/27 · Heritage · Players · More. The
- * remaining top-level tabs (Live, Standings, Moves, Settings) live behind the
- * More panel, as before.
+ *   Table (standings) · Moves (teamSelection) · [CENTER] · Players · More
  *
- * Visuals are scoped to the `.glass-bottom-nav` class prefix (see
- * `MobileBottomNav.css`) so they do not collide with the legacy
- * `.dashboard-nav--bottom` rules in App.css. Desktop (≥1081px) hides the whole
- * thing and uses the top `<DashboardNav variant="top" />`.
+ * The CENTER slot is an inline circle (never raised — nothing pokes above the
+ * bar) and is the "what matters now" hero. It is contextual on the season
+ * phase, derived from the shared brand-header status (`deriveBrandHeaderStatus`,
+ * passed in as `liveStatus`):
+ *
+ *   - PRESEASON (status 'pre-season' / 'unknown'): a "26/27" skin — film/clapper
+ *     icon + label "26/27", NO purple, in line with the other tabs. Routes to
+ *     the Preseason hub (`dashboardView 'preseason'`).
+ *   - LIVE GW (status 'live' — deadline passed, GW not finished): purple
+ *     brand-gradient circle behind a white core dot with a pulsing ring; label
+ *     "Live" (purple). Routes to FPL Live (`dashboardView 'fplLive'`).
+ *   - GW OVER (status 'idle' — current GW finalized, between GWs): NO purple, NO
+ *     pulse — a single static green dot; label "Scores" (muted). Routes to FPL
+ *     Live (`dashboardView 'fplLive'`).
+ *
+ * Heritage ('hall') and Settings ('settings') live behind More (the existing
+ * `'more'` dashboardView page / DashboardMorePanel).
+ *
+ * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
+ * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses the
+ * top `<DashboardNav variant="top" />`.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { NavIcon } from './NavIcon'
-import { useDismissOnOutsidePointer } from './useDismissOnOutsidePointer'
 import './MobileBottomNav.css'
 
-const NAV_ITEMS = [
-  { id: /** @type {const} */ ('preseason'), label: '26/27',    icon: /** @type {const} */ ('pulsing-dot'), pulse: true },
-  { id: /** @type {const} */ ('hall'),      label: 'Heritage', icon: /** @type {const} */ ('column') },
-  { id: /** @type {const} */ ('players'),   label: 'Players',  icon: /** @type {const} */ ('shuffle') },
-  { id: /** @type {const} */ ('more'),      label: 'More',     icon: /** @type {const} */ ('more') },
+/**
+ * Collapse the shared brand-header status into the three nav centre states.
+ * `'pre-season'` and `'unknown'` (and any missing status) fall back to the
+ * preseason "26/27" skin so the bar always has a sensible centre.
+ *
+ * @param {'live' | 'idle' | 'pre-season' | 'unknown' | undefined | null} status
+ * @returns {'pre' | 'live' | 'over'}
+ */
+function gwStateFromStatus(status) {
+  if (status === 'live') return 'live'
+  if (status === 'idle') return 'over'
+  return 'pre'
+}
+
+const TABS = [
+  { id: /** @type {const} */ ('standings'),     label: 'Table',   icon: /** @type {const} */ ('bar-chart-3') },
+  { id: /** @type {const} */ ('teamSelection'), label: 'Moves',   icon: /** @type {const} */ ('users') },
+  { id: /** @type {const} */ ('players'),       label: 'Players', icon: /** @type {const} */ ('shuffle') },
 ]
+
+/** Per-phase copy + routing for the contextual centre slot. */
+const CENTER_BY_STATE = {
+  pre:  { label: '26/27',  view: /** @type {const} */ ('preseason'), aria: '26/27 season hub' },
+  live: { label: 'Live',   view: /** @type {const} */ ('fplLive'),   aria: 'FPL Live' },
+  over: { label: 'Scores', view: /** @type {const} */ ('fplLive'),   aria: 'FPL Live scores' },
+}
 
 /**
  * @param {{
  *   dashboardView: string,
  *   onSelect: (id: string) => void,
+ *   liveStatus?: { status?: 'live' | 'idle' | 'pre-season' | 'unknown' } | null,
  * }} props
  */
-export function MobileBottomNav({ dashboardView, onSelect }) {
-  const [expanded, setExpanded] = useState(false)
-  const rootRef = useRef(/** @type {HTMLElement | null} */ (null))
+export function MobileBottomNav({ dashboardView, onSelect, liveStatus }) {
+  const gwState = gwStateFromStatus(liveStatus?.status)
+  const center = CENTER_BY_STATE[gwState]
+  const centerActive = dashboardView === center.view
 
-  const collapse = useCallback(() => setExpanded(false), [])
-
-  // Tap anywhere outside the FAB closes the fan (deferred so the opening tap
-  // does not immediately dismiss it — handled inside the hook).
-  useDismissOnOutsidePointer(rootRef, expanded, collapse)
-
-  // Collapse the fan as soon as the user scrolls — the trigger stays put, so
-  // the menu tucks away without the whole nav disappearing.
-  useEffect(() => {
-    if (!expanded) return undefined
-    const onScroll = () => setExpanded(false)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [expanded])
-
-  // Escape closes the fan (keyboard / external keyboard users).
-  useEffect(() => {
-    if (!expanded) return undefined
-    const onKey = (/** @type {KeyboardEvent} */ ev) => {
-      if (ev.key === 'Escape') setExpanded(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [expanded])
-
-  const handleSelect = (/** @type {string} */ id) => {
-    setExpanded(false)
-    onSelect(id)
-  }
+  // "More" stays lit while the user is on any destination reached through it
+  // (the More page itself, Heritage, or Settings).
+  const moreActive =
+    dashboardView === 'more' ||
+    dashboardView === 'hall' ||
+    dashboardView === 'settings'
 
   return (
-    <nav
-      ref={rootRef}
-      className="glass-bottom-nav"
-      data-expanded={expanded ? 'true' : undefined}
-      aria-label="App navigation"
-    >
-      <div
-        className="glass-bottom-nav__items"
-        role="menu"
-        aria-hidden={expanded ? undefined : true}
-      >
-        {NAV_ITEMS.map((item) => {
-          // "More" stays lit while the user is on any of the demoted sub-pages
-          // reached through it (Live, Standings, Moves, Settings).
-          const active =
-            item.id === 'more'
-              ? dashboardView === 'more' ||
-                dashboardView === 'settings' ||
-                dashboardView === 'fplLive' ||
-                dashboardView === 'standings' ||
-                dashboardView === 'teamSelection'
-              : dashboardView === item.id
-          const iconClass =
-            'glass-bottom-nav__icon' +
-            (item.pulse ? ' glass-bottom-nav__icon--pulse' : '')
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="menuitem"
-              tabIndex={expanded ? 0 : -1}
-              className={
-                'glass-bottom-nav__item' + (active ? ' is-active' : '')
-              }
-              onClick={() => handleSelect(item.id)}
-              aria-current={active ? 'page' : undefined}
-            >
-              <span className="glass-bottom-nav__label">{item.label}</span>
-              <span className="glass-bottom-nav__icon-wrap" aria-hidden>
-                <NavIcon name={item.icon} size={20} className={iconClass} />
-              </span>
-            </button>
-          )
-        })}
-      </div>
+    <nav className="mobile-tab-bar" aria-label="App navigation" data-gwstate={gwState}>
+      <div className="mobile-tab-bar__row">
+        {TABS.slice(0, 2).map((tab) => (
+          <TabButton
+            key={tab.id}
+            tab={tab}
+            active={dashboardView === tab.id}
+            onSelect={onSelect}
+          />
+        ))}
 
-      <button
-        type="button"
-        className="glass-bottom-nav__trigger"
-        onClick={() => setExpanded((v) => !v)}
-        aria-expanded={expanded}
-        aria-haspopup="menu"
-        aria-label={expanded ? 'Close menu' : 'Open menu'}
-      >
-        <NavIcon
-          name={expanded ? 'close' : 'menu'}
-          size={24}
-          className="glass-bottom-nav__trigger-icon"
+        <div className="mobile-tab-bar__center">
+          <button
+            type="button"
+            className={
+              'mobile-tab-bar__fab' + (centerActive ? ' is-active' : '')
+            }
+            onClick={() => onSelect(center.view)}
+            aria-current={centerActive ? 'page' : undefined}
+            aria-label={center.aria}
+          >
+            {gwState === 'pre' ? (
+              <span className="mobile-tab-bar__preicon" aria-hidden>
+                <NavIcon name="film" size={20} />
+              </span>
+            ) : (
+              <span className="mobile-tab-bar__livedot" aria-hidden />
+            )}
+          </button>
+          <span className="mobile-tab-bar__label">{center.label}</span>
+        </div>
+
+        <TabButton
+          tab={TABS[2]}
+          active={dashboardView === TABS[2].id}
+          onSelect={onSelect}
         />
-      </button>
+
+        <button
+          type="button"
+          className={'mobile-tab-bar__btn' + (moreActive ? ' is-active' : '')}
+          onClick={() => onSelect('more')}
+          aria-current={moreActive ? 'page' : undefined}
+          aria-label="More"
+        >
+          <span className="mobile-tab-bar__ico" aria-hidden>
+            <NavIcon name="more" size={22} />
+          </span>
+          <span className="mobile-tab-bar__label">More</span>
+        </button>
+      </div>
     </nav>
+  )
+}
+
+/**
+ * @param {{
+ *   tab: { id: string, label: string, icon: 'bar-chart-3' | 'users' | 'shuffle' },
+ *   active: boolean,
+ *   onSelect: (id: string) => void,
+ * }} props
+ */
+function TabButton({ tab, active, onSelect }) {
+  return (
+    <button
+      type="button"
+      className={'mobile-tab-bar__btn' + (active ? ' is-active' : '')}
+      onClick={() => onSelect(tab.id)}
+      aria-current={active ? 'page' : undefined}
+      aria-label={tab.label}
+    >
+      <span className="mobile-tab-bar__ico" aria-hidden>
+        <NavIcon name={tab.icon} size={22} />
+      </span>
+      <span className="mobile-tab-bar__label">{tab.label}</span>
+    </button>
   )
 }

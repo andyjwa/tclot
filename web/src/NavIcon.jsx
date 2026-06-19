@@ -17,6 +17,8 @@
  *   - settings     : Settings gear (desktop-only entry on right edge of nav)
  *   - menu         : Hamburger (three lines) — collapsed trigger for the mobile FAB nav
  *   - close        : X — expanded-state trigger for the mobile FAB nav
+ *   - film         : Clapperboard/film strip — the "26/27" preseason hub, used by
+ *                    the contextual centre slot in the mobile bottom tab bar
  *
  * Stroke color is `currentColor` so the icon inherits CSS color from its
  * surrounding button (active vs. idle). pulsing-dot is the lone exception:
@@ -25,7 +27,7 @@
 
 /**
  * @param {{
- *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close',
+ *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close' | 'film',
  *   className?: string,
  *   size?: number,
  * }} props
@@ -152,6 +154,21 @@ export function NavIcon({ name, className, size = 20 }) {
         <svg {...common}>
           <path d="M18 6 6 18" />
           <path d="m6 6 12 12" />
+        </svg>
+      )
+    case 'film':
+      // Clapperboard / film-strip outline (Lucide-style). Paths mirror the
+      // `i-film` symbol in the mobile-nav mockup so the shipped 26/27 centre
+      // slot matches the approved design.
+      return (
+        <svg {...common}>
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <path d="M7 4v16" />
+          <path d="M17 4v16" />
+          <path d="M3 9h4" />
+          <path d="M17 9h4" />
+          <path d="M3 15h4" />
+          <path d="M17 15h4" />
         </svg>
       )
     default:

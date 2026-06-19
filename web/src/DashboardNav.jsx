@@ -69,9 +69,10 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
   // Single source of truth for nav order (left → right on desktop, also the
   // bottom-pill order on legacy mobile callers): 26/27 · FPL Live ·
   // Standings · Moves · Players · TCLOT Heritage · More. The new mobile
-  // bottom nav (MobileBottomNav.jsx) supplies its own collapsed item list
-  // (26/27 · More · Heritage); the items defined here drive only the
-  // desktop top nav now. `More` is `bottomOnly` so it never renders on
+  // bottom tab bar (MobileBottomNav.jsx) supplies its own slot list
+  // (Table · Moves · contextual centre · Players · More); the items defined
+  // here drive only the desktop top nav now. `More` is `bottomOnly` so it
+  // never renders on
   // desktop; desktop gets a separate Settings gear button (rendered below
   // the .map() loop), kept out of this array so its hairline-divider +
   // margin-left:auto styling stays local to that button.
@@ -175,18 +176,14 @@ export function DashboardMorePanel({
   teamLogoMap = {},
   kitIndexByEntry = {},
 }) {
-  // The mobile bottom nav now surfaces 26/27, Heritage, Players, and More
-  // at the top level — so the demoted top-level tabs (Live, Standings,
-  // Moves) need to be reachable from here. Players is no longer included
-  // since it has its own bottom-nav slot. We accept the slight redundancy
-  // on desktop (Live/Standings/Moves are also in the top nav) because
-  // keeping the More panel functioning as a complete sitemap is the
-  // higher-value tradeoff.
+  // The persistent mobile bottom tab bar (MobileBottomNav.jsx) now surfaces
+  // Table (Standings), Moves, Players, and a contextual centre (26/27 hub in
+  // preseason, FPL Live otherwise) at the top level. That leaves only Heritage
+  // and Settings to reach through More, so this panel lists exactly those two.
+  // ('more' is effectively mobile-only — the desktop top nav filters it out.)
   const rows = [
-    { id: /** @type {const} */ ('fplLive'),       label: 'FPL Live',  emoji: '🟢' },
-    { id: /** @type {const} */ ('standings'),     label: 'Standings', emoji: '📊' },
-    { id: /** @type {const} */ ('teamSelection'), label: 'Moves',     emoji: '🔁' },
-    { id: /** @type {const} */ ('settings'),      label: 'Settings',  emoji: '⚙️' },
+    { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },
+    { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },
   ]
 
   return (

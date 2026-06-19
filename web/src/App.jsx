@@ -3768,6 +3768,7 @@ function App() {
       <MobileBottomNav
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
+        liveStatus={brandHeaderStatus}
       />
       <LeagueInfoModal
         open={leagueInfoOpen}
