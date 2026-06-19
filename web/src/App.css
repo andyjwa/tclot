@@ -11963,11 +11963,38 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* Single face-off row (desktop + mobile compressed)            */
 /* ============================================================ */
 
+/* Per-fixture seeding pill ("1st vs 8th"), left-aligned above the face-off
+   row in the exact FotMob "GROUP A / GROUP B" treatment: a quiet grey rounded
+   pill with uppercase tracked text. Each team's live rank is threaded in from
+   `liveStandingsRows` (see LiveScores). Block-level so it sits on its own line
+   above the row; the left margin lines it up with the row's content inset. */
+.live-banner-row__seed {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  height: 22px;
+  margin: 10px 0 0 14px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-surface-2) 70%, transparent);
+  color: var(--fm-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.live-banner-row__seed--compact {
+  height: 20px;
+  margin: 9px 0 0 12px;
+  padding: 0 10px;
+  font-size: 10px;
+}
+
 .live-banner-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   font: inherit;
   color: inherit;
   text-align: left;
@@ -11994,14 +12021,19 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   background: color-mix(in srgb, var(--fm-surface-2) 38%, transparent);
 }
 .live-banner-row--compact {
-  padding: 10px 12px 14px;
-  gap: 6px;
+  padding: 10px 10px 14px;
+  gap: 5px;
 }
 .live-banner-row__side {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   min-width: 0;
+}
+/* Tighten every inter-element gap on the compact (phone) row so the name slot
+   keeps as much width as possible for the first-word team name. */
+.live-banner-row--compact .live-banner-row__side {
+  gap: 6px;
 }
 .live-banner-row__side--home {
   justify-content: flex-start;
@@ -12016,7 +12048,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row__teamblock {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   min-width: 0;
 }
 .live-banner-row__teamblock--home {
@@ -12028,7 +12060,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   flex-direction: row;
 }
 .live-banner-row--compact .live-banner-row__teamblock {
-  gap: 7px;
+  gap: 6px;
 }
 /* Per-team "players still to play" countdown pill at the far end of each side
    (home far-left, away far-right). Grey, quiet — matches the `FT` tag styling
@@ -12038,22 +12070,22 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
-  height: 21px;
+  min-width: 28px;
+  height: 19px;
   padding: 0 8px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--fm-surface-2) 70%, transparent);
   color: var(--fm-muted);
   font-family: 'Geist Mono', monospace;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1;
 }
 .live-banner-row--compact .live-banner-row__countdown {
-  min-width: 26px;
-  height: 19px;
-  padding: 0 6px;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 5px;
   font-size: 9px;
 }
 /* Crest column simply wraps the avatar (+ its hero/villain ring). The
@@ -12065,6 +12097,24 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   line-height: 0;
   display: inline-flex;
   align-items: center;
+}
+/* FotMob-neat crest: a uniform 30px badge on every row (both the desktop and
+   compact variants), so the crest, name, and score read at the same tidy scale
+   regardless of viewport. Overrides the TeamAvatar `--md`/`--sm` frame sizes
+   only inside the face-off row. */
+.live-banner-row__crest .team-avatar-frame,
+.live-banner-row__crest .team-shirt {
+  width: 30px;
+  height: 30px;
+}
+/* On a real phone (~390px) the far-end countdown pills + crest + score leave a
+   very tight name slot, so the crest steps down to 26px to give the team name
+   (collapsed to its first word on mobile) room to render in full rather than
+   ellipsising mid-first-word. */
+.live-banner-row--compact .live-banner-row__crest .team-avatar-frame,
+.live-banner-row--compact .live-banner-row__crest .team-shirt {
+  width: 26px;
+  height: 26px;
 }
 /* Avatar wrapper — wraps the existing TeamAvatar so the V1 ring is applied
    to a rounded container around the avatar (the avatar itself is unchanged)
@@ -12134,17 +12184,19 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   align-items: flex-end;
 }
 .live-banner-row__name {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 1rem;
+  /* FotMob-neat weight: ~600 (was 700) reads cleaner and lighter at this size. */
+  font-weight: 600;
   color: var(--fm-text);
   line-height: 1.2;
+  letter-spacing: -0.005em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
 }
 .live-banner-row--compact .live-banner-row__name {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
 }
 /* Option C winner indication: a soft purple pill behind the winning score
    (see `__score-half--winner`); team names stay equal weight — no name tint,
@@ -12207,20 +12259,22 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
    column-aligned regardless of digit count; home digits are right-aligned and
    away digits left-aligned so they meet at the separator. */
 .live-banner-row__score {
-  font-size: 1.55rem;
-  font-weight: 700;
+  /* FotMob-neat: slimmer score (~22px) than the prior 1.55rem so the row reads
+     lighter and the winner pill stays compact. */
+  font-size: 1.4rem;
+  font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--fm-text-strong);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: baseline;
-  width: 4.6em;
+  width: 4.3em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .live-banner-row--compact .live-banner-row__score {
-  font-size: 1.18rem;
-  width: 4.3em;
+  font-size: 1.08rem;
+  width: 4.1em;
 }
 .live-banner-row__score-cell--home {
   text-align: right;
@@ -12254,7 +12308,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
    separator never shifts, keeping scores column-aligned row to row. */
 .live-banner-row__score-half--winner {
   background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
-  box-shadow: 0 0 0 0.22em
+  box-shadow: 0 0 0 0.2em
     color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 .live-banner-row__score-pending {

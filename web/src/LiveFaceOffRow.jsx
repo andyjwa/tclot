@@ -1,3 +1,4 @@
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import {
   HeroVillainAvatarFrame,
@@ -5,6 +6,70 @@ import {
   HERO_VILLAIN_SHORT,
 } from './HeroVillainAvatarFrame';
 import { liveFixtureLead } from './liveScoresDerivations.js';
+import { firstWord } from './teamNameUtils.js';
+
+/**
+ * Team name that shows the full name when it fits its slot and falls back to
+ * the team's FIRST WORD ONLY (never a mid-word ellipsis) when the full name
+ * would overflow — matching the Standings hero/table treatment via the shared
+ * {@link firstWord} helper.
+ *
+ * Fit detection is imperative rather than pure-CSS: the slot is flex-shrunk to
+ * the available width by the row grid (the side cell is a fixed `1fr`), so when
+ * the full name overflows, `scrollWidth > clientWidth`. We measure with the
+ * full name in place, then swap to the first word if it doesn't fit. The
+ * measure/apply runs:
+ *  - after every render (a layout effect with no deps), so a score-tick
+ *    re-render that resets the text node back to the full name is corrected
+ *    before paint (no flash); and
+ *  - on viewport resize, via a `ResizeObserver` on the stable `…__side` cell
+ *    (observing the slot itself would loop, since we mutate its width).
+ *
+ * `candidate` is the caller's display name — already collapsed to the first
+ * word on mobile (so it simply renders the first word there) and the full name
+ * on desktop (where the fit check decides). The DOM text is written
+ * imperatively so React never fights the measurement.
+ */
+function FittedTeamName({ fullName, displayName, className, title }) {
+  const candidate = displayName ?? fullName;
+  const short = firstWord(fullName);
+  const ref = useRef(null);
+
+  const apply = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.textContent = candidate;
+    if (short && short !== candidate && el.scrollWidth > el.clientWidth + 0.5) {
+      el.textContent = short;
+    }
+  }, [candidate, short]);
+
+  // Re-apply after every render so a re-render (e.g. live score tick) that
+  // resets the text node to the full name is re-fitted before the browser
+  // paints.
+  useLayoutEffect(() => {
+    apply();
+  });
+
+  // Re-fit on viewport resize. Observe the stable side cell (fixed grid `1fr`)
+  // rather than the slot — mutating the slot's own width would retrigger the
+  // observer in a loop.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const sideEl = el.closest('.live-banner-row__side') || el.parentElement;
+    if (!sideEl) return undefined;
+    const ro = new ResizeObserver(() => apply());
+    ro.observe(sideEl);
+    return () => ro.disconnect();
+  }, [apply]);
+
+  return (
+    <span ref={ref} className={className} title={title}>
+      {candidate}
+    </span>
+  );
+}
 
 /**
  * Compact face-off row (desktop wide grid, or mobile compressed) — both
@@ -230,16 +295,16 @@ export function LiveFaceOffRow({
         {barsMode ? null : renderCountdownPill(homeRemaining, 'home')}
         <span className="live-banner-row__teamblock live-banner-row__teamblock--home">
           <span className="live-banner-row__names">
-            <span
+            <FittedTeamName
               className={
                 'live-banner-row__name' +
                 (homeWinner ? ' live-banner-row__name--winner' : '') +
                 (awayWinner ? ' live-banner-row__name--loser' : '')
               }
+              fullName={homeName}
+              displayName={homeDisplayName}
               title={homeName}
-            >
-              {homeDisplayName ?? homeName}
-            </span>
+            />
             {renderAward(homeStatus, homeName)}
           </span>
           <span className="live-banner-row__crest">
@@ -304,16 +369,16 @@ export function LiveFaceOffRow({
             </HeroVillainAvatarFrame>
           </span>
           <span className="live-banner-row__names live-banner-row__names--away">
-            <span
+            <FittedTeamName
               className={
                 'live-banner-row__name' +
                 (awayWinner ? ' live-banner-row__name--winner' : '') +
                 (homeWinner ? ' live-banner-row__name--loser' : '')
               }
+              fullName={awayName}
+              displayName={awayDisplayName}
               title={awayName}
-            >
-              {awayDisplayName ?? awayName}
-            </span>
+            />
             {renderAward(awayStatus, awayName)}
           </span>
         </span>

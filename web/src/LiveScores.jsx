@@ -32,6 +32,7 @@ import {
 } from './championOfRecord.js';
 import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
 import { firstWord } from './teamNameUtils.js';
+import { englishOrdinal } from './playerContributionEvents.js';
 import {
   computeManagerForm,
   liveGwOutcomeDot,
@@ -1415,6 +1416,21 @@ export function LiveScores({
               const homeStatus = homeVillain ? 'villain' : homeHero ? 'hero' : null;
               const awayStatus = awayVillain ? 'villain' : awayHero ? 'hero' : null;
 
+              /**
+               * Per-fixture seeding pill ("1st vs 8th") — each team's live
+               * competition rank from {@link liveRankByEntry}, formatted with
+               * English ordinals and rendered in the FotMob GROUP-pill
+               * treatment above the row. Skipped when either rank is missing
+               * (e.g. off-season / not-yet-ingested standings) so the pill
+               * never shows a half-empty "1st vs ".
+               */
+              const homeLiveRank = Number(liveRankByEntry[homeId]);
+              const awayLiveRank = Number(liveRankByEntry[awayId]);
+              const seedLabel =
+                Number.isFinite(homeLiveRank) && Number.isFinite(awayLiveRank)
+                  ? `${englishOrdinal(homeLiveRank)} vs ${englishOrdinal(awayLiveRank)}`
+                  : null;
+
               return (
                 <div
                   key={fixtureKey}
@@ -1425,6 +1441,16 @@ export function LiveScores({
                     (homeHero || awayHero ? ' live-banner-group__item--hero-defeat' : '')
                   }
                 >
+                  {seedLabel ? (
+                    <span
+                      className={
+                        'live-banner-row__seed' +
+                        (narrowViewport ? ' live-banner-row__seed--compact' : '')
+                      }
+                    >
+                      {seedLabel}
+                    </span>
+                  ) : null}
                   <LiveFaceOffRow
                     homeId={homeId}
                     awayId={awayId}
