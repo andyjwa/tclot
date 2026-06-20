@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   teamKeyStatTotals,
   keyStatRows,
+  teamXiElementIds,
   h2hSeasonSummary,
   h2hBarRows,
 } from './liveFixtureCardDerivations.js'
@@ -63,6 +64,7 @@ test('teamKeyStatTotals — empty / error squad yields zeros', () => {
     defconPoints: 0,
     cleanSheets: 0,
     saves: 0,
+    savePoints: 0,
     yellow: 0,
     red: 0,
   })
@@ -88,18 +90,45 @@ test('teamKeyStatTotals — Def Con Points (2 per XI player past threshold) + GK
   const t = teamKeyStatTotals(squad)
   assert.equal(t.defconPoints, 6) // DEF + MID + GK each cleared threshold → 3 × 2
   assert.equal(t.saves, 5) // only the GK's saves
+  assert.equal(t.savePoints, 1) // floor(5 / 3)
 })
 
-test('keyStatRows — order and labels match the spec', () => {
+test('keyStatRows — always-on rows only when nothing has happened', () => {
   const rows = keyStatRows({ starters: [] }, { starters: [] })
   assert.deepEqual(
     rows.map((r) => r.key),
-    ['players60', 'goals', 'assists', 'defcon', 'defconPoints', 'cleanSheets', 'saves', 'yellow', 'red'],
+    ['players60', 'goals', 'assists', 'cleanSheets', 'defconPoints'],
   )
   assert.equal(rows[0].label, 'Players 60+')
+  assert.equal(rows[3].label, 'Clean Sheets')
   assert.equal(rows[4].label, 'Def Con Points')
-  assert.equal(rows[5].label, 'Clean Sheets')
-  assert.equal(rows[6].label, 'Saves')
+})
+
+test('keyStatRows — conditional rows appear once they occur (Save/Yellow/Red)', () => {
+  const squad = {
+    starters: [
+      player({ element: 1, posSingular: 'GK', saves: 6, yellowCards: 1 }),
+      player({ element: 2, posSingular: 'DEF', redCards: 0 }),
+    ],
+    bench: [],
+  }
+  const rows = keyStatRows(squad, { starters: [] })
+  const keys = rows.map((r) => r.key)
+  assert.ok(keys.includes('savePoints')) // 6 GK saves → 2 save points
+  assert.ok(keys.includes('yellow')) // a yellow occurred
+  assert.ok(!keys.includes('red')) // no reds → hidden
+  const sp = rows.find((r) => r.key === 'savePoints')
+  assert.equal(sp.label, 'Save Points')
+  assert.equal(sp.home, 2)
+})
+
+test('teamXiElementIds — pulls the effective XI element ids', () => {
+  const squad = {
+    starters: [player({ element: 11 }), player({ element: 22 }), player({ element: null, elementId: 33 })],
+    bench: [],
+  }
+  assert.deepEqual(teamXiElementIds(squad), [11, 22, 33])
+  assert.deepEqual(teamXiElementIds(null), [])
 })
 
 test('h2hSeasonSummary — wins/draws/points across meetings, excludes 0-0', () => {
@@ -132,7 +161,8 @@ test('h2hBarRows — exposes numeric values and display text', () => {
   const rows = h2hBarRows(h2hSeasonSummary([
     { event: 1, league_entry_1: 1, league_entry_2: 2, league_entry_1_points: 50, league_entry_2_points: 40 },
   ], 1, 2))
-  assert.deepEqual(rows.map((r) => r.key), ['wins', 'avg', 'total'])
+  assert.deepEqual(rows.map((r) => r.key), ['wins', 'avg'])
+  assert.equal(rows.find((r) => r.key === 'wins').label, 'Record (wins)')
   const avg = rows.find((r) => r.key === 'avg')
   assert.equal(avg.homeText, '50.0')
   assert.equal(avg.awayText, '40.0')

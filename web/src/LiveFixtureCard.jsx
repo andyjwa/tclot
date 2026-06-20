@@ -4,11 +4,12 @@ import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureKeyStats } from './LiveFixtureKeyStats.jsx';
 import { LiveFixtureH2hBars } from './LiveFixtureH2hBars.jsx';
+import { LiveFixtureOdds } from './LiveFixtureOdds.jsx';
 
 const TABS = [
   { id: 'lineups', label: 'Lineups' },
   { id: 'stats', label: 'Key Stats' },
-  { id: 'h2h', label: 'H2H' },
+  { id: 'odds', label: 'Odds' },
   { id: 'table', label: 'Live Table' },
 ];
 
@@ -24,8 +25,9 @@ function teamSubText(remaining, isLeader, settled) {
 /**
  * A single live fixture "page" in the swipeable deck: a scorehead whose
  * team badges select which lineup to show (additive highlight), a 4-tab
- * selector (Lineups / Key Stats / H2H / Live Table), and the matching
- * scrollable pane. Reuses the production lineup table
+ * selector (Lineups / Key Stats / Odds / Live Table), and the matching
+ * scrollable pane. Key Stats also folds in the season head-to-head; Odds
+ * carries the pre-match projection model. Reuses the production lineup table
  * ({@link LiveExpandedFixture}) and {@link LiveStandingsTable}.
  *
  * @param {{ fixture: object, ctx: object }} props
@@ -141,15 +143,26 @@ export function LiveFixtureCard({ fixture, ctx }) {
           />
         ) : null}
         {tab === 'stats' ? (
-          <LiveFixtureKeyStats homeSquad={homeSquad} awaySquad={awaySquad} />
+          <>
+            <LiveFixtureKeyStats homeSquad={homeSquad} awaySquad={awaySquad} />
+            <LiveFixtureH2hBars
+              matches={ctx.matches}
+              homeId={homeId}
+              awayId={awayId}
+              homeName={homeName}
+              awayName={awayName}
+            />
+          </>
         ) : null}
-        {tab === 'h2h' ? (
-          <LiveFixtureH2hBars
-            matches={ctx.matches}
+        {tab === 'odds' ? (
+          <LiveFixtureOdds
+            homeSquad={homeSquad}
+            awaySquad={awaySquad}
             homeId={homeId}
             awayId={awayId}
             homeName={homeName}
             awayName={awayName}
+            ctx={ctx}
           />
         ) : null}
         {tab === 'table' ? (

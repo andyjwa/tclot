@@ -346,6 +346,124 @@
   background: color-mix(in srgb, var(--tclot-logo-purple) 45%, transparent);
 }
 
+/* ---- Odds pane ---- */
+.lfc-odds__note {
+  text-align: center;
+  font-size: 11px;
+  color: var(--fm-muted);
+  margin: 0 0 10px;
+}
+
+.lfc-win__teams {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.lfc-win__team {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-win__cap {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.lfc-win__bar {
+  display: flex;
+  height: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  gap: 2px;
+}
+.lfc-win__seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  min-width: 0;
+  overflow: hidden;
+}
+.lfc-win__seg--h {
+  background: #2bb673;
+}
+.lfc-win__seg--d {
+  background: #b0b0b8;
+  color: #3a3a3a;
+}
+.lfc-win__seg--a {
+  background: #e0566a;
+}
+.lfc-win__legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.lfc-pick {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--fm-border);
+}
+.lfc-pick:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.lfc-pick__badge {
+  display: inline-flex;
+  flex: none;
+}
+.lfc-pick__badge .team-avatar-frame--sm {
+  width: 22px;
+  height: 22px;
+}
+.lfc-pick__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-pick__pos {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--fm-muted);
+  border: 1px solid var(--fm-border);
+  border-radius: 5px;
+  padding: 1px 4px;
+  margin-left: 6px;
+}
+.lfc-pick__chip {
+  flex: none;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(43, 182, 115, 0.16);
+  color: #1d8a55;
+}
+
 /* ---- Dots ---- */
 .lfc-dots {
   position: absolute;

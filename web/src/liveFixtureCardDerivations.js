@@ -33,7 +33,7 @@ const num = (v) => Number(v) || 0;
 /**
  * Aggregate one team's effective XI into the Key Stats totals.
  * @param {object} squad
- * @returns {{ players60: number, goals: number, assists: number, defcon: number, defconPoints: number, cleanSheets: number, saves: number, yellow: number, red: number }}
+ * @returns {{ players60: number, goals: number, assists: number, defcon: number, defconPoints: number, cleanSheets: number, saves: number, savePoints: number, yellow: number, red: number }}
  */
 export function teamKeyStatTotals(squad) {
   const xi = effectiveStartersForCard(squad);
@@ -45,6 +45,7 @@ export function teamKeyStatTotals(squad) {
     defconPoints: 0,
     cleanSheets: 0,
     saves: 0,
+    savePoints: 0,
     yellow: 0,
     red: 0,
   };
@@ -62,30 +63,50 @@ export function teamKeyStatTotals(squad) {
     totals.yellow += num(r.yellowCards);
     totals.red += num(r.redCards);
   }
+  // FPL save points: 1 point per 3 saves by the starting keeper.
+  totals.savePoints = Math.floor(totals.saves / 3);
   return totals;
 }
 
 /**
- * Key Stats rows for the card, in the user-specified order:
- * Players 60+, Goals, Assists, Def Con, Def Con Points, Clean Sheets, Saves,
- * Yellow Cards, Red Cards. "Def Con Points" is 2 pts per XI player who hit the
- * defensive-contribution threshold; "Saves" counts the starting GK only.
+ * Key Stats rows for the card. Always-on rows first (Players 60+, Goals,
+ * Assists, Clean Sheets, Def Con Points), then card/save-point rows that only
+ * render once they have actually happened (Save Points, Yellow Cards, Red
+ * Cards) — these are dropped when neither side has any so the pane fits a
+ * single screen. "Def Con Points" is 2 pts per XI player who hit the
+ * defensive-contribution threshold; "Save Points" is 1 pt per 3 GK saves.
  * @returns {Array<{ key: string, label: string, home: number, away: number }>}
  */
 export function keyStatRows(homeSquad, awaySquad) {
   const h = teamKeyStatTotals(homeSquad);
   const a = teamKeyStatTotals(awaySquad);
-  return [
+  const rows = [
     { key: 'players60', label: 'Players 60+', home: h.players60, away: a.players60 },
     { key: 'goals', label: 'Goals', home: h.goals, away: a.goals },
     { key: 'assists', label: 'Assists', home: h.assists, away: a.assists },
-    { key: 'defcon', label: 'Def Con', home: h.defcon, away: a.defcon },
-    { key: 'defconPoints', label: 'Def Con Points', home: h.defconPoints, away: a.defconPoints },
     { key: 'cleanSheets', label: 'Clean Sheets', home: h.cleanSheets, away: a.cleanSheets },
-    { key: 'saves', label: 'Saves', home: h.saves, away: a.saves },
-    { key: 'yellow', label: 'Yellow Cards', home: h.yellow, away: a.yellow },
-    { key: 'red', label: 'Red Cards', home: h.red, away: a.red },
+    { key: 'defconPoints', label: 'Def Con Points', home: h.defconPoints, away: a.defconPoints },
+    { key: 'savePoints', label: 'Save Points', home: h.savePoints, away: a.savePoints, conditional: true },
+    { key: 'yellow', label: 'Yellow Cards', home: h.yellow, away: a.yellow, conditional: true },
+    { key: 'red', label: 'Red Cards', home: h.red, away: a.red, conditional: true },
   ];
+  // Conditional rows only appear once they have occurred for either side.
+  return rows.filter((r) => !r.conditional || r.home + r.away > 0);
+}
+
+/**
+ * Effective-XI element ids for a squad (draft id space — matches predictions
+ * `player.id`), used to join the live card to the static forecast for the
+ * Odds tab.
+ * @returns {number[]}
+ */
+export function teamXiElementIds(squad) {
+  const ids = [];
+  for (const r of effectiveStartersForCard(squad)) {
+    const id = Number(r?.element ?? r?.elementId);
+    if (Number.isFinite(id)) ids.push(id);
+  }
+  return ids;
 }
 
 /**
@@ -151,7 +172,7 @@ export function h2hBarRows(summary) {
   return [
     {
       key: 'wins',
-      label: 'H2H wins',
+      label: 'Record (wins)',
       home: s.homeWins,
       away: s.awayWins,
       homeText: String(s.homeWins),
@@ -164,14 +185,6 @@ export function h2hBarRows(summary) {
       away: s.awayAvg,
       homeText: s.homeAvg.toFixed(1),
       awayText: s.awayAvg.toFixed(1),
-    },
-    {
-      key: 'total',
-      label: 'Total points',
-      home: s.homePts,
-      away: s.awayPts,
-      homeText: String(s.homePts),
-      awayText: String(s.awayPts),
     },
   ];
 }

@@ -27,10 +27,11 @@ export function LiveFixtureH2hBars({ matches, homeId, awayId, homeName, awayName
         </p>
       ) : (
         <>
-          <p className="lfc-h2h__meta">
-            {summary.meetings} meeting{summary.meetings === 1 ? '' : 's'} this season
-            {summary.draws ? ` · ${summary.draws} draw${summary.draws === 1 ? '' : 's'}` : ''}
-          </p>
+          {summary.draws ? (
+            <p className="lfc-h2h__meta">
+              {summary.draws} draw{summary.draws === 1 ? '' : 's'}
+            </p>
+          ) : null}
           {rows.map((r) => (
             <LiveFixtureCompareRow
               key={r.key}

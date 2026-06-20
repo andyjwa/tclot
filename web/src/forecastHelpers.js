@@ -220,6 +220,60 @@ export function h2hWinProbs(home, away, drawBand = 0.5) {
   return { homeWinPct: r(pHomeWin), drawPct: r(pDraw), awayWinPct: r(pAwayWin) };
 }
 
+/**
+ * Team-level expected attacking/defensive totals from the static forecast,
+ * summed over a set of element ids. Expectation is linear, so these are valid
+ * sums of per-player probabilities even when players share a real-world club:
+ *   - expGoals   = Σ P(player scores)
+ *   - expAssists = Σ P(player assists)
+ *   - expCs      = Σ P(player keeps a clean sheet)  (cleanSheetPct is 0–100)
+ */
+export function teamOddsTotals(byId, elementIds = []) {
+  let expGoals = 0;
+  let expAssists = 0;
+  let expCs = 0;
+  let matched = 0;
+  for (const id of elementIds) {
+    const prob = byId.get(Number(id))?.forecast?.probabilities;
+    if (!prob) continue;
+    matched += 1;
+    expGoals += Number(prob.goalLikelihood) || 0;
+    expAssists += Number(prob.assistLikelihood) || 0;
+    expCs += (Number(prob.cleanSheetPct) || 0) / 100;
+  }
+  const r1 = (v) => Math.round(v * 10) / 10;
+  return { expGoals: r1(expGoals), expAssists: r1(expAssists), expCs: r1(expCs), matched };
+}
+
+/**
+ * Players most likely to return (≥6 projected points) across both managers'
+ * XIs, ranked by return probability. Each entry carries the side it belongs to
+ * so the UI can badge it. `returnPct` is an integer percentage.
+ */
+export function mostLikelyToReturn(byId, homeIds = [], awayIds = [], n = 3) {
+  const rows = [];
+  const collect = (ids, side) => {
+    for (const id of ids) {
+      const p = byId.get(Number(id));
+      const ret = Number(p?.forecast?.outcomes?.returns);
+      if (!p || !Number.isFinite(ret)) continue;
+      rows.push({
+        id: Number(id),
+        side,
+        name: p.name,
+        position: p.position,
+        teamId: p.teamId ?? null,
+        returnPct: Math.round(ret * 100),
+        xp: Number(p.forecast?.totalPoints) || 0,
+      });
+    }
+  };
+  collect(homeIds, 'home');
+  collect(awayIds, 'away');
+  rows.sort((a, b) => b.returnPct - a.returnPct || b.xp - a.xp);
+  return rows.slice(0, n);
+}
+
 /** Win/draw/loss lean from two team xP sums (deterministic preview, not a Monte Carlo). */
 export function matchupLean(homeXp, awayXp) {
   const diff = Math.round((homeXp - awayXp) * 10) / 10;

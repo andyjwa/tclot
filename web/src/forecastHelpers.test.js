@@ -17,6 +17,8 @@ import {
   applyConfirmedRolesToPlayers,
   teamForecastDistribution,
   h2hWinProbs,
+  teamOddsTotals,
+  mostLikelyToReturn,
 } from './forecastHelpers.js';
 
 const fixture = {
@@ -230,6 +232,30 @@ test('h2hWinProbs degenerate (no variance) returns a certain result', () => {
     drawPct: 0,
     awayWinPct: 0,
   });
+});
+
+test('teamOddsTotals sums goal/assist/CS probabilities over the XI', () => {
+  const byId = predictionsById(fixture);
+  const t = teamOddsTotals(byId, [1, 2, 3, 999]);
+  // goals: 0.43 + 0.6 + 0.08 = 1.11 → 1.1
+  assert.equal(t.expGoals, 1.1);
+  // assists: 0.27 + 0.18 + 0.05 = 0.5
+  assert.equal(t.expAssists, 0.5);
+  // CS: (19 + 22 + 45) / 100 = 0.86 → 0.9
+  assert.equal(t.expCs, 0.9);
+  assert.equal(t.matched, 3);
+});
+
+test('mostLikelyToReturn ranks across both sides by return %', () => {
+  const byId = new Map([
+    [1, { name: 'A', position: 'FWD', teamId: 10, forecast: { totalPoints: 7, outcomes: { returns: 0.71 } } }],
+    [2, { name: 'B', position: 'MID', teamId: 11, forecast: { totalPoints: 6, outcomes: { returns: 0.55 } } }],
+    [3, { name: 'C', position: 'DEF', teamId: 12, forecast: { totalPoints: 5, outcomes: { returns: 0.4 } } }],
+  ]);
+  const top = mostLikelyToReturn(byId, [1], [2, 3], 2);
+  assert.deepEqual(top.map((r) => r.name), ['A', 'B']);
+  assert.deepEqual(top.map((r) => r.side), ['home', 'away']);
+  assert.equal(top[0].returnPct, 71);
 });
 
 test('twoWorldView splits CS and no-CS worlds for a defender', () => {
