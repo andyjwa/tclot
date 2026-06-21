@@ -19,6 +19,7 @@ import {
   h2hWinProbs,
   teamOddsTotals,
   mostLikelyToReturn,
+  finishedMatchupOdds,
 } from './forecastHelpers.js';
 
 const fixture = {
@@ -232,6 +233,54 @@ test('h2hWinProbs degenerate (no variance) returns a certain result', () => {
     drawPct: 0,
     awayWinPct: 0,
   });
+});
+
+const historyRow = {
+  h2h: [
+    {
+      league_entry_1: 111,
+      league_entry_2: 222,
+      xPtsXi1: 42.7,
+      xPtsXi2: 40.1,
+      actualXiPts1: 27,
+      actualXiPts2: 50,
+      xPtsMc: { homeWinPct: 57, drawPct: 4, awayWinPct: 39 },
+      projMc: { homeWinPct: 0, drawPct: 0, awayWinPct: 100 },
+      plHadFinishedFixtureForMc: true,
+    },
+  ],
+};
+
+test('finishedMatchupOdds: same orientation maps pre-match + final correctly', () => {
+  const m = finishedMatchupOdds(historyRow, 111, 222);
+  assert.ok(m);
+  assert.equal(m.settled, true);
+  // pre-match: forecast points + xPtsMc
+  assert.deepEqual(m.preMatch.probs, { homeWinPct: 57, drawPct: 4, awayWinPct: 39 });
+  assert.equal(m.preMatch.homePts, 42.7);
+  assert.equal(m.preMatch.awayPts, 40.1);
+  // final: actual points + projMc collapsed to the real outcome
+  assert.deepEqual(m.final.probs, { homeWinPct: 0, drawPct: 0, awayWinPct: 100 });
+  assert.equal(m.final.homePts, 27);
+  assert.equal(m.final.awayPts, 50);
+});
+
+test('finishedMatchupOdds: reversed orientation swaps sides for probs and points', () => {
+  const m = finishedMatchupOdds(historyRow, 222, 111);
+  assert.ok(m);
+  // home is now entry_2, so win pcts/points flip
+  assert.deepEqual(m.preMatch.probs, { homeWinPct: 39, drawPct: 4, awayWinPct: 57 });
+  assert.equal(m.preMatch.homePts, 40.1);
+  assert.equal(m.preMatch.awayPts, 42.7);
+  assert.deepEqual(m.final.probs, { homeWinPct: 100, drawPct: 0, awayWinPct: 0 });
+  assert.equal(m.final.homePts, 50);
+  assert.equal(m.final.awayPts, 27);
+});
+
+test('finishedMatchupOdds: no matching row or empty history → null', () => {
+  assert.equal(finishedMatchupOdds(historyRow, 111, 999), null);
+  assert.equal(finishedMatchupOdds(null, 111, 222), null);
+  assert.equal(finishedMatchupOdds({ h2h: [] }, 111, 222), null);
 });
 
 test('teamOddsTotals sums goal/assist/CS probabilities over the XI', () => {

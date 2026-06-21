@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { LiveFixtureCompareRow } from './LiveFixtureKeyStats.jsx';
 import { usePredictions } from './usePredictions.js';
-import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
+import { useGwProjectionsHistory } from './useGwProjectionsHistory.js';
+import { predictionsById, h2hWinProbs, finishedMatchupOdds } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
 import { teamProjection, teamReturns, anyFixtureLive } from './liveBlend.js';
 
@@ -82,7 +83,97 @@ function ReturnsColumn({ entryId, name, picks, ctx }) {
 }
 
 /**
- * Odds pane — win probability + projection model for the matchup, with a
+ * Odds pane dispatcher. A finished gameweek is served from the archived
+ * per-GW projection snapshot (what was forecast vs how it settled); the current
+ * /upcoming gameweek uses the live per-player blend. Kept as a thin wrapper so
+ * each branch owns its own hooks (no conditional-hook violations).
+ *
+ * @param {{ homeSquad: object, awaySquad: object, homeId: number, awayId: number,
+ *           homeName: string, awayName: string, ctx: object }} props
+ */
+export function LiveFixtureOdds(props) {
+  if (props.ctx?.gwFinished) {
+    return (
+      <FinishedGwOdds
+        gw={props.ctx?.gameweek}
+        homeId={props.homeId}
+        awayId={props.awayId}
+        homeName={props.homeName}
+        awayName={props.awayName}
+        ctx={props.ctx}
+      />
+    );
+  }
+  return <CurrentGwOdds {...props} />;
+}
+
+/**
+ * Finished-gameweek Odds — from `projections-history/gw-NN.json`. Defaults to the
+ * Final result (projMc win bar collapses to the actual outcome) with a toggle back
+ * to the Pre-Match forecast that was made before kick-off.
+ */
+function FinishedGwOdds({ gw, homeId, awayId, homeName, awayName }) {
+  const { history, loading } = useGwProjectionsHistory(gw, true);
+  const [view, setView] = useState('final');
+
+  const m = useMemo(() => finishedMatchupOdds(history, homeId, awayId), [history, homeId, awayId]);
+
+  if (loading) {
+    return <p className="lfc-h2h__empty">Loading projections…</p>;
+  }
+  if (!m) {
+    return <p className="lfc-h2h__empty">Projections aren’t available for this matchup.</p>;
+  }
+
+  const isFinal = view === 'final';
+  const d = isFinal ? m.final : m.preMatch;
+  const f1 = (v) => (Number(v) || 0).toFixed(1);
+
+  return (
+    <div className="lfc-odds">
+      <p className="lfc-odds__note">
+        {isFinal ? `Final result for GW${gw}.` : `Pre-match forecast for GW${gw}.`}
+      </p>
+
+      <div className="lfc-block">
+        <WinBar probs={d.probs} homeName={homeName} awayName={awayName} live={false} />
+      </div>
+
+      <div className="lfc-block">
+        <div className="lfc-seg" role="tablist" aria-label="Projection view">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={isFinal}
+            className={'lfc-seg__btn' + (isFinal ? ' is-active' : '')}
+            onClick={() => setView('final')}
+          >
+            Final
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!isFinal}
+            className={'lfc-seg__btn' + (!isFinal ? ' is-active' : '')}
+            onClick={() => setView('prematch')}
+          >
+            Pre-Match
+          </button>
+        </div>
+        <LiveFixtureCompareRow
+          label={isFinal ? 'Final pts' : 'Predicted pts'}
+          home={d.homePts}
+          away={d.awayPts}
+          homeText={f1(d.homePts)}
+          awayText={f1(d.awayPts)}
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Current / upcoming gameweek Odds — win probability + projection model with a
  * Live / Pre-Match switcher.
  *
  * Before kick-off the switcher defaults to Pre-Match with Live disabled. Once
@@ -95,7 +186,7 @@ function ReturnsColumn({ entryId, name, picks, ctx }) {
  * @param {{ homeSquad: object, awaySquad: object, homeId: number, awayId: number,
  *           homeName: string, awayName: string, ctx: object }} props
  */
-export function LiveFixtureOdds({ homeSquad, awaySquad, homeId, awayId, homeName, awayName, ctx }) {
+function CurrentGwOdds({ homeSquad, awaySquad, homeId, awayId, homeName, awayName, ctx }) {
   const { predictions, loading } = usePredictions();
   const [modeOverride, setModeOverride] = useState(null);
 

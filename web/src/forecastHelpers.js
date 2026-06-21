@@ -221,6 +221,59 @@ export function h2hWinProbs(home, away, drawBand = 0.5) {
 }
 
 /**
+ * Extract a finished-gameweek matchup view from a `projections-history/gw-NN.json`
+ * `h2h` array, matched by the two league-entry ids and oriented to the requested
+ * home/away sides (the archived row may store the pairing in either order).
+ *
+ * Returns both:
+ *   - `preMatch` — what was forecast before kick-off (xPtsXi points, xPtsMc win bar)
+ *   - `final`    — how it actually settled (actualXiPts points, projMc win bar,
+ *                  which collapses to the real outcome once the GW is done)
+ *
+ * @param {{ h2h?: any[] }|null} history parsed gw-NN.json
+ * @param {number} homeId league_entry id shown as home on the card
+ * @param {number} awayId league_entry id shown as away on the card
+ * @returns {null | { preMatch: object, final: object, settled: boolean }}
+ */
+export function finishedMatchupOdds(history, homeId, awayId) {
+  const rows = Array.isArray(history?.h2h) ? history.h2h : [];
+  const h = Number(homeId);
+  const a = Number(awayId);
+  for (const row of rows) {
+    const e1 = Number(row?.league_entry_1);
+    const e2 = Number(row?.league_entry_2);
+    let swap;
+    if (e1 === h && e2 === a) swap = false;
+    else if (e1 === a && e2 === h) swap = true;
+    else continue;
+
+    const probs = (mc) => {
+      const p = mc || {};
+      const hw = Number(p.homeWinPct) || 0;
+      const aw = Number(p.awayWinPct) || 0;
+      const dr = Number(p.drawPct) || 0;
+      return swap
+        ? { homeWinPct: aw, drawPct: dr, awayWinPct: hw }
+        : { homeWinPct: hw, drawPct: dr, awayWinPct: aw };
+    };
+    const pair = (k1, k2) => {
+      const v1 = Number(row[k1]) || 0;
+      const v2 = Number(row[k2]) || 0;
+      return swap ? [v2, v1] : [v1, v2];
+    };
+    const [preHome, preAway] = pair('xPtsXi1', 'xPtsXi2');
+    const [finHome, finAway] = pair('actualXiPts1', 'actualXiPts2');
+
+    return {
+      preMatch: { probs: probs(row.xPtsMc), homePts: preHome, awayPts: preAway },
+      final: { probs: probs(row.projMc), homePts: finHome, awayPts: finAway },
+      settled: row.plHadFinishedFixtureForMc === true,
+    };
+  }
+  return null;
+}
+
+/**
  * Team-level expected attacking/defensive totals from the static forecast,
  * summed over a set of element ids. Expectation is linear, so these are valid
  * sums of per-player probabilities even when players share a real-world club:

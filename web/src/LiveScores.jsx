@@ -1225,6 +1225,7 @@ export function LiveScores({
     () => ({
       matches,
       gameweek,
+      gwFinished: Boolean(selectedGwOption?.finished),
       teams,
       teamLogoMap,
       kitIndexByEntry,
@@ -1235,6 +1236,7 @@ export function LiveScores({
     [
       matches,
       gameweek,
+      selectedGwOption,
       teams,
       teamLogoMap,
       kitIndexByEntry,
