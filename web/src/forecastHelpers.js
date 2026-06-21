@@ -264,9 +264,47 @@ export function finishedMatchupOdds(history, homeId, awayId) {
     const [preHome, preAway] = pair('xPtsXi1', 'xPtsXi2');
     const [finHome, finAway] = pair('actualXiPts1', 'actualXiPts2');
 
+    /**
+     * Oriented goals/assists/CS/def-con block. Returns null for schemaVersion 1
+     * snapshots that predate these fields so the UI can hide the rows.
+     */
+    const statBlock = (g1, g2, a1, a2, c1, c2, d1, d2) => {
+      if (row[g1] == null && row[g2] == null) return null;
+      const [goalsHome, goalsAway] = pair(g1, g2);
+      const [assistsHome, assistsAway] = pair(a1, a2);
+      const [csHome, csAway] = pair(c1, c2);
+      const [defconHome, defconAway] = pair(d1, d2);
+      return {
+        goals: { home: goalsHome, away: goalsAway },
+        assists: { home: assistsHome, away: assistsAway },
+        cs: { home: csHome, away: csAway },
+        defcon: { home: defconHome, away: defconAway },
+      };
+    };
+
     return {
-      preMatch: { probs: probs(row.xPtsMc), homePts: preHome, awayPts: preAway },
-      final: { probs: probs(row.projMc), homePts: finHome, awayPts: finAway },
+      preMatch: {
+        probs: probs(row.xPtsMc),
+        homePts: preHome,
+        awayPts: preAway,
+        stats: statBlock(
+          'xGoals1', 'xGoals2',
+          'xAssists1', 'xAssists2',
+          'xCs1', 'xCs2',
+          'xDefcon1', 'xDefcon2',
+        ),
+      },
+      final: {
+        probs: probs(row.projMc),
+        homePts: finHome,
+        awayPts: finAway,
+        stats: statBlock(
+          'actualGoals1', 'actualGoals2',
+          'actualAssists1', 'actualAssists2',
+          'actualCs1', 'actualCs2',
+          'actualDefcon1', 'actualDefcon2',
+        ),
+      },
       settled: row.plHadFinishedFixtureForMc === true,
     };
   }

@@ -128,6 +128,9 @@ function FinishedGwOdds({ gw, homeId, awayId, homeName, awayName }) {
   const isFinal = view === 'final';
   const d = isFinal ? m.final : m.preMatch;
   const f1 = (v) => (Number(v) || 0).toFixed(1);
+  /** Actuals are whole goals/assists/CS/def-con; pre-match are expected decimals. */
+  const fmt = isFinal ? (v) => String(Math.round(Number(v) || 0)) : f1;
+  const stats = d.stats;
 
   return (
     <div className="lfc-odds">
@@ -167,6 +170,38 @@ function FinishedGwOdds({ gw, homeId, awayId, homeName, awayName }) {
           homeText={f1(d.homePts)}
           awayText={f1(d.awayPts)}
         />
+        {stats ? (
+          <>
+            <LiveFixtureCompareRow
+              label={isFinal ? 'Goals' : 'Expected goals'}
+              home={stats.goals.home}
+              away={stats.goals.away}
+              homeText={fmt(stats.goals.home)}
+              awayText={fmt(stats.goals.away)}
+            />
+            <LiveFixtureCompareRow
+              label={isFinal ? 'Assists' : 'Expected assists'}
+              home={stats.assists.home}
+              away={stats.assists.away}
+              homeText={fmt(stats.assists.home)}
+              awayText={fmt(stats.assists.away)}
+            />
+            <LiveFixtureCompareRow
+              label={isFinal ? 'Clean sheets' : 'Expected clean sheets'}
+              home={stats.cs.home}
+              away={stats.cs.away}
+              homeText={fmt(stats.cs.home)}
+              awayText={fmt(stats.cs.away)}
+            />
+            <LiveFixtureCompareRow
+              label="Def con points"
+              home={stats.defcon.home}
+              away={stats.defcon.away}
+              homeText={fmt(stats.defcon.home)}
+              awayText={fmt(stats.defcon.away)}
+            />
+          </>
+        ) : null}
       </div>
     </div>
   );

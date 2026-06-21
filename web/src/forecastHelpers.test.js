@@ -283,6 +283,55 @@ test('finishedMatchupOdds: no matching row or empty history → null', () => {
   assert.equal(finishedMatchupOdds({ h2h: [] }, 111, 222), null);
 });
 
+test('finishedMatchupOdds: schemaVersion 1 rows (no stat fields) → stats null', () => {
+  const m = finishedMatchupOdds(historyRow, 111, 222);
+  assert.equal(m.preMatch.stats, null);
+  assert.equal(m.final.stats, null);
+});
+
+const historyRowWithStats = {
+  h2h: [
+    {
+      league_entry_1: 111,
+      league_entry_2: 222,
+      xPtsXi1: 42.7,
+      xPtsXi2: 40.1,
+      actualXiPts1: 27,
+      actualXiPts2: 50,
+      xPtsMc: { homeWinPct: 57, drawPct: 4, awayWinPct: 39 },
+      projMc: { homeWinPct: 0, drawPct: 0, awayWinPct: 100 },
+      plHadFinishedFixtureForMc: true,
+      xGoals1: 2.1, xGoals2: 1.8,
+      xAssists1: 1.4, xAssists2: 1.1,
+      xCs1: 0.9, xCs2: 0.6,
+      xDefcon1: 3.2, xDefcon2: 2.0,
+      actualGoals1: 1, actualGoals2: 3,
+      actualAssists1: 0, actualAssists2: 2,
+      actualCs1: 1, actualCs2: 0,
+      actualDefcon1: 4, actualDefcon2: 6,
+    },
+  ],
+};
+
+test('finishedMatchupOdds: stat blocks map pre-match expected + final actual', () => {
+  const m = finishedMatchupOdds(historyRowWithStats, 111, 222);
+  assert.deepEqual(m.preMatch.stats.goals, { home: 2.1, away: 1.8 });
+  assert.deepEqual(m.preMatch.stats.assists, { home: 1.4, away: 1.1 });
+  assert.deepEqual(m.preMatch.stats.cs, { home: 0.9, away: 0.6 });
+  assert.deepEqual(m.preMatch.stats.defcon, { home: 3.2, away: 2.0 });
+  assert.deepEqual(m.final.stats.goals, { home: 1, away: 3 });
+  assert.deepEqual(m.final.stats.assists, { home: 0, away: 2 });
+  assert.deepEqual(m.final.stats.cs, { home: 1, away: 0 });
+  assert.deepEqual(m.final.stats.defcon, { home: 4, away: 6 });
+});
+
+test('finishedMatchupOdds: stat blocks swap sides for reversed orientation', () => {
+  const m = finishedMatchupOdds(historyRowWithStats, 222, 111);
+  assert.deepEqual(m.preMatch.stats.goals, { home: 1.8, away: 2.1 });
+  assert.deepEqual(m.final.stats.goals, { home: 3, away: 1 });
+  assert.deepEqual(m.final.stats.defcon, { home: 6, away: 4 });
+});
+
 test('teamOddsTotals sums goal/assist/CS probabilities over the XI', () => {
   const byId = predictionsById(fixture);
   const t = teamOddsTotals(byId, [1, 2, 3, 999]);

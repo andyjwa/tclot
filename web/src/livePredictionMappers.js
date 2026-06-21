@@ -209,10 +209,13 @@ export function benchPicksFromSquad(squad) {
 }
 
 /**
- * Single-pick model xPts for this GW (uses each player’s PL fixture like lineup sim).
+ * Full model `Prediction` for a single pick this GW (uses each player’s PL
+ * fixture like the lineup sim). Prefers the match-level Monte Carlo when both
+ * XIs can be reconstructed (bonus + correlated goals/clean sheets), else the
+ * marginal predictor. Returns null on failure.
  * @param {number} salt — offsets RNG vs other rolls for the same player.
  */
-export function predictedXpForPickRow(row, ctx, teamsById, gameweek, config, salt = 0) {
+export function predictionForPickRow(row, ctx, teamsById, gameweek, config, salt = 0) {
   try {
     const pid = Number(row?.element);
     if (!Number.isFinite(pid)) return null;
@@ -265,17 +268,52 @@ export function predictedXpForPickRow(row, ctx, teamsById, gameweek, config, sal
             typeof picked.expectedPoints === 'number' &&
             Number.isFinite(picked.expectedPoints)
           )
-            return picked.expectedPoints;
+            return picked;
         }
       }
     } catch {
       /* fall through to marginal predictor */
     }
 
-    return predictForPlayerFromMap(player, predFx, teamsById, config, rnd).expectedPoints;
+    return predictForPlayerFromMap(player, predFx, teamsById, config, rnd);
   } catch {
     return null;
   }
+}
+
+/**
+ * Single-pick model xPts for this GW (uses each player’s PL fixture like lineup sim).
+ * @param {number} salt — offsets RNG vs other rolls for the same player.
+ */
+export function predictedXpForPickRow(row, ctx, teamsById, gameweek, config, salt = 0) {
+  const pred = predictionForPickRow(row, ctx, teamsById, gameweek, config, salt);
+  return pred != null && Number.isFinite(pred.expectedPoints) ? pred.expectedPoints : null;
+}
+
+/** Positions that can earn clean-sheet points (forwards never do). */
+const STATS_CS_POSITIONS = new Set(['GK', 'DEF', 'MID']);
+
+/**
+ * Single-pick expected stat contributions for this GW, from the same model
+ * Prediction as {@link predictedXpForPickRow}. Used to aggregate team-level
+ * pre-match expected goals / assists / clean sheets / defensive-contribution
+ * points for the archived projection snapshots.
+ *
+ * @returns {{ xp:number, goals:number, assists:number, cs:number, defcon:number } | null}
+ */
+export function predictedStatsForPickRow(row, ctx, teamsById, gameweek, config, salt = 0) {
+  const pred = predictionForPickRow(row, ctx, teamsById, gameweek, config, salt);
+  if (!pred) return null;
+  const el = ctx.elementById?.[Number(row?.element)];
+  const pos = POS_MAP[Number(el?.element_type)] ?? 'MID';
+  const csEligible = STATS_CS_POSITIONS.has(pos);
+  return {
+    xp: Number(pred.expectedPoints) || 0,
+    goals: Number(pred.goalProbability) || 0,
+    assists: Number(pred.assistProbability) || 0,
+    cs: csEligible ? Number(pred.cleanSheetProbability) || 0 : 0,
+    defcon: Number(pred.breakdown?.defensiveContribution) || 0,
+  };
 }
 
 export function sumPredictedXpForPickRows(

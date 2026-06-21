@@ -22,8 +22,52 @@ import {
   simulateFantasyH2hPercents,
   simulateFantasyH2hPercentsFromProjBlends,
   sumPredictedXpForPickRows,
+  predictedStatsForPickRow,
 } from '../src/livePredictionMappers.js';
 import { projectedGwTotalLiveBlendForElement } from '../src/liveGwMidProjection.js';
+import { defensiveContributionCountFromLiveRow } from '../src/fplBonusFromBps.js';
+import { dcThresholdReached } from '../src/liveScoresDerivations.js';
+
+const POS_MAP = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
+const CS_POSITIONS = new Set(['GK', 'DEF', 'MID']);
+const r1 = (n) => (Number.isFinite(n) ? Math.round(n * 10) / 10 : 0);
+
+/**
+ * Pre-match expected goals / assists / clean-sheet count / def-con points for a
+ * starting XI, summed from the same model used for xPts. Clean sheets sum the
+ * per-player CS probability over CS-eligible positions (mirrors the live Odds tab).
+ */
+function teamPredictedStats(starters, ctx, teamsById, gw, salt) {
+  const acc = { goals: 0, assists: 0, cs: 0, defcon: 0 };
+  for (let i = 0; i < starters.length; i++) {
+    const s = predictedStatsForPickRow(starters[i], ctx, teamsById, gw, UI_MODEL_CONFIG, salt + i);
+    if (!s) continue;
+    acc.goals += s.goals;
+    acc.assists += s.assists;
+    acc.cs += s.cs;
+    acc.defcon += s.defcon;
+  }
+  return { goals: r1(acc.goals), assists: r1(acc.assists), cs: r1(acc.cs), defcon: r1(acc.defcon) };
+}
+
+/**
+ * Actual goals / assists / clean sheets (count of CS-eligible XI keeping one) /
+ * def-con points earned for a starting XI, from the draft live element stats.
+ */
+function teamActualStats(displayStarters, elementById, liveFullByElementId) {
+  const acc = { goals: 0, assists: 0, cs: 0, defcon: 0 };
+  for (const row of displayStarters) {
+    const pid = Number(row.element);
+    const live = liveFullByElementId[pid];
+    const st = live?.stats || {};
+    const pos = POS_MAP[Number(elementById[pid]?.element_type)] ?? 'MID';
+    acc.goals += Number(st.goals_scored) || 0;
+    acc.assists += Number(st.assists) || 0;
+    if (CS_POSITIONS.has(pos) && (Number(st.clean_sheets) || 0) >= 1) acc.cs += 1;
+    if (dcThresholdReached(pos, defensiveContributionCountFromLiveRow(live))) acc.defcon += 2;
+  }
+  return acc;
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const leagueDataDir = join(__dirname, '../public/league-data');
@@ -437,6 +481,11 @@ async function main() {
       const actualXiHome = xiSumPointsFromLive(stH, liveByPts);
       const actualXiAway = xiSumPointsFromLive(stA, liveByPts);
 
+      const preStatsHome = teamPredictedStats(stH, ctx, teamsById, gw, 21);
+      const preStatsAway = teamPredictedStats(stA, ctx, teamsById, gw, 521);
+      const actStatsHome = teamActualStats(stH, elementById, liveFullByElementId);
+      const actStatsAway = teamActualStats(stA, elementById, liveFullByElementId);
+
       const xFavorite =
         homeXiXp > awayXiXp ? 'home' : homeXiXp < awayXiXp ? 'away' : 'draw';
       const projFavorite =
@@ -483,11 +532,29 @@ async function main() {
         plHadFinishedFixtureForMc: plGwHasFinishedFixture,
         autosubSourceHome: homeEff.autosubSource ?? null,
         autosubSourceAway: awayEff.autosubSource ?? null,
+        /** Pre-match expected stat totals over the effective XI (schemaVersion ≥ 2). */
+        xGoals1: preStatsHome.goals,
+        xGoals2: preStatsAway.goals,
+        xAssists1: preStatsHome.assists,
+        xAssists2: preStatsAway.assists,
+        xCs1: preStatsHome.cs,
+        xCs2: preStatsAway.cs,
+        xDefcon1: preStatsHome.defcon,
+        xDefcon2: preStatsAway.defcon,
+        /** Actual stat totals over the effective XI (schemaVersion ≥ 2). */
+        actualGoals1: actStatsHome.goals,
+        actualGoals2: actStatsAway.goals,
+        actualAssists1: actStatsHome.assists,
+        actualAssists2: actStatsAway.assists,
+        actualCs1: actStatsHome.cs,
+        actualCs2: actStatsAway.cs,
+        actualDefcon1: actStatsHome.defcon,
+        actualDefcon2: actStatsAway.defcon,
       });
     }
 
     const snapshot = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       gameweek: gw,
       generatedAt: new Date().toISOString(),
       leagueId: Number(details.league?.id) || null,
