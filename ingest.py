@@ -15,8 +15,10 @@ import requests
 
 # API base URLs (player/element IDs: always use DRAFT_API — classic uses a different id→player map)
 DRAFT_API = "https://draft.premierleague.com/api"
-# Classic fixtures only (schedule / team pairing — not used for element lookups)
-FPL_FIXTURES_API = "https://fantasy.premierleague.com/api"
+# Classic API: fixtures (schedule / team pairing) + bootstrap-static (events for
+# gameweek resolution, prices, ownership). Element id space differs from draft —
+# reconciled later via Opta code, never used for direct element lookups.
+FPL_CLASSIC_API = "https://fantasy.premierleague.com/api"
 
 
 def get_league_id() -> int:
@@ -70,10 +72,24 @@ def ingest_league(league_id: int, output_dir: Path) -> None:
     # Fixtures: classic endpoint (schedule data; no draft element ids)
     print("Fetching fixtures...")
     try:
-        fixtures = fetch_json(f"{FPL_FIXTURES_API}/fixtures")
+        fixtures = fetch_json(f"{FPL_CLASSIC_API}/fixtures")
         with open(output_dir / "fixtures.json", "w") as f:
             json.dump(fixtures, f, indent=2)
         print(f"  -> saved to {output_dir / 'fixtures.json'}")
+    except Exception as e:
+        print(f"  -> error: {e}")
+
+    # Classic bootstrap-static: the `events` array drives prediction gameweek
+    # resolution (is_next / is_current), plus price/ownership. Refreshing this
+    # each ingest is what keeps the forecast target gameweek current — without
+    # it the build stays pinned to whatever GW was "next" when the file was
+    # last captured.
+    print("Fetching bootstrap_fpl (classic)...")
+    try:
+        classic = fetch_json(f"{FPL_CLASSIC_API}/bootstrap-static/")
+        with open(output_dir / "bootstrap_fpl.json", "w") as f:
+            json.dump(classic, f, indent=2)
+        print(f"  -> saved to {output_dir / 'bootstrap_fpl.json'}")
     except Exception as e:
         print(f"  -> error: {e}")
 
