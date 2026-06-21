@@ -137,7 +137,7 @@ export function LiveFixtureOdds({ homeSquad, awaySquad, homeId, awayId, homeName
   const f1 = (v) => (Number(v) || 0).toFixed(1);
 
   return (
-    <>
+    <div className="lfc-odds">
       {model.gwMismatch ? (
         <p className="lfc-odds__note">Projections shown are the pre-match forecast for GW{model.gameweek}.</p>
       ) : null}
@@ -230,6 +230,6 @@ export function LiveFixtureOdds({ homeSquad, awaySquad, homeId, awayId, homeName
           <ReturnsColumn entryId={awayId} name={awayName} picks={data.awayReturns} ctx={ctx} />
         </div>
       </div>
-    </>
+    </div>
   );
 }

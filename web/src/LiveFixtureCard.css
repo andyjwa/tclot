@@ -351,7 +351,39 @@
   text-align: center;
   font-size: 11px;
   color: var(--fm-muted);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
+}
+
+/* Compact spacing so win bar + Live/Pre-Match stats + returns fit close to one
+   screen on mobile. Scoped to the Odds pane so Key Stats / H2H keep their roomier
+   rhythm. */
+.lfc-odds .lfc-block {
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+.lfc-odds .lfc-block:last-child {
+  margin-bottom: 0;
+}
+.lfc-odds .lfc-cmp {
+  margin-bottom: 9px;
+}
+.lfc-odds .lfc-cmp:last-child {
+  margin-bottom: 1px;
+}
+.lfc-odds .lfc-block__h {
+  margin-bottom: 9px;
+}
+.lfc-odds .lfc-seg {
+  margin-bottom: 9px;
+}
+.lfc-odds .lfc-win__bar {
+  height: 26px;
+}
+.lfc-odds .lfc-win__teams {
+  margin-bottom: 6px;
+}
+.lfc-odds .lfc-ret__row {
+  padding: 4px 0;
 }
 
 .lfc-win__teams {
