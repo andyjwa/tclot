@@ -464,6 +464,153 @@
   color: #1d8a55;
 }
 
+/* ---- Live / Pre-Match switcher ---- */
+.lfc-seg {
+  display: flex;
+  background: var(--fm-surface-2);
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 11px;
+}
+.lfc-seg__btn {
+  flex: 1;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 7px 0;
+  border-radius: 8px;
+  color: var(--fm-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.lfc-seg__btn.is-active {
+  background: var(--fm-card);
+  color: var(--fm-text-strong);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.lfc-seg__btn.is-active.is-live {
+  color: #1d8a55;
+}
+.lfc-seg__btn.is-disabled {
+  color: rgba(0, 0, 0, 0.26);
+  cursor: default;
+}
+.lfc-seg__hint {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--fm-muted);
+  margin: -4px 0 10px;
+}
+
+/* Live accent on compare rows (green instead of brand violet). */
+.lfc-cmp--live .lfc-cmp__val {
+  color: #1d8a55;
+}
+.lfc-cmp--live .lfc-cmp__fill {
+  background: #2bb673;
+}
+.lfc-cmp--live .lfc-cmp__bar--away .lfc-cmp__fill {
+  background: color-mix(in srgb, #2bb673 45%, transparent);
+}
+
+/* Live pulse dot on the win-bar caption. */
+.lfc-win__dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: #e0566a;
+  box-shadow: 0 0 0 3px rgba(224, 86, 106, 0.18);
+  vertical-align: middle;
+}
+
+/* ---- Most likely to return — two-column grouped lists ---- */
+.lfc-block__h--left {
+  text-align: left;
+  margin-left: 2px;
+}
+.lfc-ret__cols {
+  display: flex;
+  gap: 12px;
+}
+.lfc-ret__col {
+  flex: 1;
+  min-width: 0;
+}
+.lfc-ret__team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+.lfc-ret__badge {
+  display: inline-flex;
+  flex: none;
+}
+.lfc-ret__badge .team-avatar-frame--sm {
+  width: 18px;
+  height: 18px;
+}
+.lfc-ret__teamname {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--fm-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-ret__row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--fm-border);
+}
+.lfc-ret__row:last-child {
+  border-bottom: 0;
+}
+.lfc-ret__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-ret__chip {
+  flex: none;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.lfc-rt--goal {
+  background: rgba(43, 182, 115, 0.16);
+  color: #1d8a55;
+}
+.lfc-rt--assist {
+  background: rgba(58, 123, 213, 0.16);
+  color: #2f6fc4;
+}
+.lfc-rt--cs {
+  background: rgba(121, 91, 251, 0.14);
+  color: #5b40d6;
+}
+.lfc-ret__empty {
+  font-size: 11px;
+  color: var(--fm-muted);
+  margin: 2px 0 0;
+}
+
 /* ---- Dots ---- */
 .lfc-dots {
   position: absolute;

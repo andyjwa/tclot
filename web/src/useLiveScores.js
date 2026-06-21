@@ -203,6 +203,7 @@ export function mapPickRows(
     const goalsScored = Number(st.goals_scored) || 0;
     const assists = Number(st.assists) || 0;
     const cleanSheets = Number(st.clean_sheets) || 0;
+    const goalsConceded = Number(st.goals_conceded) || 0;
     const saves = Number(st.saves) || 0;
     const yellowCards = Number(st.yellow_cards) || 0;
     const redCards = Number(st.red_cards) || 0;
@@ -267,6 +268,8 @@ export function mapPickRows(
       goalsScored,
       assists,
       cleanSheets,
+      /** Goals conceded by this player's club so far (live element stat) — drives time-aware clean-sheet projection. */
+      goalsConceded,
       saves,
       yellowCards,
       redCards,

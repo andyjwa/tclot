@@ -6,14 +6,14 @@ import { keyStatRows } from './liveFixtureCardDerivations.js';
  * centred label, with a split violet bar beneath showing the home/away
  * proportion. Shared by the Key Stats and H2H card panes.
  *
- * @param {{ label: string, home: number, away: number, homeText?: string, awayText?: string }} props
+ * @param {{ label: string, home: number, away: number, homeText?: string, awayText?: string, className?: string }} props
  */
-export function LiveFixtureCompareRow({ label, home, away, homeText, awayText }) {
+export function LiveFixtureCompareRow({ label, home, away, homeText, awayText, className }) {
   const total = (Number(home) || 0) + (Number(away) || 0);
   const homePct = total > 0 ? Math.round(((Number(home) || 0) / total) * 100) : 0;
   const awayPct = total > 0 ? 100 - homePct : 0;
   return (
-    <div className="lfc-cmp">
+    <div className={className ? `lfc-cmp ${className}` : 'lfc-cmp'}>
       <div className="lfc-cmp__head">
         <span className="lfc-cmp__val tabular">{homeText ?? home}</span>
         <span className="lfc-cmp__label">{label}</span>
