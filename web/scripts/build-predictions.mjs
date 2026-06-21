@@ -21,7 +21,7 @@
  * build: skips on SKIP_PREDICTIONS=1, writes an empty (season-not-started) artifact when there's
  * no resolvable upcoming gameweek.
  */
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { DEFAULT_MODEL_CONFIG, predictMatchFixture } from 'fpl-predictions';
@@ -40,6 +40,7 @@ import {
   blendPlayerXgXa,
 } from '../src/enrichFromUnderstat.js';
 import { resolveSeasonFromBootstrap, getSeasonString, getSeasonLabel } from '../src/seasonString.js';
+import { buildHistoricalRates, applyColdStartPriors } from '../src/coldStartPriors.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '../..');
@@ -90,6 +91,37 @@ function resolveTargetGameweek(classicBoot, fixtures) {
     .map((f) => Number(f.event))
     .sort((a, b) => a - b);
   return unfinished.length ? unfinished[0] : null;
+}
+
+/**
+ * Locate the most recent archived season strictly before `currentLabel` and load its
+ * draft bootstrap (full end-of-season per-90 stats) for cold-start priors. Labels are
+ * "YYYY-YY" so a lexical compare orders them correctly. Returns null if no archive.
+ */
+function loadPriorSeasonBootstrap(currentLabel) {
+  const seasonsDir = join(leagueDataDir, 'seasons');
+  if (!existsSync(seasonsDir)) return null;
+  let entries;
+  try {
+    entries = readdirSync(seasonsDir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  let best = null;
+  for (const e of entries) {
+    if (!e.isDirectory()) continue;
+    const label = e.name;
+    if (currentLabel && label >= currentLabel) continue; // only seasons before the current one
+    const p = join(seasonsDir, label, 'bootstrap_draft.json');
+    if (!existsSync(p)) continue;
+    if (!best || label > best.label) best = { label, path: p };
+  }
+  if (!best) return null;
+  try {
+    return { label: best.label, bootstrap: JSON.parse(readFileSync(best.path, 'utf8')) };
+  } catch {
+    return null;
+  }
 }
 
 /** Accumulate two predictions for the same player across a double gameweek. */
@@ -210,6 +242,16 @@ function main() {
   const uPlayerIdx = understat ? understatPlayerIndex(understat) : null;
   let understatPlayerMatches = 0;
 
+  // --- Cold-start priors: prior-season per-90 (by Opta code) + position baselines.
+  // Weighted heavily when current-season minutes are low (GW1) and fading to zero
+  // once a player has ~6 matches of current data; keeps early-season forecasts from
+  // collapsing to flat zeros. ---
+  const prior = loadPriorSeasonBootstrap(season.label);
+  const historical = prior ? buildHistoricalRates(prior.bootstrap) : null;
+  let coldStartApplied = 0;
+  let coldStartHistory = 0;
+  let coldStartBaseline = 0;
+
   // Engine Player per draft element, enriched; cache by id.
   const elementsByTeam = new Map();
   const playerById = new Map();
@@ -234,6 +276,18 @@ function main() {
         understatPlayerMatches += 1;
         understatMatchById.set(Number(el.id), { matched: true, weight: r3(weight) });
       }
+    }
+    // Apply cold-start priors after Understat (weight gates it: 0 once enough current minutes).
+    const cold = applyColdStartPriors(player, {
+      code: el.code,
+      currentMinutes: Number(el.minutes) || 0,
+      historical,
+    });
+    if (cold.weight > 0) {
+      player = cold.player;
+      coldStartApplied += 1;
+      if (cold.source === 'history') coldStartHistory += 1;
+      else if (cold.source === 'baseline') coldStartBaseline += 1;
     }
     playerById.set(Number(el.id), player);
     if (!elementsByTeam.has(teamId)) elementsByTeam.set(teamId, []);
@@ -346,6 +400,12 @@ function main() {
       teamsEnriched,
       playerMatchRate,
     },
+    coldStart: {
+      priorSeasonLabel: prior?.label ?? null,
+      applied: coldStartApplied,
+      fromHistory: coldStartHistory,
+      fromBaseline: coldStartBaseline,
+    },
     idMismatches,
     count: players.length,
     players,
@@ -360,12 +420,21 @@ function main() {
     teamsEnriched,
     fixturesRun,
     playerCount: players.length,
+    coldStart: {
+      priorSeasonLabel: prior?.label ?? null,
+      applied: coldStartApplied,
+      fromHistory: coldStartHistory,
+      fromBaseline: coldStartBaseline,
+    },
   });
 
+  const coldStartNote = coldStartApplied
+    ? `cold-start priors on ${coldStartApplied} (${coldStartHistory} hist${prior ? ` from ${prior.label}` : ''}, ${coldStartBaseline} baseline), `
+    : '';
   log(
     `GW ${gw} (${season.label}): ${players.length} players over ${fixturesRun} fixture(s); ` +
       `teams enriched ${teamsEnriched}/${(draftBoot.teams ?? []).length}, ` +
-      `understat player match ${(playerMatchRate * 100).toFixed(0)}% → predictions.json`,
+      `${coldStartNote}understat player match ${(playerMatchRate * 100).toFixed(0)}% → predictions.json`,
   );
 }
 
