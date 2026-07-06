@@ -5,15 +5,14 @@ import { LeagueRing } from './LeagueRing.jsx'
 import './PreseasonHub.css'
 
 /**
- * 26/27 kickoff target. 3pm Eastern (EDT, UTC-4 in late August
- * because Eastern observes DST through early November) on Saturday
- * 22 August 2026 — the locked TCLOT season-opener slot.
+ * 26/27 draft-return target. 9am Eastern (EDT, UTC-4 in mid-August
+ * because Eastern observes DST through early November) on Monday
+ * 17 August 2026 — the locked TCLOT draft-return slot.
  *
- * The user wrote "EST" colloquially; in this date range the correct
- * Eastern-time offset is EDT (UTC-4). If the kickoff slips to a
+ * The offset here is EDT (UTC-4). If the target slips to a
  * post-DST date in future seasons, swap to `-05:00`.
  */
-const SEASON_KICKOFF_MS = new Date('2026-08-22T15:00:00-04:00').getTime()
+const SEASON_KICKOFF_MS = new Date('2026-08-17T09:00:00-04:00').getTime()
 
 /**
  * Days/hours/minutes between two ms timestamps. Returns zeroes +
@@ -83,9 +82,9 @@ function PreseasonCountdown() {
       className="preseason-countdown"
       role="timer"
       aria-live="off"
-      aria-label={`TCLOT returns in ${days} days, ${hours} hours, ${minutes} minutes`}
+      aria-label={`TCLOT returns to draft in ${days} days, ${hours} hours, ${minutes} minutes`}
     >
-      <div className="preseason-countdown__label">TCLOT Returns in</div>
+      <div className="preseason-countdown__label">TCLOT returns to draft in</div>
       <div className="preseason-countdown__display">
         <div className="preseason-countdown__cell">
           <span className="preseason-countdown__value">{days}</span>
