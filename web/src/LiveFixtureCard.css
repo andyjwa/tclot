@@ -253,10 +253,23 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* ---- Scrollable pane ---- */
-.lfc-card__scroll {
+/* ---- Pane wrapper (hosts the scroll + the overscroll-switch reveal) ----
+   The scroll pane is absolutely filled inside this relatively-positioned,
+   clipped wrapper so the reveal bands can sit *behind* the pane and be
+   uncovered as the pane is dragged during an overscroll team-switch. */
+.lfc-pane-wrap {
+  position: relative;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  background: var(--fm-bg);
+}
+
+/* ---- Scrollable pane ---- */
+.lfc-card__scroll {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -265,6 +278,152 @@
   padding: 10px 12px calc(76px + env(safe-area-inset-bottom, 0px));
   background: var(--fm-bg);
   color: var(--fm-text);
+  will-change: transform;
+}
+
+/* ---- Overscroll-to-switch reveal bands ---- */
+.lfc-switch-reveal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px;
+  opacity: 0;
+  pointer-events: none;
+}
+.lfc-switch-reveal--bottom {
+  bottom: 0;
+  height: 176px;
+  background: linear-gradient(0deg, var(--fm-surface-2) 10%, transparent);
+}
+.lfc-switch-reveal--top {
+  top: 0;
+  height: 176px;
+  flex-direction: column-reverse;
+  background: linear-gradient(180deg, var(--fm-surface-2) 10%, transparent);
+}
+.lfc-switch-reveal__chev {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tclot-logo-purple);
+}
+.lfc-switch-reveal__badge {
+  display: inline-flex;
+}
+.lfc-switch-reveal__badge .team-avatar-frame--lg {
+  width: 46px;
+  height: 46px;
+}
+.lfc-switch-reveal__t1 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fm-muted);
+}
+.lfc-switch-reveal__t2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-pane-wrap.is-switch-ready .lfc-switch-reveal__chev {
+  color: #1d8a55;
+}
+
+/* Enter animation for the freshly-switched lineup. */
+@keyframes lfcSwitchEnterUp {
+  from { opacity: 0.3; transform: translateY(30px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lfcSwitchEnterDown {
+  from { opacity: 0.3; transform: translateY(-30px); }
+  to { opacity: 1; transform: none; }
+}
+.lfc-pane-wrap.is-switch-enter-up .lfc-card__scroll {
+  animation: lfcSwitchEnterUp 0.3s ease;
+}
+.lfc-pane-wrap.is-switch-enter-down .lfc-card__scroll {
+  animation: lfcSwitchEnterDown 0.3s ease;
+}
+
+/* ---- One-time coach hint (bounce + reveal + tooltip) ---- */
+.lfc-switch-tip {
+  position: absolute;
+  left: 50%;
+  bottom: 92px;
+  z-index: 6;
+  transform: translate(-50%, 6px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background: rgba(28, 27, 38, 0.94);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+}
+.lfc-switch-tip__chev {
+  color: #ffd27a;
+  font-weight: 800;
+}
+.lfc-switch-tip:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid rgba(28, 27, 38, 0.94);
+}
+
+@keyframes lfcCoachBounce {
+  0% { transform: translateY(0); }
+  14% { transform: translateY(-50px); }
+  22% { transform: translateY(-42px); }
+  70% { transform: translateY(-46px); }
+  100% { transform: translateY(0); }
+}
+@keyframes lfcCoachReveal {
+  0%, 100% { opacity: 0; }
+  16%, 70% { opacity: 1; }
+}
+@keyframes lfcCoachTip {
+  0%, 100% { opacity: 0; transform: translate(-50%, 6px); }
+  18%, 70% { opacity: 1; transform: translate(-50%, 0); }
+}
+.lfc-card--coaching .lfc-card__scroll {
+  animation: lfcCoachBounce 2.2s ease;
+}
+.lfc-card--coaching .lfc-switch-reveal--bottom {
+  animation: lfcCoachReveal 2.2s ease;
+}
+.lfc-card--coaching .lfc-switch-tip {
+  animation: lfcCoachTip 2.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lfc-card__scroll,
+  .lfc-pane-wrap.is-switch-enter-up .lfc-card__scroll,
+  .lfc-pane-wrap.is-switch-enter-down .lfc-card__scroll,
+  .lfc-card--coaching .lfc-card__scroll,
+  .lfc-card--coaching .lfc-switch-reveal--bottom,
+  .lfc-card--coaching .lfc-switch-tip {
+    animation: none;
+  }
 }
 
 /* ---- Key Stats / H2H blocks ---- */
@@ -688,11 +847,16 @@
 
 /* Pin the column header (Player · Pos · Min · DC · G · A · B · Pts) to the
    top of the scrolling pane so the stat labels stay visible while the rows
-   scroll under it on mobile. `top: 0` pins it flush to the scrollport top
-   once the container's 10px top padding has scrolled away. */
+   scroll under it on mobile.
+
+   `top` is offset by the scroll container's 10px `padding-top`: sticky top is
+   resolved against the scroll container's *content* box (below the padding),
+   so a plain `top: 0` pins the header 10px down and lets the first row peek
+   through that padding gap above it. Cancelling the padding with `top: -10px`
+   pins the header flush to the scrollport top with no row bleeding above. */
 .lfc-card__scroll .live-xp__thead {
   position: sticky;
-  top: 0;
+  top: -10px;
   z-index: 5;
   background: var(--fm-surface-2);
   box-shadow: 0 1px 0 var(--fm-border);

@@ -278,9 +278,9 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         </div>
         <div className="lfc-viewport">
           <div ref={deckRef} className="lfc-deck">
-            {fixtures.map((fx) => (
+            {fixtures.map((fx, i) => (
               <div className="lfc-page" key={fx.key}>
-                <LiveFixtureCard fixture={fx} ctx={ctx} />
+                <LiveFixtureCard fixture={fx} ctx={ctx} active={i === index} />
               </div>
             ))}
           </div>
