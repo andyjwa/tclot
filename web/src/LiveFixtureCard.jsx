@@ -203,6 +203,7 @@ export function LiveFixtureCard({ fixture, ctx }) {
                   kitIndexByEntry={ctx.kitIndexByEntry}
                 />
               </span>
+              <span className="lfc-teamswitch__lead">Switch to </span>
               <span className="lfc-teamswitch__name">{otherName}</span>
             </button>
           </div>

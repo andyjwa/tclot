@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scorecard · subtler "switch team" affordances</title>
+<style>
+  :root {
+    --fm-bg:#f4f4f6; --fm-card:#fff; --fm-border:#ececec; --fm-surface-2:#f0f0f3;
+    --fm-text:rgba(51,51,51,0.92); --fm-text-strong:#1a1a1a; --fm-muted:rgba(0,0,0,0.42);
+    --tclot-logo-purple:#795bfb; --lfc-header:linear-gradient(165deg,#6246f0 0%,#7a5cfb 55%,#9370ff 100%);
+    --bramp:#b8902e; --morp:#2e2a3a; --win:#2bb673;
+    --pill-green-bg:#d7f0e0; --pill-green-tx:#1d7a4d; --pill-amber-bg:#fbeccf; --pill-amber-tx:#a9791a;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:#1f2028; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--fm-text); }
+  .page { padding:30px 26px 70px; }
+  .page__title { font-size:24px; font-weight:800; color:#fff; margin:0 0 6px; }
+  .page__sub { font-size:13.5px; color:#b9bac6; margin:0 0 26px; max-width:1100px; line-height:1.55; }
+  .page__sub b { color:#e6e0ff; }
+  .band-h { font-size:15px; font-weight:800; color:#fff; margin:6px 2px 14px; padding-top:10px; border-top:1px solid #33343f; width:100%; }
+  .grid { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+
+  .option { width:352px; }
+  .option__cap { margin:0 2px 12px; min-height:80px; }
+  .option__step { display:inline-block; font-size:12px; font-weight:800; color:#22232b; border-radius:999px; padding:2px 10px; margin-right:8px; background:#b7a7ff; }
+  .option__name { font-size:15px; font-weight:800; color:#fff; }
+  .option__desc { font-size:12.5px; color:#b9bac6; margin-top:7px; line-height:1.5; }
+  .option__desc b { color:#e6e0ff; }
+
+  .phone { width:352px; border-radius:36px; background:#000; padding:7px; box-shadow:0 18px 44px rgba(0,0,0,0.5); }
+  .phone__screen { height:806px; border-radius:30px; overflow:hidden; background:#fff; position:relative; display:flex; flex-direction:column; }
+  .sbar { display:flex; align-items:center; justify-content:space-between; padding:8px 20px 5px; background:#6a4ef4; color:#fff; font-size:12px; font-weight:700; flex:none; }
+  .sbar__r { font-size:11px; letter-spacing:1px; }
+
+  .lfc-card { display:flex; flex-direction:column; flex:1 1 auto; min-height:0; background:var(--fm-bg); }
+  .lfc-card__top { background:var(--lfc-header); color:#fff; padding-bottom:7px; flex:none; }
+  .lfc-scorehead { display:grid; grid-template-columns:1fr auto 1fr; align-items:start; gap:8px; padding:10px 16px 2px; }
+  .lfc-team { display:flex; flex-direction:column; align-items:center; gap:4px; color:#fff; padding:4px; border-radius:12px; border:1px solid transparent; }
+  .lfc-team.is-sel { background:rgba(255,255,255,0.13); border-color:rgba(255,255,255,0.2); }
+  .lfc-team__score { font-size:36px; font-weight:800; letter-spacing:-2px; line-height:0.95; }
+  .lfc-team__badge { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; color:#fff; border:2px solid rgba(255,255,255,0.5); }
+  .lfc-team__name { font-size:11.5px; font-weight:700; text-align:center; line-height:1.12; }
+  .lfc-team__sub { font-size:9px; color:rgba(255,255,255,0.82); min-height:11px; }
+  .lfc-team__sub--win { color:#ffd27a; font-weight:800; }
+  .lfc-mid { text-align:center; min-width:54px; padding-top:14px; }
+  .lfc-mid__main { display:block; font-size:13px; font-weight:800; }
+  .lfc-mid__sub { font-size:10px; font-weight:600; color:rgba(255,255,255,0.82); }
+  .lfc-tabs { display:flex; gap:6px; padding:7px 12px 2px; }
+  .lfc-tab { font-size:12.5px; font-weight:700; color:rgba(255,255,255,0.78); padding:5px 12px; border-radius:999px; white-space:nowrap; }
+  .lfc-tab.is-active { color:#4a2fd0; background:#fff; }
+
+  .lfc-pane { flex:1 1 auto; min-height:0; background:var(--fm-card); position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .pane-list { flex:0 0 auto; }
+
+  .ln-hd { display:grid; grid-template-columns:22px 1fr 30px 32px 26px 20px 20px 20px 28px; gap:2px; align-items:center; padding:6px 12px 5px; background:#fff; }
+  .ln-hd__team { font-size:12px; font-weight:800; color:var(--tclot-logo-purple); white-space:nowrap; grid-column:1/3; }
+  .ln-hd__c { text-align:center; font-size:8.5px; font-weight:800; color:var(--fm-muted); }
+  .ln-row { display:grid; grid-template-columns:22px 1fr 30px 32px 26px 20px 20px 20px 28px; gap:2px; align-items:center; padding:4.4px 12px; border-top:1px solid var(--fm-border); font-size:12px; background:#fff; }
+  .ln-badge { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:800; color:#fff; }
+  .ln-name { font-weight:700; color:var(--fm-text-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-left:2px; display:flex; align-items:center; gap:5px; }
+  .ln-sub { color:#5b40d6; font-size:10px; }
+  .ln-c { text-align:center; color:var(--fm-muted); font-weight:600; }
+  .ln-pos { text-align:center; font-size:9px; font-weight:800; color:var(--fm-muted); }
+  .ln-min { justify-self:center; font-weight:800; font-size:10.5px; padding:2px 5px; border-radius:6px; min-width:26px; text-align:center; }
+  .min-green { background:var(--pill-green-bg); color:var(--pill-green-tx); }
+  .min-amber { background:var(--pill-amber-bg); color:var(--pill-amber-tx); }
+  .min-dash { color:var(--fm-muted); font-weight:600; }
+  .ln-pts { text-align:center; font-weight:800; color:var(--fm-text-strong); }
+  .g1 { color:#1d8a55 !important; font-weight:800; } .b1 { color:#5b40d6 !important; font-weight:800; }
+  .ln-dnp .ln-c,.ln-dnp .ln-pts,.ln-dnp .ln-pos { color:var(--fm-muted); }
+  .ln-benchhd { font-size:9px; font-weight:800; letter-spacing:1px; color:var(--fm-muted); padding:5px 12px 3px; border-top:1px solid var(--fm-border); background:#fafafa; }
+  .ln-out .ln-name { color:#d06a72; text-decoration:line-through; }
+
+  /* foot host — pinned bottom, no heavy chrome */
+  .foot { margin-top:auto; flex:none; }
+  .foot--center { display:flex; justify-content:center; align-items:center; padding:11px 12px 12px; }
+
+  /* A · ghost text link */
+  .sw-ghost { display:inline-flex; align-items:center; gap:6px; background:none; border:0; cursor:pointer; color:var(--fm-muted); font:inherit; font-size:12.5px; font-weight:700; }
+  .sw-ghost b { color:var(--fm-text-strong); font-weight:800; }
+  .sw-ghost__chev { color:var(--tclot-logo-purple); opacity:0.8; font-weight:800; }
+
+  /* B · tiny crest + muted name */
+  .sw-mini { display:inline-flex; align-items:center; gap:7px; background:none; border:0; cursor:pointer; color:var(--fm-text); font:inherit; font-size:12.5px; font-weight:700; }
+  .sw-mini__lead { color:var(--fm-muted); font-weight:700; font-size:11px; }
+  .sw-mini__crest { width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:800; color:#fff; }
+
+  /* C · soft low-contrast grey pill */
+  .sw-soft { display:inline-flex; align-items:center; gap:8px; padding:6px 13px; border-radius:999px; background:var(--fm-surface-2); border:1px solid var(--fm-border); cursor:pointer; color:var(--fm-text); font:inherit; font-size:12.5px; font-weight:700; }
+  .sw-soft__crest { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:800; color:#fff; }
+  .sw-soft__chev { color:var(--fm-muted); font-weight:800; }
+
+  /* D · quiet underlined link */
+  .sw-under { background:none; border:0; cursor:pointer; font:inherit; font-size:12.5px; font-weight:700; color:var(--tclot-logo-purple); opacity:0.82; text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1.5px; }
+
+  /* E · full-width footer strip (viewing X · switch Y) */
+  .sw-strip { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 14px calc(11px); border-top:1px solid var(--fm-border); background:#fff; cursor:pointer; }
+  .sw-strip__l { font-size:9px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:var(--fm-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sw-strip__r { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:800; color:var(--fm-text-strong); white-space:nowrap; }
+  .sw-strip__crest { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:800; color:#fff; }
+  .sw-strip__chev { color:var(--fm-muted); font-weight:800; }
+
+  /* F · tiny icon-only swap, bottom-right (thumb corner) */
+  .foot--fab { position:relative; height:0; }
+  .sw-fab { position:absolute; right:14px; bottom:10px; width:40px; height:40px; border-radius:50%; border:1px solid var(--fm-border); background:#fff; box-shadow:0 3px 10px rgba(0,0,0,0.12); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .sw-fab__crest { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; color:#fff; }
+  .sw-fab__swap { position:absolute; right:-3px; bottom:-3px; width:17px; height:17px; border-radius:50%; background:var(--tclot-logo-purple); color:#fff; font-size:9px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; }
+
+  .ln-dots { display:flex; align-items:center; justify-content:center; gap:6px; padding:7px 0 5px; flex:none; background:#fff; }
+  .ln-dot { width:7px; height:7px; border-radius:50%; background:#cfcfd8; }
+  .ln-dot.wide { width:20px; border-radius:999px; background:#3a3a3a; }
+  .navbar { flex:none; display:flex; align-items:center; justify-content:space-between; padding:8px 26px 14px; background:#fff; border-top:1px solid #ededed; }
+  .navbar__ico { width:44px; height:30px; border-radius:8px; background:#e9e9ef; }
+  .navbar__plus { width:70px; height:34px; border-radius:16px; background:#e9e9ef; display:flex; align-items:center; justify-content:center; font-size:20px; color:#8a8a92; }
+  .navbar__chev { width:36px; height:34px; border-radius:50%; background:#e9e9ef; display:flex; align-items:center; justify-content:center; color:#8a8a92; }
+
+  .ref { outline:2px dashed #6a4ef4; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="page__title">Subtler "switch team" affordances</h1>
+  <p class="page__sub">The shipped outline pill reads too loud. Here are quieter takes on the same bottom-of-list control — all still one thumb-tap, all naming <b>Morpeth Jamiroquai</b> (the team you'd switch to). Ordered roughly quietest → most present.</p>
+
+  <div class="grid">
+    <div class="band-h">Quiet text</div>
+
+    <div class="option" data-shot="a-ghost">
+      <div class="option__cap"><div><span class="option__step">A</span><span class="option__name">Ghost link</span></div>
+        <div class="option__desc">No pill, no border — just muted centred text <b>"View Morpeth Jamiroquai ›"</b>. Reads as a quiet link, near-invisible until looked for.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="a-ghost"></div></div>
+    </div>
+
+    <div class="option" data-shot="b-mini">
+      <div class="option__cap"><div><span class="option__step">B</span><span class="option__name">Tiny crest + name</span></div>
+        <div class="option__desc">Small crest and <b>"Switch to Morpeth Jamiroquai"</b> in muted text, no container. The crest adds a dab of colour without a heavy pill.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="b-mini"></div></div>
+    </div>
+
+    <div class="option" data-shot="d-under">
+      <div class="option__cap"><div><span class="option__step">D</span><span class="option__name">Underlined link</span></div>
+        <div class="option__desc">A restrained underlined text link in a dimmed brand colour. Clearly tappable, no box.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="d-under"></div></div>
+    </div>
+
+    <div class="band-h">Soft container</div>
+
+    <div class="option" data-shot="c-soft">
+      <div class="option__cap"><div><span class="option__step">C</span><span class="option__name">Soft grey pill</span></div>
+        <div class="option__desc">Same shape as today but <b>low-contrast</b>: light grey fill, thin border, muted text, no shadow, no brand purple. Present but calm.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="c-soft"></div></div>
+    </div>
+
+    <div class="option" data-shot="e-strip">
+      <div class="option__cap"><div><span class="option__step">E</span><span class="option__name">Footer strip</span></div>
+        <div class="option__desc">A flat full-width footer: left shows <b>"VIEWING · Brampton II Men"</b>, right is the tappable <b>Morpeth ›</b>. Feels built-in, not floating over rows.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="e-strip"></div></div>
+    </div>
+
+    <div class="band-h">Minimal icon</div>
+
+    <div class="option" data-shot="f-fab">
+      <div class="option__cap"><div><span class="option__step">F</span><span class="option__name">Corner swap icon</span></div>
+        <div class="option__desc">Just the other team's crest as a small round button in the bottom-right thumb corner, with a tiny swap badge. The most out-of-the-way option.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="f-fab"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BRAMP = {
+  name:'Brampton II Men', ab:'B', color:'var(--bramp)', score:41, win:true,
+  starters:[
+    ['#c8102e','AB','A.Becker','GKP',90,'green','0','0','0','0','2',{}],
+    ['#da291c','Do','Dorgu','DEF',61,'amber','1',['1','g1'],['1','b1'],'3','18',{}],
+    ['#e62333','Se','Senesi','DEF',90,'green','7','0','0','0','2',{}],
+    ['#0053a0','DC','De Cuyper','DEF',45,'amber','1','0','0','0','0',{}],
+    ['#132257','Te','Tel','MID',72,'green','6','0','0','0','3',{}],
+    ['#7a263a','Ra','Rayan','MID',72,'green','6','0','0','0','2',{}],
+    ['#034694','Hi','Hinshelwood','MID',73,'green','3','0','0','0','2',{}],
+    ['#241f20','Ba','Barnes','MID',45,'amber','0','0','0','0','1',{}],
+    ['#7a263a','Ta','Taty','FWD',87,'green','4',['1','g1'],'0','2','8',{}],
+    ['#7a263a','Ev','Evanilson','FWD',72,'green','7','0','0','0','2',{}],
+    ['#000000','Rú','Raúl','FWD',18,'amber','1','0','0','0','1',{sub:true}],
+  ],
+  bench:[
+    ['#7a263a','Mv','Mavropanos','DEF','8',{}],
+    ['#6cabdd','Gv','Gvardiol','DEF','1',{out:true}],
+    ['#c8102e','Ma','Mamardashvili','GKP','0',{out:true}],
+    ['#da291c','Cu','Cunha','FWD','0',{out:true}],
+  ],
+};
+const MORP = { name:'Morpeth Jamiroquai', ab:'MJ', color:'var(--morp)', score:36, win:false };
+
+const HEAD_COLS = `<span class="ln-hd__c">POS</span><span class="ln-hd__c">MIN</span><span class="ln-hd__c">DC</span><span class="ln-hd__c">G</span><span class="ln-hd__c">A</span><span class="ln-hd__c">B</span><span class="ln-hd__c">PTS</span>`;
+function cell(v){ return Array.isArray(v)?`<span class="ln-c ${v[1]}">${v[0]}</span>`:`<span class="ln-c">${v}</span>`; }
+function minCell(min,kind){ return kind==='dash'?`<span class="ln-min min-dash">–</span>`:`<span class="ln-min min-${kind}">${min}</span>`; }
+function starterRow(r){ const [c,ab,n,pos,min,kind,dc,g,a,b,pts,o]=r;
+  return `<div class="ln-row ${o.dnp?'ln-dnp':''}"><span class="ln-badge" style="background:${c}">${ab}</span><span class="ln-name">${n}${o.sub?'<span class="ln-sub">⟲</span>':''}</span><span class="ln-pos">${pos}</span>${minCell(min,kind)}${cell(dc)}${cell(g)}${cell(a)}${cell(b)}<span class="ln-pts">${pts}</span></div>`; }
+function benchRow(r){ const [c,ab,n,pos,pts,o]=r;
+  return `<div class="ln-row ln-dnp ${o.out?'ln-out':''}"><span class="ln-badge" style="background:${c}">${ab}</span><span class="ln-name">${n}</span><span class="ln-pos">${pos}</span><span class="ln-min min-dash">–</span><span class="ln-c">–</span><span class="ln-c">–</span><span class="ln-c">–</span><span class="ln-c">–</span><span class="ln-pts">${pts}</span></div>`; }
+function listHtml(team){
+  return `<div class="pane-list"><div class="ln-hd"><span class="ln-hd__team">${team.name}</span>${HEAD_COLS}</div>`
+    + team.starters.map(starterRow).join('')
+    + `<div class="ln-benchhd">BENCH</div>`
+    + team.bench.map(benchRow).join('') + `</div>`;
+}
+function header(){
+  const t=(team,isSel)=>`<div class="lfc-team ${isSel?'is-sel':''}"><span class="lfc-team__score">${team.score}</span><span class="lfc-team__badge" style="background:${team.color}">${team.ab}</span><span class="lfc-team__name">${team.name}</span><span class="lfc-team__sub ${team.win?'lfc-team__sub--win':''}">${team.win?'Winner':'\u00a0'}</span></div>`;
+  return `<div class="lfc-card__top"><div class="lfc-scorehead">${t(BRAMP,true)}<div class="lfc-mid"><span class="lfc-mid__main">FT</span><span class="lfc-mid__sub">Game Week 38</span></div>${t(MORP,false)}</div><div class="lfc-tabs"><span class="lfc-tab is-active">Lineups</span><span class="lfc-tab">Key Stats</span><span class="lfc-tab">Odds</span><span class="lfc-tab">Live Table</span></div></div>`;
+}
+const T = MORP; // switch target
+function foot(v){
+  const crest = (cls)=>`<span class="${cls}" style="background:${T.color}">${T.ab}</span>`;
+  if(v==='a-ghost') return `<div class="foot foot--center"><button class="sw-ghost">View <b>${T.name}</b><span class="sw-ghost__chev">›</span></button></div>`;
+  if(v==='b-mini')  return `<div class="foot foot--center"><button class="sw-mini">${crest('sw-mini__crest')}<span><span class="sw-mini__lead">Switch to </span>${T.name}</span></button></div>`;
+  if(v==='d-under') return `<div class="foot foot--center"><button class="sw-under">Switch to ${T.name}</button></div>`;
+  if(v==='c-soft')  return `<div class="foot foot--center"><button class="sw-soft">${crest('sw-soft__crest')}${T.name}<span class="sw-soft__chev">›</span></button></div>`;
+  if(v==='e-strip') return `<div class="foot"><button class="sw-strip"><span class="sw-strip__l">Viewing · Brampton II Men</span><span class="sw-strip__r">${crest('sw-strip__crest')}${T.name}<span class="sw-strip__chev">›</span></span></button></div>`;
+  if(v==='f-fab')   return `<div class="foot foot--fab"><button class="sw-fab">${crest('sw-fab__crest')}<span class="sw-fab__swap">⇄</span></button></div>`;
+  return '';
+}
+function build(el){
+  const v = el.dataset.variant;
+  el.innerHTML = `
+    <div class="sbar"><span>22:19</span><span class="sbar__r">••• 5G ▮</span></div>
+    <div class="lfc-card">
+      ${header()}
+      <div class="lfc-pane">${listHtml(BRAMP)}${foot(v)}</div>
+    </div>
+    <div class="ln-dots"><span class="ln-dot"></span><span class="ln-dot wide"></span><span class="ln-dot"></span><span class="ln-dot"></span></div>
+    <div class="navbar"><span class="navbar__ico"></span><span class="navbar__plus">+</span><span class="navbar__chev">⌃</span></div>`;
+}
+document.querySelectorAll('.phone__screen').forEach(build);
+</script>
+</body>
+</html>

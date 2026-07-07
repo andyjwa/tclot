@@ -254,10 +254,13 @@
 }
 
 /* ---- Pane wrapper ----
-   Relatively-positioned, clipped host so the "switch team" chip can be pinned
-   over the bottom of the scrolling pane (thumb zone) without scrolling away. */
+   Flex column: the scroll pane takes the free space and the "switch team"
+   footer sits in normal flow beneath it. Because the pane is `flex: 1` (not an
+   absolute overlay reserving padding), a squad that fits fills the pane exactly
+   and does NOT scroll — the pane only scrolls when content truly overflows. */
 .lfc-pane-wrap {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -266,65 +269,66 @@
 
 /* ---- Scrollable pane ---- */
 .lfc-card__scroll {
-  position: absolute;
-  inset: 0;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  /* Extra bottom inset keeps the last bench row / auto-subs note clear of the
-     Safari bottom toolbar, the home indicator, and the switch chip. */
-  padding: 10px 12px calc(76px + env(safe-area-inset-bottom, 0px));
+  padding: 10px 12px 8px;
   background: var(--fm-bg);
   color: var(--fm-text);
 }
 
-/* ---- "Switch to <other team>" chip (Lineups tab) ----
-   Centred outline chip pinned to the bottom of the pane, above the deck's
-   fixture dots, so switching teams is one thumb-tap away. */
+/* ---- "Switch to <other team>" footer (Lineups tab) ----
+   Quiet in-flow footer: tiny opponent crest + muted "Switch to <name>". No
+   pill/border/shadow, and it lives in layout flow (not floating over rows), so
+   it never overlaps the last bench row and needs no reserved scroll padding. */
 .lfc-teamswitch {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(36px + env(safe-area-inset-bottom, 0px));
-  z-index: 4;
+  flex: none;
   display: flex;
   justify-content: center;
-  pointer-events: none;
+  align-items: center;
+  padding: 8px 12px calc(9px + env(safe-area-inset-bottom, 0px));
+  background: var(--fm-bg);
+  border-top: 1px solid var(--fm-border);
 }
 .lfc-teamswitch__btn {
-  pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  max-width: 78%;
-  padding: 8px 16px;
-  border: 1.5px solid var(--tclot-logo-purple);
-  border-radius: 999px;
-  background: var(--fm-card);
-  color: var(--tclot-logo-purple);
+  gap: 8px;
+  max-width: 88%;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--fm-text);
   font: inherit;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12.5px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 3px 12px rgba(121, 91, 251, 0.18);
-  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+  transition: opacity 0.12s;
 }
 .lfc-teamswitch__btn:active {
-  transform: scale(0.97);
+  opacity: 0.55;
 }
 .lfc-teamswitch__crest {
   display: inline-flex;
   flex: none;
 }
 .lfc-teamswitch__crest .team-avatar-frame--sm {
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 19px;
+}
+.lfc-teamswitch__lead {
+  color: var(--fm-muted);
+  font-weight: 700;
 }
 .lfc-teamswitch__name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 800;
 }
 
 /* ---- Key Stats / H2H blocks ---- */
