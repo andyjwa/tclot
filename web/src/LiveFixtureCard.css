@@ -253,11 +253,7 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* ---- Pane wrapper ----
-   Flex column: the scroll pane takes the free space and the "switch team"
-   footer sits in normal flow beneath it. Because the pane is `flex: 1` (not an
-   absolute overlay reserving padding), a squad that fits fills the pane exactly
-   and does NOT scroll — the pane only scrolls when content truly overflows. */
+/* ---- Pane wrapper ---- */
 .lfc-pane-wrap {
   display: flex;
   flex-direction: column;
@@ -267,68 +263,49 @@
   background: var(--fm-bg);
 }
 
-/* ---- Scrollable pane ---- */
+/* ---- Scrollable pane (Key Stats / Odds / Live Table can be long) ---- */
 .lfc-card__scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 10px 12px 8px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   background: var(--fm-bg);
   color: var(--fm-text);
 }
 
-/* ---- "Switch to <other team>" footer (Lineups tab) ----
-   Quiet in-flow footer: tiny opponent crest + muted "Switch to <name>". No
-   pill/border/shadow, and it lives in layout flow (not floating over rows), so
-   it never overlaps the last bench row and needs no reserved scroll padding. */
-.lfc-teamswitch {
-  flex: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 8px 12px calc(9px + env(safe-area-inset-bottom, 0px));
-  background: var(--fm-bg);
-  border-top: 1px solid var(--fm-border);
-}
-.lfc-teamswitch__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 88%;
-  padding: 3px 8px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  color: var(--fm-text);
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.12s;
-}
-.lfc-teamswitch__btn:active {
-  opacity: 0.55;
-}
-.lfc-teamswitch__crest {
-  display: inline-flex;
-  flex: none;
-}
-.lfc-teamswitch__crest .team-avatar-frame--sm {
-  width: 19px;
-  height: 19px;
-}
-.lfc-teamswitch__lead {
-  color: var(--fm-muted);
-  font-weight: 700;
-}
-.lfc-teamswitch__name {
-  min-width: 0;
+/* ---- Lineups pane: fit the whole squad on one page, never scroll ----
+   The squad is a fixed set of rows (XI + bench), so instead of scrolling we
+   flex-distribute the rows to exactly fill the available pane height. The
+   pane, the live-xp table, and each row become flex children so the vertical
+   space is shared evenly; the pane itself is `overflow: hidden` so there is no
+   scroll or iOS rubber-band, on any phone size. */
+.lfc-card__scroll--fit {
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 800;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 10px calc(4px + env(safe-area-inset-bottom, 0px));
+}
+.lfc-card__scroll--fit .live-xp--mobile,
+.lfc-card__scroll--fit .live-xp__team,
+.lfc-card__scroll--fit .live-xp__table {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.lfc-card__scroll--fit .live-xp__thead,
+.lfc-card__scroll--fit .live-xp__group {
+  flex: none;
+}
+/* Rows share the leftover height evenly; align-items:center keeps the single
+   line of content vertically centred as the row grows/shrinks. */
+.lfc-card__scroll--fit .live-xp__row {
+  flex: 1 1 0;
+  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 /* ---- Key Stats / H2H blocks ---- */

@@ -98,14 +98,6 @@ export function LiveFixtureCard({ fixture, ctx }) {
     );
   };
 
-  // Tapping the chip flips to the other team's lineup. It shows the team you'll
-  // switch *to* (the opposite of the current side), pinned at the bottom of the
-  // pane in the thumb zone so it's reachable one-handed without the header
-  // badges. Only shown on the Lineups tab.
-  const otherSide = side === 'home' ? 'away' : 'home';
-  const otherId = otherSide === 'home' ? homeId : awayId;
-  const otherName = otherSide === 'home' ? homeName : awayName;
-
   return (
     <div className="lfc-card">
       <div className="lfc-card__top">
@@ -136,7 +128,12 @@ export function LiveFixtureCard({ fixture, ctx }) {
       </div>
 
       <div className="lfc-pane-wrap">
-        <div className="lfc-card__scroll lfc-pane">
+        <div
+          className={
+            'lfc-card__scroll lfc-pane' +
+            (tab === 'lineups' ? ' lfc-card__scroll--fit' : '')
+          }
+        >
         {tab === 'lineups' ? (
           <LiveExpandedFixture
             homeSquad={homeSquad}
@@ -186,28 +183,6 @@ export function LiveFixtureCard({ fixture, ctx }) {
           />
         ) : null}
         </div>
-        {tab === 'lineups' ? (
-          <div className="lfc-teamswitch">
-            <button
-              type="button"
-              className="lfc-teamswitch__btn"
-              onClick={() => setSide(otherSide)}
-              aria-label={`Switch to ${otherName} lineup`}
-            >
-              <span className="lfc-teamswitch__crest">
-                <TeamAvatar
-                  entryId={otherId}
-                  name={otherName}
-                  size="sm"
-                  logoMap={ctx.teamLogoMap}
-                  kitIndexByEntry={ctx.kitIndexByEntry}
-                />
-              </span>
-              <span className="lfc-teamswitch__lead">Switch to </span>
-              <span className="lfc-teamswitch__name">{otherName}</span>
-            </button>
-          </div>
-        ) : null}
       </div>
     </div>
   );
