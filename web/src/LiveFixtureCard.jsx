@@ -110,7 +110,7 @@ export function LiveFixtureCard({ fixture, ctx }) {
       aria-label={`Switch to ${otherName} lineup`}
     >
       <span className="lfc-benchswitch__lead">Switch to</span>
-      <span className="lfc-benchswitch__name">{otherName}</span>
+      <span className="lfc-benchswitch__name">{otherName.split(' ')[0]}</span>
       <span className="lfc-benchswitch__chev" aria-hidden="true">›</span>
     </button>
   );
