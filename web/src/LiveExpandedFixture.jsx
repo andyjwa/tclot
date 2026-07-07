@@ -274,7 +274,7 @@ function LiveExpandedTableHead({ playerLabel = 'Player' }) {
  * One team's player table: optional auto-subs note, column header, then
  * STARTING XI rows and BENCH rows sorted by points contributed.
  */
-function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds, playerLabel, showAutosubs = true }) {
+function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds, playerLabel, showAutosubs = true, benchAccessory = null }) {
   // Starting XI is sorted by FPL position (GK → DEF → MID → FWD) so the
   // user can scan "best players at each position" across the two team
   // columns. Bench keeps points-contributed sort — order is independent.
@@ -309,7 +309,10 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds, playerLabel,
         ))}
         {benchSorted.length ? (
           <>
-            <div className="live-xp__group live-xp__group--bench" role="row">Bench</div>
+            <div className="live-xp__group live-xp__group--bench" role="row">
+              <span className="live-xp__group-label">Bench</span>
+              {benchAccessory}
+            </div>
             {benchSorted.map((r) => (
               <LiveExpandedTableRow
                 key={`b-${r.element}-${r.pickPosition}`}
@@ -373,6 +376,7 @@ export function LiveExpandedFixture({
   onSelectSide,
   showTabs = true,
   showAutosubs = true,
+  benchAccessory = null,
 }) {
   const homeAutoSubs = pickAutoSubs(homeSquad);
   const awayAutoSubs = pickAutoSubs(awaySquad);
@@ -437,6 +441,7 @@ export function LiveExpandedFixture({
           autosubInIds={activeAutoIn}
           playerLabel={activeTab === 'home' ? homeName : awayName}
           showAutosubs={showAutosubs}
+          benchAccessory={benchAccessory}
         />
       </div>
     );

@@ -70,6 +70,10 @@
   .g1 { color:#1d8a55 !important; font-weight:800; } .b1 { color:#5b40d6 !important; font-weight:800; }
   .ln-dnp .ln-c,.ln-dnp .ln-pts,.ln-dnp .ln-pos { color:var(--fm-muted); }
   .ln-benchhd { font-size:9px; font-weight:800; letter-spacing:1px; color:var(--fm-muted); padding:5px 12px 3px; border-top:1px solid var(--fm-border); background:#fafafa; }
+  .ln-benchhd--switch { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:3px 12px; }
+  .bsw { display:inline-flex; align-items:center; gap:6px; max-width:66%; margin:-2px 0; padding:4px 9px 4px 6px; border:0; border-radius:999px; background:color-mix(in srgb, var(--tclot-logo-purple) 10%, transparent); color:var(--tclot-logo-purple); font-family:inherit; font-size:11px; font-weight:700; letter-spacing:0; text-transform:none; cursor:pointer; }
+  .bsw__crest { width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:6.5px; font-weight:800; color:#fff; flex:none; }
+  .bsw__chev { font-weight:800; opacity:0.75; }
   .ln-out .ln-name { color:#d06a72; text-decoration:line-through; }
 
   /* foot host — pinned bottom, no heavy chrome */
@@ -203,7 +207,7 @@ function benchRow(r){ const [c,ab,n,pos,pts,o]=r;
 function listHtml(team){
   return `<div class="pane-list"><div class="ln-hd"><span class="ln-hd__team">${team.name}</span>${HEAD_COLS}</div>`
     + team.starters.map(starterRow).join('')
-    + `<div class="ln-benchhd">BENCH</div>`
+    + `<div class="ln-benchhd ln-benchhd--switch"><span>BENCH</span><button class="bsw"><span class="bsw__crest" style="background:${MORP.color}">${MORP.ab}</span>${MORP.name}<span class="bsw__chev">›</span></button></div>`
     + team.bench.map(benchRow).join('') + `</div>`;
 }
 function header(){

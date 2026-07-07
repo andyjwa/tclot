@@ -285,7 +285,10 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 4px 10px calc(4px + env(safe-area-inset-bottom, 0px));
+  /* Bottom inset reserves room for the deck's absolutely-positioned pagination
+     dots (~36px + home indicator) so the last bench row is never hidden behind
+     them. */
+  padding: 4px 10px calc(42px + env(safe-area-inset-bottom, 0px));
 }
 .lfc-card__scroll--fit .live-xp--mobile,
 .lfc-card__scroll--fit .live-xp__team,
@@ -306,6 +309,65 @@
   min-height: 0;
   padding-top: 0;
   padding-bottom: 0;
+}
+
+/* ---- "Switch to opponent" tucked into the BENCH divider's blank space ----
+   The bench divider row only uses its left edge for the "Bench" label, leaving
+   the stat-column area empty. We reuse that dead space (mid-screen, easy thumb
+   reach) for a subtle switch-to-opponent button. */
+.lfc-card__scroll--fit .live-xp__group--bench {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.live-xp__group-label {
+  min-width: 0;
+}
+.lfc-benchswitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 66%;
+  margin: -2px 0;
+  padding: 4px 9px 4px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tclot-logo-purple) 10%, transparent);
+  color: var(--tclot-logo-purple);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, transform 0.1s;
+}
+.lfc-benchswitch:active {
+  transform: scale(0.96);
+  background: color-mix(in srgb, var(--tclot-logo-purple) 18%, transparent);
+}
+.lfc-benchswitch__crest {
+  display: inline-flex;
+  flex: none;
+}
+.lfc-benchswitch__crest .team-avatar-frame--sm {
+  width: 16px;
+  height: 16px;
+}
+.lfc-benchswitch__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-benchswitch__chev {
+  flex: none;
+  font-weight: 800;
+  opacity: 0.75;
 }
 
 /* ---- Key Stats / H2H blocks ---- */
