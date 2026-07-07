@@ -101,7 +101,6 @@ export function LiveFixtureCard({ fixture, ctx }) {
   // Subtle "switch to opponent" control tucked into the blank right side of the
   // BENCH divider row (mid-screen thumb zone). Shows the team you'll switch to.
   const otherSide = side === 'home' ? 'away' : 'home';
-  const otherId = otherSide === 'home' ? homeId : awayId;
   const otherName = otherSide === 'home' ? homeName : awayName;
   const benchSwitch = (
     <button
@@ -110,15 +109,7 @@ export function LiveFixtureCard({ fixture, ctx }) {
       onClick={() => setSide(otherSide)}
       aria-label={`Switch to ${otherName} lineup`}
     >
-      <span className="lfc-benchswitch__crest">
-        <TeamAvatar
-          entryId={otherId}
-          name={otherName}
-          size="sm"
-          logoMap={ctx.teamLogoMap}
-          kitIndexByEntry={ctx.kitIndexByEntry}
-        />
-      </span>
+      <span className="lfc-benchswitch__lead">Switch to</span>
       <span className="lfc-benchswitch__name">{otherName}</span>
       <span className="lfc-benchswitch__chev" aria-hidden="true">›</span>
     </button>

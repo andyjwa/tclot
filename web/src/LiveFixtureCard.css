@@ -329,45 +329,41 @@
 .lfc-benchswitch {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  max-width: 66%;
-  margin: -2px 0;
-  padding: 4px 9px 4px 6px;
+  gap: 5px;
+  max-width: 70%;
+  /* Negative margin enlarges the tap target without adding row height. */
+  margin: -4px -4px;
+  padding: 4px;
   border: 0;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--tclot-logo-purple) 10%, transparent);
-  color: var(--tclot-logo-purple);
+  background: none;
+  color: var(--fm-muted);
   font-family: inherit;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0;
   text-transform: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s, transform 0.1s;
+  transition: opacity 0.12s;
 }
 .lfc-benchswitch:active {
-  transform: scale(0.96);
-  background: color-mix(in srgb, var(--tclot-logo-purple) 18%, transparent);
+  opacity: 0.5;
 }
-.lfc-benchswitch__crest {
-  display: inline-flex;
+.lfc-benchswitch__lead {
   flex: none;
-}
-.lfc-benchswitch__crest .team-avatar-frame--sm {
-  width: 16px;
-  height: 16px;
+  color: var(--fm-muted);
 }
 .lfc-benchswitch__name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--fm-text-strong);
 }
 .lfc-benchswitch__chev {
   flex: none;
+  color: var(--tclot-logo-purple);
   font-weight: 800;
-  opacity: 0.75;
 }
 
 /* ---- Key Stats / H2H blocks ---- */
