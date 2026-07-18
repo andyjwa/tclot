@@ -802,7 +802,7 @@ export function LiveScores({
   const detailOverlayCtx = usePlayerDetailOverlayOptional();
 
   const openLineupOrHistory = useCallback(
-    (row, squad) => {
+    (row, squad, opts) => {
       if (
         detailOverlayCtx &&
         Number.isFinite(Number(row?.element ?? row?.elementId))
@@ -814,12 +814,24 @@ export function LiveScores({
           displayName: row?.displayName,
           web_name: row?.web_name,
           teamShort: row?.teamShort,
+          presentation: opts?.presentation,
         });
         return;
       }
       openPlayerHistory(row);
     },
     [detailOverlayCtx, openPlayerHistory],
+  );
+
+  /**
+   * Player tapped from an OPEN fixture (mobile card deck or the inline
+   * expanded lineup): the detail overlay slides UP as a bottom sheet over
+   * the fixture (FotMob player sheet). Everywhere else keeps the default
+   * push-from-the-right presentation.
+   */
+  const openPlayerFromFixture = useCallback(
+    (row, squad) => openLineupOrHistory(row, squad, { presentation: 'sheet' }),
+    [openLineupOrHistory],
   );
 
   const proxyHost = proxyHostLabel();
@@ -1231,7 +1243,7 @@ export function LiveScores({
       kitIndexByEntry,
       liveStandingsRows,
       gwStandingsFrozen,
-      onOpenPlayer: openLineupOrHistory,
+      onOpenPlayer: openPlayerFromFixture,
     }),
     [
       matches,
@@ -1242,7 +1254,7 @@ export function LiveScores({
       kitIndexByEntry,
       liveStandingsRows,
       gwStandingsFrozen,
-      openLineupOrHistory,
+      openPlayerFromFixture,
     ],
   );
 
@@ -1511,7 +1523,7 @@ export function LiveScores({
                         homeName={homeName}
                         awayName={awayName}
                         viewport={narrowViewport ? 'mobile' : 'desktop'}
-                        onOpenPlayer={openLineupOrHistory}
+                        onOpenPlayer={openPlayerFromFixture}
                       />
                     </div>
                   ) : null}

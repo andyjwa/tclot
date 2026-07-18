@@ -255,6 +255,7 @@ import { LiveScores } from './LiveScores'
 import ForecastPanel from './ForecastPanel.jsx'
 import { PreseasonHub } from './PreseasonHub.jsx'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
+import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
@@ -2916,6 +2917,13 @@ function App() {
       kitIndexByEntry={kitIndexByEntry}
       onOpenChange={setPlayerDetailOverlayOpen}
     >
+    <TeamDetailOverlayProvider
+      dashboardView={dashboardView}
+      leagueEntries={leagueEntries}
+      matches={matches}
+      teamLogoMap={teamLogoMap}
+      kitIndexByEntry={kitIndexByEntry}
+    >
     <PlayerHistoryProvider>
     <div
       className="app fotmob"
@@ -3080,7 +3088,14 @@ function App() {
                           />
                         </span>
                         <div className="standings-hero-card__id">
-                          <div className="standings-hero-card__name">{leaderDisplayName}</div>
+                          <div className="standings-hero-card__name">
+                            <ClickableTeamName
+                              leagueEntryId={leader.league_entry}
+                              title={leader.teamName}
+                            >
+                              {leaderDisplayName}
+                            </ClickableTeamName>
+                          </div>
                           {leaderMgr ? (
                             <div className="standings-hero-card__mgr">{leaderMgr}</div>
                           ) : null}
@@ -3169,7 +3184,13 @@ function App() {
                                     kitIndexByEntry={kitIndexByEntry}
                                   />
                                   <span className="standings-team-id">
-                                    <span className="team-name team-name--sidebar">{displayName}</span>
+                                    <ClickableTeamName
+                                      leagueEntryId={row.league_entry}
+                                      className="team-name team-name--sidebar"
+                                      title={row.teamName}
+                                    >
+                                      {displayName}
+                                    </ClickableTeamName>
                                     {mgr ? (
                                       <span className="standings-team-mgr">{mgr}</span>
                                     ) : null}
@@ -3313,7 +3334,13 @@ function App() {
                                     kitIndexByEntry={kitIndexByEntry}
                                   />
                                   <span className="standings-team-id">
-                                    <span className="team-name team-name--sidebar">{row.teamName}</span>
+                                    <ClickableTeamName
+                                      leagueEntryId={row.league_entry}
+                                      className="team-name team-name--sidebar"
+                                      title={row.teamName}
+                                    >
+                                      {row.teamName}
+                                    </ClickableTeamName>
                                     {mgr ? (
                                       <span className="standings-team-mgr">{mgr}</span>
                                     ) : null}
@@ -3800,6 +3827,7 @@ function App() {
       <footer className="page-footer--script">Tery is a Racist</footer>
     </div>
     </PlayerHistoryProvider>
+    </TeamDetailOverlayProvider>
     </PlayerDetailOverlayProvider>
   )
 }

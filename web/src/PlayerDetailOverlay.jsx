@@ -58,6 +58,12 @@ export function PlayerDetailOverlayProvider({
 
   const [overlayPlayerId, setOverlayPlayerId] = useState(null)
   const [overlayLeagueEntryId, setOverlayLeagueEntryId] = useState(null)
+  /**
+   * Mobile entrance style: `'push'` (default — slides in from the right,
+   * FotMob screen-push) or `'sheet'` (slides UP from the bottom as a partial
+   * bottom sheet — used when a player is tapped from an open live fixture).
+   */
+  const [overlayPresentation, setOverlayPresentation] = useState('push')
   const [compareSource, setCompareSource] = useState(null)
   const [benchId, setBenchId] = useState(null)
 
@@ -82,11 +88,16 @@ export function PlayerDetailOverlayProvider({
   const mobileSheetPhaseRef = useRef(null)
   const mobileSurfaceRef = useRef(null)
   mobileSheetPhaseRef.current = mobileSheetPhase
+  const overlayPresentationRef = useRef('push')
+  useLayoutEffect(() => {
+    overlayPresentationRef.current = overlayPresentation
+  }, [overlayPresentation])
 
   const closeDetailImmediately = useCallback(() => {
     pendingSlideExitFinalizeRef.current = false
     setSlideShellOpen(false)
     setMobileSheetPhase(null)
+    setOverlayPresentation('push')
     setOverlayPlayerId(null)
     setOverlayLeagueEntryId(null)
     setCompareSource(null)
@@ -156,6 +167,8 @@ export function PlayerDetailOverlayProvider({
   })
 
   const onMobileSurfaceTouchStart = useCallback((e) => {
+    /** Sheet presentation dismisses on a vertical drag (native listeners below), not swipe-right. */
+    if (overlayPresentationRef.current === 'sheet') return
     if (mobileSheetPhaseRef.current !== 'shown') return
     const touch = e.touches[0]
     if (!touch) return
@@ -173,6 +186,7 @@ export function PlayerDetailOverlayProvider({
   }, [])
 
   const onMobileSurfaceTouchMove = useCallback((e) => {
+    if (overlayPresentationRef.current === 'sheet') return
     const s = swipeRef.current
     if (s.ignored || mobileSheetPhaseRef.current !== 'shown') return
     const touch = e.touches[0]
@@ -236,6 +250,106 @@ export function PlayerDetailOverlayProvider({
     }
     surface.addEventListener('transitionend', onEnd)
   }, [closeDetailImmediately])
+
+  /*
+   * Sheet presentation: drag-DOWN-to-dismiss (FotMob player sheet). Native
+   * non-passive listeners (same pattern as LiveFixtureCardDeck) so we can
+   * preventDefault once the drag is claimed. The drag is only claimed when
+   * the inner scroller (.pdetail__main) is already at the top — otherwise
+   * the touch scrolls the stats content as normal.
+   */
+  useEffect(() => {
+    if (!mobileLayout || overlayPresentation !== 'sheet') return undefined
+    if (mobileSheetPhase !== 'shown') return undefined
+    const surface = mobileSurfaceRef.current
+    if (!surface) return undefined
+
+    let startX = 0
+    let startY = 0
+    let startTime = 0
+    let dy = 0
+    let claimed = false
+    let ignored = false
+
+    const onStart = (e) => {
+      const t = e.touches[0]
+      if (!t) return
+      startX = t.clientX
+      startY = t.clientY
+      startTime = e.timeStamp
+      dy = 0
+      claimed = false
+      ignored = false
+    }
+    const onMove = (e) => {
+      if (ignored || mobileSheetPhaseRef.current !== 'shown') return
+      const t = e.touches[0]
+      if (!t) return
+      const dx = t.clientX - startX
+      dy = t.clientY - startY
+      if (!claimed) {
+        const absX = Math.abs(dx)
+        const absY = Math.abs(dy)
+        if (absX < 8 && absY < 8) return
+        if (absX >= absY || dy <= 0) {
+          ignored = true
+          return
+        }
+        const scroller = surface.querySelector('.pdetail__main')
+        if (scroller && scroller.scrollTop > 0) {
+          ignored = true
+          return
+        }
+        claimed = true
+      }
+      if (e.cancelable) e.preventDefault()
+      surface.style.transition = 'none'
+      surface.style.transform = `translateY(${Math.max(0, dy)}px)`
+    }
+    const onEnd = (e) => {
+      if (!claimed) return
+      claimed = false
+      const elapsed = e.timeStamp - startTime
+      const velocity = elapsed > 0 ? dy / elapsed : 0
+      const sheetHeight = surface.getBoundingClientRect()?.height || 480
+      const shouldClose = dy > Math.min(140, sheetHeight * 0.25) || velocity > 0.5
+      if (shouldClose) {
+        /* Continue from the dragged position down and out, then run the
+         * normal close path so React state stays consistent. */
+        surface.style.transition = 'transform 0.24s cubic-bezier(0.4, 0, 1, 1)'
+        surface.style.transform = 'translateY(100%)'
+        const onT = (ev) => {
+          if (ev.propertyName !== 'transform') return
+          surface.removeEventListener('transitionend', onT)
+          closeImmediateRef.current()
+        }
+        surface.addEventListener('transitionend', onT)
+      } else {
+        /* Snap back, then clear inline styles so the data-mobile-phase
+         * rules resume control. */
+        surface.style.transition = 'transform 0.22s cubic-bezier(0.32, 0.72, 0, 1)'
+        surface.style.transform = 'translateY(0)'
+        const onT = (ev) => {
+          if (ev.propertyName !== 'transform') return
+          surface.removeEventListener('transitionend', onT)
+          surface.style.transition = ''
+          surface.style.transform = ''
+        }
+        surface.addEventListener('transitionend', onT)
+      }
+    }
+
+    surface.addEventListener('touchstart', onStart, { passive: true })
+    surface.addEventListener('touchmove', onMove, { passive: false })
+    surface.addEventListener('touchend', onEnd)
+    surface.addEventListener('touchcancel', onEnd)
+    return () => {
+      surface.removeEventListener('touchstart', onStart)
+      surface.removeEventListener('touchmove', onMove)
+      surface.removeEventListener('touchend', onEnd)
+      surface.removeEventListener('touchcancel', onEnd)
+    }
+  }, [mobileLayout, overlayPresentation, mobileSheetPhase])
 
   const onMobileSurfaceTouchEnd = useCallback(
     (e) => {
@@ -324,6 +438,7 @@ export function PlayerDetailOverlayProvider({
       setOverlayLeagueEntryId(leagueOk ? Number(leagueRaw) : null)
       setCompareSource(nextCmp)
       setBenchId(null)
+      setOverlayPresentation(payload?.presentation === 'sheet' ? 'sheet' : 'push')
 
       if (matchesMobileLayoutViewport()) {
         setMobileSheetPhase('opening')
@@ -543,6 +658,10 @@ export function PlayerDetailOverlayProvider({
         ? 'exit'
         : 'enter'
 
+  const mobileShellClass =
+    'player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet' +
+    (overlayPresentation === 'sheet' ? ' player-detail-overlay-shell--sheet-up' : '')
+
   const handleSearchBenchSelect = useCallback((id) => {
     if (id != null) setCompareSource(null)
     setBenchId(id)
@@ -590,7 +709,7 @@ export function PlayerDetailOverlayProvider({
         {!bootstrap && !squadsErr ?
           mobileLayout ?
             <div
-              className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
+              className={mobileShellClass}
               role="dialog"
               aria-modal="true"
               onMouseDown={(e) => {
@@ -601,6 +720,7 @@ export function PlayerDetailOverlayProvider({
                 ref={mobileSurfaceRef}
                 className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
                 data-mobile-phase={overlayMobileSlidePhaseAttr}
+                data-mobile-anim={overlayPresentation}
                 onTransitionEnd={onMobileSheetTransitionEnd}
                 onMouseDown={(e) => {
                   e.stopPropagation()
@@ -619,7 +739,7 @@ export function PlayerDetailOverlayProvider({
         : squadsErr && bootstrap == null ?
           mobileLayout ?
             <div
-              className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
+              className={mobileShellClass}
               role="dialog"
               aria-modal="true"
               onMouseDown={(e) => {
@@ -630,6 +750,7 @@ export function PlayerDetailOverlayProvider({
                 ref={mobileSurfaceRef}
                 className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
                 data-mobile-phase={overlayMobileSlidePhaseAttr}
+                data-mobile-anim={overlayPresentation}
                 onTransitionEnd={onMobileSheetTransitionEnd}
                 onMouseDown={(e) => {
                   e.stopPropagation()
@@ -664,7 +785,7 @@ export function PlayerDetailOverlayProvider({
         : !detailPlayerEl ?
           mobileLayout ?
             <div
-              className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
+              className={mobileShellClass}
               role="dialog"
               aria-modal="true"
               onMouseDown={(e) => {
@@ -675,6 +796,7 @@ export function PlayerDetailOverlayProvider({
                 ref={mobileSurfaceRef}
                 className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
                 data-mobile-phase={overlayMobileSlidePhaseAttr}
+                data-mobile-anim={overlayPresentation}
                 onTransitionEnd={onMobileSheetTransitionEnd}
                 onMouseDown={(e) => {
                   e.stopPropagation()
@@ -708,7 +830,7 @@ export function PlayerDetailOverlayProvider({
             )
         : mobileLayout ?
           <div
-            className="player-detail-overlay-shell player-detail-overlay-shell--body player-detail-overlay-shell--mobile-sheet"
+            className={mobileShellClass}
             role="dialog"
             aria-modal="true"
             aria-label="Player detail"
@@ -720,6 +842,7 @@ export function PlayerDetailOverlayProvider({
               ref={mobileSurfaceRef}
               className="player-detail-overlay__surface player-detail-overlay__surface--mobile-sheet-anim"
               data-mobile-phase={overlayMobileSlidePhaseAttr}
+              data-mobile-anim={overlayPresentation}
               onTransitionEnd={onMobileSheetTransitionEnd}
               onTouchStart={onMobileSurfaceTouchStart}
               onTouchMove={onMobileSurfaceTouchMove}
@@ -729,6 +852,11 @@ export function PlayerDetailOverlayProvider({
                 e.stopPropagation()
               }}
             >
+              {overlayPresentation === 'sheet' ? (
+                <div className="player-detail-overlay__grab" aria-hidden="true">
+                  <i />
+                </div>
+              ) : null}
               <PlayerDetailView
                 playerId={Number(overlayPlayerId)}
                 benchId={benchId}

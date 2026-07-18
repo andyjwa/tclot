@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { PointsCell } from './PointsCell.jsx';
 import { firstWord } from './teamNameUtils.js';
+import { ClickableTeamName } from './TeamDetailOverlay.jsx';
 
 /**
  * Local copy mirroring the per-file helper in `LiveScores.jsx`,
@@ -45,7 +46,9 @@ function LiveTeamCell({ row, teamLogoMap, kitIndexByEntry, mobile }) {
         kitIndexByEntry={kitIndexByEntry}
       />
       <span className="team-name team-name--sidebar live-standings-team-name">
-        {displayName}
+        <ClickableTeamName leagueEntryId={row.league_entry} title={row.teamName}>
+          {displayName}
+        </ClickableTeamName>
         {moveUp ? (
           <span
             className="live-standings-move live-standings-move--up"

@@ -4,6 +4,7 @@ import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
 import { TeamH2HRivals } from './TeamH2HRivals.jsx'
 import { WIN_MARGIN_BUCKET_KEYS } from './useLeagueData'
 import { useMobileNarrowViewport } from './usePortraitMobile'
+import { ClickableTeamName } from './TeamDetailOverlay.jsx'
 
 function firstWord(name) {
   if (typeof name !== 'string') return ''
@@ -165,12 +166,13 @@ export function StandingsStatsSubview({
                           logoMap={teamLogoMap}
                           kitIndexByEntry={kitIndexByEntry}
                         />
-                        <span
+                        <ClickableTeamName
+                          leagueEntryId={row.league_entry}
                           className="win-margin-table__name"
                           title={row.teamName}
                         >
                           {isMobileNarrow ? firstWord(row.teamName) : row.teamName}
-                        </span>
+                        </ClickableTeamName>
                       </span>
                     </th>
                     {WIN_MARGIN_BUCKET_KEYS.map((k) => {
@@ -289,12 +291,13 @@ export function StandingsStatsSubview({
                             logoMap={teamLogoMap}
                             kitIndexByEntry={kitIndexByEntry}
                           />
-                          <span
+                          <ClickableTeamName
+                            leagueEntryId={r.league_entry}
                             className="win-margin-table__name"
                             title={r.teamName}
                           >
                             {isMobileNarrow ? firstWord(r.teamName) : r.teamName}
-                          </span>
+                          </ClickableTeamName>
                         </span>
                       </th>
                       <td className="tabular win-margin-table__n">

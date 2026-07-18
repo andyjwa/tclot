@@ -1544,27 +1544,28 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+/* Plain small chevron — matches the live-score back arrow (`.lfc-back`):
+   no box, no border, just the glyph with a comfortable 40×40 tap target. */
 .pdetail__back {
   width: 40px;
   height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid var(--border);
+  background: none;
+  border: 0;
   border-radius: var(--pdetail-r-md);
   color: var(--text);
   cursor: pointer;
-  font-size: 22px;
+  font-size: 28px;
   line-height: 1;
   font-weight: 600;
-  transition: background-color var(--pdetail-dur-fast) var(--pdetail-ease),
-    border-color var(--pdetail-dur-fast) var(--pdetail-ease);
+  transition: opacity var(--pdetail-dur-fast) var(--pdetail-ease);
   -webkit-tap-highlight-color: transparent;
 }
-.pdetail__back:hover {
-  background: var(--surface);
-  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+.pdetail__back:hover,
+.pdetail__back:active {
+  opacity: 0.6;
 }
 .pdetail__back:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--brand) 55%, transparent);
@@ -1586,10 +1587,10 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   align-items: center;
   gap: 10px;
   padding: 8px 12px 10px;
-  /* Full purple treatment — same brand gradient as the mobile brand header
-   * and the live fixture score cards (not the old faded brand-tint veil).
-   * White / frosted child elements below give the contrast on the band. */
-  background: var(--brand-grad);
+  /* Solid matte violet — same family as the live score header but flat, so
+   * the short band never reads as fading to white. Shared with the team
+   * detail hero via `--tclot-header-solid`. */
+  background: var(--tclot-header-solid, #795bfb);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
   color: #ffffff;
 }
@@ -1613,16 +1614,10 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   border-color: rgba(255, 255, 255, 0.34);
   color: #ffffff;
 }
-/* Back chevron reads as a frosted control on the band (the shared
- * `.pdetail__back` light-surface style is kept for the tablet topbar). */
+/* On the purple band the chevron is plain white — identical to the live
+ * score back arrow (`.lfc-back`), no frosted box. */
 .pdetail-p__hero-back.pdetail__back {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.34);
   color: #ffffff;
-}
-.pdetail-p__hero-back.pdetail__back:hover {
-  background: rgba(255, 255, 255, 0.26);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 /* Fantasy owner chip — small + light. The badge and team name are a
  * secondary detail next to the player, so shrink the crest and set the
@@ -2487,7 +2482,7 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 .pcompare__back {
   appearance: none;
   background: transparent;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: var(--pdetail-r-sm);
   width: 32px;
   height: 32px;
@@ -2497,10 +2492,15 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   color: var(--text-strong);
   cursor: pointer;
   padding: 0;
+  /* Same plain-chevron look as the live-score back arrow. */
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
 }
-.pcompare__back:hover {
-  background: var(--surface);
-  border-color: var(--border);
+.pcompare__back:hover,
+.pcompare__back:active {
+  opacity: 0.6;
 }
 .pcompare__h-title {
   font-size: 15px;

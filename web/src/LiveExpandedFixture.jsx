@@ -9,35 +9,7 @@ import {
   sortStartingXIByPosition,
 } from './liveScoresDerivations.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
-
-/**
- * Effective starters/bench (post-autosub when available) — mirror of the
- * helper in `LiveScores.jsx`. Kept inline so this component doesn't pull
- * an internal export from there.
- */
-function effectiveStarters(squad) {
-  if (!squad || squad.error) return [];
-  const nBench = squad.bench?.length ?? 0;
-  if (
-    squad.displayStarters?.length === 11 &&
-    squad.displayBench?.length === nBench
-  ) {
-    return squad.displayStarters;
-  }
-  return squad.starters ?? [];
-}
-
-function effectiveBench(squad) {
-  if (!squad || squad.error) return [];
-  const nBench = squad.bench?.length ?? 0;
-  if (
-    squad.displayStarters?.length === 11 &&
-    squad.displayBench?.length === nBench
-  ) {
-    return squad.displayBench;
-  }
-  return squad.bench ?? [];
-}
+import { effectiveBench, effectiveStarters } from './liveSquadEffective.js';
 
 /** Picks the active auto-sub list off a squad (official preferred, then projected). */
 function pickAutoSubs(squad) {

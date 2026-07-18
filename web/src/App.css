@@ -8823,6 +8823,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
     background: var(--brand-grad);
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
     color: #ffffff;
+    /* Standalone (home-screen) app: with viewport-fit=cover the page is laid
+     * out under the iOS status bar, so the purple band extends behind it and
+     * this padding keeps the brand row below the clock. In-browser the env()
+     * value is 0 and nothing changes. */
+    padding-top: env(safe-area-inset-top, 0px);
   }
   /* Override the desktop light-theme frosted-white frost so the purple
    * band shows in light mode too. Matches the desktop rule's specificity

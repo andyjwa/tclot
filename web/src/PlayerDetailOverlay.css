@@ -94,6 +94,78 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1);
 }
 
+/*
+ * Bottom-sheet presentation (`data-mobile-anim='sheet'`) — used when a player
+ * is opened from an open live fixture: the stats panel slides UP from the
+ * bottom (FotMob player sheet) instead of pushing in from the right. Partial
+ * height with rounded top corners so the dimmed fixture screen stays visible
+ * behind the top strip; drag-down on the surface dismisses (see the native
+ * touch handlers in PlayerDetailOverlay.jsx).
+ */
+/* Double-class selector beats `.player-detail-overlay-shell--mobile-sheet
+   .player-detail-overlay-shell--body { justify-content: flex-start }` above. */
+.player-detail-overlay-shell--mobile-sheet.player-detail-overlay-shell--sheet-up {
+  justify-content: flex-end;
+  /* The sheet must reach the physical bottom edge — safe-area padding moves
+     inside the surface instead so no dimmed strip shows under it. */
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'] {
+  flex: 0 0 auto;
+  height: 88%;
+  transform-origin: center bottom;
+  border-radius: 18px 18px 0 0;
+  overflow: hidden;
+  background: var(--fm-bg-root, var(--fm-surface));
+  box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.35);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'][data-mobile-phase='enter'] {
+  transform: translateY(100%);
+  opacity: 1;
+  transition: none;
+}
+
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'][data-mobile-phase='open'] {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.36s cubic-bezier(0.22, 0.9, 0.28, 1);
+}
+
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'][data-mobile-phase='exit'] {
+  transform: translateY(100%);
+  opacity: 1;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Grab handle pill at the top of the sheet. Painted the same solid purple
+   as the hero band below it so the sheet's top is one continuous purple
+   block (no white strip above the header). */
+.player-detail-overlay__grab {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+  background: var(--tclot-header-solid, #795bfb);
+}
+.player-detail-overlay__grab i {
+  width: 38px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* The sheet's inner detail host keeps its own bg; kill the full-screen
+   margin/radius treatment inside the rounded sheet. */
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'] > .players-detail {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .player-detail-overlay__surface.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase] {
     transition-duration: 0.01ms !important;

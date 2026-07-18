@@ -6,6 +6,19 @@
   --text-h: #ffffff;
   --bg: #121212;
   --border: #2f2f2f;
+  /* Matte violet header band shared by the live fixture card, the player
+     detail hero (pop-up + slide-across), and the team detail hero. Defined
+     on :root so overlays portalled to <body> (outside .fotmob) resolve it. */
+  --tclot-header-grad: linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%);
+  /* Solid variant for the short player/team hero bands, where the gradient's
+     light end reads as a fade-to-white. */
+  --tclot-header-solid: #795bfb;
+}
+
+html {
+  /* Stop horizontal overscroll from triggering Android Chrome's back/forward
+     navigation swipe (no effect on iOS Safari's edge gesture). */
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -13,6 +26,7 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
+  overscroll-behavior-x: none;
 }
 
 /* Synced from App colour theme (see ThemeToggle / localStorage tclot-theme) */

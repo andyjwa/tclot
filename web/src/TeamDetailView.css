@@ -1,0 +1,559 @@
+/*
+ * Team detail card — ported from the approved mockup
+ * (web/public/team-card-options.html). Tokens are namespaced (`--tc-*`) and
+ * scoped to `.tc-card` so they never clobber global design tokens. The card
+ * follows the app light/dark theme via `body[data-tclot-theme='dark']`
+ * (light-first defaults, mirroring `.live-player-slide` in App.css); only
+ * the purple hero band is theme-invariant.
+ */
+/* Clickable team name (in Standings / Live table / Stats) that opens the card. */
+.tc-team-link {
+  cursor: pointer;
+}
+.tc-team-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tc-team-link:focus-visible {
+  outline: 2px solid var(--brand, #795bfb);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Desktop right-sheet width for the team card (narrower than the player sheet
+   — the card is a phone-style column). Reuses the `.live-player-slide` shell +
+   slide animation from App.css. */
+.live-player-slide__sheet.live-player-slide__sheet--team-detail {
+  width: min(100vw, 26rem);
+  /* Theme-aware: `.live-player-slide` defines --fm-surface for light and
+     (via body[data-tclot-theme='dark']) dark. */
+  background: var(--fm-surface, #ffffff);
+}
+
+/* Fill the slide sheet / mobile surface with the card. */
+.live-player-slide__sheet--team-detail > .tc-card,
+.tc-overlay__surface > .tc-card {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tc-card {
+  --tc-brand: #795bfb;
+  /* Hero band — solid matte violet, same as the player hero band
+     (`--tclot-header-solid`); shared across light and dark. */
+  --tc-brand-grad: var(--tclot-header-solid, #795bfb);
+  /* LIGHT theme defaults (dark overrides below). Values mirror the
+     `.live-player-slide` / `.player-detail-overlay-shell` --fm-* sets so the
+     card matches the player overlays in both themes. */
+  --tc-surface: #ffffff;
+  --tc-surface-2: #f7f7f7;
+  --tc-border: #e2e2e2;
+  --tc-text: rgba(51, 51, 51, 0.92);
+  --tc-text-strong: #1a1a1a;
+  --tc-text-muted: rgba(0, 0, 0, 0.48);
+  --tc-pos: #12a15a;
+  --tc-neg: #dc2626;
+  --tc-shadow: rgba(0, 0, 0, 0.08);
+  --tc-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--tc-surface);
+  color: var(--tc-text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* DARK theme — the card's original signed-off dark palette. */
+body[data-tclot-theme='dark'] .tc-card {
+  --tc-surface: #1a1a1d;
+  --tc-surface-2: #242428;
+  --tc-border: #2f2f34;
+  --tc-text: rgba(255, 255, 255, 0.87);
+  --tc-text-strong: #fff;
+  --tc-text-muted: rgba(255, 255, 255, 0.55);
+  --tc-pos: #34d399;
+  --tc-neg: #ef4444;
+  --tc-shadow: rgba(0, 0, 0, 0.26);
+}
+
+/* ---- Hero (purple band) ---- */
+.tc-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px 56px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  background: var(--tc-brand-grad);
+  color: #fff;
+  flex: 0 0 auto;
+}
+/* Plain small chevron — matches the live-score back arrow (`.lfc-back`):
+   no frosted box, just the white glyph with a 40×40 tap target. */
+.tc-back {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.tc-back:hover,
+.tc-back:active {
+  opacity: 0.6;
+}
+.tc-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tc-crest .team-avatar-frame {
+  width: 54px;
+  height: 54px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: transparent;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+.tc-hero__body {
+  min-width: 0;
+}
+.tc-hero__name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tc-hero__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.86);
+}
+.tc-rankpill {
+  font-family: var(--tc-mono);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+.tc-recpill {
+  font-family: var(--tc-mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+
+/* team switcher under hero — logo badges */
+.tc-switch {
+  display: flex;
+  gap: 9px;
+  overflow-x: auto;
+  padding: 10px 12px;
+  background: var(--tc-surface-2);
+  border-bottom: 1px solid var(--tc-border);
+  scrollbar-width: none;
+  flex: 0 0 auto;
+}
+.tc-switch::-webkit-scrollbar {
+  display: none;
+}
+.tc-switch button {
+  flex: 0 0 auto;
+  padding: 2px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+  transition: border-color 0.12s ease, transform 0.12s ease;
+}
+.tc-switch button .team-avatar-frame {
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border: none;
+  opacity: 0.5;
+  transition: opacity 0.12s ease;
+}
+.tc-switch button.is-on {
+  border-color: var(--tc-brand);
+}
+.tc-switch button.is-on .team-avatar-frame {
+  opacity: 1;
+}
+.tc-switch button:hover .team-avatar-frame {
+  opacity: 0.85;
+}
+
+/* body scroll region */
+.tc-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  background: var(--tc-surface);
+}
+.tc-sec {
+  padding: 14px 14px 4px;
+}
+.tc-sec__h {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tc-text-muted);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* square metric boxes (top of Story section) */
+.tc-boxes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+.tc-box {
+  border: 1px solid var(--tc-border);
+  border-radius: 12px;
+  background: var(--tc-surface);
+  padding: 9px;
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 1px 3px var(--tc-shadow);
+}
+.tc-box--brand {
+  border-color: color-mix(in srgb, var(--tc-brand) 42%, var(--tc-border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tc-brand) 15%, transparent),
+    color-mix(in srgb, var(--tc-brand) 8%, var(--tc-surface))
+  );
+}
+.tc-box__k {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--tc-text-muted);
+  margin: 0 0 5px;
+}
+.tc-box__v {
+  font-family: var(--tc-mono);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tc-text-strong);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.tc-box__v small {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tc-text-muted);
+  margin-left: 3px;
+}
+.tc-box__sub {
+  font-size: 9.5px;
+  color: var(--tc-text-muted);
+  margin-top: 4px;
+  line-height: 1.2;
+}
+.tc-box__sub--inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tc-inline-badge {
+  display: inline-flex;
+}
+.tc-inline-badge .team-avatar-frame {
+  width: 15px;
+  height: 15px;
+  background: #fff;
+  border: none;
+}
+
+/* Combined Hero | Villain | Streak split box (full width) */
+.tc-box--split {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 0;
+  min-height: 64px;
+}
+.tc-hv {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 9px 5px;
+  gap: 4px;
+}
+.tc-hv__k {
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: var(--tc-text-muted);
+  line-height: 1.15;
+}
+.tc-hv__v {
+  font-family: var(--tc-mono);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.tc-hv__v.is-zero {
+  color: var(--tc-text-muted);
+}
+.tc-hv__div {
+  width: 1px;
+  align-self: stretch;
+  background: var(--tc-border);
+  margin: 9px 0;
+}
+
+.v-pos {
+  color: var(--tc-pos) !important;
+}
+.v-neg {
+  color: var(--tc-neg) !important;
+}
+
+/* results-by-margin bar */
+.tc-margin {
+  border: 1px solid var(--tc-border);
+  border-radius: 13px;
+  background: var(--tc-surface);
+  overflow: hidden;
+}
+.tc-margin__row {
+  display: grid;
+  grid-template-columns: 64px 1fr 30px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--tc-border) 60%, transparent);
+}
+.tc-margin__row:last-child {
+  border-bottom: none;
+}
+.tc-margin__lbl {
+  font-family: var(--tc-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tc-text-muted);
+}
+.tc-margin__track {
+  height: 9px;
+  border-radius: 5px;
+  background: var(--tc-surface-2);
+  overflow: hidden;
+}
+.tc-margin__fill {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: var(--tc-brand);
+}
+.tc-margin__fill--loss {
+  background: color-mix(in srgb, var(--tc-neg) 78%, var(--tc-text-muted));
+}
+.tc-margin__n {
+  font-family: var(--tc-mono);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--tc-text-strong);
+  text-align: right;
+}
+
+.tc-toggle {
+  display: inline-flex;
+  background: var(--tc-surface-2);
+  border: 1px solid var(--tc-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.tc-toggle button {
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--tc-text-muted);
+  background: transparent;
+  border: none;
+  padding: 3px 9px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.tc-toggle button.is-on {
+  background: var(--tc-brand);
+  color: #fff;
+}
+
+/* shared crest atom for H2H rows */
+.tc-riv__crest {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.tc-riv__crest .team-avatar-frame {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border: none;
+}
+
+/* H2H: compact 2-col card grid */
+.h2h-c {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.h2h-c__card {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--tc-border);
+  border-radius: 12px;
+  background: var(--tc-surface);
+  box-shadow: 0 1px 3px var(--tc-shadow);
+}
+.h2h-c__card .tc-riv__crest {
+  width: 28px;
+  height: 28px;
+}
+.h2h-c__body {
+  min-width: 0;
+}
+.h2h-c__name {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tc-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.h2h-c__rec {
+  font-family: var(--tc-mono);
+  font-size: 12px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+.h2h-c__diff {
+  font-family: var(--tc-mono);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Last 5 form cards */
+.tc-l5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+.tc-l5__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 4px 10px;
+  border: 1px solid var(--tc-border);
+  border-radius: 12px;
+  background: var(--tc-surface);
+  min-height: 88px;
+  box-shadow: 0 1px 3px var(--tc-shadow);
+}
+.tc-l5__gw {
+  font-family: var(--tc-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--tc-text-muted);
+  letter-spacing: 0.05em;
+}
+.tc-l5__res {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--tc-mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 2px;
+}
+.res-W {
+  background: var(--tc-pos);
+}
+.res-L {
+  background: var(--tc-neg);
+}
+.res-D {
+  background: var(--tc-text-muted);
+}
+.tc-l5__opp {
+  font-family: var(--tc-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tc-text-muted);
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+.tc-l5__pts {
+  font-family: var(--tc-mono);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--tc-brand);
+  margin-top: 2px;
+  line-height: 1;
+}
+.tc-foot {
+  padding: 16px 14px 22px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--tc-text-muted);
+  font-family: var(--tc-mono);
+  letter-spacing: 0.04em;
+}

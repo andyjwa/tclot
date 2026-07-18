@@ -5,13 +5,8 @@ import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureKeyStats } from './LiveFixtureKeyStats.jsx';
 import { LiveFixtureH2hBars } from './LiveFixtureH2hBars.jsx';
 import { LiveFixtureOdds } from './LiveFixtureOdds.jsx';
-
-const TABS = [
-  { id: 'lineups', label: 'Lineups' },
-  { id: 'stats', label: 'Key Stats' },
-  { id: 'odds', label: 'Odds' },
-  { id: 'table', label: 'Live Table' },
-];
+import { LiveFixtureMatchSplit } from './LiveFixtureMatchSplit.jsx';
+import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
 
 /** Per-side caption beneath the team name in the scorehead. */
 function teamSubText(remaining, isLeader, settled) {
@@ -23,18 +18,38 @@ function teamSubText(remaining, isLeader, settled) {
 }
 
 /**
- * A single live fixture "page" in the swipeable deck: a scorehead whose
- * team badges select which lineup to show (additive highlight), a 4-tab
- * selector (Lineups / Key Stats / Odds / Live Table), and the matching
- * scrollable pane. Key Stats also folds in the season head-to-head; Odds
- * carries the pre-match projection model. Reuses the production lineup table
- * ({@link LiveExpandedFixture}) and {@link LiveStandingsTable}.
+ * A single live fixture "page": a scorehead whose team badges select which
+ * lineup to show on the Lineups tab, a 5-tab selector
+ * (Match / Lineups / Stats / Odds / Table), and a horizontally sliding pane
+ * track (FotMob-style — panes slide left/right as tabs change, and the
+ * deck's swipe gesture drags the track directly).
  *
- * @param {{ fixture: object, ctx: object }} props
+ * The Match tab shows BOTH teams as compact split columns; the Lineups tab
+ * keeps the detailed one-team stat table (POS · MIN · DC · G · A · B · PTS)
+ * with the scorehead badges / bench chip switching sides.
+ *
+ * Tab state is controlled by the deck when `tab`/`onTabChange` are passed
+ * (so the swipe gesture and the tab buttons stay in sync); otherwise it
+ * falls back to local state.
+ *
+ * @param {{
+ *   fixture: object,
+ *   ctx: object,
+ *   tab?: string,
+ *   onTabChange?: (id: string) => void,
+ *   onBack?: () => void,
+ * }} props
  */
-export function LiveFixtureCard({ fixture, ctx }) {
-  const [tab, setTab] = useState('lineups');
+export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
+  const [localTab, setLocalTab] = useState('match');
   const [side, setSide] = useState('home');
+
+  const activeTab = tab ?? localTab;
+  const setTab = onTabChange ?? setLocalTab;
+  const tabIdx = Math.max(
+    0,
+    FIXTURE_CARD_TABS.findIndex((t) => t.id === activeTab),
+  );
 
   const {
     homeId,
@@ -56,9 +71,9 @@ export function LiveFixtureCard({ fixture, ctx }) {
   const homeSub = teamSubText(homeRemaining, homeLive > awayLive, settled);
   const awaySub = teamSubText(awayRemaining, awayLive > homeLive, settled);
 
-  // Selection highlight only reads meaningfully on the Lineups tab.
-  const selHome = tab === 'lineups' && side === 'home';
-  const selAway = tab === 'lineups' && side === 'away';
+  // Side-selection highlight only reads meaningfully on the Lineups tab.
+  const selHome = activeTab === 'lineups' && side === 'home';
+  const selAway = activeTab === 'lineups' && side === 'away';
 
   const teamButton = (which) => {
     const isHome = which === 'home';
@@ -69,7 +84,7 @@ export function LiveFixtureCard({ fixture, ctx }) {
         className={'lfc-team' + (sel ? ' is-sel' : '')}
         onClick={() => {
           setSide(which);
-          if (tab !== 'lineups') setTab('lineups');
+          if (activeTab !== 'lineups') setTab('lineups');
         }}
         aria-pressed={sel}
         aria-label={`Show ${isHome ? homeName : awayName} lineup`}
@@ -118,6 +133,18 @@ export function LiveFixtureCard({ fixture, ctx }) {
   return (
     <div className="lfc-card">
       <div className="lfc-card__top">
+        {onBack ? (
+          <div className="lfc-topbar">
+            <button
+              type="button"
+              className="lfc-back"
+              aria-label="Back to scores"
+              onClick={onBack}
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+          </div>
+        ) : null}
         <div className="lfc-scorehead" role="group" aria-label="Tap a team to view its lineup">
           {teamButton('home')}
           <div className="lfc-mid">
@@ -129,13 +156,13 @@ export function LiveFixtureCard({ fixture, ctx }) {
           {teamButton('away')}
         </div>
         <div className="lfc-tabs" role="tablist">
-          {TABS.map((t) => (
+          {FIXTURE_CARD_TABS.map((t) => (
             <button
               key={t.id}
               type="button"
               role="tab"
-              aria-selected={tab === t.id}
-              className={'lfc-tab' + (tab === t.id ? ' is-active' : '')}
+              aria-selected={activeTab === t.id}
+              className={'lfc-tab' + (activeTab === t.id ? ' is-active' : '')}
               onClick={() => setTab(t.id)}
             >
               {t.label}
@@ -144,30 +171,41 @@ export function LiveFixtureCard({ fixture, ctx }) {
         </div>
       </div>
 
+      {/* All five panes stay mounted side-by-side in a sliding track so tab
+          changes (button tap or horizontal swipe) animate FotMob-style. The
+          deck's gesture handler drags `.lfc-panes` directly mid-swipe; this
+          inline transform is the resting position. */}
       <div className="lfc-pane-wrap">
         <div
-          className={
-            'lfc-card__scroll lfc-pane' +
-            (tab === 'lineups' ? ' lfc-card__scroll--fit' : '')
-          }
+          className="lfc-panes"
+          style={{ transform: `translateX(${-tabIdx * 100}%)` }}
         >
-        {tab === 'lineups' ? (
-          <LiveExpandedFixture
-            homeSquad={homeSquad}
-            awaySquad={awaySquad}
-            homeName={homeName}
-            awayName={awayName}
-            viewport="mobile"
-            selectedSide={side}
-            onSelectSide={setSide}
-            showTabs={false}
-            showAutosubs={false}
-            onOpenPlayer={ctx.onOpenPlayer}
-            benchAccessory={benchSwitch}
-          />
-        ) : null}
-        {tab === 'stats' ? (
-          <>
+          <div className="lfc-card__scroll lfc-pane" inert={activeTab !== 'match'}>
+            <LiveFixtureMatchSplit
+              fixture={fixture}
+              ctx={ctx}
+              onOpenPlayer={ctx.onOpenPlayer}
+            />
+          </div>
+          <div
+            className="lfc-card__scroll lfc-card__scroll--fit lfc-pane"
+            inert={activeTab !== 'lineups'}
+          >
+            <LiveExpandedFixture
+              homeSquad={homeSquad}
+              awaySquad={awaySquad}
+              homeName={homeName}
+              awayName={awayName}
+              viewport="mobile"
+              selectedSide={side}
+              onSelectSide={setSide}
+              showTabs={false}
+              showAutosubs={false}
+              onOpenPlayer={ctx.onOpenPlayer}
+              benchAccessory={benchSwitch}
+            />
+          </div>
+          <div className="lfc-card__scroll lfc-pane" inert={activeTab !== 'stats'}>
             <LiveFixtureKeyStats homeSquad={homeSquad} awaySquad={awaySquad} />
             <LiveFixtureH2hBars
               matches={ctx.matches}
@@ -176,30 +214,29 @@ export function LiveFixtureCard({ fixture, ctx }) {
               homeName={homeName}
               awayName={awayName}
             />
-          </>
-        ) : null}
-        {tab === 'odds' ? (
-          <LiveFixtureOdds
-            homeSquad={homeSquad}
-            awaySquad={awaySquad}
-            homeId={homeId}
-            awayId={awayId}
-            homeName={homeName}
-            awayName={awayName}
-            ctx={ctx}
-          />
-        ) : null}
-        {tab === 'table' ? (
-          <LiveStandingsTable
-            liveStandingsRows={ctx.liveStandingsRows}
-            gwStandingsFrozen={ctx.gwStandingsFrozen}
-            gameweek={ctx.gameweek}
-            teams={ctx.teams}
-            teamLogoMap={ctx.teamLogoMap}
-            kitIndexByEntry={ctx.kitIndexByEntry}
-            mobile
-          />
-        ) : null}
+          </div>
+          <div className="lfc-card__scroll lfc-pane" inert={activeTab !== 'odds'}>
+            <LiveFixtureOdds
+              homeSquad={homeSquad}
+              awaySquad={awaySquad}
+              homeId={homeId}
+              awayId={awayId}
+              homeName={homeName}
+              awayName={awayName}
+              ctx={ctx}
+            />
+          </div>
+          <div className="lfc-card__scroll lfc-pane" inert={activeTab !== 'table'}>
+            <LiveStandingsTable
+              liveStandingsRows={ctx.liveStandingsRows}
+              gwStandingsFrozen={ctx.gwStandingsFrozen}
+              gameweek={ctx.gameweek}
+              teams={ctx.teams}
+              teamLogoMap={ctx.teamLogoMap}
+              kitIndexByEntry={ctx.kitIndexByEntry}
+              mobile
+            />
+          </div>
         </div>
       </div>
     </div>

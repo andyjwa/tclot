@@ -1,6 +1,8 @@
-/* Mobile live fixture card deck — Apple-Sports-style swipeable sheet.
-   Themed via the shared .fotmob tokens (light/dark aware); the header keeps
-   a restrained brand-violet wash (Style D · Brand accent). */
+/* Mobile live fixture screen — FotMob-style full-screen push from the right.
+   Horizontal swipes page between the card's tabs; an edge swipe-right on the
+   first tab drags the screen out to dismiss. Themed via the shared .fotmob
+   tokens (light/dark aware); the header keeps a restrained brand-violet wash
+   (Style D · Brand accent). */
 
 .lfc-root {
   position: fixed;
@@ -9,14 +11,20 @@
      positioned in the *layout* viewport (the large, toolbar-hidden one), so a
      dynamic-viewport height anchored at top:0 ends short of the layout
      bottom and exposes a strip of the page behind Safari's bottom toolbar.
-     Instead fill via `inset: 0` (top+bottom) like `.player-detail-overlay-shell`,
-     keep `100dvh` only as a floor, and paint a solid root background so no gap
-     can ever show the page through. */
+     Instead fill via `inset: 0` (top+bottom) like `.player-detail-overlay-shell`
+     and keep `100dvh` only as a floor.
+
+     The root itself stays TRANSPARENT (unlike the old bottom-sheet variant)
+     so the scores page remains visible while the screen pushes in from the
+     right; the full-inset scrim below dims it (including any strip behind
+     Safari's bottom toolbar that the dvh-clamped sheet doesn't cover). */
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--fm-bg);
   z-index: 10000; /* below PlayerDetailOverlay (10050) */
-  --lfc-header: linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%);
+  --lfc-header: var(
+    --tclot-header-grad,
+    linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%)
+  );
 }
 
 .lfc-scrim {
@@ -54,33 +62,42 @@
   flex-direction: column;
   background: var(--fm-bg);
   border-radius: 0;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.45);
   overflow: hidden;
-  transform: translateY(100%);
-  transition: transform 0.42s cubic-bezier(0.22, 0.9, 0.28, 1);
+  /* FotMob-style push: the whole screen enters from the right edge. */
+  transform: translateX(100%);
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
   will-change: transform;
 }
 .lfc-root.is-open .lfc-sheet {
-  transform: translateY(0);
+  transform: translateX(0);
 }
 .lfc-sheet.is-dragging {
   transition: none;
 }
 
-.lfc-grip {
+/* ---- Top bar: back chevron over the violet header ----
+   Lives inside .lfc-card__top (which paints the violet wash), so no own
+   background — just the safe-area top padding that the old grip carried. */
+.lfc-topbar {
   flex: none;
   display: flex;
-  justify-content: center;
-  /* Top padding spans the safe-area inset so the purple grip background
-     fills the status-bar / notch area and the handle sits below it. */
-  padding: calc(env(safe-area-inset-top, 8px) + 6px) 0 3px;
-  background: var(--lfc-header);
+  align-items: center;
+  padding: calc(env(safe-area-inset-top, 8px) + 2px) 8px 0;
 }
-.lfc-grip i {
-  width: 38px;
-  height: 5px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.55);
+.lfc-back {
+  border: 0;
+  background: none;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 600;
+  padding: 2px 10px 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.lfc-back:active {
+  opacity: 0.6;
 }
 
 .lfc-viewport {
@@ -263,6 +280,32 @@
   background: var(--fm-bg);
 }
 
+/* ---- Sliding tab-pane track (FotMob-style) ----
+   All four tab panes sit side-by-side; the track translates horizontally as
+   the tab changes (button tap animates via the transition, mid-swipe drags
+   set an inline transform with `.is-dragging` suppressing the transition). */
+.lfc-panes {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+.lfc-panes.is-dragging {
+  transition: none;
+}
+.lfc-panes > .lfc-pane {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  /* Panes carry their own horizontal padding (.lfc-card__scroll). Without
+     border-box each pane is padding-wider than 100%, so the track's
+     percentage translate drifts further off with every tab (24px, 48px…). */
+  box-sizing: border-box;
+}
+
 /* ---- Scrollable pane (Key Stats / Odds / Live Table can be long) ---- */
 .lfc-card__scroll {
   flex: 1;
@@ -273,6 +316,137 @@
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   background: var(--fm-bg);
   color: var(--fm-text);
+}
+
+/* ---- Match tab: split columns (both teams side by side) ---- */
+.lfc-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 16px;
+  /* No `overflow: hidden` — it would become the sticky containing block and
+     stop the team headers pinning to the scroll pane. Corners are rounded on
+     the headers themselves instead. */
+  /* Clear the deck's pagination dots. */
+  margin-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+}
+.lfc-split__col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.lfc-split__col--away {
+  border-left: 1px solid var(--fm-border);
+}
+.lfc-split__head {
+  /* Sticky top cancels the scroll pane's 10px padding-top: sticky resolves
+     against the scroll container's content box, so `top: 0` would pin 10px
+     down with rows peeking through the gap above. */
+  position: sticky;
+  top: -10px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 7px;
+  background: var(--fm-surface-2);
+  box-shadow: 0 1px 0 var(--fm-border);
+}
+.lfc-split__col:first-child .lfc-split__head {
+  border-top-left-radius: 16px;
+}
+.lfc-split__col--away .lfc-split__head {
+  border-top-right-radius: 16px;
+}
+.lfc-split__head-badge {
+  display: inline-flex;
+  flex: none;
+}
+.lfc-split__head-badge .team-avatar-frame--sm {
+  width: 20px;
+  height: 20px;
+}
+.lfc-split__head-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-split__head-pts {
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--tclot-logo-purple);
+}
+.lfc-split__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-top: 1px solid var(--fm-border);
+  font-size: 11.5px;
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.lfc-split__pos {
+  flex: none;
+  width: 24px;
+  font-size: 8.5px;
+  font-weight: 800;
+  color: var(--fm-muted);
+}
+.lfc-split__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lfc-split__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.lfc-split__dot--full { background: #2bb673; }
+.lfc-split__dot--part { background: #eab308; }
+.lfc-split__dot--none { background: var(--fm-border); }
+.lfc-split__pts {
+  flex: none;
+  min-width: 20px;
+  text-align: right;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+}
+.lfc-split__row--dnp .lfc-split__name,
+.lfc-split__row--dnp .lfc-split__pts {
+  color: var(--fm-muted);
+  font-weight: 600;
+}
+.lfc-split__benchhd {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+  padding: 5px 10px 3px;
+  border-top: 1px solid var(--fm-border);
+  background: var(--fm-surface-2);
 }
 
 /* ---- Lineups pane: fit the whole squad on one page, never scroll ----
@@ -364,6 +538,18 @@
   flex: none;
   color: var(--tclot-logo-purple);
   font-weight: 800;
+}
+
+/* Lineup pane reuses LiveExpandedFixture (.live-xp) styling from App.css;
+   no team tabs are rendered here (showTabs=false), so trim its top gap. */
+.lfc-card__scroll .live-xp--mobile {
+  margin-top: 0;
+}
+/* Hide the redundant "Starting XI" group label in the card to fit the
+   lineup on one screen (the first group is obviously the XI). Desktop
+   inline expand keeps both labels. */
+.lfc-card__scroll .live-xp__group--xi {
+  display: none;
 }
 
 /* ---- Key Stats / H2H blocks ---- */
@@ -743,6 +929,28 @@
 }
 
 /* ---- Dots ---- */
+/* Subtle bottom-left back chevron — same plain-glyph vocabulary as the
+   header back (`.lfc-back`) but muted, floating over the dots strip so it is
+   reachable with a thumb on every tab. */
+.lfc-back-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  border: 0;
+  background: none;
+  color: var(--fm-muted);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 600;
+  padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0px));
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.lfc-back-bottom:active {
+  opacity: 0.5;
+}
+
 .lfc-dots {
   position: absolute;
   bottom: 0;
@@ -771,33 +979,4 @@
   width: 18px;
   border-radius: 3px;
   background: var(--fm-text-strong);
-}
-
-/* Lineup pane reuses LiveExpandedFixture (.live-xp) styling from App.css;
-   no team tabs are rendered here (showTabs=false), so trim its top gap. */
-.lfc-card__scroll .live-xp--mobile {
-  margin-top: 0;
-}
-/* Hide the redundant "Starting XI" group label in the card to fit the
-   lineup on one screen (the first group is obviously the XI). Desktop
-   inline expand keeps both labels. */
-.lfc-card__scroll .live-xp__group--xi {
-  display: none;
-}
-
-/* Pin the column header (Player · Pos · Min · DC · G · A · B · Pts) to the
-   top of the scrolling pane so the stat labels stay visible while the rows
-   scroll under it on mobile.
-
-   `top` is offset by the scroll container's 10px `padding-top`: sticky top is
-   resolved against the scroll container's *content* box (below the padding),
-   so a plain `top: 0` pins the header 10px down and lets the first row peek
-   through that padding gap above it. Cancelling the padding with `top: -10px`
-   pins the header flush to the scrollport top with no row bleeding above. */
-.lfc-card__scroll .live-xp__thead {
-  position: sticky;
-  top: -10px;
-  z-index: 5;
-  background: var(--fm-surface-2);
-  box-shadow: 0 1px 0 var(--fm-border);
 }

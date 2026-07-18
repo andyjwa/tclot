@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { LiveFixtureCard } from './LiveFixtureCard.jsx';
+import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
 import './LiveFixtureCard.css';
 
 const TH_AXIS = 8;
@@ -30,11 +31,14 @@ function subscribeTheme(onChange) {
 }
 
 /**
- * Mobile swipeable deck of live fixture cards — the production counterpart
- * of the Apple-Sports-style mockup. Portals to `document.body`, slides up
- * as a sheet, pages horizontally between fixtures, and dismisses on a
- * swipe-down / scrim tap / Esc / back button. Sits below the player detail
- * overlay (z-index 10050) so tapping a player still slides in over the top.
+ * Mobile live fixture screen — FotMob-style. Portals to `document.body` and
+ * pushes in full-screen FROM THE RIGHT (not a bottom sheet). Horizontal
+ * swipes page between the card's tabs (Lineups / Key Stats / Odds / Live
+ * Table); a rightward swipe on the first tab drags the whole screen out to
+ * dismiss (iOS back-swipe). Fixtures are switched via the pagination dots.
+ * Dismissal: back chevron / edge swipe / Esc / system back. Sits below the
+ * player detail overlay (z-index 10050) so tapping a player still slides
+ * their stats up over the top.
  *
  * @param {{ fixtures: object[], openIndex: number|null, onClose: () => void, ctx: object }} props
  */
@@ -42,25 +46,30 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState(false);
   const [index, setIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(0);
   const theme = useSyncExternalStore(subscribeTheme, readTheme, () => 'dark');
 
   const sheetRef = useRef(null);
   const deckRef = useRef(null);
   const scrimRef = useRef(null);
   const indexRef = useRef(0);
+  const tabIndexRef = useRef(0);
 
   const N = fixtures.length;
+  const T = FIXTURE_CARD_TABS.length;
 
-  // Open: mount, jump to the tapped fixture, then animate the sheet up.
-  // State updates happen inside rAF callbacks (not synchronously in the
-  // effect body) so the first paint stays at translateY(100%) and the
-  // is-open class is applied on the next frame to trigger the transition.
+  // Open: mount, jump to the tapped fixture on the first tab, then push the
+  // screen in from the right. State updates happen inside rAF callbacks (not
+  // synchronously in the effect body) so the first paint stays at
+  // translateX(100%) and the is-open class is applied on the next frame to
+  // trigger the transition.
   useEffect(() => {
     if (openIndex == null) return undefined;
     const target = Math.max(0, Math.min(openIndex, N - 1));
     const r1 = requestAnimationFrame(() => {
       setMounted(true);
       setIndex(target);
+      setTabIndex(0);
       requestAnimationFrame(() => setShown(true));
     });
     return () => cancelAnimationFrame(r1);
@@ -130,10 +139,10 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [mounted, requestClose]);
 
-  // Android system back / browser back closes the sheet instead of navigating
-  // the page away. Push a sentinel history entry when the sheet opens and
-  // intercept the matching `popstate` to close. If the sheet is dismissed any
-  // other way (swipe-down / scrim / Esc), pop the sentinel on cleanup so the
+  // Android system back / browser back closes the screen instead of navigating
+  // the page away. Push a sentinel history entry when it opens and intercept
+  // the matching `popstate` to close. If it is dismissed any other way
+  // (edge swipe / back chevron / Esc), pop the sentinel on cleanup so the
   // browser history stays balanced.
   useEffect(() => {
     if (!mounted) return undefined;
@@ -148,8 +157,8 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     };
   }, [mounted]);
 
-  // Keep the deck transform in sync with the resting index (dot clicks,
-  // programmatic open, post-swipe settle).
+  // Keep the fixture track in sync with the resting index (dot clicks,
+  // programmatic open).
   useLayoutEffect(() => {
     indexRef.current = index;
     if (deckRef.current) {
@@ -157,8 +166,15 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     }
   }, [index, mounted]);
 
-  // Gesture handling: horizontal paging + swipe-down dismiss. Native
-  // (non-passive) listeners so we can preventDefault during drags.
+  useLayoutEffect(() => {
+    tabIndexRef.current = tabIndex;
+  }, [tabIndex]);
+
+  // Gesture handling: horizontal swipes page the active card's TAB panes
+  // (FotMob-style left/right to change menu options). A rightward swipe on
+  // the first tab instead drags the whole screen and dismisses past the
+  // threshold. Vertical drags are left to the native pane scrollers.
+  // Native (non-passive) listeners so we can preventDefault during drags.
   useEffect(() => {
     if (!mounted) return undefined;
     const sheet = sheetRef.current;
@@ -171,13 +187,17 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     let dx = 0;
     let dy = 0;
     let axis = null;
+    let mode = null; // 'tabs' | 'close'
     let active = false;
 
     const point = (e) => (e.touches ? e.touches[0] : e);
+    const activePanes = () =>
+      deck.querySelectorAll('.lfc-panes')[indexRef.current] ?? null;
 
     const onDown = (e) => {
       active = true;
       axis = null;
+      mode = null;
       dx = 0;
       dy = 0;
       const p = point(e);
@@ -191,53 +211,63 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
       dy = p.clientY - startY;
       if (!axis && (Math.abs(dx) > TH_AXIS || Math.abs(dy) > TH_AXIS)) {
         axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
-      }
-      const idx = indexRef.current;
-      if (axis === 'x') {
-        if (e.cancelable) e.preventDefault();
-        deck.classList.add('is-dragging');
-        let d = dx;
-        if ((idx === 0 && dx > 0) || (idx === N - 1 && dx < 0)) d = dx * 0.3;
-        deck.style.transform = `translateX(calc(${-idx * 100}% + ${d}px))`;
-      } else if (axis === 'y') {
-        const scrollEl = deck.querySelectorAll('.lfc-card__scroll')[idx];
-        if (dy > 0 && (!scrollEl || scrollEl.scrollTop <= 0)) {
-          if (e.cancelable) e.preventDefault();
-          sheet.classList.add('is-dragging');
-          sheet.style.transform = `translateY(${dy}px)`;
-          if (scrim) scrim.style.opacity = String(Math.max(0, 1 - dy / 500));
+        if (axis === 'x') {
+          mode = tabIndexRef.current === 0 && dx > 0 ? 'close' : 'tabs';
         }
+      }
+      if (axis !== 'x') return;
+      if (e.cancelable) e.preventDefault();
+      const ti = tabIndexRef.current;
+      if (mode === 'close') {
+        const d = Math.max(0, dx);
+        sheet.classList.add('is-dragging');
+        sheet.style.transform = `translateX(${d}px)`;
+        if (scrim) scrim.style.opacity = String(Math.max(0, 1 - d / 400));
+      } else {
+        const track = activePanes();
+        if (!track) return;
+        track.classList.add('is-dragging');
+        let d = dx;
+        // Rubber-band resistance past either end of the tab track. (A drag
+        // that STARTS rightward on the first tab is captured by the 'close'
+        // mode above; this only softens a swing-back past the origin.)
+        if ((ti === T - 1 && dx < 0) || (ti === 0 && dx > 0)) d = dx * 0.3;
+        track.style.transform = `translateX(calc(${-ti * 100}% + ${d}px))`;
       }
     };
     const onUp = () => {
       if (!active) return;
       active = false;
-      const idx = indexRef.current;
       if (axis === 'x') {
-        deck.classList.remove('is-dragging');
-        let next = idx;
-        if (dx < -TH_PAGE && idx < N - 1) next = idx + 1;
-        else if (dx > TH_PAGE && idx > 0) next = idx - 1;
-        deck.style.transform = `translateX(${-next * 100}%)`;
-        if (next !== idx) setIndex(next);
-      } else if (axis === 'y') {
-        sheet.classList.remove('is-dragging');
-        if (scrim) scrim.style.opacity = '';
-        if (dy > TH_CLOSE) {
-          // Finish the swipe-down off-screen. The inline transform set during
-          // the drag overrides the class-based rules, so we must animate it to
-          // translateY(100%) here — otherwise removing `is-open` on close can't
-          // move the sheet and it stays frozen at the release position.
-          sheet.style.transform = 'translateY(100%)';
-          requestClose();
+        const ti = tabIndexRef.current;
+        if (mode === 'close') {
+          sheet.classList.remove('is-dragging');
+          if (scrim) scrim.style.opacity = '';
+          if (dx > TH_CLOSE) {
+            // Finish the swipe off-screen. The inline transform set during
+            // the drag overrides the class-based rules, so we must animate it
+            // to translateX(100%) here — otherwise removing `is-open` on
+            // close can't move the sheet and it stays frozen at the release
+            // position.
+            sheet.style.transform = 'translateX(100%)';
+            requestClose();
+          } else {
+            // Spring back: clear the inline transform so the `is-open` class
+            // rule (translateX(0)) drives the snap-back.
+            sheet.style.transform = '';
+          }
         } else {
-          // Spring back: clear the inline transform so the `is-open` class
-          // rule (translateY(0)) drives the snap-back and no inline override
-          // lingers to block a later close animation.
-          sheet.style.transform = '';
+          const track = activePanes();
+          track?.classList.remove('is-dragging');
+          let next = ti;
+          if (dx < -TH_PAGE && ti < T - 1) next = ti + 1;
+          else if (dx > TH_PAGE && ti > 0) next = ti - 1;
+          if (track) track.style.transform = `translateX(${-next * 100}%)`;
+          if (next !== ti) setTabIndex(next);
         }
       }
       axis = null;
+      mode = null;
     };
 
     sheet.addEventListener('touchstart', onDown, { passive: true });
@@ -254,7 +284,13 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
-  }, [mounted, N, requestClose]);
+  }, [mounted, T, requestClose]);
+
+  const activeTabId = FIXTURE_CARD_TABS[tabIndex]?.id ?? FIXTURE_CARD_TABS[0].id;
+  const handleTabChange = useCallback((id) => {
+    const i = FIXTURE_CARD_TABS.findIndex((t) => t.id === id);
+    if (i >= 0) setTabIndex(i);
+  }, []);
 
   if (!mounted) return null;
 
@@ -273,18 +309,30 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         aria-modal="true"
         aria-label="Live fixture"
       >
-        <div className="lfc-grip" aria-hidden="true">
-          <i />
-        </div>
         <div className="lfc-viewport">
           <div ref={deckRef} className="lfc-deck">
             {fixtures.map((fx) => (
               <div className="lfc-page" key={fx.key}>
-                <LiveFixtureCard fixture={fx} ctx={ctx} />
+                <LiveFixtureCard
+                  fixture={fx}
+                  ctx={ctx}
+                  tab={activeTabId}
+                  onTabChange={handleTabChange}
+                  onBack={requestClose}
+                />
               </div>
             ))}
           </div>
         </div>
+        {/* Subtle bottom-left back — thumb-reachable exit, present on every tab. */}
+        <button
+          type="button"
+          className="lfc-back-bottom"
+          aria-label="Back"
+          onClick={requestClose}
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
         {N > 1 ? (
           <div className="lfc-dots" role="tablist" aria-label="Fixtures">
             {fixtures.map((fx, i) => (
