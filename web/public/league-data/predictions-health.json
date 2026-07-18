@@ -1,6 +1,6 @@
 {
   "gameweek": 31,
-  "updatedAt": "2026-06-19T20:21:52.030Z",
+  "updatedAt": "2026-07-18T18:49:29.290Z",
   "idMismatches": {
     "idSpaceDivergences": 80,
     "nameFallback": 0,
@@ -10,5 +10,11 @@
   "understatPlayerMatchRate": 0.586,
   "teamsEnriched": 20,
   "fixturesRun": 8,
-  "playerCount": 678
+  "playerCount": 678,
+  "coldStart": {
+    "priorSeasonLabel": null,
+    "applied": 452,
+    "fromHistory": 0,
+    "fromBaseline": 452
+  }
 }

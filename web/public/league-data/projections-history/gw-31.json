@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "gameweek": 31,
-  "generatedAt": "2026-05-28T20:11:02.078Z",
+  "generatedAt": "2026-07-18T18:50:25.179Z",
   "leagueId": 6802,
   "leagueName": "The TC League of Titans",
   "disclaimer": "Built with bootstrap + model at generation time — not a replay of historical priors.",
@@ -47,7 +47,23 @@
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "none",
-      "autosubSourceAway": "none"
+      "autosubSourceAway": "none",
+      "xGoals1": 1.1,
+      "xGoals2": 0.9,
+      "xAssists1": 0.7,
+      "xAssists2": 0.8,
+      "xCs1": 1.9,
+      "xCs2": 1.9,
+      "xDefcon1": 3.2,
+      "xDefcon2": 3.8,
+      "actualGoals1": 1,
+      "actualGoals2": 2,
+      "actualAssists1": 0,
+      "actualAssists2": 2,
+      "actualCs1": 2,
+      "actualCs2": 2,
+      "actualDefcon1": 0,
+      "actualDefcon2": 6
     },
     {
       "league_entry_1": 72086,
@@ -79,7 +95,23 @@
       },
       "plHadFinishedFixtureForMc": true,
       "autosubSourceHome": "official",
-      "autosubSourceAway": "official"
+      "autosubSourceAway": "official",
+      "xGoals1": 1.4,
+      "xGoals2": 0.9,
+      "xAssists1": 0.5,
+      "xAssists2": 0.6,
+      "xCs1": 1.5,
+      "xCs2": 1.8,
+      "xDefcon1": 2.3,
+      "xDefcon2": 2.6,
+      "actualGoals1": 1,
+      "actualGoals2": 1,
+      "actualAssists1": 1,
+      "actualAssists2": 1,
+      "actualCs1": 4,
+      "actualCs2": 1,
+      "actualDefcon1": 0,
+      "actualDefcon2": 2
     }
   ]
 }
