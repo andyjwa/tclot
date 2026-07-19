@@ -258,6 +258,30 @@ export function TeamDetailView({
         </div>
 
         <div className="tc-sec">
+          <div className="tc-sec__h">Last 5</div>
+          <div className="tc-l5">
+            {last5.map((x, i) => (
+              <div key={`${x.gw}-${i}`} className="tc-l5__card">
+                <span className="tc-l5__gw">GW{x.gw}</span>
+                <span className={`tc-l5__res res-${x.res}`}>{x.res}</span>
+                <span className="tc-l5__opp">{idToShort[x.oppId]}</span>
+                <span className="tc-l5__pts">{x.me}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="tc-sec">
+          <div className="tc-sec__h">Head to Head</div>
+          <H2HRivals
+            rivals={rivals}
+            idToName={idToName}
+            logoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+        </div>
+
+        <div className="tc-sec">
           <div className="tc-sec__h">
             Results by margin
             <span className="tc-toggle">
@@ -290,30 +314,6 @@ export function TeamDetailView({
                   />
                 </span>
                 <span className="tc-margin__n">{mData[k]}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="tc-sec">
-          <div className="tc-sec__h">Head to Head</div>
-          <H2HRivals
-            rivals={rivals}
-            idToName={idToName}
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        </div>
-
-        <div className="tc-sec">
-          <div className="tc-sec__h">Last 5</div>
-          <div className="tc-l5">
-            {last5.map((x, i) => (
-              <div key={`${x.gw}-${i}`} className="tc-l5__card">
-                <span className="tc-l5__gw">GW{x.gw}</span>
-                <span className={`tc-l5__res res-${x.res}`}>{x.res}</span>
-                <span className="tc-l5__opp">{idToShort[x.oppId]}</span>
-                <span className="tc-l5__pts">{x.me}</span>
               </div>
             ))}
           </div>

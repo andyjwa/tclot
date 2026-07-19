@@ -12725,6 +12725,16 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   justify-content: flex-end;
   gap: 3px;
 }
+/* Stat columns are centered (pill-style values), so centre their headers. */
+.live-xp__th--min,
+.live-xp__th--dc,
+.live-xp__th--b {
+  text-align: center;
+}
+.live-xp__th--g,
+.live-xp__th--a {
+  justify-content: center;
+}
 .live-xp__th--pts {
   color: var(--fm-text-strong);
 }
@@ -12925,32 +12935,46 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, #f59e0b 16%, transparent);
 }
 
-/* DC achieved tint */
+/* DC achieved — full-cell purple pill (same shape language as the MIN pill).
+   Non-achieved DC counts stay bare default numbers. */
 .live-xp__cell--dc-on {
-  color: var(--fm-win);
-  font-weight: 700;
-}
-
-/* Stat-cell column accents — give G column a green-on tint when > 0,
-   A column a purple-on tint when > 0. Bonus stays default-weight. */
-.live-xp__cell-num--g {
-  color: var(--fm-win);
-  font-weight: 700;
-}
-.live-xp__cell-num--a {
+  text-align: center;
+  padding: 1px 0;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--tclot-logo-purple) 14%, transparent);
   color: var(--tclot-logo-purple);
   font-weight: 700;
 }
+
+/* Stat-cell chips (mockup scheme "S2 · all purple") — non-zero G/A/B values
+   sit in small rounded brand-purple pills. Sized to fit the 18px mobile
+   column (14px + 2px padding each side). */
+.live-xp__cell-num--g,
+.live-xp__cell-num--a,
 .live-xp__cell-num--b {
-  color: var(--fm-text-strong);
-  font-weight: 600;
+  display: inline-block;
+  min-width: 14px;
+  padding: 1px 2px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--tclot-logo-purple) 14%, transparent);
+  color: var(--tclot-logo-purple);
+}
+/* Centre the whole DC/G/A/B columns (values, zeros, dashes) so chips and
+   plain numbers share one axis — same alignment language as the MIN pill. */
+.live-xp__cell--dc,
+.live-xp__cell--g,
+.live-xp__cell--a,
+.live-xp__cell--b {
+  text-align: center;
 }
 
-/* PTS — headline number */
+/* PTS — headline number, heaviest ink on the row */
 .live-xp__cell--pts {
   color: var(--fm-text-strong);
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 800;
+  font-size: 0.9rem;
 }
 .live-xp__cell--pts-zero {
   color: var(--fm-muted);

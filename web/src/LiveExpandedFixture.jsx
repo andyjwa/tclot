@@ -232,11 +232,11 @@ function LiveExpandedTableHead({ playerLabel = 'Player' }) {
         {playerLabel}
       </div>
       <div className="live-xp__th live-xp__th--pos">Pos</div>
-      <div className="live-xp__th">Min</div>
-      <div className="live-xp__th">DC</div>
+      <div className="live-xp__th live-xp__th--min">Min</div>
+      <div className="live-xp__th live-xp__th--dc">DC</div>
       <div className="live-xp__th live-xp__th--g" title="Goals">G</div>
       <div className="live-xp__th live-xp__th--a" title="Assists">A</div>
-      <div className="live-xp__th">B</div>
+      <div className="live-xp__th live-xp__th--b">B</div>
       <div className="live-xp__th live-xp__th--pts">Pts</div>
     </div>
   );

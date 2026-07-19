@@ -158,6 +158,16 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   background: rgba(255, 255, 255, 0.45);
 }
 
+/* Bottom-sheet presentation dismisses by dragging DOWN (grab handle above
+   the hero), so the hero's back chevron is redundant — hide it and collapse
+   its 40px grid column so the crest + name shift flush left. */
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'] .pdetail-p__hero-back {
+  display: none;
+}
+.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'] .pdetail-p__hero {
+  grid-template-columns: 44px 1fr;
+}
+
 /* The sheet's inner detail host keeps its own bg; kill the full-screen
    margin/radius treatment inside the rounded sheet. */
 .player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'] > .players-detail {

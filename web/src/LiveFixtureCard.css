@@ -353,11 +353,12 @@
   background: var(--fm-surface-2);
   box-shadow: 0 1px 0 var(--fm-border);
 }
-.lfc-split__col:first-child .lfc-split__head {
+.lfc-split__head--home {
   border-top-left-radius: 16px;
 }
-.lfc-split__col--away .lfc-split__head {
+.lfc-split__head--away {
   border-top-right-radius: 16px;
+  border-left: 1px solid var(--fm-border);
 }
 .lfc-split__head-badge {
   display: inline-flex;
@@ -426,6 +427,128 @@
 .lfc-split__dot--full { background: #2bb673; }
 .lfc-split__dot--part { background: #eab308; }
 .lfc-split__dot--none { background: var(--fm-border); }
+/* Out of the running: DNP after FT, or no GW fixture for their club. */
+.lfc-split__dot--out { background: #ef4444; }
+
+/* ---- Match events band (mockup T2 + collapse): tinted section under the
+   team headers, count-strip toggle, 3b category rows when expanded. ---- */
+.lfc-events {
+  position: relative;
+  grid-column: 1 / -1;
+  background: var(--fm-surface-2);
+  border-bottom: 1px solid var(--fm-border);
+}
+.lfc-events__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Expanded: no strip row — the chevron floats in the band's top-right corner
+   so the toggle costs no vertical space. */
+.lfc-events--open .lfc-events__toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+  padding: 6px 10px 6px 6px;
+  z-index: 1;
+}
+/* Keep the first row's away names clear of the floating chevron — pad the
+   away cell only, so the row's grid tracks (and the centre glyph column)
+   stay identical to every other row. */
+.lfc-events--open .lfc-events__row:first-child .lfc-events__side--away {
+  padding-right: 16px;
+}
+.lfc-events__body {
+  padding: 2px 10px 6px;
+}
+.lfc-events__title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+.lfc-events__chev {
+  margin-left: auto;
+  color: var(--fm-muted);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 160ms ease;
+}
+.lfc-events__chev--open {
+  transform: rotate(-90deg);
+}
+.lfc-events__row {
+  display: grid;
+  grid-template-columns: 1fr 30px 1fr;
+  column-gap: 6px;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.lfc-events__row + .lfc-events__row {
+  border-top: 1px solid var(--fm-border-soft, rgba(0, 0, 0, 0.04));
+}
+.lfc-events__side {
+  min-width: 0;
+  color: var(--fm-text-strong);
+  font-weight: 500;
+}
+.lfc-events__side--home { text-align: right; }
+.lfc-events__side--away { text-align: left; }
+.lfc-events__mid {
+  display: flex;
+  justify-content: center;
+}
+.lfc-events__nm { color: var(--fm-text-strong); }
+.lfc-events__sep { color: var(--fm-muted); }
+.lfc-events__x {
+  font-family: var(--font-mono, 'Geist Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--fm-muted);
+}
+.lfc-events__none {
+  color: var(--fm-border);
+  font-weight: 400;
+}
+.lfc-events__ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 4px;
+  font-family: var(--font-mono, 'Geist Mono', monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.lfc-events__ico--g { background: rgba(5, 150, 105, 0.13); color: #059669; }
+.lfc-events__ico--a { background: rgba(121, 91, 251, 0.13); color: #795bfb; }
+.lfc-events__ico--dc { background: rgba(13, 148, 136, 0.13); color: #0d9488; }
+.lfc-events__ico--sv { background: rgba(3, 105, 161, 0.11); color: #0369a1; }
+.lfc-events__cardico {
+  display: inline-block;
+  width: 9px;
+  height: 13px;
+  border-radius: 2.5px;
+}
+.lfc-events__cardico--y { background: #facc15; }
+.lfc-events__cardico--r { background: #ef4444; }
 .lfc-split__pts {
   flex: none;
   min-width: 20px;
