@@ -130,8 +130,9 @@ const EVENT_KINDS = [
 
 /**
  * Collects per-category event entries ({ name, tag }) for a squad's
- * starting XI only. Tags are the muted `×n` count suffixes (goals/assists
- * only when > 1; DC and saves always, since the count is the story there).
+ * starting XI only. Tags are the muted count suffixes: `×n` for repeat
+ * goals/assists/cards, and the raw count in brackets `(n)` for DC and
+ * saves, where the count is the story rather than a multiplier.
  */
 function squadEvents(squad) {
   const ev = { g: [], a: [], dc: [], sv: [], y: [], r: [] };
@@ -147,10 +148,10 @@ function squadEvents(squad) {
     if (goals > 0) ev.g.push({ name, tag: goals > 1 ? `×${goals}` : '' });
     if (assists > 0) ev.a.push({ name, tag: assists > 1 ? `×${assists}` : '' });
     if (played && dcThresholdReached(row.posSingular, dc)) {
-      ev.dc.push({ name, tag: `×${dc}` });
+      ev.dc.push({ name, tag: `(${dc})` });
     }
     // Save points: 1 pt per 3 saves, so only keepers at 3+ saves appear.
-    if (saves >= 3) ev.sv.push({ name, tag: `×${saves}` });
+    if (saves >= 3) ev.sv.push({ name, tag: `(${saves})` });
     if (yellows > 0) ev.y.push({ name, tag: yellows > 1 ? `×${yellows}` : '' });
     if (reds > 0) ev.r.push({ name, tag: '' });
   }
