@@ -1,8 +1,8 @@
 /* BrandHeaderWordmark — keeps the existing `.brand-header__pill` look
- * (gradient + lion + wordmark) but as a semantic <button> with a small
- * muted chevron appended. Hover/focus lift subtly to signal tappability.
- * Pairs with `.brand-header__pill` rules in App.css for the gradient
- * background, padding, and white wordmark colour.
+ * (gradient + lion + wordmark) but as a semantic <button>. Hover/focus
+ * lift subtly to signal tappability. Pairs with `.brand-header__pill`
+ * rules in App.css for the gradient background, padding, and white
+ * wordmark colour.
  */
 
 .brand-header-wordmark {
@@ -44,25 +44,8 @@
   }
 }
 
-.brand-header-wordmark[aria-expanded='true'] .brand-header-wordmark__chevron {
-  transform: rotate(180deg);
-}
-
-.brand-header-wordmark__chevron {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.78);
-  margin-left: 2px;
-  margin-top: 1px;
-  transition: transform var(--dur-base) var(--ease);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .brand-header-wordmark,
-  .brand-header-wordmark__chevron {
+  .brand-header-wordmark {
     transition: none;
   }
 }

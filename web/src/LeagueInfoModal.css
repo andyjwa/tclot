@@ -125,6 +125,36 @@ body[data-tclot-theme='light'] .league-info-modal-shell {
 }
 
 /* ==================================================================
+ * Mobile topbar — solid purple band + app-standard back chevron.
+ * Desktop keeps the centered-dialog × instead, so this is hidden
+ * above 720px.
+ * ================================================================== */
+.league-info-modal-shell .league-info-modal__topbar {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  background: var(--tclot-header-solid, #795bfb);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  /* Absorb the iOS status bar in standalone PWA mode (viewport-fit=cover)
+   * so the band starts below the notch instead of under it. */
+  padding: calc(env(safe-area-inset-top, 0px) + 4px) 6px 4px;
+}
+.league-info-modal-shell .league-info-modal__back {
+  border: 0;
+  background: none;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 600;
+  padding: 2px 10px 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.league-info-modal-shell .league-info-modal__back:active {
+  opacity: 0.7;
+}
+
+/* ==================================================================
  * Close button
  * ================================================================== */
 .league-info-modal-shell .li-modal__close {
@@ -516,13 +546,17 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
     border: 0;
     animation: league-info-modal-rise-mobile var(--dur-md) var(--ease);
   }
+  /* The mobile sheet gets a real topbar with a back chevron (matching
+   * the live-score / player / team overlays); the floating × is a
+   * desktop-dialog affordance only. */
   .league-info-modal-shell .li-modal__close {
-    top: 12px;
-    right: 12px;
+    display: none;
+  }
+  .league-info-modal-shell .league-info-modal__topbar {
+    display: flex;
   }
   .league-info-modal-shell .li-modal__body {
     padding: var(--space-3);
-    padding-top: var(--space-5);
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-4));
     gap: var(--space-3);
   }

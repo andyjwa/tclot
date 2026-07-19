@@ -11055,6 +11055,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
+  /* `display: none` (not just opacity 0) — a hidden-but-laid-out bubble
+   * is ~220px wide and anchored to a 5px dot near the table's right
+   * edge, so it silently inflates the ancestor scroll container's
+   * scrollWidth and makes otherwise-fitting tables pan horizontally. */
+  display: none;
   opacity: 0;
   transition: opacity 0.12s ease;
   z-index: 100;
@@ -11100,6 +11105,7 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .live-gw-dot[data-tooltip]:hover::after,
 .live-gw-dot[data-tooltip]:focus-visible::before,
 .live-gw-dot[data-tooltip]:focus-visible::after {
+  display: block;
   opacity: 1;
 }
 

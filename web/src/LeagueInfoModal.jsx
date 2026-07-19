@@ -36,6 +36,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { TeamAvatar } from './TeamAvatar'
 import { SettingsPanelBody } from './SettingsPage'
+import { useOverlayDismissal } from './overlayStack.js'
 import './LeagueInfoModal.css'
 
 /** Tab order — matches the order requested by the user (Lingo first).
@@ -122,29 +123,39 @@ export function LeagueInfoModal({
    * the modal is dismissed and re-opened so the user always lands on the
    * glossary first). */
   const [activeTab, setActiveTab] = useState(/** @type {string} */ ('terminology'))
-  useEffect(() => {
+  /* Reset to the glossary whenever the modal closes — done during render
+   * (React's "adjust state when props change" pattern) instead of an
+   * effect, so there's no extra post-commit render pass. */
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (!open) setActiveTab('terminology')
-  }, [open])
+  }
+
+  /* Escape + browser/Android system back — shared overlay stack, same
+   * as the fixture deck / player / team overlays, so back peels this
+   * layer instead of leaving the site. */
+  useOverlayDismissal(open, onClose, 'leagueInfo')
 
   useEffect(() => {
     if (!open) return undefined
     const previousActive = typeof document !== 'undefined' ? document.activeElement : null
 
-    /** ESC closes the modal — standard dialog behavior. */
+    /** Focus trap — Tab / Shift+Tab cycle inside the modal so keyboard
+     * users can't tab into the page behind. (Escape is handled by
+     * `useOverlayDismissal` above.) */
     function onKey(e) {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        onClose()
-        return
-      }
-      /** Focus trap — Tab / Shift+Tab cycle inside the modal so
-       * keyboard users can't tab into the page behind. */
       if (e.key !== 'Tab') return
       const root = modalRef.current
       if (!root) return
-      const focusables = root.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )
+      /* Filter out display:none controls — the × close and the mobile
+       * back chevron are swapped per breakpoint, so one of them is
+       * always hidden and must not be a trap anchor. */
+      const focusables = Array.from(
+        root.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.offsetParent !== null)
       if (focusables.length === 0) return
       const first = focusables[0]
       const last = focusables[focusables.length - 1]
@@ -202,6 +213,23 @@ export function LeagueInfoModal({
         className="league-info-modal li-modal li-modal--lp-c"
         onMouseDown={(e) => e.stopPropagation()}
       >
+        {/* Mobile sheet topbar — solid purple band with the app-standard
+            back chevron (matches the live-score / player / team overlay
+            headers). Hidden on desktop, where the centered dialog keeps
+            the conventional × close instead. Absorbs the iOS status-bar
+            safe area so the sheet doesn't sit under the notch in
+            standalone PWA mode. */}
+        <div className="league-info-modal__topbar">
+          <button
+            type="button"
+            className="league-info-modal__back"
+            aria-label="Close League Info"
+            onClick={onClose}
+          >
+            ‹
+          </button>
+        </div>
+
         <button
           ref={closeBtnRef}
           type="button"
