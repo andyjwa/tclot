@@ -19,6 +19,11 @@ const TH_CLOSE = 110;
    thresholds above — matching native pager feel. Velocity is px/ms. */
 const TH_FLICK = 0.45;
 const TH_MIN_FLICK_DIST = 24;
+/* Touches starting within this strip of the left screen edge always mean
+   "back" (drag the whole screen out, iOS edge-swipe style) — on EVERY tab,
+   not just the first. Without this, an edge swipe on Stats/Odds/Table just
+   paged one tab backwards, which read as the gesture not registering. */
+const EDGE_CLOSE_PX = 28;
 const ANIM_MS = 440;
 
 /** Read the current app theme (set by App on `document.body`). */
@@ -39,9 +44,10 @@ function subscribeTheme(onChange) {
  * Mobile live fixture screen — FotMob-style. Portals to `document.body` and
  * pushes in full-screen FROM THE RIGHT (not a bottom sheet). Horizontal
  * swipes page between the card's tabs (see `FIXTURE_CARD_TABS`: Match /
- * Lineups / Stats / Odds / Table); a rightward swipe on the first tab drags
- * the whole screen out to dismiss (iOS back-swipe). Fixtures are switched
- * via the pagination dots.
+ * Lineups / Stats / Odds / Table); a rightward swipe on the first tab — or
+ * one starting at the left screen edge on ANY tab — drags the whole screen
+ * out to dismiss (iOS back-swipe). Fixtures are switched via the pagination
+ * dots.
  * Dismissal: back chevron / edge swipe / Esc / system back. Sits below the
  * player detail overlay (z-index 10050) so tapping a player still slides
  * their stats up over the top.
@@ -149,8 +155,9 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
 
   // Gesture handling: horizontal swipes page the active card's TAB panes
   // (FotMob-style left/right to change menu options). A rightward swipe on
-  // the first tab instead drags the whole screen and dismisses past the
-  // threshold. Vertical drags are left to the native pane scrollers.
+  // the first tab, or one starting at the left screen edge on any tab,
+  // instead drags the whole screen and dismisses past the threshold.
+  // Vertical drags are left to the native pane scrollers.
   // Native (non-passive) listeners so we can preventDefault during drags.
   useEffect(() => {
     if (!mounted) return undefined;
@@ -211,7 +218,11 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
           axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
         }
         if (axis === 'x') {
-          mode = tabIndexRef.current === 0 && dx > 0 ? 'close' : 'tabs';
+          const fromEdge = startX <= EDGE_CLOSE_PX;
+          mode =
+            dx > 0 && (fromEdge || tabIndexRef.current === 0)
+              ? 'close'
+              : 'tabs';
         }
       }
       if (axis !== 'x') return;
