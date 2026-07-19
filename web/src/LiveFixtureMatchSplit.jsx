@@ -233,7 +233,9 @@ function MatchEventsBlock({ homeSquad, awaySquad }) {
         </span>
       </button>
       {open ? (
-        <div className="lfc-events__body">
+        /* Whole-band tap collapses — the rows hold nothing interactive, and
+           the chevron button remains the keyboard/AT toggle. */
+        <div className="lfc-events__body" onClick={() => setOpen(false)}>
           {kinds.map((k) => (
             <div key={k.id} className="lfc-events__row" title={k.title}>
               <span className="lfc-events__side lfc-events__side--home">
