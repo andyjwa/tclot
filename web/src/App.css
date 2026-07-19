@@ -14102,11 +14102,19 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Hero card sizing on mobile — keep current 56px crest defaults from
- * the base rules; tighten margin so the card aligns with the table. */
+ * the base rules; tighten vertical margin/padding so the full table fits
+ * without scrolling on a phone. */
 @media (max-width: 767px) {
   .standings-hero-card {
-    margin: 12px;
-    padding: 14px;
+    margin: 6px 12px 8px;
+    padding: 11px 14px;
+  }
+  .standings-hero-card__eyebrow {
+    margin-bottom: 7px;
+  }
+  .standings-hero-card__sub {
+    margin-top: 9px;
+    padding-top: 8px;
   }
 }
 
