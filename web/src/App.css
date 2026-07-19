@@ -3131,9 +3131,16 @@
  * H2H-result column. The variant-c mobile rules already cap the table
  * at `width: 100%`, so this just suppresses the unused scroll affordance
  * the shared `.table-scroll` / `--standings-open` wrappers would
- * otherwise enable. */
-.table-scroll--live {
+ * otherwise enable.
+ * Chained to (0,2,0): the later base `.table-scroll { overflow-x: auto }`
+ * (~line 10170) otherwise out-cascades this single-class rule and
+ * re-enables horizontal scrolling — the GW-dot tooltip pseudo-elements
+ * inflate scrollWidth even though the columns themselves fit. */
+.table-scroll.table-scroll--live {
+  /* `clip` (with `hidden` fallback) also forbids programmatic/focus
+     scrolling, so tabbing to a GW dot can't shove the table sideways. */
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .standings-table--sidebar {
