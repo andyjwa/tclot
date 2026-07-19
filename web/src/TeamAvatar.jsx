@@ -107,7 +107,7 @@ function CircleInitialsBadge({ name, size }) {
   )
 }
 
-function ShirtInitialsBadge({ name, entryId, size, kitIndex }) {
+function ShirtInitialsBadge({ name, size, kitIndex }) {
   const initial = (name || '?').slice(0, 2).toUpperCase()
   const kit = TEAM_KITS[kitIndex] ?? TEAM_KITS[0]
   const reactId = useId()

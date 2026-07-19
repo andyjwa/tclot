@@ -387,7 +387,7 @@ function computeRecordStrip(rows) {
 }
 
 export function SchedulePortrait() {
-  const [teamCode, setTeamCode] = useState(SCHEDULE_TEAM_CODE)
+  const [teamCode] = useState(SCHEDULE_TEAM_CODE)
   const team = findTeam(teamCode)
   const rec = computeRecordStrip(SCHEDULE_ROWS)
 
@@ -610,7 +610,6 @@ function RankDelta({ delta }) {
 }
 
 export function StandingsPortrait() {
-  const [sort, setSort] = useState('total')
   const [scope, setScope] = useState('overall')
   return (
     <div className="mockup-portrait-page">

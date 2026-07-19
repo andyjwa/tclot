@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { computeTeamCardData } from './teamCardStats.js'
+import { useOverlayDismissal } from './overlayStack.js'
 import { TeamDetailView } from './TeamDetailView.jsx'
 import { matchesMobileLayoutViewport, useMobileLayout } from './usePortraitMobile.js'
 import './TeamDetailView.css'
@@ -97,7 +98,9 @@ export function TeamDetailOverlayProvider({
   const [mobileSheetPhase, setMobileSheetPhase] = useState(null)
   const mobileSheetPhaseRef = useRef(null)
   const mobileSurfaceRef = useRef(null)
-  mobileSheetPhaseRef.current = mobileSheetPhase
+  useLayoutEffect(() => {
+    mobileSheetPhaseRef.current = mobileSheetPhase
+  }, [mobileSheetPhase])
 
   const closeImmediately = useCallback(() => {
     pendingSlideExitFinalizeRef.current = false
@@ -108,7 +111,9 @@ export function TeamDetailOverlayProvider({
   }, [onOpenChange])
 
   const closeImmediateRef = useRef(closeImmediately)
-  closeImmediateRef.current = closeImmediately
+  useLayoutEffect(() => {
+    closeImmediateRef.current = closeImmediately
+  }, [closeImmediately])
   const dashboardViewSeenRef = useRef(dashboardView)
 
   /** Tear down overlay only on real navigations — never on first paint. */
@@ -403,17 +408,15 @@ export function TeamDetailOverlayProvider({
 }
 
 function OverlayEffects({ onClose }) {
+  // Esc / system-back close this overlay only while it is the topmost open
+  // overlay (it can stack over the live fixture deck), one layer at a time.
+  useOverlayDismissal(true, onClose, 'teamDetail')
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
-      window.removeEventListener('keydown', onKey)
       document.body.style.overflow = prevOverflow
     }
-  }, [onClose])
+  }, [])
   return null
 }

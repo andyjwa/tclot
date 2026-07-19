@@ -20,13 +20,8 @@
   --fm-row-hi: #2a2a2a;
   /* TCLOT brand violet — matches saturated pixels in public/tclot-header-brand.png (~#795bfb) */
   --tclot-logo-purple: #795bfb;
-  /* Active tab: same hue family as the banner (slight L→R lift like the art) */
-  --fm-dashboard-nav-active-bg: linear-gradient(
-    100deg,
-    #6246f0 0%,
-    #795bfb 50%,
-    #9370ff 100%
-  );
+  /* Active tab: unified brand purple (live-score ramp, `index.css`) */
+  --fm-dashboard-nav-active-bg: var(--tclot-header-grad);
   --fm-dashboard-nav-active-glow: 0 3px 20px rgba(121, 91, 251, 0.48);
   /* Pitch green — tables, FPL-style accents (W/L, pills) */
   --fm-pitch: #12a15a;
@@ -94,7 +89,9 @@
   --brand-tint: color-mix(in srgb, #795bfb 14%, transparent);
   /* Brand gradient — violet→indigo ramp from the reference logo,
    * shared light/dark so the brand pill reads identically on both shells. */
-  --brand-grad: linear-gradient(135deg, #8a6dff 0%, #6246f0 55%, #4b2dd6 100%);
+  /* Unified brand purple — the approved live-score ramp (`index.css`), so the
+     header pill, nav-active pill and every overlay header share one purple. */
+  --brand-grad: var(--tclot-header-grad);
 
   /* Semantic data colours (mirror existing --fm-pitch / --fm-loss-dot / --fm-draw) */
   --data-positive: #12a15a;
@@ -161,12 +158,7 @@
   --fm-loss-dot: #dc2626;
   --fm-row-hi: #efefef;
   --tclot-logo-purple: #795bfb;
-  --fm-dashboard-nav-active-bg: linear-gradient(
-    100deg,
-    #6246f0 0%,
-    #795bfb 50%,
-    #9370ff 100%
-  );
+  --fm-dashboard-nav-active-bg: var(--tclot-header-grad);
   --fm-dashboard-nav-active-glow: 0 2px 16px rgba(121, 91, 251, 0.32);
   --fm-pitch: #12a15a;
   --fm-accent: #12a15a;
@@ -13747,6 +13739,16 @@ button.live-xp__player-name:focus-visible {
   padding: 4px 8px;
   border-radius: 999px;
   margin-bottom: 10px;
+}
+/* Season over → champion pill trades brand purple for a gold tint (same
+   pill shape language; mockup option B). */
+.standings-hero-card__eyebrow--champion {
+  color: #a87b0b;
+  background: color-mix(in srgb, #d4a017 16%, transparent);
+}
+.fotmob:not([data-theme='light']) .standings-hero-card__eyebrow--champion {
+  color: #e3b53a;
+  background: color-mix(in srgb, #d4a017 24%, transparent);
 }
 
 .standings-hero-card__row {

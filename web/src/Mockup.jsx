@@ -2025,7 +2025,7 @@ function TypeScale() {
   ]
   return (
     <div className="mockup-type">
-      {rows.map(([token, sample, use, styles]) => (
+      {rows.map(([token, sample, , styles]) => (
         <div className="mockup-type__row" key={token}>
           <span className="mockup-type__row__token">{token}</span>
           <span className="mockup-type__row__sample" style={styles}>{sample}</span>
@@ -4233,7 +4233,6 @@ function DraftCellStatus({ status }) {
 }
 
 function DraftBoard() {
-  let pickCounter = 0
   return (
     <div className="mockup-draft">
       <div className="mockup-draft__head">
@@ -4250,12 +4249,12 @@ function DraftBoard() {
           <div className="mockup-draft__row" key={i}>
             <div className="mockup-draft__row-num">{i + 1}</div>
             {ordered.map((pick, j) => {
-              pickCounter += 1
+              const pickNum = i * round.length + j + 1
               const [name, club, pos, pts, statusToken] = pick.split('·')
               const status = parseDraftStatus(statusToken)
               return (
                 <div className="mockup-draft__pick" key={j}>
-                  <span className="mockup-draft__pick-num">{pickCounter}</span>
+                  <span className="mockup-draft__pick-num">{pickNum}</span>
                   <div className="mockup-draft__pick-main">
                     <ClubCrest club={club} className="mockup-draft__pick-crest" size={24} />
                     <span style={{ minWidth: 0 }}>
@@ -11365,7 +11364,7 @@ function WvWeeklyGlance() {
 }
 
 /* ── Section 2 · Waiver in/out team totals — condensed toggle ───────── */
-function WvTotalsToggle({ idBase = 'wv-totals' }) {
+function WvTotalsToggle() {
   const [mode, setMode] = useState('in')
   const rows = useMemo(() => {
     const mapped = WV_TOTALS.map((r) => ({
@@ -12704,7 +12703,7 @@ export function Mockup() {
             <div className="mockup-portrait-col">
               <div className="mockup-portrait-col__h">Mobile · 375 px</div>
               <PortraitFrame>
-                <div className="mockup-wv-mobile-pad"><WvTotalsToggle idBase="wv-totals-m" /></div>
+                <div className="mockup-wv-mobile-pad"><WvTotalsToggle /></div>
               </PortraitFrame>
             </div>
           </div>

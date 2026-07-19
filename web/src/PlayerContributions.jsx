@@ -361,7 +361,9 @@ export function PlayerContributions({
   );
 
   const contribCtxRef = useRef(contributionLiveContext);
-  contribCtxRef.current = contributionLiveContext;
+  useEffect(() => {
+    contribCtxRef.current = contributionLiveContext;
+  }, [contributionLiveContext]);
 
   /** Fresh live + fixtures on each merge so ordering follows real-world fixture chronology (latest first). */
   const mergeContributionLists = useCallback((preferFirstLists) => {

@@ -3048,12 +3048,21 @@ function App() {
                   const leaderForm = (leader.form ?? []).slice(-5)
                   const seasonEnded = nextGwForFixtureTile == null && (leader.pl ?? 0) > 0
                   return (
-                    <button
-                      type="button"
+                    /* Focusable div, not a <button>: the card contains an
+                       interactive ClickableTeamName, and nested interactive
+                       controls are invalid ARIA. Mirrors the standings <tr>
+                       highlight-toggle pattern below. */
+                    <div
                       className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
-                      aria-pressed={isSelected}
+                      tabIndex={0}
                       aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, ${seasonEnded ? 'champion' : 'top of the league'}`}
                       onClick={() => toggleStandingsHighlight(leader.league_entry)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          toggleStandingsHighlight(leader.league_entry)
+                        }
+                      }}
                     >
                       <span className={`standings-hero-card__eyebrow${seasonEnded ? ' standings-hero-card__eyebrow--champion' : ''}`}>
                         {seasonEnded ? (
@@ -3119,7 +3128,7 @@ function App() {
                           </span>
                         </div>
                       </div>
-                    </button>
+                    </div>
                   )
                 })()}
                 {isMobileStandings ? (

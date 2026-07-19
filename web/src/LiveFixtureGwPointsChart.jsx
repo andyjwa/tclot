@@ -14,7 +14,9 @@ function pctWidth(value, maxVal) {
 
 function useDismissOnOutsidePointer(ref, active, onDismiss) {
   const dismissRef = useRef(onDismiss);
-  dismissRef.current = onDismiss;
+  useEffect(() => {
+    dismissRef.current = onDismiss;
+  }, [onDismiss]);
   useEffect(() => {
     if (!active) return;
     const onDown = (e) => {

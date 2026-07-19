@@ -9,6 +9,7 @@ import {
   selectDisplayBonus,
 } from './fplBonusFromBps';
 import { buildEffectiveLineup } from './fplAutosubProjection';
+import { effectiveStarters } from './liveSquadEffective.js';
 import { fetchEspnPremWindow } from './espnPremWindow.js';
 import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
 import { mergePremWindowSources } from './premWindowMerger.js';
@@ -325,18 +326,9 @@ function countEffectiveXiLeftToPlayGames(xiRows) {
 }
 
 
-/** Same rule as `startersForEffectiveXi` in LiveScores — full bench length match. */
+/** Shared effective-XI rule (`liveSquadEffective.js`), array-argument shape. */
 function xiRowsForLeftToPlayCount(starters, bench, displayStarters, displayBench) {
-  const nBench = bench?.length ?? 0;
-  if (
-    Array.isArray(displayStarters) &&
-    displayStarters.length === 11 &&
-    Array.isArray(displayBench) &&
-    displayBench.length === nBench
-  ) {
-    return displayStarters;
-  }
-  return starters;
+  return effectiveStarters({ starters, bench, displayStarters, displayBench });
 }
 
 export function applyBonusColumn(rows, provisionalByElement, elementById, gwFixtures) {

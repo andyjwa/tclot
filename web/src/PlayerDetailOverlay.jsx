@@ -22,6 +22,7 @@ import {
   rosterIdsForLeagueEntry,
   suggestBenchTarget,
 } from './playersBenchShared.js'
+import { useOverlayDismissal } from './overlayStack.js'
 import { PlayerDetailView } from './PlayerDetailView.jsx'
 import { matchesMobileLayoutViewport, useMobileLayout } from './usePortraitMobile.js'
 import './PlayerDetailOverlay.css'
@@ -57,7 +58,8 @@ export function PlayerDetailOverlayProvider({
   const [plFixtures, setPlFixtures] = useState(null)
 
   const [overlayPlayerId, setOverlayPlayerId] = useState(null)
-  const [overlayLeagueEntryId, setOverlayLeagueEntryId] = useState(null)
+  // Value currently unused (kept as state for a future league-scoped view).
+  const [, setOverlayLeagueEntryId] = useState(null)
   /**
    * Mobile entrance style: `'push'` (default — slides in from the right,
    * FotMob screen-push) or `'sheet'` (slides UP from the bottom as a partial
@@ -87,7 +89,9 @@ export function PlayerDetailOverlayProvider({
   const [mobileSheetPhase, setMobileSheetPhase] = useState(null)
   const mobileSheetPhaseRef = useRef(null)
   const mobileSurfaceRef = useRef(null)
-  mobileSheetPhaseRef.current = mobileSheetPhase
+  useLayoutEffect(() => {
+    mobileSheetPhaseRef.current = mobileSheetPhase
+  }, [mobileSheetPhase])
   const overlayPresentationRef = useRef('push')
   useLayoutEffect(() => {
     overlayPresentationRef.current = overlayPresentation
@@ -106,7 +110,9 @@ export function PlayerDetailOverlayProvider({
   }, [onOpenChange])
 
   const closeImmediateRef = useRef(closeDetailImmediately)
-  closeImmediateRef.current = closeDetailImmediately
+  useLayoutEffect(() => {
+    closeImmediateRef.current = closeDetailImmediately
+  }, [closeDetailImmediately])
   const dashboardViewSeenRef = useRef(dashboardView)
 
   /** Tear down overlay only on real navigations — never on first paint (avoids layout churn blanking tabs). */
@@ -919,17 +925,15 @@ export function PlayerDetailOverlayProvider({
 }
 
 function OverlayEffects({ onClose }) {
+  // Esc / system-back close this overlay only while it is the topmost open
+  // overlay (it can stack over the live fixture deck), one layer at a time.
+  useOverlayDismissal(true, onClose, 'playerDetail')
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
-      window.removeEventListener('keydown', onKey)
       document.body.style.overflow = prevOverflow
     }
-  }, [onClose])
+  }, [])
   return null
 }

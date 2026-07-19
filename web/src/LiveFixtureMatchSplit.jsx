@@ -26,7 +26,7 @@ function dotKind(row) {
   return 'none';
 }
 
-function SplitRow({ row, onOpenPlayer, bench }) {
+function SplitRow({ row, onOpenPlayer }) {
   const pts = Number(row.total_points) || 0;
   const played = (Number(row.minutes) || 0) > 0;
   const displayName = row.displayName ?? row.web_name ?? `#${row.element}`;
@@ -38,8 +38,7 @@ function SplitRow({ row, onOpenPlayer, bench }) {
       <span className="lfc-split__pts">{played || pts !== 0 ? pts : '–'}</span>
     </>
   );
-  const cls =
-    'lfc-split__row' + (!played ? ' lfc-split__row--dnp' : '') + (bench ? ' lfc-split__row--bench' : '');
+  const cls = 'lfc-split__row' + (!played ? ' lfc-split__row--dnp' : '');
   if (!onOpenPlayer) return <div className={cls}>{inner}</div>;
   return (
     <button
@@ -104,7 +103,6 @@ function SplitColumn({ squad, onOpenPlayer, away }) {
                   key={`b-${r.element}-${r.pickPosition}`}
                   row={r}
                   onOpenPlayer={onOpenPlayer}
-                  bench
                 />
               ))}
             </>
@@ -132,8 +130,8 @@ const EVENT_KINDS = [
 
 /**
  * Collects per-category event entries ({ name, tag }) for a squad's
- * starting XI only. Tags are the muted suffixes: ×n for multiples,
- * the DC count for DC, and ×saves for keepers who earned save points.
+ * starting XI only. Tags are the muted `×n` count suffixes (goals/assists
+ * only when > 1; DC and saves always, since the count is the story there).
  */
 function squadEvents(squad) {
   const ev = { g: [], a: [], dc: [], sv: [], y: [], r: [] };
@@ -149,7 +147,7 @@ function squadEvents(squad) {
     if (goals > 0) ev.g.push({ name, tag: goals > 1 ? `×${goals}` : '' });
     if (assists > 0) ev.a.push({ name, tag: assists > 1 ? `×${assists}` : '' });
     if (played && dcThresholdReached(row.posSingular, dc)) {
-      ev.dc.push({ name, tag: String(dc) });
+      ev.dc.push({ name, tag: `×${dc}` });
     }
     // Save points: 1 pt per 3 saves, so only keepers at 3+ saves appear.
     if (saves >= 3) ev.sv.push({ name, tag: `×${saves}` });

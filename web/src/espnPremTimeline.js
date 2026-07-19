@@ -98,14 +98,6 @@ function espnClockToMinute(ev) {
     (typeof c?.displayValue === 'string' && c.displayValue.trim()
       ? c.displayValue
       : null) || '—';
-  if (c && Number.isFinite(Number(c.value)) && Number(c.value) > 0) {
-    const total = Number(c.value);
-    const baseMin = Math.floor(total / 60);
-    const sec = total % 60;
-    if (sec === 0) {
-      return { label: display };
-    }
-  }
   return { label: display };
 }
 

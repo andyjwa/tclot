@@ -21,6 +21,7 @@ import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { readLiveScoreLayout } from './featureFlags.js';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
+import { effectiveStarters } from './liveSquadEffective.js';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureCardDeck } from './LiveFixtureCardDeck.jsx';
 import { GuardOfHonourSplash } from './GuardOfHonourSplash.jsx';
@@ -579,18 +580,8 @@ function heroDefeatLeagueEntryIds(squads, gwMatches) {
   return heroDefeatEntryIds(squadsToGwPointsMap(squads), gwMatches);
 }
 
-/** Effective XI rows (post-autosub when available). */
-function startersForEffectiveXi(squad) {
-  if (!squad || squad.error) return [];
-  const nBench = squad.bench?.length ?? 0;
-  if (
-    squad.displayStarters?.length === 11 &&
-    squad.displayBench?.length === nBench
-  ) {
-    return squad.displayStarters;
-  }
-  return squad.starters ?? [];
-}
+/** Effective XI rows (post-autosub when available) — shared rule. */
+const startersForEffectiveXi = effectiveStarters;
 
 /** Element ids on this squad’s submitted picks (starters ∪ bench) — guards against stale/mixed rows. */
 function pickElementIdSet(squad) {

@@ -9,6 +9,7 @@ import {
 import { createPortal } from 'react-dom';
 import { LiveFixtureCard } from './LiveFixtureCard.jsx';
 import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
+import { useOverlayDismissal } from './overlayStack.js';
 import './LiveFixtureCard.css';
 
 const TH_AXIS = 8;
@@ -33,9 +34,10 @@ function subscribeTheme(onChange) {
 /**
  * Mobile live fixture screen — FotMob-style. Portals to `document.body` and
  * pushes in full-screen FROM THE RIGHT (not a bottom sheet). Horizontal
- * swipes page between the card's tabs (Lineups / Key Stats / Odds / Live
- * Table); a rightward swipe on the first tab drags the whole screen out to
- * dismiss (iOS back-swipe). Fixtures are switched via the pagination dots.
+ * swipes page between the card's tabs (see `FIXTURE_CARD_TABS`: Match /
+ * Lineups / Stats / Odds / Table); a rightward swipe on the first tab drags
+ * the whole screen out to dismiss (iOS back-swipe). Fixtures are switched
+ * via the pagination dots.
  * Dismissal: back chevron / edge swipe / Esc / system back. Sits below the
  * player detail overlay (z-index 10050) so tapping a player still slides
  * their stats up over the top.
@@ -90,10 +92,9 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     onClose?.();
   }, [onClose]);
 
-  // Stable handle to the latest close callback so the popstate effect below can
-  // depend on `mounted` alone (and thus push exactly one history entry per open).
-  const closeRef = useRef(requestClose);
-  closeRef.current = requestClose;
+  // Esc + Android/browser back close the screen — but only when this is the
+  // topmost overlay (a player sheet or team card may be stacked on top).
+  useOverlayDismissal(mounted, requestClose, 'lfcSheet');
 
   // Body scroll lock while open. `overflow: hidden` alone does NOT stop iOS
   // Safari from scrolling/rubber-banding the page behind a fixed overlay,
@@ -126,34 +127,6 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
       body.style.right = prev.right;
       body.style.width = prev.width;
       window.scrollTo(0, scrollY);
-    };
-  }, [mounted]);
-
-  // Esc to close.
-  useEffect(() => {
-    if (!mounted) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape') requestClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [mounted, requestClose]);
-
-  // Android system back / browser back closes the screen instead of navigating
-  // the page away. Push a sentinel history entry when it opens and intercept
-  // the matching `popstate` to close. If it is dismissed any other way
-  // (edge swipe / back chevron / Esc), pop the sentinel on cleanup so the
-  // browser history stays balanced.
-  useEffect(() => {
-    if (!mounted) return undefined;
-    window.history.pushState({ lfcSheet: true }, '');
-    const onPop = () => closeRef.current?.();
-    window.addEventListener('popstate', onPop);
-    return () => {
-      window.removeEventListener('popstate', onPop);
-      if (window.history.state && window.history.state.lfcSheet) {
-        window.history.back();
-      }
     };
   }, [mounted]);
 
@@ -339,6 +312,7 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
               <button
                 key={fx.key}
                 type="button"
+                role="tab"
                 className={'lfc-dot' + (i === index ? ' is-on' : '')}
                 aria-label={`Go to fixture ${i + 1}`}
                 aria-selected={i === index}

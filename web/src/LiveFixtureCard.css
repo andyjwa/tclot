@@ -499,7 +499,7 @@
   line-height: 1.45;
 }
 .lfc-events__row + .lfc-events__row {
-  border-top: 1px solid var(--fm-border-soft, rgba(0, 0, 0, 0.04));
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 55%, transparent);
 }
 .lfc-events__side {
   min-width: 0;
@@ -521,7 +521,8 @@
   color: var(--fm-muted);
 }
 .lfc-events__none {
-  color: var(--fm-border);
+  /* Subtle but visible in both themes (`--fm-border` alone disappeared in dark). */
+  color: color-mix(in srgb, var(--fm-muted) 70%, transparent);
   font-weight: 400;
 }
 .lfc-events__ico {
@@ -856,54 +857,6 @@
   letter-spacing: 0.3px;
 }
 
-.lfc-pick {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--fm-border);
-}
-.lfc-pick:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
-}
-.lfc-pick__badge {
-  display: inline-flex;
-  flex: none;
-}
-.lfc-pick__badge .team-avatar-frame--sm {
-  width: 22px;
-  height: 22px;
-}
-.lfc-pick__name {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--fm-text-strong);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.lfc-pick__pos {
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--fm-muted);
-  border: 1px solid var(--fm-border);
-  border-radius: 5px;
-  padding: 1px 4px;
-  margin-left: 6px;
-}
-.lfc-pick__chip {
-  flex: none;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(43, 182, 115, 0.16);
-  color: #1d8a55;
-}
-
 /* ---- Live / Pre-Match switcher ---- */
 .lfc-seg {
   display: flex;
@@ -935,7 +888,8 @@
   color: #1d8a55;
 }
 .lfc-seg__btn.is-disabled {
-  color: rgba(0, 0, 0, 0.26);
+  /* Theme-aware muted (a hardcoded black alpha vanished on the dark theme). */
+  color: color-mix(in srgb, var(--fm-muted) 55%, transparent);
   cursor: default;
 }
 .lfc-seg__hint {

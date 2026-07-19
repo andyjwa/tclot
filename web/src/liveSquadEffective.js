@@ -1,8 +1,10 @@
 /**
- * Effective starters/bench (post-autosub when available) — mirror of the
- * helper in `LiveScores.jsx`. Shared by the expanded fixture table and the
- * mobile fixture card's Match / Lineups views; lives in its own module so
- * the component files stay fast-refreshable.
+ * Effective starters/bench (post-autosub when the display lineup is
+ * complete) — the single source of truth for the "displayStarters complete →
+ * use post-autosub lineup" rule. Shared by the expanded fixture table, the
+ * mobile fixture card's Match / Lineups / Odds views, the Key Stats
+ * aggregation, and the live-scores XI derivations; lives in its own module
+ * so the component files stay fast-refreshable.
  */
 export function effectiveStarters(squad) {
   if (!squad || squad.error) return [];

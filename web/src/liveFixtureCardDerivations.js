@@ -5,6 +5,7 @@
  * they can be unit-tested without React.
  */
 import { dcThresholdReached } from './liveScoresDerivations.js';
+import { effectiveStarters } from './liveSquadEffective.js';
 
 /** True for the goalkeeper position singular (`'GK'` / `'GKP'`). */
 function isGkPos(pos) {
@@ -13,20 +14,11 @@ function isGkPos(pos) {
 }
 
 /**
- * Effective starters (post-autosub when the display lineup is complete),
- * mirroring the helper in `LiveExpandedFixture.jsx` / `LiveScores.jsx`.
+ * Effective starters (post-autosub when the display lineup is complete).
+ * Re-export of the shared `liveSquadEffective.js` rule under the name the
+ * card derivations and Odds pane already use.
  */
-export function effectiveStartersForCard(squad) {
-  if (!squad || squad.error) return [];
-  const nBench = squad.bench?.length ?? 0;
-  if (
-    squad.displayStarters?.length === 11 &&
-    squad.displayBench?.length === nBench
-  ) {
-    return squad.displayStarters;
-  }
-  return squad.starters ?? [];
-}
+export const effectiveStartersForCard = effectiveStarters;
 
 const num = (v) => Number(v) || 0;
 

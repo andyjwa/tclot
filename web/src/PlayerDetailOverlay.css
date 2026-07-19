@@ -168,14 +168,6 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   grid-template-columns: 44px 1fr;
 }
 
-/* The sheet's inner detail host keeps its own bg; kill the full-screen
-   margin/radius treatment inside the rounded sheet. */
-.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-anim='sheet'] > .players-detail {
-  margin: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .player-detail-overlay__surface.player-detail-overlay__surface--mobile-sheet-anim[data-mobile-phase] {
     transition-duration: 0.01ms !important;
@@ -201,19 +193,6 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.player-detail-overlay__surface > .players-detail {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-  background: var(--fm-bg-root, var(--fm-surface));
-  border-radius: 12px;
-  margin: 0.35rem;
-  margin-bottom: max(0.35rem, env(safe-area-inset-bottom));
-  box-shadow:
-    0 12px 48px rgba(0, 0, 0, 0.18),
-    0 0 0 1px color-mix(in srgb, var(--fm-border) 55%, transparent);
 }
 
 .player-detail-overlay__panel {
@@ -290,93 +269,8 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   overflow: hidden;
 }
 
-.player-detail-overlay__surface--slide > .players-detail {
-  flex: 1 1 auto;
-  min-height: 0;
-  margin: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
 .player-detail-overlay__panel--slide {
   margin-inline: auto;
   width: 100%;
   max-width: 22rem;
-}
-
-/*
- * Desktop slide portals outside `.fotmob` — match mobile GW table typography/alignment (~42rem wide),
- * and apply light-theme row tints usually gated by `.fotmob[data-theme='light']`.
- */
-.live-player-slide__sheet--player-detail .players-detail {
-  min-height: 0;
-}
-
-.live-player-slide__sheet--player-detail .players-detail__table {
-  min-width: 0;
-  width: 100%;
-  table-layout: fixed;
-  --players-detail-head-bg: color-mix(
-    in srgb,
-    rgb(121, 91, 251) 12%,
-    var(--fm-table-head, var(--fm-surface-2))
-  );
-}
-
-body[data-tclot-theme='light'] .live-player-slide__sheet--player-detail .players-detail__table {
-  --players-detail-head-bg: color-mix(
-    in srgb,
-    rgb(121, 91, 251) 8%,
-    var(--fm-table-head, var(--fm-surface-2))
-  );
-}
-
-.live-player-slide__sheet--player-detail .players-detail__table th,
-.live-player-slide__sheet--player-detail .players-detail__table td {
-  padding: 0.38rem 0.28rem;
-  font-size: 0.82rem;
-  text-align: center;
-}
-
-.live-player-slide__sheet--player-detail .players-detail__table th:first-child,
-.live-player-slide__sheet--player-detail .players-detail__table td:first-child {
-  text-align: center;
-}
-
-.live-player-slide__sheet--player-detail .players-detail__table th:last-child,
-.live-player-slide__sheet--player-detail .players-detail__table td:last-child {
-  text-align: center;
-}
-
-.live-player-slide__sheet--player-detail .players-detail__table thead th {
-  font-size: 0.62rem;
-}
-
-.live-player-slide__sheet--player-detail .players-detail__table thead th,
-.live-player-slide__sheet--player-detail .players-detail__table thead th:first-child {
-  background-color: var(--players-detail-head-bg);
-  background-clip: padding-box;
-}
-
-body[data-tclot-theme='light']
-  .live-player-slide__sheet--player-detail
-  .players-detail__table
-  tbody
-  tr:nth-child(even) {
-  background: rgba(121, 91, 251, 0.045);
-}
-
-body[data-tclot-theme='light']
-  .live-player-slide__sheet--player-detail
-  .players-detail__table
-  tbody
-  tr:nth-child(even)
-  td:first-child {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.045) 80%, var(--fm-card));
-}
-
-body[data-tclot-theme='light']
-  .live-player-slide__sheet--player-detail
-  .players-detail__compare-pills {
-  background: color-mix(in srgb, rgba(121, 91, 251, 0.05) 35%, #ffffff);
 }

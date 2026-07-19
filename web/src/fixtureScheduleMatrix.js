@@ -41,14 +41,12 @@ function leaguePointsForSchedule(squadId, fixtureOwnerId, myPts, oppPts) {
     .sort((a, b) => a - b)
   let w = 0
   let d = 0
-  let l = 0
   for (const gw of gws) {
     const my = myPts[squadId]?.[gw]
     const op = oppPts[fixtureOwnerId]?.[gw]
     if (my == null || op == null) continue
     if (my > op) w += 1
-    else if (my < op) l += 1
-    else d += 1
+    else if (my === op) d += 1
   }
   return w * 3 + d
 }
