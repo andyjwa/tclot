@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
@@ -43,6 +43,7 @@ function teamSubText(remaining, isLeader, settled) {
 export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
   const [localTab, setLocalTab] = useState('match');
   const [side, setSide] = useState('home');
+  const tabsRef = useRef(null);
 
   const activeTab = tab ?? localTab;
   const setTab = onTabChange ?? setLocalTab;
@@ -64,6 +65,27 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
     awayRemaining,
     comp,
   } = fixture;
+
+  // The tab strip has `touch-action: pan-y` (its native horizontal scroll
+  // would fight the deck's swipe gesture), so keep the active pill visible
+  // programmatically when it changes — matters on narrow phones where the
+  // strip overflows by a few px. Scroll the strip's own scrollLeft rather
+  // than scrollIntoView: the deck shares tab state across every fixture
+  // card, and scrollIntoView from an off-screen card walks ancestor
+  // scrollers too — it side-scrolled the overflow-hidden deck viewport.
+  useEffect(() => {
+    const strip = tabsRef.current;
+    if (!strip || strip.scrollWidth <= strip.clientWidth) return;
+    const active = strip.querySelector('.lfc-tab.is-active');
+    if (!active) return;
+    const left = active.offsetLeft;
+    const right = left + active.offsetWidth;
+    if (left < strip.scrollLeft) {
+      strip.scrollTo({ left: left - 8, behavior: 'smooth' });
+    } else if (right > strip.scrollLeft + strip.clientWidth) {
+      strip.scrollTo({ left: right - strip.clientWidth + 8, behavior: 'smooth' });
+    }
+  }, [activeTab]);
 
   const toPlay = (Number(homeRemaining) || 0) + (Number(awayRemaining) || 0);
   const live = toPlay > 0;
@@ -155,7 +177,7 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
           </div>
           {teamButton('away')}
         </div>
-        <div className="lfc-tabs" role="tablist">
+        <div className="lfc-tabs" role="tablist" ref={tabsRef}>
           {FIXTURE_CARD_TABS.map((t) => (
             <button
               key={t.id}

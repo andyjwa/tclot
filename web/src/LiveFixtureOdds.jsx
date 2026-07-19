@@ -14,13 +14,23 @@ const ROUTE = {
   cs: { text: 'CS', cls: 'lfc-rt--cs' },
 };
 
-/** Three-segment win-probability bar (home win / draw / away win). */
+/**
+ * Three-segment win-probability bar (home win / draw / away win).
+ *
+ * Colour language: segments are neutral by default and the *favourite*
+ * (highest-probability outcome) takes the brand violet — emphasis follows
+ * likelihood, not venue. The old green-home / red-away ramp read as
+ * "good vs bad" and clashed with the app-wide W/D/L dot colours. When
+ * outcomes tie for the top probability they are all highlighted (reads
+ * as "even match").
+ */
 function WinBar({ probs, homeName, awayName, live }) {
   const segs = [
-    { key: 'h', pct: probs.homeWinPct, cls: 'lfc-win__seg--h' },
-    { key: 'd', pct: probs.drawPct, cls: 'lfc-win__seg--d' },
-    { key: 'a', pct: probs.awayWinPct, cls: 'lfc-win__seg--a' },
+    { key: 'h', pct: probs.homeWinPct },
+    { key: 'd', pct: probs.drawPct },
+    { key: 'a', pct: probs.awayWinPct },
   ];
+  const maxPct = Math.max(...segs.map((s) => Number(s.pct) || 0));
   return (
     <>
       <div className="lfc-win__teams">
@@ -33,7 +43,16 @@ function WinBar({ probs, homeName, awayName, live }) {
       </div>
       <div className="lfc-win__bar">
         {segs.map((s) => (
-          <span key={s.key} className={'lfc-win__seg ' + s.cls} style={{ width: `${s.pct}%` }}>
+          <span
+            key={s.key}
+            className={
+              'lfc-win__seg' +
+              (maxPct > 0 && (Number(s.pct) || 0) === maxPct
+                ? ' lfc-win__seg--fav'
+                : '')
+            }
+            style={{ width: `${s.pct}%` }}
+          >
             {s.pct >= 8 ? `${Math.round(s.pct)}%` : ''}
           </span>
         ))}

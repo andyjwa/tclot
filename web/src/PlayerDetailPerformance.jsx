@@ -3,6 +3,7 @@ import {
   DEFAULT_PERFORMANCE_COL_IDS,
   fdrTone,
   formatPerformanceStat,
+  historyWasHome,
   performanceStatCatalog,
   performanceStatValue,
   performanceTableRows,
@@ -333,7 +334,9 @@ function renderOppCell(row, teamById, playerTeamId) {
   if (row.kind === 'past' && row.history) {
     const oppId = Number(row.history.opponent_team)
     const opp = lookupTeam(teamById, oppId)
-    const home = Boolean(row.history.was_home)
+    /* Draft-API rows have no `was_home` — venue lives in the `detail`
+     * string, so go through the shared parser (null = unknown, no dot). */
+    const home = historyWasHome(row.history)
     return (
       <OppBadge
         teamCode={opp?.code}
@@ -377,14 +380,16 @@ function OppBadge({ teamCode, short, home, extras }) {
         {badge ? <img src={badge} alt="" loading="lazy" decoding="async" /> : null}
       </span>
       <span className="pperf__opp-short">{short}</span>
-      <span
-        className={
-          'pperf__opp-ha-dot' +
-          (home ? ' pperf__opp-ha-dot--home' : ' pperf__opp-ha-dot--away')
-        }
-        aria-label={home ? 'Home' : 'Away'}
-        title={home ? 'Home' : 'Away'}
-      />
+      {home != null ? (
+        <span
+          className={
+            'pperf__opp-ha-dot' +
+            (home ? ' pperf__opp-ha-dot--home' : ' pperf__opp-ha-dot--away')
+          }
+          aria-label={home ? 'Home' : 'Away'}
+          title={home ? 'Home' : 'Away'}
+        />
+      ) : null}
       {extras && extras.length > 0 ? (
         <span className="pperf__opp-extra">+{extras.length}</span>
       ) : null}

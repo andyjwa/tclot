@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fplElementWebName } from './fplElementNames.js'
 import {
   buildWireStatPills,
@@ -22,6 +22,77 @@ const TABS = /** @type {{ id: PdetailTabId, label: string }[]} */ ([
   { id: 'overview',    label: 'Overview' },
   { id: 'performance', label: 'Performance' },
 ])
+
+/** Axis lock threshold (px) before a touch drag commits to horizontal/vertical. */
+const SWIPE_AXIS_PX = 8
+/** Minimum horizontal travel (px) for a committed swipe to switch tabs. */
+const SWIPE_COMMIT_PX = 56
+/** Left-edge dead zone (px) so system/app back-swipe gestures keep working. */
+const SWIPE_EDGE_PX = 24
+
+/**
+ * Touch-only horizontal swipe between the Overview / Performance panes.
+ * Attached to `.pdetail__main`; axis-locked so vertical scrolling inside
+ * the pane is untouched, and gestures starting at the left screen edge are
+ * ignored (reserved for the overlay's back/dismiss swipe).
+ *
+ * @param {import('react').RefObject<HTMLElement | null>} ref
+ * @param {(dir: 1 | -1) => void} onSwipe `1` = next tab (swipe left), `-1` = previous
+ */
+function useTabSwipe(ref, onSwipe) {
+  const cbRef = useRef(onSwipe)
+  useEffect(() => {
+    cbRef.current = onSwipe
+  }, [onSwipe])
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return undefined
+    let startX = 0
+    let startY = 0
+    let axis = /** @type {'x' | 'y' | null} */ (null)
+    let tracking = false
+
+    const onStart = (e) => {
+      if (e.touches.length !== 1) {
+        tracking = false
+        return
+      }
+      const t = e.touches[0]
+      tracking = t.clientX > SWIPE_EDGE_PX
+      startX = t.clientX
+      startY = t.clientY
+      axis = null
+    }
+    const onMove = (e) => {
+      if (!tracking || axis === 'y') return
+      const t = e.touches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      if (!axis && (Math.abs(dx) > SWIPE_AXIS_PX || Math.abs(dy) > SWIPE_AXIS_PX)) {
+        axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'
+      }
+    }
+    const onEnd = (e) => {
+      if (!tracking || axis !== 'x') return
+      const t = e.changedTouches[0]
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      if (Math.abs(dx) >= SWIPE_COMMIT_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        cbRef.current?.(dx < 0 ? 1 : -1)
+      }
+    }
+
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: true })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+    }
+  }, [ref])
+}
 
 /** @returns {'xi' | 'bench' | 'absent'} */
 function deriveXiKind(el) {
@@ -110,6 +181,34 @@ export function PlayerDetailView({
   const portrait = usePortraitMobile()
   const mobileLayout = useMobileLayout()
   const [tab, setTab] = useState(/** @type {PdetailTabId} */ ('overview'))
+  /** 'left' | 'right' — which side the incoming pane slides in from. */
+  const [slideFrom, setSlideFrom] = useState(/** @type {'left' | 'right' | null} */ (null))
+  const mainRef = useRef(/** @type {HTMLDivElement | null} */ (null))
+
+  const goToTab = useCallback(
+    (/** @type {PdetailTabId} */ id) => {
+      if (id === tab) return
+      const from = TABS.findIndex((t) => t.id === tab)
+      const to = TABS.findIndex((t) => t.id === id)
+      setSlideFrom(to > from ? 'right' : 'left')
+      setTab(id)
+    },
+    [tab],
+  )
+
+  useTabSwipe(
+    mainRef,
+    useCallback(
+      (dir) => {
+        const i = TABS.findIndex((t) => t.id === tab)
+        const next = TABS[i + dir]
+        if (!next) return
+        setSlideFrom(dir === 1 ? 'right' : 'left')
+        setTab(next.id)
+      },
+      [tab],
+    ),
+  )
   const [compareOpen, setCompareOpen] = useState(false)
   const [primaryPayload, setPrimaryPayload] = useState(null)
   const [comparePayload, setComparePayload] = useState(null)
@@ -335,7 +434,14 @@ export function PlayerDetailView({
         />
       ) : (
         <>
-          <div className="pdetail__tabs" role="tablist">
+          {/* Portrait folds the tabs into the purple header band (option C);
+              other surfaces keep the surface strip below their light hero. */}
+          <div
+            className={
+              'pdetail__tabs' + (portrait ? ' pdetail__tabs--band' : '')
+            }
+            role="tablist"
+          >
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -343,34 +449,46 @@ export function PlayerDetailView({
                 role="tab"
                 aria-selected={tab === t.id}
                 className={'pdetail__tab' + (tab === t.id ? ' is-active' : '')}
-                onClick={() => setTab(t.id)}
+                onClick={() => goToTab(t.id)}
               >
                 {t.label}
               </button>
             ))}
           </div>
 
-          <div className="pdetail__main">
+          <div className="pdetail__main" ref={mainRef}>
             {loadingPrimary && !primaryPayload ? (
               <p className="muted pdetail__loading">Loading season data…</p>
             ) : errorPrimary ? (
               <p className="muted pdetail__error" role="alert">
                 Could not load season data. {errorPrimary}
               </p>
-            ) : tab === 'overview' ? (
-              <PlayerDetailOverview
-                el={playerEl}
-                summaryPayload={primaryPayload}
-                teamById={teamById}
-                portrait={portrait}
-                plFixtures={plFixtures}
-              />
             ) : (
-              <PlayerDetailPerformance
-                el={playerEl}
-                summaryPayload={primaryPayload}
-                teamById={teamById}
-              />
+              /* Keyed on `tab` so switching (tap or swipe) remounts the pane
+               * and replays the directional slide-in. */
+              <div
+                key={tab}
+                className={
+                  'pdetail__pane' +
+                  (slideFrom ? ` pdetail__pane--from-${slideFrom}` : '')
+                }
+              >
+                {tab === 'overview' ? (
+                  <PlayerDetailOverview
+                    el={playerEl}
+                    summaryPayload={primaryPayload}
+                    teamById={teamById}
+                    portrait={portrait}
+                    plFixtures={plFixtures}
+                  />
+                ) : (
+                  <PlayerDetailPerformance
+                    el={playerEl}
+                    summaryPayload={primaryPayload}
+                    teamById={teamById}
+                  />
+                )}
+              </div>
             )}
           </div>
         </>

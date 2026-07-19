@@ -918,19 +918,46 @@ export function LiveScores({
     teams,
   ]);
 
+  /**
+   * Official GW points from the finished H2H match rows (`details.json`),
+   * keyed by `league_entry`. Available on first paint, unlike the per-team
+   * live squads (one FPL fetch each, several seconds). Used as an instant
+   * fallback for the `GW` outcome dots / `+3` chips so a finished GW's
+   * Live Table doesn't sit on hollow "not started" dots while squads load.
+   */
+  const finishedMatchPtsByLeagueEntry = useMemo(() => {
+    const m = new Map();
+    for (const fx of gwMatches) {
+      if (!fx?.finished) continue;
+      const a = Number(fx.league_entry_1);
+      const b = Number(fx.league_entry_2);
+      const pa = Number(fx.league_entry_1_points);
+      const pb = Number(fx.league_entry_2_points);
+      if (Number.isFinite(a) && Number.isFinite(pa)) m.set(a, pa);
+      if (Number.isFinite(b) && Number.isFinite(pb)) m.set(b, pb);
+    }
+    return m;
+  }, [gwMatches]);
+
   /** Opponent’s live GW total for this GW (for projected Faced / GD / H2H pts). */
   const oppLiveGwByLeagueEntry = useMemo(() => {
     const m = new Map();
     for (const fx of gwMatches) {
       const a = Number(fx.league_entry_1);
       const b = Number(fx.league_entry_2);
-      const la = liveGwDisplayTotal(squadByLeagueEntry.get(a));
-      const lb = liveGwDisplayTotal(squadByLeagueEntry.get(b));
+      const la =
+        liveGwDisplayTotal(squadByLeagueEntry.get(a)) ??
+        finishedMatchPtsByLeagueEntry.get(a) ??
+        null;
+      const lb =
+        liveGwDisplayTotal(squadByLeagueEntry.get(b)) ??
+        finishedMatchPtsByLeagueEntry.get(b) ??
+        null;
       m.set(a, lb);
       m.set(b, la);
     }
     return m;
-  }, [gwMatches, squadByLeagueEntry]);
+  }, [gwMatches, squadByLeagueEntry, finishedMatchPtsByLeagueEntry]);
 
   /**
    * Opponent's `league_entry` id for this GW, keyed by manager `league_entry`.
@@ -989,7 +1016,10 @@ export function LiveScores({
     const enriched = tableRows.map((row) => {
       const eid = row.league_entry;
       const squad = squadByLeagueEntry.get(eid);
-      const liveGw = liveGwDisplayTotal(squad);
+      const liveGw =
+        liveGwDisplayTotal(squad) ??
+        finishedMatchPtsByLeagueEntry.get(eid) ??
+        null;
       const inFixture = oppLiveGwByLeagueEntry.has(eid);
       const oppLiveGw = inFixture ? oppLiveGwByLeagueEntry.get(eid) : null;
 
@@ -1086,6 +1116,7 @@ export function LiveScores({
   }, [
     tableRows,
     squadByLeagueEntry,
+    finishedMatchPtsByLeagueEntry,
     oppLiveGwByLeagueEntry,
     oppEntryByLeagueEntry,
     gwStandingsFrozen,

@@ -15,6 +15,10 @@ import './LiveFixtureCard.css';
 const TH_AXIS = 8;
 const TH_PAGE = 70;
 const TH_CLOSE = 110;
+/* Flick: a fast short swipe pages/dismisses even under the distance
+   thresholds above — matching native pager feel. Velocity is px/ms. */
+const TH_FLICK = 0.45;
+const TH_MIN_FLICK_DIST = 24;
 const ANIM_MS = 440;
 
 /** Read the current app theme (set by App on `document.body`). */
@@ -162,6 +166,11 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     let axis = null;
     let mode = null; // 'tabs' | 'close'
     let active = false;
+    // Flick velocity (px/ms, EMA-smoothed) so a quick short swipe still pages
+    // even when it releases under the distance threshold.
+    let vx = 0;
+    let lastX = 0;
+    let lastT = 0;
 
     const point = (e) => (e.touches ? e.touches[0] : e);
     const activePanes = () =>
@@ -173,17 +182,34 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
       mode = null;
       dx = 0;
       dy = 0;
+      vx = 0;
       const p = point(e);
       startX = p.clientX;
       startY = p.clientY;
+      lastX = p.clientX;
+      lastT = performance.now();
     };
     const onMove = (e) => {
       if (!active) return;
       const p = e.touches ? e.touches[0] : e;
       dx = p.clientX - startX;
       dy = p.clientY - startY;
+      const now = performance.now();
+      if (now > lastT) {
+        vx = 0.7 * ((p.clientX - lastX) / (now - lastT)) + 0.3 * vx;
+      }
+      lastX = p.clientX;
+      lastT = now;
       if (!axis && (Math.abs(dx) > TH_AXIS || Math.abs(dy) > TH_AXIS)) {
-        axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        // If the browser already claimed this touch for a native scroll the
+        // events are no longer cancelable — dragging the track underneath a
+        // live scroll is what made the gesture feel like both were moving.
+        // Yield instead of fighting it.
+        if (e.touches && !e.cancelable) {
+          axis = 'y';
+        } else {
+          axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        }
         if (axis === 'x') {
           mode = tabIndexRef.current === 0 && dx > 0 ? 'close' : 'tabs';
         }
@@ -216,7 +242,7 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         if (mode === 'close') {
           sheet.classList.remove('is-dragging');
           if (scrim) scrim.style.opacity = '';
-          if (dx > TH_CLOSE) {
+          if (dx > TH_CLOSE || (dx > 45 && vx > TH_FLICK)) {
             // Finish the swipe off-screen. The inline transform set during
             // the drag overrides the class-based rules, so we must animate it
             // to translateX(100%) here — otherwise removing `is-open` on
@@ -233,8 +259,10 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
           const track = activePanes();
           track?.classList.remove('is-dragging');
           let next = ti;
-          if (dx < -TH_PAGE && ti < T - 1) next = ti + 1;
-          else if (dx > TH_PAGE && ti > 0) next = ti - 1;
+          const flickL = dx < -TH_MIN_FLICK_DIST && vx < -TH_FLICK;
+          const flickR = dx > TH_MIN_FLICK_DIST && vx > TH_FLICK;
+          if ((dx < -TH_PAGE || flickL) && ti < T - 1) next = ti + 1;
+          else if ((dx > TH_PAGE || flickR) && ti > 0) next = ti - 1;
           if (track) track.style.transform = `translateX(${-next * 100}%)`;
           if (next !== ti) setTabIndex(next);
         }

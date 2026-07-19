@@ -88,6 +88,52 @@
   font-size: 0.875rem;
 }
 
+/*
+ * Tab pane wrapper — participates in `.pdetail__main`'s flex column
+ * exactly like the pane content used to (Performance relies on the
+ * bounded-height chain for its inner table scroll). The `--from-*`
+ * modifiers replay a short directional slide when the tab changes via
+ * tap or horizontal swipe.
+ */
+.pdetail__pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.pdetail__pane--from-right {
+  animation: pdetail-pane-from-right 0.22s ease;
+}
+.pdetail__pane--from-left {
+  animation: pdetail-pane-from-left 0.22s ease;
+}
+@keyframes pdetail-pane-from-right {
+  from {
+    transform: translateX(28px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes pdetail-pane-from-left {
+  from {
+    transform: translateX(-28px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdetail__pane--from-right,
+  .pdetail__pane--from-left {
+    animation: none;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Hero · Desktop                                                       */
 /* ------------------------------------------------------------------ */
@@ -317,12 +363,54 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
   border-bottom: 2px solid transparent;
   transition: color var(--pdetail-dur-fast) var(--pdetail-ease),
     border-color var(--pdetail-dur-fast) var(--pdetail-ease);
+  -webkit-tap-highlight-color: transparent;
 }
 .pdetail__tab:hover { color: var(--text); }
 .pdetail__tab.is-active {
   color: var(--text-strong);
   font-weight: 600;
   border-bottom-color: var(--brand);
+}
+
+/*
+ * Portrait phones — tabs merge into the purple header band (option C):
+ * white text on the same solid violet as the portrait hero, with a white
+ * underline marking the active tab (FotMob style). One continuous purple
+ * block from the hero row down through the tab row, matching the Scores
+ * fixture header. Desktop keeps the surface strip above (its hero is a
+ * light tint, so a purple tab row there would read as a sandwich).
+ */
+.pdetail__tabs--band {
+  padding: 0 var(--pdetail-space-3, 10px);
+  border-bottom: none;
+  background: var(--tclot-header-solid, #795bfb);
+  /* The hairline moves from the hero down to the band's true bottom edge. */
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+/* Kill the hero's own hairline when the band tabs continue the purple below
+ * it (the hero sits inside `.pdetail-p__chrome`, the tabs' previous sibling). */
+.pdetail-p__chrome:has(+ .pdetail__tabs--band) .pdetail-p__hero {
+  box-shadow: none;
+}
+.pdetail__tabs--band .pdetail__tab {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.72);
+  padding: 9px 14px 11px;
+  border-bottom: none;
+}
+.pdetail__tabs--band .pdetail__tab:hover { color: #ffffff; }
+.pdetail__tabs--band .pdetail__tab.is-active {
+  color: #ffffff;
+}
+.pdetail__tabs--band .pdetail__tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 4px;
+  height: 3px;
+  border-radius: 3px;
+  background: #ffffff;
 }
 
 /* ------------------------------------------------------------------ */

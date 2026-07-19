@@ -8,6 +8,7 @@ import {
   fixtureScoreForGw,
   formatPerformanceStat,
   historyScoreFromPerspective,
+  historyWasHome,
   isSeasonComplete,
   lastFiveGwCards,
   lastNHistoryRows,
@@ -232,6 +233,22 @@ test('countDcThresholdMet — counts qualifying DC games per position', () => {
   assert.equal(countDcThresholdMet(rows, 1 /* GK; no threshold */), 0)
   assert.equal(countDcThresholdMet([], 2), 0)
   assert.equal(countDcThresholdMet(null, 2), 0)
+})
+
+test('historyWasHome — was_home boolean first, draft-API detail string fallback', () => {
+  // Main FPL API rows carry the boolean.
+  assert.equal(historyWasHome({ was_home: true }), true)
+  assert.equal(historyWasHome({ was_home: false }), false)
+  // Draft API rows only encode venue in `detail` — e.g. "MUN (A) 0-1".
+  assert.equal(historyWasHome({ detail: 'MUN (A) 0-1' }), false)
+  assert.equal(historyWasHome({ detail: 'LEE (H) 5-0' }), true)
+  // Boolean wins over a conflicting detail string.
+  assert.equal(historyWasHome({ was_home: true, detail: 'MUN (A) 0-1' }), true)
+  // Unknown → null so the caller can hide the indicator.
+  assert.equal(historyWasHome({}), null)
+  assert.equal(historyWasHome({ detail: 'no venue here' }), null)
+  assert.equal(historyWasHome(null), null)
+  assert.equal(historyWasHome(undefined), null)
 })
 
 test('historyScoreFromPerspective — formats W/D/L from player club POV', () => {

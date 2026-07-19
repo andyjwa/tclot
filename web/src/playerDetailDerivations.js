@@ -397,6 +397,24 @@ export function countDcThresholdMet(historyRows, elementType) {
 }
 
 /**
+ * Home/away for an `element-summary.history` row. The main FPL API carries
+ * a `was_home` boolean, but the **draft** API (our primary source) omits it
+ * and instead encodes the venue inside the `detail` string — e.g.
+ * `"MUN (A) 0-1"` / `"LEE (H) 5-0"`. Returns `null` when neither field is
+ * present so callers can hide the indicator rather than guess.
+ *
+ * @param {object | null | undefined} historyRow FPL `element-summary.history` row
+ * @returns {boolean | null}
+ */
+export function historyWasHome(historyRow) {
+  if (!historyRow) return null
+  if (typeof historyRow.was_home === 'boolean') return historyRow.was_home
+  const m = /\((H|A)\)/.exec(String(historyRow.detail ?? ''))
+  if (m) return m[1] === 'H'
+  return null
+}
+
+/**
  * Format a final score (`team_h_score - team_a_score`) from the player's
  * club's perspective. Returns `null` if the score is missing — the draft
  * API's `element-summary.history` rows omit score fields, so the caller
@@ -410,7 +428,7 @@ export function historyScoreFromPerspective(historyRow) {
   const home = Number(historyRow.team_h_score)
   const away = Number(historyRow.team_a_score)
   if (!Number.isFinite(home) || !Number.isFinite(away)) return null
-  const wasHome = Boolean(historyRow.was_home)
+  const wasHome = historyWasHome(historyRow) ?? false
   const my = wasHome ? home : away
   const opp = wasHome ? away : home
   const result = my > opp ? 'W' : my < opp ? 'L' : 'D'
@@ -504,7 +522,7 @@ export function lastFiveGwCards(historyRows, _elementType, count = 5, options = 
     if (!score && Number.isFinite(gw) && playerTeamId != null) {
       score = fixtureScoreForGw(plFixtures, gw, playerTeamId)
     }
-    const wasHome = score?.wasHome ?? Boolean(h?.was_home)
+    const wasHome = score?.wasHome ?? historyWasHome(h) ?? false
     const pts = Number(h?.total_points)
     const points = Number.isFinite(pts) ? pts : null
     const tone = dnp || points == null

@@ -64,6 +64,13 @@
   border-radius: 0;
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.45);
   overflow: hidden;
+  /* Reserve horizontal pans for the JS swipe gesture (tab paging / close
+     drag). Without this the browser races the gesture handler: it can start
+     a native scroll during the first few (unprevented) touchmoves, after
+     which the events turn non-cancelable and preventDefault is a no-op — the
+     pane keeps scrolling underneath while the tab track drags. `pan-y`
+     keeps vertical scrolling native but hands every horizontal pan to JS. */
+  touch-action: pan-y;
   /* FotMob-style push: the whole screen enters from the right edge. */
   transform: translateX(100%);
   transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
@@ -242,6 +249,13 @@
   padding: 6px 14px 2px;
   overflow-x: auto;
   scrollbar-width: none;
+  /* The strip can overflow by a few px on narrow phones, which makes it a
+     live horizontal scroller in its own right — a swipe starting on the
+     pills would nudge the strip natively WHILE the deck gesture pages the
+     panes (double movement). `pan-y` hands horizontal pans on the strip to
+     the deck's swipe handler; the active pill is kept visible via
+     scrollIntoView instead (mouse wheel / trackpad scrolling still works). */
+  touch-action: pan-y;
 }
 .lfc-tabs::-webkit-scrollbar {
   display: none;
@@ -826,25 +840,25 @@
   overflow: hidden;
   gap: 2px;
 }
+/*
+ * O4 colour language — neutral segments, brand violet on the favourite
+ * (highest probability). No red/green: those read as good-vs-bad and
+ * collide with the app-wide W/D/L dot colours.
+ */
 .lfc-win__seg {
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 800;
-  color: #fff;
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--fm-muted) 24%, transparent);
   min-width: 0;
   overflow: hidden;
 }
-.lfc-win__seg--h {
-  background: #2bb673;
-}
-.lfc-win__seg--d {
-  background: #b0b0b8;
-  color: #3a3a3a;
-}
-.lfc-win__seg--a {
-  background: #e0566a;
+.lfc-win__seg--fav {
+  background: var(--tclot-header-solid, #795bfb);
+  color: #fff;
 }
 .lfc-win__legend {
   display: flex;

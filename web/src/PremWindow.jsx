@@ -1313,8 +1313,15 @@ export function PremWindow({
     narrow,
   };
 
+  /* Only claim "no fixtures" once every loading phase has settled —
+   * otherwise this renders *alongside* the loading tiles during the
+   * initial FPL-context fetch, which reads as a contradiction. */
   const noFixtures =
-    liveFixtures.length === 0 && dayGroups.length === 0 && !premWindowLoading;
+    liveFixtures.length === 0 &&
+    dayGroups.length === 0 &&
+    !premWindowLoading &&
+    !awaitingFplContext &&
+    !awaitingPremWindow;
 
   return (
     <div className="dashboard-stack prem-window-root">
