@@ -670,7 +670,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--fm-muted);
+  /* Same brand purple as the chevron / clickable team names higher up. */
+  color: var(--tclot-logo-purple);
 }
 .lfc-benchswitch__chev {
   flex: none;
