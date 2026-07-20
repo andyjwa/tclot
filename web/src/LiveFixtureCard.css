@@ -26,11 +26,14 @@
     linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%)
   );
 }
-/* Beat `.fotmob` / `.fotmob[data-theme='light']` page backgrounds. */
+/* Beat `.fotmob` page backgrounds (`App.css` paints `background: var(--fm-bg)`
+   on every `.fotmob`). Without this, edge-swipe dismiss reveals a solid grey
+   slab in the gap instead of the Scores list. `!important` wins over any
+   later theme rule that reasserts the page fill. */
 .fotmob.lfc-root,
 .fotmob.lfc-root[data-theme='light'],
 .fotmob.lfc-root[data-theme='dark'] {
-  background: transparent;
+  background: transparent !important;
 }
 
 .lfc-scrim {
@@ -47,7 +50,7 @@
   /* Light dim — heavy enough to focus the sheet, light enough that Scores
      still reads as the page behind during an edge-swipe dismiss (a 50%
      black slab looked like a second grey screen). */
-  background: rgba(0, 0, 0, 0.32);
+  background: rgba(0, 0, 0, 0.28);
 }
 
 .lfc-sheet {
@@ -64,14 +67,16 @@
      too-tall column reports no overflow the inner pane can't scroll. Clamping
      here bounds the flex column to what's actually visible so
      `.lfc-card__scroll` overflows and scrolls correctly in both Chrome and
-     Safari; the solid-bg root still covers any area below the clamp. */
+     Safari. */
   max-height: 100svh;
   max-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--fm-bg);
   border-radius: 0;
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.45);
+  /* Soft left edge only — a heavy -40px shadow read as a thick grey bar
+     in the gap during dismiss. */
+  box-shadow: -4px 0 18px rgba(0, 0, 0, 0.22);
   overflow: hidden;
   /* Reserve horizontal pans for the JS swipe gesture (tab paging / close
      drag). Without this the browser races the gesture handler: it can start
@@ -90,6 +95,9 @@
 }
 .lfc-sheet.is-dragging {
   transition: none;
+  /* Drop the edge shadow while dragging so it can't smear into a grey
+     column between Scores and the sheet mid-dismiss. */
+  box-shadow: none;
 }
 
 /* ---- Top bar: back chevron over the violet header ----
