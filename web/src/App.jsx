@@ -252,7 +252,6 @@ import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
-import ForecastPanel from './ForecastPanel.jsx'
 import { PreseasonHub } from './PreseasonHub.jsx'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverlay.jsx'
@@ -2294,16 +2293,18 @@ function App() {
   const [teamSelectionTab, setTeamSelectionTab] = useState(
     /** @type {'waivers' | 'trades' | 'draft'} */ ('waivers'),
   )
-  /* FPL Live sub-tab. The legacy `'vibes'` value (which hosted the
-   * cinematics) is gone — that content moved to the new Preseason hub.
-   * `setFplLiveTab` below coerces any incoming `'vibes'` to `'live'` so a
-   * persisted pref or stale deep link cannot leave the Live tab blank. */
+  /* FPL Live sub-tab. Legacy values are coerced to `'live'` so a persisted
+   * pref or stale deep link cannot leave the Live tab blank: `'vibes'`
+   * (cinematics, moved to the Preseason hub) and `'forecast'` (player
+   * forecast leaderboard, hidden — the forecast data still powers the
+   * fixture Odds tab). */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {'squads' | 'live' | 'forecast'} */ ('live'),
+    /** @type {'squads' | 'live'} */ ('live'),
   )
-  const fplLiveTab = fplLiveTabRaw === 'vibes' ? 'live' : fplLiveTabRaw
+  const fplLiveTab =
+    fplLiveTabRaw === 'vibes' || fplLiveTabRaw === 'forecast' ? 'live' : fplLiveTabRaw
   const setFplLiveTab = useCallback((next) => {
-    setFplLiveTabRaw(next === 'vibes' ? 'live' : next)
+    setFplLiveTabRaw(next === 'vibes' || next === 'forecast' ? 'live' : next)
   }, [])
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
@@ -3766,19 +3767,6 @@ function App() {
                 >
                   Lineups
                 </button>
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-fpl-live-forecast"
-                  aria-selected={fplLiveTab === 'forecast'}
-                  className={
-                    'subnav__tab' +
-                    (fplLiveTab === 'forecast' ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => setFplLiveTab('forecast')}
-                >
-                  Forecast
-                </button>
               </div>
               </div>
               <div className="section-body">
@@ -3809,7 +3797,6 @@ function App() {
                   compactMobileChrome
                 />
               ) : null}
-              {fplLiveTab === 'forecast' ? <ForecastPanel /> : null}
               </div>
             </section>
           )}
