@@ -232,7 +232,10 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         const d = Math.max(0, dx);
         sheet.classList.add('is-dragging');
         sheet.style.transform = `translateX(${d}px)`;
-        if (scrim) scrim.style.opacity = String(Math.max(0, 1 - d / 400));
+        /* Fade the dim faster than the sheet travels so Scores is clearly
+           the page behind well before the dismiss threshold (not a solid
+           grey slab until the sheet is almost gone). */
+        if (scrim) scrim.style.opacity = String(Math.max(0, 1 - d / 220));
       } else {
         const track = activePanes();
         if (!track) return;

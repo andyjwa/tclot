@@ -14,10 +14,10 @@
      Instead fill via `inset: 0` (top+bottom) like `.player-detail-overlay-shell`
      and keep `100dvh` only as a floor.
 
-     The root itself stays TRANSPARENT (unlike the old bottom-sheet variant)
-     so the scores page remains visible while the screen pushes in from the
-     right; the full-inset scrim below dims it (including any strip behind
-     Safari's bottom toolbar that the dvh-clamped sheet doesn't cover). */
+     The root carries the `.fotmob` class for theme tokens, but `.fotmob`
+     also paints a solid page background — which used to show up as a blank
+     grey "second page" in the gap when the sheet was dragged right. Keep
+     the root transparent so Scores peeks through (dimmed by the scrim). */
   min-height: 100vh;
   min-height: 100dvh;
   z-index: 10000; /* below PlayerDetailOverlay (10050) */
@@ -25,6 +25,12 @@
     --tclot-header-grad,
     linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%)
   );
+}
+/* Beat `.fotmob` / `.fotmob[data-theme='light']` page backgrounds. */
+.fotmob.lfc-root,
+.fotmob.lfc-root[data-theme='light'],
+.fotmob.lfc-root[data-theme='dark'] {
+  background: transparent;
 }
 
 .lfc-scrim {
@@ -38,7 +44,10 @@
 .lfc-root.is-open .lfc-scrim {
   opacity: 1;
   pointer-events: auto;
-  background: rgba(0, 0, 0, 0.5);
+  /* Light dim — heavy enough to focus the sheet, light enough that Scores
+     still reads as the page behind during an edge-swipe dismiss (a 50%
+     black slab looked like a second grey screen). */
+  background: rgba(0, 0, 0, 0.32);
 }
 
 .lfc-sheet {
