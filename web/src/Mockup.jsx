@@ -13173,14 +13173,6 @@ function LiSettings() {
   )
 }
 
-function LiFooter() {
-  return (
-    <div className="li-footer">
-      v0.42.0 · Updated 2 minutes ago
-    </div>
-  )
-}
-
 function LiSection({ eyebrow, children }) {
   return (
     <div className="li-section">
@@ -13278,7 +13270,6 @@ function LiVariantA({ width }) {
           <LiSection eyebrow="Fast Facts"><LiFactsGrid /></LiSection>
           <LiSection eyebrow="Appearance"><LiAppearance /></LiSection>
           <LiSection eyebrow="Settings"><LiSettings /></LiSection>
-          <LiFooter />
         </div>
       </div>
     </LiModalStage>
@@ -13323,7 +13314,6 @@ function LiVariantB({ width }) {
             <>
               <LiSection eyebrow="Appearance"><LiAppearance /></LiSection>
               <LiSection eyebrow="Settings"><LiSettings /></LiSection>
-              <LiFooter />
             </>
           )}
         </div>
@@ -13368,7 +13358,6 @@ function LiVariantC({ width }) {
             <div className="li-card__eyebrow">Settings</div>
             <LiSettings />
           </div>
-          <LiFooter />
         </div>
       </div>
     </LiModalStage>

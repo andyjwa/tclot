@@ -24,7 +24,6 @@
  *                           • Terminology — league-canon glossary
  *                           • Settings    — `<SettingsPanelBody>`
  *                                            (shared with /settings)
- *   4. Footer           — tiny credit / version line
  *
  * The modal portals onto `document.body` (so it clears the
  * `.app.fotmob` stacking context). All design tokens used by the
@@ -406,14 +405,6 @@ export function LeagueInfoModal({
               />
             </div>
           ) : null}
-
-          {/* Footer */}
-          <div className="li-footer">
-            TCLOT · 2025/26 ·{' '}
-            <span className="league-info-modal__footer-version">
-              {String(import.meta.env.VITE_LEAGUE_DATA_REVISION ?? 'dev').trim() || 'dev'}
-            </span>
-          </div>
         </div>
       </div>
     </div>
