@@ -56,6 +56,7 @@ function BrandHeaderStatusBody({ liveStatus }) {
     seasonShort,
     progressLabel,
     kickoffLabel,
+    idleMilestone,
   } = liveStatus
 
   if (status === 'live') {
@@ -119,8 +120,22 @@ function BrandHeaderStatusBody({ liveStatus }) {
           GW {lastFinishedGw} complete
         </span>
         <span className="brand-header__status-sep">·</span>
-        {kickoffLabel ? (
-          <span>GW {nextGw} kicks off {kickoffLabel}</span>
+        {idleMilestone?.kind === 'waivers' ? (
+          <>
+            <span>
+              Waivers in <strong>{idleMilestone.countdownLabel}</strong>
+            </span>
+            <span className="brand-header__status-sep">·</span>
+            <span>{idleMilestone.dateTimeLabel}</span>
+          </>
+        ) : idleMilestone?.kind === 'gameweek' ? (
+          <>
+            <span>
+              GW {nextGw} starts in <strong>{idleMilestone.countdownLabel}</strong>
+            </span>
+            <span className="brand-header__status-sep">·</span>
+            <span>{idleMilestone.dateTimeLabel}</span>
+          </>
         ) : (
           <span>
             GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
@@ -136,10 +151,10 @@ function BrandHeaderStatusBody({ liveStatus }) {
       <span className="brand-header__status-strong">Pre-season</span>
       <span className="brand-header__status-sep">·</span>
       {kickoffLabel ? (
-        <span>GW {nextGw ?? 1} kicks off {kickoffLabel}</span>
+        <span>{seasonShort} season kicks off {kickoffLabel}</span>
       ) : (
         <span>
-          GW {nextGw ?? 1} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
+          {seasonShort} season starts {nextDeadlineLabel ?? 'soon'}
         </span>
       )}
     </>
@@ -2265,6 +2280,13 @@ function resolveSystemTheme() {
 
 function App() {
   const { data, error, loading } = useLeagueData()
+  /** Minute-resolution clock for between-GW waiver / deadline countdowns. */
+  const [statusNow, setStatusNow] = useState(() => new Date())
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const id = window.setInterval(() => setStatusNow(new Date()), 60_000)
+    return () => window.clearInterval(id)
+  }, [])
   const {
     tableRows = [],
     teamsForFormSelect = [],
@@ -2473,6 +2495,7 @@ function App() {
         nextEvent: draftBootstrapEvents.nextEvent,
         lastFinishedEvent: draftBootstrapEvents.lastFinishedEvent,
         season: BRAND_HEADER_SEASON,
+        now: statusNow,
         liveFixtureCount: brandLiveFixtureCount,
         minute: brandLiveMinute,
         finishedFixtureCount: brandFinishedFixtureCount,
@@ -2482,6 +2505,7 @@ function App() {
       draftBootstrapEvents.currentEvent,
       draftBootstrapEvents.nextEvent,
       draftBootstrapEvents.lastFinishedEvent,
+      statusNow,
       brandLiveFixtureCount,
       brandLiveMinute,
       brandFinishedFixtureCount,

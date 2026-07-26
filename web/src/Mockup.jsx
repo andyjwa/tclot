@@ -766,7 +766,7 @@ function HeroVariantBStatusStrip({ state, treatment }) {
     >
       <span className="mockup-hero-status-strip__strong">GW 38 complete</span>
       <span className="mockup-hero-status-strip__sep">·</span>
-      <span>GW 1 of 26/27 starts Aug 16</span>
+      <span>26/27 season starts Aug 21</span>
     </div>
   )
 }

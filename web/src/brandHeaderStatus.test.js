@@ -3,6 +3,8 @@ import test from 'node:test'
 import {
   deriveBrandHeaderStatus,
   formatDeadlineDate,
+  formatMilestoneCountdown,
+  formatMilestoneDateTime,
   seasonShortLabel,
 } from './brandHeaderStatus.js'
 
@@ -17,6 +19,28 @@ test('formatDeadlineDate — ISO → "Aug 15"', () => {
   assert.equal(formatDeadlineDate('2025-08-15T17:30:00Z'), 'Aug 15')
   assert.equal(formatDeadlineDate(null), null)
   assert.equal(formatDeadlineDate('not-a-date'), null)
+})
+
+test('formatMilestoneDateTime — includes both local date and time', () => {
+  const out = formatMilestoneDateTime('2026-03-14T13:30:00Z')
+  assert.match(out, /^[A-Z][a-z]{2} \d{1,2} at \d{2}:\d{2}$/)
+  assert.equal(formatMilestoneDateTime('not-a-date'), null)
+})
+
+test('formatMilestoneCountdown — favors days/hours, then hours/minutes', () => {
+  const now = new Date('2026-03-10T10:00:00Z')
+  assert.equal(
+    formatMilestoneCountdown('2026-03-14T13:30:00Z', now),
+    '4d 3h',
+  )
+  assert.equal(
+    formatMilestoneCountdown('2026-03-10T14:30:00Z', now),
+    '4h 30m',
+  )
+  assert.equal(
+    formatMilestoneCountdown('2026-03-10T10:42:00Z', now),
+    '42m',
+  )
 })
 
 test('deriveBrandHeaderStatus — live when current event is unfinished and deadline passed', () => {
@@ -48,6 +72,25 @@ test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and n
   assert.equal(out.lastFinishedGw, 28)
   assert.equal(out.nextGw, 29)
   assert.equal(out.nextDeadlineLabel, 'Mar 15')
+  assert.equal(out.idleMilestone.kind, 'waivers')
+  assert.equal(out.idleMilestone.countdownLabel, '4d 3h')
+  assert.match(
+    out.idleMilestone.dateTimeLabel,
+    /^[A-Z][a-z]{2} \d{1,2} at \d{2}:\d{2}$/,
+  )
+})
+
+test('deriveBrandHeaderStatus — after waivers, idle milestone advances to GW start', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 28 },
+    season: '2025/26',
+    now: new Date('2026-03-14T14:00:00Z'),
+  })
+  assert.equal(out.status, 'idle')
+  assert.equal(out.idleMilestone.kind, 'gameweek')
+  assert.equal(out.idleMilestone.countdownLabel, '23h 30m')
 })
 
 test('deriveBrandHeaderStatus — pre-season when no event has finished', () => {
