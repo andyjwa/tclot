@@ -981,6 +981,13 @@ function processLeagueData(raw, extras = {}) {
   const waiverInByLeagueEntry = new Map(
     totals.filter((t) => t.leagueEntry != null).map((t) => [t.leagueEntry, t])
   );
+  /** Successful waiver swaps per FPL entry (kind w). Same volume as waiver-outs. */
+  const waiverSwapCountByEntry = new Map();
+  for (const r of waiverOutGwRows) {
+    if (r.transactionKind === 'f') continue;
+    const id = r.entry;
+    waiverSwapCountByEntry.set(id, (waiverSwapCountByEntry.get(id) || 0) + 1);
+  }
   const waiverInPointsByTeam = sortedByRank
     .map((s) => {
       const fplId = teams[s.league_entry]?.entry_id ?? s.league_entry;
@@ -990,21 +997,27 @@ function processLeagueData(raw, extras = {}) {
         waiverInByFplEntry.get(s.league_entry);
       const totalWaiverInPoints = o?.totalWaiverInPoints ?? 0;
       const distinctWaiverPlayers = o?.distinctPlayers ?? 0;
+      /* Prefer stint count from analytics; fall back to swap rows so In/Out volume matches. */
+      const waiverInCount =
+        o?.waiverInCount ??
+        waiverSwapCountByEntry.get(fplId) ??
+        0;
       const averageWaiverInPerPlayer =
-        distinctWaiverPlayers > 0
-          ? Math.round((totalWaiverInPoints / distinctWaiverPlayers) * 10) / 10
+        waiverInCount > 0
+          ? Math.round((totalWaiverInPoints / waiverInCount) * 10) / 10
           : null;
       return {
         league_entry: s.league_entry,
         teamName: s.teamName,
         totalWaiverInPoints,
+        waiverInCount,
         distinctWaiverPlayers,
         averageWaiverInPerPlayer,
       };
     })
     .sort((a, b) => {
       const avg = (t) =>
-        t.distinctWaiverPlayers > 0 ? t.averageWaiverInPerPlayer ?? 0 : -Infinity;
+        t.waiverInCount > 0 ? t.averageWaiverInPerPlayer ?? 0 : -Infinity;
       const byAvg = avg(b) - avg(a);
       if (byAvg !== 0) return byAvg;
       return (

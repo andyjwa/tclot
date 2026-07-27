@@ -535,7 +535,7 @@ export function WaiverTotalsToggle({
             league_entry: r.league_entry,
             teamName: r.teamName,
             value: r.totalWaiverInPoints,
-            count: r.distinctWaiverPlayers,
+            count: r.waiverInCount,
             avg: r.averageWaiverInPerPlayer ?? 0,
           }))
         : waiverOutPointsByTeam.map((r) => ({
