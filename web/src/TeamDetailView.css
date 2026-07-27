@@ -62,7 +62,7 @@
   min-height: 0;
   background: var(--tc-surface);
   color: var(--tc-text);
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

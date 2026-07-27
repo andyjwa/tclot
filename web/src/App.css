@@ -125,7 +125,7 @@
   --text-muted: #8a8a97;
   --row-hi: #1f1f28;
 
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   background: var(--fm-bg);
   color: var(--fm-text);
   min-height: 100vh;
@@ -242,10 +242,6 @@
 .fotmob[data-theme='light'] .data-banner code {
   background: rgba(0, 0, 0, 0.06);
   color: var(--fm-text-strong);
-}
-
-.fotmob[data-theme='light'] .page-footer--script {
-  color: #4a4a4a;
 }
 
 .fotmob[data-theme='light'] .tile.hall-of-champions {
@@ -2466,7 +2462,7 @@
   margin-bottom: var(--space-2);
 }
 .tile.tile--draft-quality .tile-title--sm {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   letter-spacing: 0.01em;
 }
 
@@ -2490,7 +2486,7 @@
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   font-size: var(--text-sm, 13px);
   font-variant-numeric: tabular-nums;
 }
@@ -2647,7 +2643,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
 }
 
 .draft-quality-td--pts {
@@ -2764,7 +2760,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   font-weight: 500;
   color: var(--fm-text-strong);
 }
@@ -5080,19 +5076,6 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   white-space: nowrap;
 }
 
-/* Pacifico (same family as .page-footer--script), ticker line height/size */
-.live-score-ticker__ramist {
-  font-family: 'Pacifico', cursive;
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: var(--fm-text-strong, #111);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  flex-shrink: 0;
-  align-self: center;
-  padding-inline-start: 0.25rem;
-}
-
 .live-score-ticker__sticker {
   height: 2.1rem;
   width: auto;
@@ -5157,10 +5140,6 @@ body[data-tclot-theme='dark'] .live-score-ticker {
 }
 
 body[data-tclot-theme='dark'] .live-score-ticker__fixture {
-  color: var(--fm-text-strong, #fafafa);
-}
-
-body[data-tclot-theme='dark'] .live-score-ticker__ramist {
   color: var(--fm-text-strong, #fafafa);
 }
 
@@ -6725,7 +6704,7 @@ body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true']
 
 .live-remaining-fixtures__title {
   flex: 1 1 auto;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -6782,7 +6761,7 @@ body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true']
 .live-remaining-fixtures__name {
   flex: 1 1 auto;
   min-width: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   font-size: var(--text-sm, 13px);
   font-weight: 700;
   color: var(--fm-text-strong, #111);
@@ -6843,7 +6822,7 @@ body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true']
 }
 
 .live-remaining-fixtures__chip-name {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   font-weight: 600;
   color: var(--fm-text-strong, #111);
 }
@@ -6858,7 +6837,7 @@ body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true']
 
 .live-remaining-fixtures__done {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   font-size: 0.78rem;
   color: var(--fm-muted);
   font-style: italic;
@@ -10222,6 +10201,25 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   vertical-align: middle;
 }
 
+/* Last-place marker — quiet muted mono "L" (replaces the 🧩 emoji).
+ * No border, no red: the row wash carries the emotion, the letter just
+ * labels it. Token-driven via --fm-muted so it works in default
+ * dark/light and under the Scorebook paint flag; sized to match the
+ * old emoji footprint so the rank column doesn't shift. */
+.standings-table .standings-rank-last {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  color: var(--fm-muted);
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .standings-table .col-team {
   min-width: 140px;
 }
@@ -10311,13 +10309,13 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   margin-bottom: var(--space-3);
 }
 .tile.tile--live-standings .tile-title--sm {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   letter-spacing: 0.01em;
 }
 
 .standings-table--live {
   font-size: var(--text-sm, 13px);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   /* Tabular figures site-wide on this table so columns line up; per-cell
    * `.tabular` already exists, but spelling it on the table avoids drift
    * when new columns land. */
@@ -10372,7 +10370,7 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   font-variant-numeric: tabular-nums;
 }
 .standings-table--live .live-standings-team-name {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
   font-weight: 600;
   color: var(--fm-text-strong);
 }
@@ -11235,19 +11233,6 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   text-transform: uppercase;
   color: var(--fm-text);
   background: var(--fm-table-head);
-}
-
-/* Casual brush script (matches reference), white on dark */
-.page-footer--script {
-  font-family: 'Pacifico', cursive;
-  font-size: clamp(1.2rem, 3.2vw, 1.75rem);
-  font-weight: 400;
-  color: #ffffff;
-  text-align: center;
-  margin: 0;
-  padding: 1.5rem 1rem 0;
-  border-top: 1px solid var(--fm-border);
-  letter-spacing: 0.02em;
 }
 
 .muted {
@@ -12802,7 +12787,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   letter-spacing: 0.04em;
 }
 .live-xp__player-name {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, sans-serif;
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--fm-text);
@@ -14048,6 +14033,11 @@ button.live-xp__player-name:focus-visible {
 }
 .standings-table--variant-c-mobile .standings-rank-8 {
   font-size: 0.85rem;
+}
+.standings-table--variant-c-mobile .standings-rank-last {
+  width: 14px;
+  height: 14px;
+  font-size: 0.64rem;
 }
 
 /* Team col — kill the legacy `.standings-table .col-team

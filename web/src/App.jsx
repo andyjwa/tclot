@@ -1287,10 +1287,11 @@ function HeritageHistoricStandings({ fullNameMap, headingTag = 'h3' }) {
                     {isLast ? (
                       <span
                         role="img"
-                        className="standings-rank-8"
+                        className="standings-rank-last"
                         aria-label={String(nTeams)}
+                        title="Last place"
                       >
-                        🧩
+                        L
                       </span>
                     ) : (
                       row.rank
@@ -3201,8 +3202,8 @@ function App() {
                             >
                               <td className="col-rank">
                                 {row.rank === 8 ? (
-                                  <span role="img" className="standings-rank-8" aria-label="8">
-                                    🧩
+                                  <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
+                                    L
                                   </span>
                                 ) : (
                                   row.rank
@@ -3351,8 +3352,8 @@ function App() {
                             >
                               <td className="col-rank">
                                 {row.rank === 8 ? (
-                                  <span role="img" className="standings-rank-8" aria-label="8">
-                                    🧩
+                                  <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
+                                    L
                                   </span>
                                 ) : (
                                   row.rank
@@ -3844,7 +3845,6 @@ function App() {
         defaultTab={defaultTabPref}
         onDefaultTabChange={setDefaultTabPref}
       />
-      <footer className="page-footer--script">Tery is a Racist</footer>
     </div>
     </PlayerHistoryProvider>
     </TeamDetailOverlayProvider>

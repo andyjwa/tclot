@@ -23,7 +23,7 @@ html {
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   overscroll-behavior-x: none;

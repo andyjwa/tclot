@@ -237,10 +237,7 @@ export function StandingsStatsSubview({
             }
             onClick={() => onWeeksModeChange('last')}
           >
-            <span aria-hidden="true">Last </span>
-            <span role="img" aria-label="Last">
-              🧩
-            </span>
+            Last
           </button>
         </div>
 

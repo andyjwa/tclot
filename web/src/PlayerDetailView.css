@@ -54,7 +54,7 @@
   overflow: hidden;
   background: var(--fm-bg-root, var(--surface));
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
 }
 
 .pdetail-host--mobile {
@@ -986,6 +986,18 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   }
 }
 .pperf__h {
+  /*
+   * Positioning context for `.pperf-popover`. Must be the full-width
+   * header (not `.pperf__h-actions`): on narrow phones the header
+   * wraps and the Columns pill lands on its own line at the LEFT edge,
+   * so a `right: 0` popover anchored to the ~155px pill wrapper hung
+   * ~110px past the left viewport edge (checkbox column invisible,
+   * labels clipped to "nutes" / "als"). Anchoring to the header keeps
+   * `right: 0` flush with the panel's right padding edge in all
+   * layouts — identical geometry on desktop, where the actions sit at
+   * the header's right edge anyway.
+   */
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1001,7 +1013,8 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   color: var(--text-muted);
 }
 .pperf__h-actions {
-  position: relative;
+  /* NOT `position: relative` — the popover anchors to `.pperf__h` (see
+     above) so it can't overflow the viewport when the header wraps. */
   display: inline-flex;
   align-items: center;
 }
@@ -1040,7 +1053,9 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   right: 0;
   z-index: 40;
   min-width: 280px;
-  max-width: 360px;
+  /* Never wider than the header (= panel content width) so the popover
+     stays inside the viewport on 390–430px phones. */
+  max-width: min(360px, 100%);
   border: 1px solid var(--border);
   border-radius: var(--pdetail-r-md);
   background: var(--surface);

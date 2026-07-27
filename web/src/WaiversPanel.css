@@ -59,26 +59,26 @@
 .waivers-dir--in { color: var(--data-positive); }
 .waivers-dir--out { color: var(--data-negative); }
 
-/* Single-letter position label beside the player name. Renders as a
- * colour-coded letter (G / D / M / F) — no pill chrome — so the row
- * reads as plain text and the player name stays the dominant visual
- * element of each swap cell. */
+/* Boxed short-position badge (GKP / DEF / MID / FWD) beside the player
+ * name — same recipe as the player-detail hero badge
+ * (`.pdetail-p__hero-pos` in PlayerDetailView.css): cream surface,
+ * 1px border, monospace caps. Sized small so it never grows the row. */
 .waivers-pos-chip {
   flex: 0 0 auto;
-  color: var(--text-muted);
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  height: 15px;
+  padding: 0 4px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
 }
-.waivers-pos-chip--GKP { color: #f59e0b; }
-.waivers-pos-chip--DEF { color: #22d3ee; }
-.waivers-pos-chip--MID { color: #c4b5fd; }
-.waivers-pos-chip--FWD { color: #fca5a5; }
-[data-theme='light'] .waivers-pos-chip--GKP { color: #b45309; }
-[data-theme='light'] .waivers-pos-chip--DEF { color: #0e7490; }
-[data-theme='light'] .waivers-pos-chip--MID { color: #6d28d9; }
-[data-theme='light'] .waivers-pos-chip--FWD { color: #b91c1c; }
 
 /* numerics — PointsCell style */
 .waivers-pts {
@@ -315,12 +315,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.waivers-glance__counts { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; min-width: 2.75em; }
-.waivers-glance__count { font-size: var(--text-sm); font-weight: 700; font-variant-numeric: tabular-nums; }
-.waivers-glance__arrows { display: inline-flex; align-items: center; line-height: 1; }
-.waivers-glance__arrow { font-size: var(--text-sm); font-weight: 700; }
-.waivers-glance__arrow--in { color: var(--data-positive); }
-.waivers-glance__arrow--out { color: var(--data-negative); }
+/* Move count — total swaps for the team, rendered as the shared tonal
+ * `.waivers-pts` chip (brand tint behind the number, same language as the
+ * points chips below). The old paired ↑/↓ arrow glyphs were decorative
+ * only and have been removed. */
+.waivers-glance__counts { display: inline-flex; align-items: center; justify-content: flex-end; flex: 0 0 auto; min-width: 2.75em; }
 .waivers-glance__crests { display: inline-flex; flex: 0 0 auto; }
 .waivers-glance__crest {
   display: inline-flex;

@@ -12,19 +12,18 @@ import './WaiversPanel.css'
 /* (Mockup.jsx → Moves › Waivers). Real league data + real crests:      */
 /*  • player CLUB crests  → <PlayerKit badgeUrl> (official PL badge URL) */
 /*  • fantasy-team crests → <TeamAvatar> (team logo atom)               */
-/*  • position chips      → element_type-derived pos (G/D/M/F)          */
+/*  • position chips      → element_type-derived pos (GKP/DEF/MID/FWD)  */
 /*  • clickable names     → <ClickablePlayerName> (tap-to-detail)       */
 /* =================================================================== */
 
-const POS_LETTER = { GKP: 'G', DEF: 'D', MID: 'M', FWD: 'F' }
-
-/** Single-letter position chip (G/D/M/F) beside the player name (Players-Wire style). */
+/** Boxed short-position badge (GKP/DEF/MID/FWD) beside the player name —
+ *  same recipe as the player-detail hero badge (`.pdetail-p__hero-pos`). */
 function WvPosChip({ pos }) {
   if (!pos) return null
-  const letter = POS_LETTER[pos] ?? String(pos).slice(0, 1)
+  const label = String(pos).toUpperCase()
   return (
-    <span className={`waivers-pos-chip waivers-pos-chip--${pos}`} title={pos} aria-label={pos}>
-      {letter}
+    <span className="waivers-pos-chip" title={label} aria-label={label}>
+      {label}
     </span>
   )
 }
@@ -298,10 +297,11 @@ function WeeklyWaiversGlance({ groups, teamLogoMap, kitIndexByEntry }) {
                     ) : null}
                   </span>
                   <span className="waivers-glance__counts">
-                    <span className="waivers-glance__count">{ins.length}</span>
-                    <span className="waivers-glance__arrows" aria-hidden="true">
-                      <span className="waivers-glance__arrow waivers-glance__arrow--in">↑</span>
-                      <span className="waivers-glance__arrow waivers-glance__arrow--out">↓</span>
+                    <span
+                      className="waivers-glance__count waivers-pts"
+                      aria-label={`${ins.length} ${ins.length === 1 ? 'move' : 'moves'}`}
+                    >
+                      {ins.length}
                     </span>
                   </span>
                   <span

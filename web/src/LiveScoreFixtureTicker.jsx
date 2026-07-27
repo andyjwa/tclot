@@ -13,19 +13,8 @@ const LIVE_TICKER_STICKER_SRCS = [1, 2, 3].map((i) => {
   return `${base}live-ticker-stickers/sticker-${i}.png`
 })
 
-function ramistSlotForInsertIndex(insertIndex) {
-  return insertIndex % 4
-}
-
-function ramistNodeForSlot(slot, key) {
-  if (slot === 0) {
-    return (
-      <span key={key} className="live-score-ticker__ramist" aria-hidden="true">
-        Tery is a Racist
-      </span>
-    )
-  }
-  const src = LIVE_TICKER_STICKER_SRCS[slot - 1]
+function stickerNodeForInsertIndex(insertIndex, key) {
+  const src = LIVE_TICKER_STICKER_SRCS[insertIndex % LIVE_TICKER_STICKER_SRCS.length]
   return (
     <img
       key={key}
@@ -139,11 +128,10 @@ export function LiveScoreFixtureTicker({
       )
       namesSeen += 2
       if (namesSeen % TICKER_NAMES_PER_INSERT === 0 && namesSeen > 0) {
-        const slot = ramistSlotForInsertIndex(insertIndex)
-        insertIndex += 1
         nodes.push(
-          ramistNodeForSlot(slot, `ramist-${keySuffix}-${insertIndex}-${namesSeen}`),
+          stickerNodeForInsertIndex(insertIndex, `sticker-${keySuffix}-${insertIndex}-${namesSeen}`),
         )
+        insertIndex += 1
       }
     }
     return nodes

@@ -178,8 +178,8 @@ export function LiveStandingsTable({
                   <tr className={rowClass || undefined}>
                     <td className="col-rank">
                       {row.liveRank === 8 ? (
-                        <span role="img" className="standings-rank-8" aria-label="8">
-                          🧩
+                        <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
+                          L
                         </span>
                       ) : (
                         row.liveRank
@@ -309,8 +309,8 @@ export function LiveStandingsTable({
                 <tr className={rowClass || undefined}>
                   <td className="col-rank">
                     {row.liveRank === 8 ? (
-                      <span role="img" className="standings-rank-8" aria-label="8">
-                        🧩
+                      <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
+                        L
                       </span>
                     ) : (
                       row.liveRank

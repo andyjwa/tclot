@@ -4,11 +4,11 @@
 /* A frosted, full-width bar pinned to the bottom edge on mobile       */
 /* (≤1080px). Five inline slots: Table · Moves · [centre] · Players ·  */
 /* More. The bar is OPAQUE (var(--fm-bg)) so scrolling content never   */
-/* bleeds through it. The centre is an inline circle (never raised)    */
+/* bleeds through it. The centre is an inline chip (never raised)      */
 /* whose skin follows the season phase via the `data-gwstate` attr:    */
-/*   pre  → "26/27" film icon, no purple                               */
-/*   live → purple brand circle + pulsing white core dot               */
-/*   over → single static green dot, muted label                       */
+/*   pre  → "26/27" film icon, no accent                               */
+/*   live → solid green Geist Mono "LIVE" chip + blinking tick         */
+/*   over → muted mono "FT GW{n}" chip, muted label                    */
 /* Desktop (≥1081px) hides it and uses `<DashboardNav variant="top"/>`.*/
 /* Unique `.mobile-tab-bar` class prefix so it doesn't collide with    */
 /* the legacy `.dashboard-nav--bottom` / `.glass-bottom-nav` rules.    */
@@ -123,89 +123,111 @@
     display: block;
   }
 
-  /* Shared live/over dot. Hidden in the preseason skin (film icon shown
-   * instead). Sized + coloured per state below. */
-  .mobile-tab-bar__livedot {
-    position: relative;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+  /* ---- Centre chip (live / FT) ------------------------------------ */
+  /* Options D (live) + E (FT) from the scorestab mockup sheet
+   * (web/mockup-shots/scorestab-options.html). A Geist Mono chip living
+   * in the same 28px content zone as the sibling icons — bar geometry
+   * and height are unchanged. Colours ride theme tokens: the live chip
+   * background tracks --fm-win (bright mint on the dark themes, deep
+   * pitch green on light — same mapping under the Scorebook paint), and
+   * the chip text colour is exposed as --tab-live-chip-fg so
+   * PaintPreview.css can recolour it cream/ink per paint theme. */
+  .mobile-tab-bar {
+    --tab-live-chip-bg: var(--fm-win, #16a34a);
+    /* Dark default: near-black ink on the bright mint chip. */
+    --tab-live-chip-fg: #0c120e;
   }
 
-  .mobile-tab-bar__livedot::after {
-    content: '';
-    position: absolute;
-    inset: -5px;
+  .fotmob[data-theme='light'] .mobile-tab-bar {
+    /* Light default: white on the deep green chip. */
+    --tab-live-chip-fg: #ffffff;
+  }
+
+  .mobile-tab-bar__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    line-height: 1;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mobile-tab-bar__chip--live {
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    padding: 3px 6px 2.5px;
+    border-radius: 5px;
+    background: var(--tab-live-chip-bg);
+    color: var(--tab-live-chip-fg);
+  }
+
+  .mobile-tab-bar__chip-tick {
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.65);
+    background: currentColor;
+    animation: mobile-tab-bar-blink 1.4s ease-in-out infinite;
+  }
+
+  .mobile-tab-bar__chip--ft {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 4px 7px 3.5px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+
+  /* Chip states let the fab hug its content (base is a 30px circle for
+   * the preseason film icon). Height stays 28px — bar height unchanged. */
+  .mobile-tab-bar[data-gwstate='live'] .mobile-tab-bar__fab,
+  .mobile-tab-bar[data-gwstate='over'] .mobile-tab-bar__fab {
+    width: auto;
+    min-width: 30px;
+    border-radius: 8px;
   }
 
   .mobile-tab-bar__center .mobile-tab-bar__label {
     color: var(--text-strong);
   }
 
-  /* PRE — plain "26/27" tab, no purple, in line with the others. */
+  /* PRE — plain "26/27" tab, no accent, in line with the others. */
   .mobile-tab-bar[data-gwstate='pre'] .mobile-tab-bar__fab.is-active {
     color: var(--tclot-logo-purple);
   }
 
-  /* LIVE — purple brand circle, white core dot, pulsing ring, purple label. */
-  .mobile-tab-bar[data-gwstate='live'] .mobile-tab-bar__fab {
-    width: 46px;
-    height: 46px;
-    margin-bottom: 2px;
-    background: var(--brand-grad);
-    color: #fff;
-    box-shadow:
-      0 6px 16px color-mix(in srgb, var(--tclot-logo-purple) 42%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, 0.32);
-  }
-
-  .mobile-tab-bar[data-gwstate='live'] .mobile-tab-bar__livedot {
-    background: #fff;
-    box-shadow: 0 0 0 2px color-mix(in srgb, #16a34a 70%, transparent);
-  }
-
-  .mobile-tab-bar[data-gwstate='live'] .mobile-tab-bar__livedot::after {
-    animation: mobile-tab-bar-pulse 1.9s ease-out infinite;
-  }
-
+  /* LIVE — accent label under the green chip. */
   .mobile-tab-bar[data-gwstate='live'] .mobile-tab-bar__center .mobile-tab-bar__label {
     color: var(--tclot-logo-purple);
   }
 
-  /* OVER — single static green dot, no purple, no pulse, muted label. */
-  .mobile-tab-bar[data-gwstate='over'] .mobile-tab-bar__livedot {
-    background: #16a34a;
-  }
-
-  .mobile-tab-bar[data-gwstate='over'] .mobile-tab-bar__livedot::after {
-    display: none;
-  }
-
+  /* OVER — muted label under the muted FT chip. */
   .mobile-tab-bar[data-gwstate='over'] .mobile-tab-bar__center .mobile-tab-bar__label {
     color: var(--text-muted);
   }
 
-  @keyframes mobile-tab-bar-pulse {
-    0% {
-      transform: scale(0.55);
-      opacity: 0.85;
-    }
+  @keyframes mobile-tab-bar-blink {
+    0%,
     100% {
-      transform: scale(1.6);
-      opacity: 0;
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
     }
   }
 
-  /* Reduced motion — drop the live pulse (parity with the old FAB nav). */
+  /* Reduced motion — drop the live blink (parity with the old FAB nav). */
   @media (prefers-reduced-motion: reduce) {
     .mobile-tab-bar__btn,
     .mobile-tab-bar__fab,
     .mobile-tab-bar__ico {
       transition: none;
     }
-    .mobile-tab-bar[data-gwstate='live'] .mobile-tab-bar__livedot::after {
+    .mobile-tab-bar__chip-tick {
       animation: none;
     }
   }

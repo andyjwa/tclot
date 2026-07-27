@@ -14,11 +14,15 @@
  *   - PRESEASON (status 'pre-season' / 'unknown'): a "26/27" skin — film/clapper
  *     icon + label "26/27", NO purple, in line with the other tabs. Routes to
  *     the Preseason hub (`dashboardView 'preseason'`).
- *   - LIVE GW (status 'live' — deadline passed, GW not finished): purple
- *     brand-gradient circle behind a white core dot with a pulsing ring; label
- *     "Live" (purple). Routes to FPL Live (`dashboardView 'fplLive'`).
- *   - GW OVER (status 'idle' — current GW finalized, between GWs): NO purple, NO
- *     pulse — a single static green dot; label "Scores" (muted). Routes to FPL
+ *   - LIVE GW (status 'live' — deadline passed, GW not finished): a solid
+ *     green Geist Mono "LIVE" chip with a subtly blinking tick (option D of
+ *     the scorestab mockup sheet); label "Live" (accent). Routes to FPL Live
+ *     (`dashboardView 'fplLive'`).
+ *   - GW OVER (status 'idle' — current GW finalized, between GWs): a muted
+ *     mono "FT GW{n}" chip (option E of the sheet), where {n} is
+ *     `liveStatus.lastFinishedGw` — the same field the brand header's
+ *     "GW {n} complete" strip uses. Falls back to a bare "FT" when the GW
+ *     number is unavailable. No pulse; label "Scores" (muted). Routes to FPL
  *     Live (`dashboardView 'fplLive'`).
  *
  * Heritage ('hall') and Settings ('settings') live behind More (the existing
@@ -71,6 +75,13 @@ export function MobileBottomNav({ dashboardView, onSelect, liveStatus }) {
   const center = CENTER_BY_STATE[gwState]
   const centerActive = dashboardView === center.view
 
+  /** Completed-GW number for the FT chip. Sourced from the same
+   * `deriveBrandHeaderStatus` result that renders "GW {n} complete" in the
+   * brand header, so the two never disagree. Null → bare "FT" chip. */
+  const ftGw = Number.isFinite(Number(liveStatus?.lastFinishedGw))
+    ? Number(liveStatus.lastFinishedGw)
+    : null
+
   // "More" stays lit while the user is on any destination reached through it
   // (the More page itself, Heritage, or Settings).
   const moreActive =
@@ -104,8 +115,21 @@ export function MobileBottomNav({ dashboardView, onSelect, liveStatus }) {
               <span className="mobile-tab-bar__preicon" aria-hidden>
                 <NavIcon name="film" size={20} />
               </span>
+            ) : gwState === 'live' ? (
+              <span
+                className="mobile-tab-bar__chip mobile-tab-bar__chip--live"
+                aria-hidden
+              >
+                <i className="mobile-tab-bar__chip-tick" />
+                LIVE
+              </span>
             ) : (
-              <span className="mobile-tab-bar__livedot" aria-hidden />
+              <span
+                className="mobile-tab-bar__chip mobile-tab-bar__chip--ft"
+                aria-hidden
+              >
+                {ftGw != null ? `FT GW${ftGw}` : 'FT'}
+              </span>
             )}
           </button>
           <span className="mobile-tab-bar__label">{center.label}</span>

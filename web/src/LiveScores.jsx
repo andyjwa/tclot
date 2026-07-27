@@ -1625,8 +1625,13 @@ export function LiveScores({
 
       <section
         className="tile tile--compact player-contrib-tile"
-        aria-label="FPL live scores"
+        aria-labelledby="player-contrib-heading"
       >
+        <div className="tile-head-row tile-head-row--tight">
+          <h2 id="player-contrib-heading" className="tile-title tile-title--sm">
+            Points Feed
+          </h2>
+        </div>
         <PlayerContributions
           leagueId={leagueId}
           gameweek={gameweek}

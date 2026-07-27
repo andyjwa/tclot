@@ -1,0 +1,511 @@
+/*
+ * TCLOT "Scorebook" repaint — PREVIEW FLAG ONLY (`?paint=1`, sticky via
+ * localStorage; `?paint=0` turns it off).
+ *
+ * The chosen rebrand system (gallery direction 15 + Schibsted Grotesk, Swiss
+ * underline menu) applied to the LIVE app as token overrides. No selector in
+ * this file changes geometry, layout, or behavior — colours, font and line
+ * treatments only. Deleting this file (and its main.jsx wiring) restores the
+ * current look exactly.
+ *
+ * Highlight contract:
+ *   - Chrome/selection (tabs, pills, focus, wordmark): racing green.
+ *   - Wins / live / positive: bright pitch green (unchanged semantics).
+ *   - Losses / deficits / negative: rust (replaces crimson).
+ *   - Draws / warnings / pending: gold.
+ *   - Special callouts (waivers, villain narrative): lilac (replaces violet).
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap');
+
+/* ---------------- body-level tokens (index.css layer) ---------------- */
+
+body[data-tclot-paint='1'] {
+  --tclot-font-ui: 'Schibsted Grotesk';
+  /* Hero/header bands: racing green replaces the violet gradient. */
+  --tclot-header-grad: linear-gradient(160deg, #17402f 0%, #1f4a38 55%, #2a5c46 100%);
+  --tclot-header-solid: #1f4a38;
+}
+
+/* Dark body shell */
+body[data-tclot-paint='1']:not([data-tclot-theme='light']) {
+  --text: rgba(233, 236, 229, 0.9);
+  --text-h: #f4f6f0;
+  --bg: #121814;
+  --border: #2c362e;
+  background: #121814;
+}
+
+/* Light body shell — Scorebook paper */
+body[data-tclot-paint='1'][data-tclot-theme='light'] {
+  --text: rgba(31, 42, 31, 0.92);
+  --text-h: #1a231a;
+  --bg: #f6f1e2;
+  --border: #ddd5b8;
+  background: #f6f1e2;
+}
+
+/* ---------------- .fotmob dark defaults ---------------- */
+
+body[data-tclot-paint='1'] .fotmob {
+  --fm-bg: #121814;
+  --fm-card: #1a211c;
+  --fm-border: #2c362e;
+  --fm-text: rgba(233, 236, 229, 0.88);
+  --fm-text-strong: #f4f6f0;
+  --fm-muted: rgba(233, 236, 229, 0.55);
+  --fm-surface-2: #212a23;
+  --fm-row-hi: #263128;
+  --fm-table-head: #212a23;
+  --fm-standings-cut: #3a463b;
+
+  /* Chrome/selection accent — mint-leaning green readable on dark. */
+  --tclot-logo-purple: #8fc9a8;
+  --fm-dashboard-nav-active-bg: var(--tclot-header-grad);
+  --fm-dashboard-nav-active-glow: 0 3px 20px rgba(31, 74, 56, 0.55);
+  --fm-nav-hover-bg: color-mix(in srgb, #8fc9a8 18%, transparent);
+  --fm-nav-hover-border: #8fc9a8;
+  --fm-nav-hover-text: #d9ecdf;
+  --dash-nav-tab-active: #f4f6f0;
+  --dash-nav-tab-line: #8fc9a8;
+  --dash-nav-tab-idle: rgba(233, 236, 229, 0.78);
+  --pill-active-bg: color-mix(in srgb, rgba(143, 201, 168, 0.2) 58%, var(--fm-card));
+  --pill-active-fg: var(--fm-text-strong);
+  --pill-active-border: color-mix(in srgb, #8fc9a8 48%, var(--fm-border));
+  --pill-idle-hover-bg: rgba(255, 255, 255, 0.06);
+  --brand: #8fc9a8;
+  --brand-tint: color-mix(in srgb, #8fc9a8 14%, transparent);
+  --brand-grad: var(--tclot-header-grad);
+
+  /* Data semantics — wins bright green, losses rust, draws/warnings gold. */
+  --fm-win: #34d399;
+  --fm-draw: #a3a89b;
+  --fm-loss: #e08a5e;
+  --fm-loss-dot: #d97a4e;
+  --fm-standings-8th-bg: color-mix(in srgb, #d97a4e 10%, #1a211c);
+  --data-positive: #34d399;
+  --data-negative: #d97a4e;
+  --data-neutral: #a3a89b;
+  --data-warning: #d9a441;
+
+  /* Narrative colours — hero gold, villain lilac (replaces violet). */
+  --live-hero-color: #d9a441;
+  --live-hero-strong: #b8862e;
+  --live-hero-tint: color-mix(in srgb, #d9a441 14%, transparent);
+  --live-villain-color: #a99bd1;
+  --live-villain-strong: #8f7fc0;
+  --live-villain-tint: color-mix(in srgb, #a99bd1 14%, transparent);
+
+  /* Phase-1 surface stack */
+  --bg: #121814;
+  --surface: #1a211c;
+  --surface-2: #212a23;
+  --border: #2c362e;
+  --text: #dfe3da;
+  --text-strong: #f4f6f0;
+  --text-muted: #97a096;
+  --row-hi: #263128;
+}
+
+/* ---------------- .fotmob light theme — Scorebook paper ---------------- */
+
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] {
+  --fm-bg: #f6f1e2;
+  --fm-card: #fdfaf0;
+  --fm-border: #ddd5b8;
+  --fm-text: rgba(31, 42, 31, 0.92);
+  --fm-text-strong: #1a231a;
+  --fm-muted: #77775f;
+  --fm-surface-2: #ece5cf;
+  --fm-row-hi: #f1ebd9;
+  --fm-table-head: #ece5cf;
+  --fm-standings-cut: #cfc7a9;
+
+  /* Chrome/selection accent — deep racing green. */
+  --tclot-logo-purple: #1f4a38;
+  --fm-dashboard-nav-active-bg: var(--tclot-header-grad);
+  --fm-dashboard-nav-active-glow: 0 2px 14px rgba(31, 74, 56, 0.26);
+  --fm-nav-hover-bg: color-mix(in srgb, #1f4a38 8%, #fdfaf0);
+  --fm-nav-hover-border: #1f4a38;
+  --fm-nav-hover-text: #17402f;
+  --dash-nav-tab-active: #1a231a;
+  --dash-nav-tab-line: #1f4a38;
+  --dash-nav-tab-idle: rgba(31, 42, 31, 0.68);
+  --pill-active-bg: #dae5da;
+  --pill-active-fg: #1a231a;
+  --pill-active-border: color-mix(in srgb, #1f4a38 38%, #ddd5b8);
+  --pill-idle-hover-bg: rgba(31, 42, 31, 0.06);
+  --brand: #1f4a38;
+  --brand-tint: color-mix(in srgb, #1f4a38 11%, transparent);
+  --brand-grad: var(--tclot-header-grad);
+
+  /* Data semantics */
+  --fm-win: #12844e;
+  --fm-draw: #8a8871;
+  --fm-loss: #b04f26;
+  --fm-loss-dot: #b04f26;
+  --fm-standings-8th-bg: color-mix(in srgb, #b04f26 7%, #fdfaf0);
+  --data-positive: #12844e;
+  --data-negative: #b04f26;
+  --data-neutral: #8a8871;
+  --data-warning: #a87b24;
+
+  /* Narrative colours */
+  --live-hero-color: #a87b24;
+  --live-hero-strong: #8a6218;
+  --live-hero-tint: color-mix(in srgb, #a87b24 13%, transparent);
+  --live-villain-color: #8f7fc0;
+  --live-villain-strong: #6f5fa8;
+  --live-villain-tint: color-mix(in srgb, #8f7fc0 13%, transparent);
+
+  /* Phase-1 surface stack */
+  --bg: #f6f1e2;
+  --surface: #fdfaf0;
+  --surface-2: #ece5cf;
+  --border: #ddd5b8;
+  --text: #2a332a;
+  --text-strong: #1a231a;
+  --text-muted: #77775f;
+  --row-hi: #f1ebd9;
+}
+
+/* Pitch/accent greens shared by both themes (tables, FPL-style accents). */
+body[data-tclot-paint='1'] .fotmob {
+  --fm-pitch: #12844e;
+  --fm-accent: #12844e;
+  --fm-accent-gradient: #12844e;
+  --fm-dash-gradient: #12844e;
+  --fm-accent-glow: 0 3px 18px rgba(18, 132, 78, 0.3);
+}
+
+/* ================================================================== */
+/* Portalled overlays — these mount OUTSIDE `.fotmob` and re-declare   */
+/* their own token sets with hardcoded white/violet, so the shell      */
+/* overrides above never reach them. Repaint each scope.               */
+/* ================================================================== */
+
+/* ---- Player overlays: full-screen sheet + slide-across ---- */
+/* Light (their default) — Scorebook paper instead of flat white. */
+body[data-tclot-paint='1'] .player-detail-overlay-shell,
+body[data-tclot-paint='1'] .live-player-slide {
+  --fm-surface: #fdfaf0;
+  --fm-surface-0: #fdfaf0;
+  --fm-card: #fdfaf0;
+  --fm-bg: #f6f1e2;
+  --fm-bg-root: #f6f1e2;
+  --fm-text: rgba(31, 42, 31, 0.92);
+  --fm-text-strong: #1a231a;
+  --fm-muted: #77775f;
+  --fm-border: #ddd5b8;
+  --fm-table-head: #ece5cf;
+  --fm-surface-2: #ece5cf;
+  --tclot-logo-purple: #1f4a38;
+  --fm-pitch: #12844e;
+  --fm-accent: #12844e;
+  --fm-win: #12844e;
+  --fm-loss: #b04f26;
+  --fm-loss-dot: #b04f26;
+}
+
+/* Dark */
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .player-detail-overlay-shell,
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-player-slide {
+  --fm-surface: #1a211c;
+  --fm-surface-0: #1a211c;
+  --fm-card: #1a211c;
+  --fm-bg: #121814;
+  --fm-bg-root: #121814;
+  --fm-text: rgba(233, 236, 229, 0.88);
+  --fm-text-strong: #f4f6f0;
+  --fm-muted: rgba(233, 236, 229, 0.55);
+  --fm-border: #2c362e;
+  --fm-table-head: #212a23;
+  --fm-surface-2: #212a23;
+  --tclot-logo-purple: #8fc9a8;
+  --fm-pitch: #2aa06b;
+  --fm-accent: #2aa06b;
+  --fm-win: #34d399;
+  --fm-loss: #e08a5e;
+  --fm-loss-dot: #d97a4e;
+}
+
+/* ---- Performance tab columns picker checkboxes ----
+   Native checkboxes are UA-painted (white box, faint grey border) and
+   ignore the surface tokens — near-invisible on cream paper and off
+   Scorebook palette. Repaint them as the app's standard custom check
+   (same 14px box as `.players-portrait-pill__check`) in paint colours.
+   Scoped to the paint flag only; flag-off keeps the native control. */
+body[data-tclot-paint='1'] .pperf-popover__opt input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, #77775f 50%, #ddd5b8);
+  background: #fdfaf0;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+body[data-tclot-paint='1'] .pperf-popover__opt input[type='checkbox']:checked {
+  background: #1f4a38;
+  border-color: #1f4a38;
+}
+body[data-tclot-paint='1'] .pperf-popover__opt input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+  background-size: 11px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .pperf-popover__opt input[type='checkbox'] {
+  border-color: color-mix(in srgb, rgba(233, 236, 229, 0.55) 50%, #2c362e);
+  background: #212a23;
+}
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .pperf-popover__opt input[type='checkbox']:checked {
+  background: #8fc9a8;
+  border-color: #8fc9a8;
+}
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .pperf-popover__opt input[type='checkbox']:checked::after {
+  /* Ink check on the mint accent — white-on-mint is unreadable. */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23121814' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+}
+
+/* ---- Team / manager card (tc-card declares its own --tc-* set) ---- */
+body[data-tclot-paint='1'] .tc-card {
+  --tc-brand: #1f4a38;
+  --tc-surface: #fdfaf0;
+  --tc-surface-2: #ece5cf;
+  --tc-border: #ddd5b8;
+  --tc-text: rgba(31, 42, 31, 0.92);
+  --tc-text-strong: #1a231a;
+  --tc-text-muted: #77775f;
+  --tc-pos: #12844e;
+  --tc-neg: #b04f26;
+  --tc-shadow: rgba(31, 42, 31, 0.08);
+}
+
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .tc-card {
+  --tc-brand: #8fc9a8;
+  --tc-surface: #1a211c;
+  --tc-surface-2: #212a23;
+  --tc-border: #2c362e;
+  --tc-text: rgba(233, 236, 229, 0.88);
+  --tc-text-strong: #f4f6f0;
+  --tc-text-muted: rgba(233, 236, 229, 0.55);
+  --tc-pos: #34d399;
+  --tc-neg: #d97a4e;
+  --tc-shadow: rgba(0, 0, 0, 0.26);
+}
+
+/* ---- League info modal (portalled, hardcodes --brand violet) ---- */
+body[data-tclot-paint='1'] .league-info-modal-shell {
+  --brand: #8fc9a8;
+  --surface: #1a211c;
+  --surface-2: #212a23;
+  --border: #2c362e;
+  --text: #dfe3da;
+  --text-strong: #f4f6f0;
+  --text-muted: #97a096;
+}
+
+body[data-tclot-paint='1'][data-tclot-theme='light'] .league-info-modal-shell {
+  --brand: #1f4a38;
+  --surface: #fdfaf0;
+  --surface-2: #ece5cf;
+  --border: #ddd5b8;
+  --text: #2a332a;
+  --text-strong: #1a231a;
+  --text-muted: #77775f;
+}
+
+/* ---- Live fixture card: assist event chip was hardcoded violet ---- */
+body[data-tclot-paint='1'] .lfc-events__ico--a {
+  background: rgba(143, 127, 192, 0.16);
+  color: #6f5fa8;
+}
+
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .lfc-events__ico--a {
+  background: rgba(169, 155, 209, 0.18);
+  color: #a99bd1;
+}
+
+/* ---- Points Feed: pos/neg points chips (Variant C tonal tints) ----
+ * App.css tints these with ~16%-alpha color over the card, which
+ * composites muddy on the cream paper. Use opaque tonal mixes instead. */
+body[data-tclot-paint='1'] .live-contrib-row__pts--pos {
+  color: #1f4a38;
+  background: color-mix(in srgb, #1f4a38 10%, #ffffff);
+}
+
+body[data-tclot-paint='1'] .live-contrib-row__pts--neg {
+  color: #b04f26;
+  background: color-mix(in srgb, #b04f26 10%, #ffffff);
+}
+
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--pos {
+  color: #8fc9a8;
+  background: color-mix(in srgb, #8fc9a8 16%, #1a211c);
+}
+
+body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--neg {
+  color: #d97a4e;
+  background: color-mix(in srgb, #d97a4e 16%, #1a211c);
+}
+
+/* ---- Desktop brand-header banner: racing-green band ----
+ * Flag-off desktop renders the brand header as a pale strip (frosted
+ * white tile in light theme, cream `--surface-2` status strip) which
+ * reads washed out on the Scorebook paper. Repaint it as the same
+ * racing-green band mobile already uses (`max-width: 720px` block in
+ * App.css paints `--brand-grad`), so both breakpoints share the brand
+ * treatment. Colours only — geometry, spacing and the crest images are
+ * untouched. Mobile keeps its existing rules (its band is already green
+ * under the flag because `--brand-grad` maps to the green gradient). */
+@media (min-width: 721px) {
+  /* Band: green gradient across the whole tile (brand row + status
+   * strip zone). The light-theme selector must also be listed to beat
+   * App.css's frosted-white rule
+   * (`.fotmob[data-theme='light'] .tile.tile--brand-header`) on
+   * specificity, and to drop its backdrop blur. */
+  body[data-tclot-paint='1'] .tile.tile--brand-header,
+  body[data-tclot-paint='1'] .fotmob[data-theme='light'] .tile.tile--brand-header {
+    /* Flat deep green (the gradient's darkest stop) instead of
+     * `--tclot-header-grad` — user feedback: the gradient band next to
+     * the ink-washed status strip read as "two different banners".
+     * Matches the unified mobile band below. */
+    background: #17402f;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: #f4f6f0;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  }
+
+  /* Wordmark pill: the green-gradient pill vanishes on the green band,
+   * so invert it — cream Scorebook card surface with ink-green type.
+   * The lion SVG renders with currentColor and picks up the ink green. */
+  body[data-tclot-paint='1'] .brand-header__pill {
+    background: #fdfaf0;
+    color: #17402f;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35) inset,
+      0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+  body[data-tclot-paint='1'] .brand-header__wordmark {
+    color: #17402f;
+  }
+
+  /* Season meta: muted cream over the band. */
+  body[data-tclot-paint='1'] .brand-header__meta {
+    color: rgba(244, 246, 240, 0.75);
+  }
+
+  /* Status strip: same deep-green surface as the band — only a faint
+   * ink wash + hairline divider set it apart, so header + strip read as
+   * ONE banner (user feedback), cream text. */
+  body[data-tclot-paint='1'] .brand-header__status-strip {
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(244, 246, 240, 0.75);
+  }
+  body[data-tclot-paint='1'] .brand-header__status-strong {
+    color: #f4f6f0;
+  }
+  body[data-tclot-paint='1'] .brand-header__status-mono {
+    color: #f4f6f0;
+  }
+  /* Live dot: default #16a34a fill is too dark on the green band —
+   * lift it to mint via the NavIcon fill hook. */
+  body[data-tclot-paint='1'] .brand-header__status-dot {
+    --nav-pulse-dot-fill: #8fc9a8;
+  }
+}
+
+/* ---- Mobile brand-header banner: same unified deep green ----
+ * App.css's `max-width: 720px` block paints the band with
+ * `var(--brand-grad)` (the racing-green gradient under this theme) and
+ * the status strip with rgba(0,0,0,0.16) — the same "two banners" split
+ * the user flagged on desktop. Flatten the band to the identical solid
+ * #17402f and use the same faint wash + hairline as desktop so both
+ * breakpoints read as one banner. Colours only; the mobile geometry
+ * (negative margins, safe-area padding, frosted pill) stays in App.css. */
+@media (max-width: 720px) {
+  body[data-tclot-paint='1'] .tile.tile--brand-header,
+  body[data-tclot-paint='1'] .fotmob[data-theme='light'] .tile.tile--brand-header {
+    background: #17402f;
+  }
+  body[data-tclot-paint='1'] .brand-header__status-strip {
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* ---- Form-dot tooltip (shared `data-tooltip` bubble + caret) ----
+ * App.css paints a pure-black #1a1a1a bubble with white text for the
+ * hover tooltip on Standings form-guide dots (.form-dot), the Live
+ * Table GW dots (.live-gw-dot) and Last-5 dots (.live-form-dot). Black
+ * reads off-theme on the cream paper. Recolour only — size, padding,
+ * radius, typography and positioning stay in App.css. */
+
+/* Legibility bump (user feedback: bubble text too small to read).
+ * App.css sizes the bubble at 0.72rem / 5px 9px; lift to ~12.8px with a
+ * touch more padding under the flag only. Both themes. The bubble stays
+ * `white-space: nowrap` from App.css, so it never wraps — it just grows
+ * a little wider; anchoring stays centred via the existing
+ * translateX(-50%), and the caret is positioned independently so it
+ * stays attached. */
+body[data-tclot-paint='1'] .fotmob .form-dot[data-tooltip]::before,
+body[data-tclot-paint='1'] .fotmob .live-form-dot[data-tooltip]::before,
+body[data-tclot-paint='1'] .fotmob .live-gw-dot[data-tooltip]::before {
+  font-size: 0.8rem;
+  padding: 6px 11px;
+}
+
+/* Dark (default): cream/ink inversion — a light bubble pops cleanly
+ * against the dark table surfaces. */
+body[data-tclot-paint='1'] .fotmob .form-dot[data-tooltip]::before,
+body[data-tclot-paint='1'] .fotmob .live-form-dot[data-tooltip]::before,
+body[data-tclot-paint='1'] .fotmob .live-gw-dot[data-tooltip]::before {
+  background: #ece5cf;
+  color: #1a231a;
+  border-color: color-mix(in srgb, #8fc9a8 35%, #ece5cf);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+body[data-tclot-paint='1'] .fotmob .form-dot[data-tooltip]::after,
+body[data-tclot-paint='1'] .fotmob .live-form-dot[data-tooltip]::after,
+body[data-tclot-paint='1'] .fotmob .live-gw-dot[data-tooltip]::after {
+  border-top-color: #ece5cf;
+}
+
+/* Light: deep racing-green bubble with cream text. */
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .form-dot[data-tooltip]::before,
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .live-form-dot[data-tooltip]::before,
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .live-gw-dot[data-tooltip]::before {
+  background: #17402f;
+  color: #f4f6f0;
+  border-color: color-mix(in srgb, #f4f6f0 14%, #17402f);
+  box-shadow: 0 4px 14px rgba(23, 64, 47, 0.28);
+}
+
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .form-dot[data-tooltip]::after,
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .live-form-dot[data-tooltip]::after,
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .live-gw-dot[data-tooltip]::after {
+  border-top-color: #17402f;
+}
+
+/* ---- Mobile bottom nav — centre LIVE chip text ----
+ * The chip background already tracks --fm-win (Scorebook pitch greens:
+ * #34d399 dark / #12844e light), so only the text colour needs the paint
+ * ramp: Scorebook ink on the bright mint chip (dark), cream paper on the
+ * deep green chip (light). Matches the option-D mockup exactly
+ * (web/mockup-shots/scorestab-options.html `--tagfg`). */
+body[data-tclot-paint='1'] .fotmob .mobile-tab-bar {
+  --tab-live-chip-fg: #0f1a13;
+}
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .mobile-tab-bar {
+  --tab-live-chip-fg: #fdfaf0;
+}
