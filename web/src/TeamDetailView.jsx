@@ -115,7 +115,6 @@ export function TeamDetailView({
     heroDef,
     vilVic,
     idToName,
-    idToShort,
     rivalsFor,
   } = data
 
@@ -190,7 +189,7 @@ export function TeamDetailView({
         <div className="tc-sec">
           <div className="tc-sec__h">Story of the season</div>
           <div className="tc-boxes">
-            <div className="tc-box tc-box--brand">
+            <div className="tc-box">
               <div className="tc-box__k">Luck index</div>
               <div className="tc-box__v">{ordinal(luckIdx[id])}</div>
               <div className={`tc-box__sub ${lkPos ? 'v-pos' : 'v-neg'}`}>
@@ -263,8 +262,16 @@ export function TeamDetailView({
             {last5.map((x, i) => (
               <div key={`${x.gw}-${i}`} className="tc-l5__card">
                 <span className="tc-l5__gw">GW{x.gw}</span>
+                <span className="tc-l5__badge" title={idToName[x.oppId]}>
+                  <TeamAvatar
+                    entryId={x.oppId}
+                    name={idToName[x.oppId]}
+                    size="sm"
+                    logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </span>
                 <span className={`tc-l5__res res-${x.res}`}>{x.res}</span>
-                <span className="tc-l5__opp">{idToShort[x.oppId]}</span>
                 <span className="tc-l5__pts">{x.me}</span>
               </div>
             ))}

@@ -247,14 +247,6 @@ body[data-tclot-theme='dark'] .tc-card {
   justify-content: center;
   box-shadow: 0 1px 3px var(--tc-shadow);
 }
-.tc-box--brand {
-  border-color: color-mix(in srgb, var(--tc-brand) 42%, var(--tc-border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--tc-brand) 15%, transparent),
-    color-mix(in srgb, var(--tc-brand) 8%, var(--tc-surface))
-  );
-}
 .tc-box__k {
   font-size: 9px;
   text-transform: uppercase;
@@ -511,35 +503,33 @@ body[data-tclot-theme='dark'] .tc-card {
   color: var(--tc-text-muted);
   letter-spacing: 0.05em;
 }
-.tc-l5__res {
+/* Opponent crest (same TeamAvatar as elsewhere on the card). */
+.tc-l5__badge {
+  display: inline-flex;
+  margin-top: 2px;
+}
+.tc-l5__badge .team-avatar-frame {
   width: 22px;
   height: 22px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  background: #fff;
+  border: none;
+}
+/* W/L/D as plain highlighted text (semantic colors, no bubble). */
+.tc-l5__res {
   font-family: var(--tc-mono);
   font-size: 11px;
   font-weight: 800;
-  color: #fff;
+  line-height: 1;
   margin-top: 2px;
 }
 .res-W {
-  background: var(--tc-pos);
+  color: var(--tc-pos);
 }
 .res-L {
-  background: var(--tc-neg);
+  color: var(--tc-neg);
 }
 .res-D {
-  background: var(--tc-text-muted);
-}
-.tc-l5__opp {
-  font-family: var(--tc-mono);
-  font-size: 10px;
-  font-weight: 700;
   color: var(--tc-text-muted);
-  letter-spacing: 0.03em;
-  margin-top: 2px;
 }
 .tc-l5__pts {
   font-family: var(--tc-mono);
