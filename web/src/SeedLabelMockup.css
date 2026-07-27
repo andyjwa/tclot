@@ -1,0 +1,447 @@
+/*
+ * Seed-label style options (`?seed=1`) — Scorebook paper, local preview only.
+ * Compares quieter treatments for the live face-off "2nd vs 4th" eyebrow
+ * against the current FotMob-style group pill (too big / too loud).
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap');
+
+.seedm {
+  --s-bg: #f6f1e2;
+  --s-surface: #fdfaf0;
+  --s-surface-2: #ece5cf;
+  --s-border: #ddd5b8;
+  --s-ink: #1a231a;
+  --s-text: rgba(31, 42, 31, 0.92);
+  --s-muted: #77775f;
+  --s-brand: #1f4a38;
+  --s-brand-tint: color-mix(in srgb, #1f4a38 11%, transparent);
+  --s-hero: #a87b24;
+  --s-hero-tint: color-mix(in srgb, #a87b24 13%, transparent);
+  --s-win-pill: color-mix(in srgb, #1f4a38 10%, #ffffff);
+  min-height: 100vh;
+  padding: 36px clamp(16px, 3vw, 48px) 64px;
+  background: var(--s-bg);
+  color: var(--s-text);
+  font-family: 'Schibsted Grotesk', Inter, system-ui, sans-serif;
+}
+
+.seedm * { box-sizing: border-box; }
+
+.seedm-top {
+  max-width: 720px;
+  margin: 0 auto 28px;
+}
+
+.seedm-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--s-brand);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.seedm-top h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--s-ink);
+}
+
+.seedm-top p {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--s-muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.seedm-top a {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--s-border);
+  border-radius: 8px;
+  background: var(--s-surface);
+  color: var(--s-ink);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.seedm-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.seedm-card {
+  border: 1px solid var(--s-border);
+  border-radius: 14px;
+  background: var(--s-surface);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(31, 42, 31, 0.05);
+}
+
+.seedm-card--current {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--s-hero) 35%, transparent),
+    0 1px 3px rgba(31, 42, 31, 0.05);
+}
+
+.seedm-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  padding: 12px 16px;
+  background: var(--s-surface-2);
+  border-bottom: 1px solid var(--s-border);
+}
+
+.seedm-card__id {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--s-brand);
+  letter-spacing: 0.04em;
+}
+
+.seedm-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--s-ink);
+}
+
+.seedm-card__tag {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.seedm-card__tag--loud {
+  background: color-mix(in srgb, var(--s-hero) 18%, transparent);
+  color: var(--s-hero);
+}
+
+.seedm-card__tag--quiet {
+  background: var(--s-brand-tint);
+  color: var(--s-brand);
+}
+
+.seedm-card__desc {
+  width: 100%;
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--s-muted);
+}
+
+.seedm-card__preview {
+  padding: 0 0 4px;
+}
+
+/* ── Shared mini face-off row (matches production layout language) ── */
+
+.seedm-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px 14px;
+  color: var(--s-ink);
+}
+
+.seedm-row__side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.seedm-row__side--away {
+  justify-content: flex-end;
+}
+
+.seedm-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--s-surface-2);
+  color: var(--s-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.seedm-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.seedm-row__side--away .seedm-team {
+  flex-direction: row;
+}
+
+.seedm-names {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  position: relative;
+}
+
+.seedm-row__side--away .seedm-names {
+  align-items: flex-end;
+}
+
+.seedm-name {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 7.5rem;
+}
+
+.seedm-award {
+  position: absolute;
+  top: calc(100% + 1px);
+  left: 0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--s-hero-tint);
+  color: var(--s-hero);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.seedm-crest {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--s-border);
+  background:
+    radial-gradient(circle at 35% 30%, #fff8e0 0%, transparent 45%),
+    linear-gradient(145deg, #2a4a38, #1a3024);
+  color: #f6f1e2;
+  display: inline-grid;
+  place-items: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.seedm-crest--alt {
+  background:
+    radial-gradient(circle at 35% 30%, #fff8e0 0%, transparent 45%),
+    linear-gradient(145deg, #6b3a28, #3d2218);
+}
+
+.seedm-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 6px;
+  min-width: 72px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.seedm-score__n {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--s-ink);
+  line-height: 1;
+}
+
+.seedm-score__n--home { text-align: right; }
+.seedm-score__n--away { text-align: left; }
+
+.seedm-score__n--winner {
+  background: var(--s-win-pill);
+  border-radius: 8px;
+  padding: 4px 7px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--s-brand) 12%, transparent);
+}
+
+.seedm-score__sep {
+  color: var(--s-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ============================================================ */
+/* Seed label variants                                          */
+/* ============================================================ */
+
+/* A · Current production (loud FotMob group pill) */
+.seedm-seed--a {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  height: 20px;
+  margin: 9px 0 0 12px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--s-surface-2) 70%, transparent);
+  color: var(--s-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* B · Quiet pill — shorter, mono, less weight */
+.seedm-seed--b {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  height: 15px;
+  margin: 8px 0 0 12px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--s-surface-2);
+  border: 1px solid var(--s-border);
+  color: var(--s-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* C · Bare eyebrow — no chrome */
+.seedm-seed--c {
+  display: block;
+  margin: 8px 0 0 12px;
+  color: var(--s-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* D · Hairline rule under a quiet label */
+.seedm-seed--d {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  margin: 8px 0 0 12px;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--s-border);
+  color: var(--s-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* E · Centered over the score column */
+.seedm-seed--e-wrap {
+  position: relative;
+}
+.seedm-seed--e-wrap .seedm-row {
+  padding-top: 22px;
+}
+.seedm-seed--e {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--s-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* F · Compact ranks only ("2 · 4") */
+.seedm-seed--f {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0 0 12px;
+  color: var(--s-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.seedm-seed--f i {
+  font-style: normal;
+  opacity: 0.55;
+}
+
+/* G · Per-side rank chips beside each name (no top eyebrow) */
+.seedm-rankchip {
+  display: inline-flex;
+  align-items: center;
+  height: 14px;
+  padding: 0 4px;
+  margin-top: 2px;
+  border-radius: 3px;
+  background: var(--s-surface-2);
+  border: 1px solid var(--s-border);
+  color: var(--s-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.seedm-note {
+  max-width: 720px;
+  margin: 22px auto 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--s-border);
+  background: color-mix(in srgb, var(--s-surface) 70%, transparent);
+  color: var(--s-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.seedm-note strong {
+  color: var(--s-ink);
+  font-weight: 650;
+}
+
+@media (max-width: 520px) {
+  .seedm { padding: 24px 12px 48px; }
+  .seedm-name { max-width: 5.5rem; font-size: 14px; }
+  .seedm-score__n { font-size: 18px; }
+}
