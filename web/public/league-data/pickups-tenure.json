@@ -1,6 +1,6 @@
 {
   "generated": "2026-07-18T18:49:39.248Z",
-  "note": "Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed.",
+  "note": "Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed. teamWaiverInTotals.waiverInCount = successful waiver stints (matches waived-out transaction volume); distinctPlayers = unique elements.",
   "lastGwUsed": 38,
   "rows": [
     {
@@ -99,49 +99,57 @@
       "entry": 74425,
       "totalWaiverInPoints": 1157,
       "distinctPlayers": 104,
-      "leagueEntry": 72086
+      "leagueEntry": 72086,
+      "waiverInCount": 128
     },
     {
       "entry": 31812,
       "totalWaiverInPoints": 1151,
       "distinctPlayers": 57,
-      "leagueEntry": 31076
+      "leagueEntry": 31076,
+      "waiverInCount": 62
     },
     {
       "entry": 27040,
       "totalWaiverInPoints": 1075,
       "distinctPlayers": 54,
-      "leagueEntry": 26587
+      "leagueEntry": 26587,
+      "waiverInCount": 77
     },
     {
       "entry": 40240,
       "totalWaiverInPoints": 1072,
       "distinctPlayers": 33,
-      "leagueEntry": 39078
+      "leagueEntry": 39078,
+      "waiverInCount": 36
     },
     {
       "entry": 27870,
       "totalWaiverInPoints": 1030,
       "distinctPlayers": 52,
-      "leagueEntry": 27370
+      "leagueEntry": 27370,
+      "waiverInCount": 58
     },
     {
       "entry": 40385,
       "totalWaiverInPoints": 1025,
       "distinctPlayers": 69,
-      "leagueEntry": 39219
+      "leagueEntry": 39219,
+      "waiverInCount": 96
     },
     {
       "entry": 27134,
       "totalWaiverInPoints": 901,
       "distinctPlayers": 57,
-      "leagueEntry": 26675
+      "leagueEntry": 26675,
+      "waiverInCount": 70
     },
     {
       "entry": 41410,
       "totalWaiverInPoints": 753,
       "distinctPlayers": 63,
-      "leagueEntry": 40206
+      "leagueEntry": 40206,
+      "waiverInCount": 94
     }
   ]
 }

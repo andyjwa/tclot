@@ -447,7 +447,9 @@ async function main() {
     .slice(0, 10)
     .map((r, idx) => ({ rank: idx + 1, ...r }))
 
-  /** Sum tenure pts for every distinct player ever waivered in, grouped by team (entry_id). */
+  /** Sum tenure pts for every waiver-in, grouped by team (entry_id).
+   *  waiverInCount = successful waiver stints (same volume as waiver outs);
+   *  distinctPlayers = unique element ids ever claimed (can be lower when re-waived). */
   const byEntryTeam = new Map()
   for (const v of agg.values()) {
     if (!byEntryTeam.has(v.entry)) {
@@ -455,11 +457,13 @@ async function main() {
         entry: v.entry,
         totalWaiverInPoints: 0,
         distinctPlayers: 0,
+        waiverInCount: 0,
       })
     }
     const t = byEntryTeam.get(v.entry)
     t.totalWaiverInPoints += v.totalPointsForTeam
     t.distinctPlayers += 1
+    t.waiverInCount += v.waiverStints
   }
   const fplEntryToLeagueId = new Map(
     (details.league_entries || [])
@@ -483,7 +487,7 @@ async function main() {
       JSON.stringify(
         {
           generated: new Date().toISOString(),
-          note: 'Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed.',
+          note: 'Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed. teamWaiverInTotals.waiverInCount = successful waiver stints (matches waived-out transaction volume); distinctPlayers = unique elements.',
           lastGwUsed: lastGw,
           rows: top10,
           teamWaiverInTotals,

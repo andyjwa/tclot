@@ -11053,18 +11053,18 @@ const WV_WEEKLY = [
   { team: 'DN',  order: null, moves: [] },
 ]
 
-/* Per-team season totals — both directions. inPts/players mirror
- * pickups-tenure teamWaiverInTotals; outPts/outCount mirror the
- * "waived out — team totals" (sum of dropped GW points). */
+/* Per-team season totals — both directions. inPts from pickups-tenure
+ * teamWaiverInTotals; outPts = sum of dropped GW points. inCount/outCount
+ * are both successful waiver claim counts (same volume per team). */
 const WV_TOTALS = [
-  { team: 'CO',  inPts: 1157, inPlayers: 41, outPts: 98, outCount: 22 },
-  { team: 'SZM', inPts: 1151, inPlayers: 38, outPts: 86, outCount: 19 },
-  { team: 'DB',  inPts: 1075, inPlayers: 35, outPts: 110, outCount: 26 },
-  { team: 'TW',  inPts: 1072, inPlayers: 33, outPts: 74, outCount: 18 },
-  { team: 'ER',  inPts: 1030, inPlayers: 36, outPts: 121, outCount: 28 },
-  { team: 'DN',  inPts: 1025, inPlayers: 40, outPts: 64, outCount: 15 },
-  { team: 'SCC', inPts: 901,  inPlayers: 31, outPts: 92,  outCount: 24 },
-  { team: 'PFO', inPts: 753,  inPlayers: 29, outPts: 58,  outCount: 16 },
+  { team: 'CO',  inPts: 1157, inCount: 128, outPts: 319, outCount: 128 },
+  { team: 'SZM', inPts: 1151, inCount: 62,  outPts: 146, outCount: 62 },
+  { team: 'DB',  inPts: 1075, inCount: 77,  outPts: 173, outCount: 77 },
+  { team: 'TW',  inPts: 1072, inCount: 36,  outPts: 48,  outCount: 36 },
+  { team: 'ER',  inPts: 1030, inCount: 58,  outPts: 142, outCount: 58 },
+  { team: 'DN',  inPts: 1025, inCount: 96,  outPts: 186, outCount: 96 },
+  { team: 'SCC', inPts: 901,  inCount: 70,  outPts: 151, outCount: 70 },
+  { team: 'PFO', inPts: 753,  inCount: 94,  outPts: 219, outCount: 94 },
 ]
 
 /* First waiver pick per GW, newest first (matches the production
@@ -11370,9 +11370,9 @@ function WvTotalsToggle() {
     const mapped = WV_TOTALS.map((r) => ({
       team: r.team,
       value: mode === 'in' ? r.inPts : r.outPts,
-      count: mode === 'in' ? r.inPlayers : r.outCount,
+      count: mode === 'in' ? r.inCount : r.outCount,
       avg: mode === 'in'
-        ? (r.inPts / r.inPlayers)
+        ? (r.inCount ? r.inPts / r.inCount : 0)
         : (r.outCount ? r.outPts / r.outCount : 0),
     }))
     mapped.sort((a, b) => b.value - a.value)
