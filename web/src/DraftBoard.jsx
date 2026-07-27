@@ -347,10 +347,16 @@ export function DraftBoard({
                             <div className="draft-grid__main">
                               <ClubBadge src={p.badgeUrl} className="draft-grid__club" />
                               <span className="draft-grid__id">
-                                <span className="draft-grid__name">
-                                  {renderPlayerName(p, p.playerName)}
+                                <span className="draft-grid__name-line">
+                                  <span className="draft-grid__name">
+                                    {renderPlayerName(p, p.playerName)}
+                                  </span>
+                                  {p.pos ? (
+                                    <span className="draft-pos" title={p.pos} aria-label={p.pos}>
+                                      {p.pos}
+                                    </span>
+                                  ) : null}
                                 </span>
-                                <span className="draft-grid__pos">{p.pos}</span>
                               </span>
                             </div>
                             <div className="draft-grid__foot">
@@ -389,7 +395,11 @@ export function DraftBoard({
                                 <span className="draft-rlist__name">
                                   {renderPlayerName(p, p.playerName)}
                                 </span>
-                                <span className={`draft-pos draft-pos--${p.pos}`}>{p.pos}</span>
+                                {p.pos ? (
+                                  <span className="draft-pos" title={p.pos} aria-label={p.pos}>
+                                    {p.pos}
+                                  </span>
+                                ) : null}
                               </span>
                               <span className="draft-rlist__sub">
                                 <span className="draft-rlist__team">

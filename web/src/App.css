@@ -17642,33 +17642,27 @@ button.live-xp__player-name:focus-visible {
   .draft-rlist { display: none; }
 }
 
-/* Shared position chip */
+/* Shared position chip — same recipe as Waivers / player-detail hero
+ * (`.waivers-pos-chip` / `.pdetail-p__hero-pos`): cream surface, 1px
+ * border, monospace caps. No per-position colour — Scorebook chrome
+ * carries accent, not GKP/DEF/MID/FWD. */
 .draft-pos {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  height: 16px;
-  padding: 0 5px;
+  height: 15px;
+  padding: 0 4px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  border-radius: 3px;
-  border: 1px solid var(--fm-border, #333);
-  background: color-mix(in srgb, var(--fm-text, #fff) 6%, transparent);
-  color: color-mix(in srgb, var(--fm-text, #fff) 62%, transparent);
+  line-height: 1;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
+  background: var(--surface-2, var(--fm-surface-2));
+  color: var(--text-muted, var(--fm-muted));
+  border: 1px solid var(--border, var(--fm-border));
+  border-radius: 3px;
 }
-.draft-pos--GKP { color: #f59e0b; border-color: color-mix(in srgb, #f59e0b 38%, var(--fm-border, #333)); }
-.draft-pos--DEF { color: #22d3ee; border-color: color-mix(in srgb, #22d3ee 38%, var(--fm-border, #333)); }
-.draft-pos--MID { color: #c4b5fd; border-color: color-mix(in srgb, #a78bfa 38%, var(--fm-border, #333)); }
-.draft-pos--FWD { color: #fca5a5; border-color: color-mix(in srgb, #ef4444 38%, var(--fm-border, #333)); }
-.fotmob[data-theme='light'] .draft-pos--GKP { color: #b45309; }
-.fotmob[data-theme='light'] .draft-pos--DEF { color: #0e7490; }
-.fotmob[data-theme='light'] .draft-pos--MID { color: #6d28d9; }
-.fotmob[data-theme='light'] .draft-pos--FWD { color: #b91c1c; }
 
 /* Shared "where are they now" status pill */
 .draft-status {
@@ -17678,27 +17672,30 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
   font-size: 10px;
   font-weight: 400;
-  color: color-mix(in srgb, var(--fm-text, #fff) 60%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .draft-status__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-/* Only the dot carries colour; the label stays light + muted. */
-.draft-status--kept .draft-status__dot { background: #34d399; }
-.draft-status--dropped .draft-status__dot { background: #f87171; }
-.draft-status--traded .draft-status__dot { background: #fbbf24; }
-.draft-status--unknown .draft-status__dot { background: color-mix(in srgb, var(--fm-text, #fff) 35%, transparent); }
+/* Only the dot carries colour; the label stays muted. Semantic tokens
+ * follow Scorebook (pitch green / rust / gold). */
+.draft-status--kept .draft-status__dot { background: var(--data-positive); }
+.draft-status--dropped .draft-status__dot { background: var(--data-negative); }
+.draft-status--traded .draft-status__dot { background: var(--data-warning); }
+.draft-status--unknown .draft-status__dot {
+  background: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 55%, transparent);
+}
 
 /* ── Desktop snake grid ─────────────────────────────────────────── */
 .draft-grid {
   margin-top: 4px;
-  border: 1px solid var(--fm-border, #333);
-  border-radius: 12px;
+  border: 1px solid var(--border, var(--fm-border));
+  border-radius: var(--r-md, 12px);
   overflow: hidden;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--fm-card, #1e1e1e);
+  background: var(--surface, var(--fm-card));
 }
 .draft-grid__inner { min-width: calc(2.4rem + var(--draft-grid-cols, 8) * 96px); }
 .draft-grid__head,
@@ -17707,8 +17704,8 @@ button.live-xp__player-name:focus-visible {
   grid-template-columns: 2.4rem repeat(var(--draft-grid-cols, 8), minmax(96px, 1fr));
 }
 .draft-grid__head {
-  background: color-mix(in srgb, var(--fm-text, #fff) 4%, var(--fm-card, #1e1e1e));
-  border-bottom: 1px solid var(--fm-border, #333);
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-table-head)));
+  border-bottom: 1px solid var(--border, var(--fm-border));
   position: sticky;
   top: 0;
   z-index: 1;
@@ -17717,11 +17714,12 @@ button.live-xp__player-name:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
+  color: var(--text-muted, var(--fm-muted));
 }
 .draft-grid__th {
   display: flex;
@@ -17729,7 +17727,7 @@ button.live-xp__player-name:focus-visible {
   align-items: center;
   gap: 3px;
   padding: 8px 6px;
-  border-left: 1px solid var(--fm-border, #333);
+  border-left: 1px solid var(--border, var(--fm-border));
   text-align: center;
   min-width: 0;
 }
@@ -17739,22 +17737,23 @@ button.live-xp__player-name:focus-visible {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fm-text, #fff) 60%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
-.draft-grid__row { border-top: 1px solid var(--fm-border, #333); }
+.draft-grid__row { border-top: 1px solid var(--border, var(--fm-border)); }
 .draft-grid__rnd {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
-  background: color-mix(in srgb, var(--fm-text, #fff) 4%, var(--fm-card, #1e1e1e));
-  border-right: 1px solid var(--fm-border, #333);
+  color: var(--text-muted, var(--fm-muted));
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-table-head)));
+  border-right: 1px solid var(--border, var(--fm-border));
 }
 .draft-grid__cell {
   position: relative;
@@ -17762,22 +17761,23 @@ button.live-xp__player-name:focus-visible {
   flex-direction: column;
   gap: 6px;
   padding: 12px 8px 8px;
-  border-left: 1px solid var(--fm-border, #333);
+  border-left: 1px solid var(--border, var(--fm-border));
   min-height: 64px;
   min-width: 0;
 }
 .draft-grid__cell--empty {
-  background: color-mix(in srgb, var(--fm-text, #fff) 2.5%, transparent);
+  background: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 6%, transparent);
 }
 .draft-grid__cell:not(.draft-grid__cell--empty):hover {
-  background: color-mix(in srgb, var(--brand, #795bfb) 6%, transparent);
+  background: var(--row-hi, var(--fm-row-hi, color-mix(in srgb, var(--brand) 6%, transparent)));
 }
 .draft-grid__pick {
   position: absolute;
   top: 3px;
   right: 6px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;
-  color: color-mix(in srgb, var(--fm-text, #fff) 45%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   font-variant-numeric: tabular-nums;
 }
 .draft-grid__main {
@@ -17788,21 +17788,23 @@ button.live-xp__player-name:focus-visible {
 }
 .draft-grid__club { width: 22px; height: 22px; object-fit: contain; display: block; flex-shrink: 0; }
 .draft-grid__id { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.draft-grid__name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .draft-grid__name {
   font-size: 0.84rem;
   font-weight: 600;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .draft-grid__name a { color: inherit; text-decoration: none; }
 .draft-grid__name a:hover { text-decoration: underline; }
-.draft-grid__pos {
-  font-size: 0.7rem;
-  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
-  letter-spacing: 0.02em;
-}
 .draft-grid__foot {
   display: flex;
   align-items: center;
@@ -17810,13 +17812,14 @@ button.live-xp__player-name:focus-visible {
   gap: 6px;
   margin-top: auto;
   padding-top: 5px;
-  border-top: 1px dashed var(--fm-border, #333);
+  border-top: 1px dashed var(--border, var(--fm-border));
   min-width: 0;
 }
 .draft-grid__pts {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -17824,34 +17827,36 @@ button.live-xp__player-name:focus-visible {
 /* ── Mobile M1 stat list ────────────────────────────────────────── */
 .draft-rlist {
   margin-top: 4px;
-  border: 1px solid var(--fm-border, #333);
-  border-radius: 12px;
+  border: 1px solid var(--border, var(--fm-border));
+  border-radius: var(--r-md, 12px);
   overflow: hidden;
-  background: var(--fm-card, #1e1e1e);
+  background: var(--surface, var(--fm-card));
 }
 .draft-rlist__round {
   padding: 7px 14px;
-  background: color-mix(in srgb, var(--fm-text, #fff) 5%, var(--fm-card, #1e1e1e));
-  border-bottom: 1px solid var(--fm-border, #333);
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-table-head)));
+  border-bottom: 1px solid var(--border, var(--fm-border));
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fm-text, #fff) 60%, transparent);
+  color: var(--text-muted, var(--fm-muted));
 }
-.draft-rlist__round:not(:first-child) { border-top: 1px solid var(--fm-border, #333); }
+.draft-rlist__round:not(:first-child) { border-top: 1px solid var(--border, var(--fm-border)); }
 .draft-rlist__row {
   display: grid;
   grid-template-columns: 1.6rem 26px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 8px 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--fm-border, #333) 60%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border, var(--fm-border)) 60%, transparent);
 }
 .draft-rlist__row:last-child { border-bottom: none; }
 .draft-rlist__pick {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.78rem;
-  color: color-mix(in srgb, var(--fm-text, #fff) 50%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -17861,10 +17866,11 @@ button.live-xp__player-name:focus-visible {
 .draft-rlist__name {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .draft-rlist__name a { color: inherit; text-decoration: none; }
 .draft-rlist__name a:hover { text-decoration: underline; }
@@ -17873,22 +17879,23 @@ button.live-xp__player-name:focus-visible {
 .draft-rlist__team .team-avatar-frame { width: 16px; height: 16px; flex-shrink: 0; }
 .draft-rlist__team-name {
   font-size: 0.78rem;
-  color: color-mix(in srgb, var(--fm-text, #fff) 65%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .draft-rlist__pts { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
 .draft-rlist__pts-val {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   font-variant-numeric: tabular-nums;
 }
 .draft-rlist__pts-lbl {
   font-size: 8px;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--fm-text, #fff) 45%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   margin-top: 2px;
 }
 
