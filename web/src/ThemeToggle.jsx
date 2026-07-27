@@ -64,6 +64,7 @@ function SystemIcon() {
  *   value: 'light' | 'dark' | 'system',
  *   onChange: (t: 'light' | 'dark' | 'system') => void,
  *   includeSystem?: boolean,
+ *   showLabels?: boolean,
  * }} props
  *
  * When `includeSystem` is false (default), behaves as a 2-button binary
@@ -71,45 +72,53 @@ function SystemIcon() {
  * When `includeSystem` is true, renders a 3-button segmented control
  * including a "follow OS" option. Callers pass `value: 'system'` to
  * mark the System button as active.
+ *
+ * `showLabels` renders text labels next to the icons (used by the
+ * Settings rows, where "Light / Dark / System" should be readable
+ * without hovering); the compact icon-only form stays the default for
+ * tight toolbars.
  */
-export function ThemeToggle({ value, onChange, includeSystem = false }) {
+export function ThemeToggle({ value, onChange, includeSystem = false, showLabels = false }) {
+  const btnClass = (t) =>
+    [
+      'theme-toggle__btn',
+      showLabels ? 'theme-toggle__btn--labeled' : '',
+      value === t ? 'theme-toggle__btn--active' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
   return (
     <div className="theme-toggle" role="group" aria-label="Colour theme">
       <button
         type="button"
-        className={
-          value === 'light' ? 'theme-toggle__btn theme-toggle__btn--active' : 'theme-toggle__btn'
-        }
+        className={btnClass('light')}
         onClick={() => onChange('light')}
         aria-pressed={value === 'light'}
         aria-label="Light mode"
       >
         <SunIcon />
+        {showLabels ? <span className="theme-toggle__label">Light</span> : null}
       </button>
       <button
         type="button"
-        className={
-          value === 'dark' ? 'theme-toggle__btn theme-toggle__btn--active' : 'theme-toggle__btn'
-        }
+        className={btnClass('dark')}
         onClick={() => onChange('dark')}
         aria-pressed={value === 'dark'}
         aria-label="Dark mode"
       >
         <MoonIcon />
+        {showLabels ? <span className="theme-toggle__label">Dark</span> : null}
       </button>
       {includeSystem ? (
         <button
           type="button"
-          className={
-            value === 'system'
-              ? 'theme-toggle__btn theme-toggle__btn--active'
-              : 'theme-toggle__btn'
-          }
+          className={btnClass('system')}
           onClick={() => onChange('system')}
           aria-pressed={value === 'system'}
-          aria-label="Follow system"
+          aria-label="Match system"
         >
           <SystemIcon />
+          {showLabels ? <span className="theme-toggle__label">System</span> : null}
         </button>
       ) : null}
     </div>

@@ -45,6 +45,7 @@ export function SettingsPanelBody({
           value={themePref}
           onChange={onThemePrefChange}
           includeSystem
+          showLabels
         />
       </div>
 

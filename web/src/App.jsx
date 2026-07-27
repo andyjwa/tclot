@@ -2254,18 +2254,19 @@ const EMPTY_TEAM_LOGO_MAP = {}
 const THEME_STORAGE_KEY = 'tclot-theme'
 
 /** Possible values: 'light' | 'dark' | 'system'. 'system' means "follow
- * `prefers-color-scheme`" and is the default for users who haven't picked a
- * theme yet. Older stored values ('light'/'dark') remain valid prefs — no
+ * `prefers-color-scheme`". Users who haven't picked a theme yet get LIGHT
+ * (the app's default look); dark and follow-OS are opt-in via Settings.
+ * Older stored values ('light'/'dark'/'system') remain valid prefs — no
  * migration needed, and any explicit choice still wins. */
 function readStoredThemePref() {
-  if (typeof window === 'undefined') return 'system'
+  if (typeof window === 'undefined') return 'light'
   try {
     const s = window.localStorage.getItem(THEME_STORAGE_KEY)
     if (s === 'light' || s === 'dark' || s === 'system') return s
   } catch {
     /* ignore */
   }
-  return 'system'
+  return 'light'
 }
 
 /** Resolve `'system'` to a concrete 'light' | 'dark' via prefers-color-scheme. */

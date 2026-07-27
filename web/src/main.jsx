@@ -22,8 +22,8 @@ const isGameweekStatesMockup =
 // "Scorebook" theme (PaintPreview.css) — token-level coat of paint on the
 // real app. Now the DEFAULT for everyone. `?paint=0` is a kill switch that
 // sticks via localStorage; `?paint=1` re-enables (clears the kill switch).
-// `?theme=light|dark` force-sets the stored colour theme, mainly for
-// screenshots/review.
+// `?theme=light|dark|system` force-sets the stored colour theme, mainly
+// for screenshots/review.
 if (typeof window !== 'undefined') {
   const params = new URLSearchParams(window.location.search)
   const paint = params.get('paint')
@@ -32,7 +32,7 @@ if (typeof window !== 'undefined') {
     if (paint === '1') localStorage.removeItem('tclot-paint')
     else if (paint === '0') localStorage.setItem('tclot-paint', '0')
     const theme = params.get('theme')
-    if (theme === 'light' || theme === 'dark') {
+    if (theme === 'light' || theme === 'dark' || theme === 'system') {
       localStorage.setItem('tclot-theme', theme)
     }
     if (localStorage.getItem('tclot-paint') === '0') paintOn = false

@@ -357,6 +357,23 @@
   color: #333333;
 }
 
+/* Labeled variant — Settings rows show "Light / Dark / System" text pills
+ * so the options read without hovering. Same chip chrome as the icon-only
+ * form, just wider with a text label beside the glyph. */
+.theme-toggle__btn--labeled {
+  width: auto;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+}
+
+.theme-toggle__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
 .fotmob .load-screen {
   position: relative;
   padding: 48px 24px;
