@@ -15271,25 +15271,53 @@ button.live-xp__player-name:focus-visible {
   flex-direction: column;
   gap: 14px;
 
-  /* Shared brand-violet position heatmap palette — single source of truth referenced
-   * by Team Journey cards, MV-A position chips, MV-C transposed matrix cells, and the
-   * CofC Algorithm grid. Dark-mode safe via color-mix against --fm-card. */
-  --heritage-pos-1-bg: var(--tclot-logo-purple, #795bfb);
-  --heritage-pos-1-fg: #ffffff;
-  --heritage-pos-2-bg: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 40%, var(--fm-card));
+  /* Shared position heatmap palette — single source of truth referenced by Team
+   * Journey cards, MV-A position chips, MV-C transposed matrix cells, and the
+   * CofC Algorithm grid (incl. its detail sheet, a DOM descendant of this shell).
+   *
+   * Scorebook ramp: one ordered light→dark interpolation so better/worse reads
+   * instantly. 1st = saturated green anchor, positions 2-5 step down through
+   * mint/sage tints to near-neutral card, 6-7 warm through soft rust tints, and
+   * 8th lands on the strongest rust anchor. Dark theme (default) mixes brighter
+   * anchors toward the dark card surfaces; the light override below mixes the
+   * deep racing-green / rust anchors toward cream paper. */
+  --heritage-pos-1-bg: color-mix(in srgb, #34d399 72%, var(--fm-card));
+  --heritage-pos-1-fg: #0c1f15;
+  --heritage-pos-2-bg: color-mix(in srgb, #34d399 40%, var(--fm-card));
   --heritage-pos-2-fg: var(--fm-text-strong);
-  --heritage-pos-3-bg: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  --heritage-pos-3-bg: color-mix(in srgb, #34d399 24%, var(--fm-card));
   --heritage-pos-3-fg: var(--fm-text-strong);
-  --heritage-pos-4-bg: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 10%, var(--fm-card));
+  --heritage-pos-4-bg: color-mix(in srgb, #34d399 12%, var(--fm-card));
   --heritage-pos-4-fg: var(--fm-text-strong);
-  --heritage-pos-5-bg: transparent;
+  --heritage-pos-5-bg: color-mix(in srgb, #34d399 5%, var(--fm-card));
   --heritage-pos-5-fg: var(--fm-text-strong);
-  --heritage-pos-6-bg: transparent;
-  --heritage-pos-6-fg: var(--fm-muted);
-  --heritage-pos-7-bg: color-mix(in srgb, #c0392b 14%, var(--fm-card));
+  --heritage-pos-6-bg: color-mix(in srgb, #e08a5e 10%, var(--fm-card));
+  --heritage-pos-6-fg: var(--fm-text-strong);
+  --heritage-pos-7-bg: color-mix(in srgb, #e08a5e 26%, var(--fm-card));
   --heritage-pos-7-fg: var(--fm-text-strong);
-  --heritage-pos-8-bg: color-mix(in srgb, #c0392b 24%, var(--fm-card));
-  --heritage-pos-8-fg: var(--fm-text-strong);
+  --heritage-pos-8-bg: color-mix(in srgb, #e08a5e 78%, var(--fm-card));
+  --heritage-pos-8-fg: #241009;
+}
+
+/* Light theme: deep racing green (cream text) → sage/mint tints → cream paper
+ * neutral mid-table → soft rust tints → strongest rust (cream text) for 8th. */
+.fotmob[data-theme='light'] .heritage-shell {
+  --heritage-pos-1-bg: #17402f;
+  --heritage-pos-1-fg: #f4f6f0;
+  --heritage-pos-2-bg: color-mix(in srgb, #17402f 42%, var(--fm-card));
+  --heritage-pos-2-fg: #1a231a;
+  --heritage-pos-3-bg: color-mix(in srgb, #17402f 28%, var(--fm-card));
+  --heritage-pos-3-fg: #1a231a;
+  --heritage-pos-4-bg: color-mix(in srgb, #17402f 16%, var(--fm-card));
+  --heritage-pos-4-fg: #1a231a;
+  --heritage-pos-5-bg: color-mix(in srgb, #17402f 6%, var(--fm-card));
+  --heritage-pos-5-fg: #1a231a;
+  --heritage-pos-6-bg: color-mix(in srgb, #b04f26 10%, var(--fm-card));
+  --heritage-pos-6-fg: #1a231a;
+  --heritage-pos-7-bg: color-mix(in srgb, #b04f26 26%, var(--fm-card));
+  --heritage-pos-7-fg: #1a231a;
+  --heritage-pos-8-bg: #b04f26;
+  --heritage-pos-8-fg: #f7ecdd;
 }
 
 .heritage-subnav-strip {
@@ -16278,99 +16306,97 @@ button.live-xp__player-name:focus-visible {
   color: inherit;
 }
 
-/* Position heatmap tints — single brand-violet ladder shared across heritage surfaces.
+/* Position heatmap tints — single Scorebook ladder shared across heritage surfaces.
  * Values resolve from `--heritage-pos-N-bg/fg` declared on `.heritage-shell`.
- * Selectors are scoped under `.heritage-shell` so they outweigh the reference-only
- * palette defined in `Mockup.css` (which uses the same .is-pos-N class names but
- * loads later in the cascade — keeping these rules limited to the production
- * heritage view is the cleanest separation). */
-.heritage-shell .merged-history-timeline__card.is-pos-1,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-1,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-1,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-1,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-1 {
+ * Selectors are scoped under `.fotmob .heritage-shell` so they outweigh the
+ * reference-only palette in `Mockup.css` (same .is-pos-N class names, loads later
+ * in the cascade, and its `[data-theme='dark']` overrides carry (0,3,0)
+ * specificity — the extra .fotmob level beats those in both themes). */
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-1,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-1,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-1,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-1,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-1 {
   background: var(--heritage-pos-1-bg);
   color: var(--heritage-pos-1-fg);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 60%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--heritage-pos-1-fg) 25%, transparent);
 }
 
-.heritage-shell .merged-history-timeline__card.is-pos-2,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-2,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-2,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-2,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-2 {
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-2,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-2,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-2,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-2,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-2 {
   background: var(--heritage-pos-2-bg);
   color: var(--heritage-pos-2-fg);
 }
 
-.heritage-shell .merged-history-timeline__card.is-pos-3,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-3,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-3,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-3,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-3 {
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-3,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-3,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-3,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-3,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-3 {
   background: var(--heritage-pos-3-bg);
   color: var(--heritage-pos-3-fg);
 }
 
-.heritage-shell .merged-history-timeline__card.is-pos-4,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-4,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-4,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-4,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-4 {
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-4,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-4,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-4,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-4,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-4 {
   background: var(--heritage-pos-4-bg);
   color: var(--heritage-pos-4-fg);
 }
 
-.heritage-shell .merged-history-timeline__card.is-pos-5,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-5,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-5,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-5,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-5 {
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-5,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-5,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-5,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-5,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-5 {
   background: var(--heritage-pos-5-bg);
   color: var(--heritage-pos-5-fg);
 }
 
-.heritage-shell .merged-history-timeline__card.is-pos-6,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-6,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-6,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-6,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-6 {
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-6,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-6,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-6,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-6,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-6 {
   background: var(--heritage-pos-6-bg);
   color: var(--heritage-pos-6-fg);
 }
 
-.heritage-shell .merged-history-timeline__card.is-pos-7,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-7,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-7,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-7,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-7 {
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-7,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-7,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-7,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-7,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-7 {
   background: var(--heritage-pos-7-bg);
   color: var(--heritage-pos-7-fg);
 }
 
-.heritage-shell .merged-history-timeline__card.is-pos-8,
-.heritage-shell .merged-history-mv__pos-chip.is-pos-8,
-.heritage-shell .merged-history-mv__transposed-cell.is-pos-8,
-.heritage-shell .heritage-cofc-algo__td-cell.is-pos-8,
-.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-8 {
+.fotmob .heritage-shell .merged-history-timeline__card.is-pos-8,
+.fotmob .heritage-shell .merged-history-mv__pos-chip.is-pos-8,
+.fotmob .heritage-shell .merged-history-mv__transposed-cell.is-pos-8,
+.fotmob .heritage-shell .heritage-cofc-algo__td-cell.is-pos-8,
+.fotmob .heritage-shell .heritage-cofc-algo-sheet__row.is-pos-8 {
   background: var(--heritage-pos-8-bg);
   color: var(--heritage-pos-8-fg);
 }
 
-/* The Algorithm detail sheet renders to document.body via `position: fixed`, so
- * it sits OUTSIDE the .heritage-shell parent. Mirror the rule unscoped so the
- * modal's sheet rows still receive the brand-violet ladder. */
-.heritage-cofc-algo-sheet__row.is-pos-1 {
-  background: var(--heritage-pos-1-bg, var(--tclot-logo-purple, #795bfb));
-  color: var(--heritage-pos-1-fg, #ffffff);
-}
-.heritage-cofc-algo-sheet__row.is-pos-2 { background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 40%, var(--fm-card)); color: var(--fm-text-strong); }
-.heritage-cofc-algo-sheet__row.is-pos-3 { background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card)); color: var(--fm-text-strong); }
-.heritage-cofc-algo-sheet__row.is-pos-4 { background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 10%, var(--fm-card)); color: var(--fm-text-strong); }
-.heritage-cofc-algo-sheet__row.is-pos-5 { background: transparent; color: var(--fm-text-strong); }
-.heritage-cofc-algo-sheet__row.is-pos-6 { background: transparent; color: var(--fm-muted); }
-.heritage-cofc-algo-sheet__row.is-pos-7 { background: color-mix(in srgb, #c0392b 14%, var(--fm-card)); color: var(--fm-text-strong); }
-.heritage-cofc-algo-sheet__row.is-pos-8 { background: color-mix(in srgb, #c0392b 24%, var(--fm-card)); color: var(--fm-text-strong); }
+/* The Algorithm detail sheet paints as a `position: fixed` overlay but remains
+ * a DOM descendant of .heritage-shell, so the ramp custom properties inherit.
+ * Mirror the rule unscoped (lower specificity than the block above) so the
+ * modal's sheet rows still receive the position ladder. */
+.heritage-cofc-algo-sheet__row.is-pos-1 { background: var(--heritage-pos-1-bg); color: var(--heritage-pos-1-fg); }
+.heritage-cofc-algo-sheet__row.is-pos-2 { background: var(--heritage-pos-2-bg); color: var(--heritage-pos-2-fg); }
+.heritage-cofc-algo-sheet__row.is-pos-3 { background: var(--heritage-pos-3-bg); color: var(--heritage-pos-3-fg); }
+.heritage-cofc-algo-sheet__row.is-pos-4 { background: var(--heritage-pos-4-bg); color: var(--heritage-pos-4-fg); }
+.heritage-cofc-algo-sheet__row.is-pos-5 { background: var(--heritage-pos-5-bg); color: var(--heritage-pos-5-fg); }
+.heritage-cofc-algo-sheet__row.is-pos-6 { background: var(--heritage-pos-6-bg); color: var(--heritage-pos-6-fg); }
+.heritage-cofc-algo-sheet__row.is-pos-7 { background: var(--heritage-pos-7-bg); color: var(--heritage-pos-7-fg); }
+.heritage-cofc-algo-sheet__row.is-pos-8 { background: var(--heritage-pos-8-bg); color: var(--heritage-pos-8-fg); }
 
 .heritage-shell .merged-history-timeline__card.is-empty,
 .heritage-shell .merged-history-mv__transposed-cell.is-empty,
@@ -16385,23 +16411,6 @@ button.live-xp__player-name:focus-visible {
   flex-direction: column;
   background: var(--fm-card);
   font-family: inherit;
-}
-
-.merged-history-mv__crest {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
-  color: var(--fm-text-strong);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
 }
 
 .merged-history-mv__pos-chip {
@@ -16427,14 +16436,22 @@ button.live-xp__player-name:focus-visible {
  * card (no shared container border), and tapping the row expands the
  * per-season journey beneath the leaderboard cell.
  *
- * Grid layout (matches `.heritage-cofc-algo-lb__btn`):
- *   28px (rank pill) · 28px (manager crest) · 1fr (full name) · auto
+ * Grid layout — compact, left-aligned (no avatars per user feedback):
+ *   24px (rank pill) · 1fr (full name, left-aligned) · auto
  *   (PointsCell · "TITLES") · 14px (chevron)
+ *
+ * Layout rules are scoped under .heritage-shell so they outweigh the
+ * reference-only mockup styles in Mockup.css (same class names, loaded
+ * later in the cascade — its `display: flex; justify-content:
+ * space-between` was spreading the row across the full width).
  */
-.merged-history-mv--accordion {
-  /* Reset the legacy single-container border — the leaderboard variant
-   * uses per-row cards. (Stays intact for any non-leaderboard variant
-   * that future MV-A surfaces might want.) */
+/* Mockup.css (loaded later in the cascade) sets `overflow-y: auto` on this
+ * class, which turns the accordion into a scroll container — the full-bleed
+ * negative list margins below then produced a horizontal scrollbar. Scoped
+ * under .heritage-shell to outweigh the mockup rule: the production list
+ * never scrolls on its own axis. */
+.heritage-shell .merged-history-mv--accordion {
+  overflow: visible;
 }
 
 .merged-history-mv--leaderboard {
@@ -16479,17 +16496,17 @@ button.live-xp__player-name:focus-visible {
   }
 }
 
-.merged-history-mv__accordion-toggle {
+.heritage-shell .merged-history-mv__accordion-toggle {
   appearance: none;
   background: var(--fm-card);
   border: none;
   width: 100%;
   display: grid;
-  grid-template-columns: 28px 28px minmax(0, 1fr) auto 14px;
+  grid-template-columns: 24px minmax(0, 1fr) auto 14px;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  min-height: 56px;
+  min-height: 48px;
   cursor: pointer;
   text-align: left;
   font: inherit;
@@ -16497,15 +16514,15 @@ button.live-xp__player-name:focus-visible {
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.merged-history-mv__accordion-toggle:hover {
+.heritage-shell .merged-history-mv__accordion-toggle:hover {
   background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 5%, var(--fm-card));
 }
 
-.merged-history-mv__accordion-toggle.is-open {
+.heritage-shell .merged-history-mv__accordion-toggle.is-open {
   background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 6%, var(--fm-card)));
 }
 
-.merged-history-mv__accordion-toggle:focus-visible {
+.heritage-shell .merged-history-mv__accordion-toggle:focus-visible {
   outline: 2px solid var(--tclot-logo-purple, #795bfb);
   outline-offset: -2px;
 }
@@ -16633,20 +16650,15 @@ button.live-xp__player-name:focus-visible {
   border-bottom: 1px solid var(--fm-border);
 }
 
-.merged-history-mv__transposed-crest {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
-  color: var(--fm-text-strong);
-  font-size: 9px;
+/* Plain mono initials in the matrix header — the circled-avatar chrome was
+ * dropped alongside the list view's avatars (user feedback: just names). */
+.merged-history-mv__transposed-initials {
+  display: inline-block;
+  color: var(--fm-muted);
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
 }
 
 .merged-history-mv__transposed-th-season {

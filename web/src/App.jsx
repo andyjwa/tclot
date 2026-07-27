@@ -1003,11 +1003,6 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
                 >
                   {place}
                 </span>
-                <ManagerCrest
-                  displayKey={row.key}
-                  managerFull={managerFull}
-                  className="merged-history-mv__crest"
-                />
                 <span className="merged-history-mv__accordion-mgr-name">
                   {managerFull ?? row.key}
                 </span>
@@ -1091,7 +1086,7 @@ function TeamHistoryMobileMatrix({ journey, fullNameMap }) {
                     <ManagerCrest
                       displayKey={row.key}
                       managerFull={managerFull}
-                      className="merged-history-mv__transposed-crest"
+                      className="merged-history-mv__transposed-initials"
                     />
                   </th>
                 )
