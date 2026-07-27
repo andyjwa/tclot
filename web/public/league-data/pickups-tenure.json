@@ -1,6 +1,6 @@
 {
   "generated": "2026-07-18T18:49:39.248Z",
-  "note": "Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed.",
+  "note": "Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed. teamWaiverInTotals.waiverInCount = successful waiver stints (matches waived-out transaction volume); distinctPlayers = unique elements.",
   "lastGwUsed": 38,
   "rows": [
     {
