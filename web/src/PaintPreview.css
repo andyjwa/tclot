@@ -27,12 +27,13 @@ body[data-tclot-paint='1'] {
   --tclot-header-solid: #1f4a38;
 }
 
-/* Dark body shell */
+/* Dark body shell — Variant D (darkmode-options mockup): brighter body
+ * text and a lifted border so hairlines survive on the dark green. */
 body[data-tclot-paint='1']:not([data-tclot-theme='light']) {
-  --text: rgba(233, 236, 229, 0.9);
-  --text-h: #f4f6f0;
+  --text: rgba(238, 242, 232, 0.94);
+  --text-h: #f8faf4;
   --bg: #121814;
-  --border: #2c362e;
+  --border: #38463b;
   background: #121814;
 }
 
@@ -47,17 +48,21 @@ body[data-tclot-paint='1'][data-tclot-theme='light'] {
 
 /* ---------------- .fotmob dark defaults ---------------- */
 
+/* Dark surface ladder + text ramps follow the chosen "Variant D" from
+ * the darkmode-options mockup: cards lifted off the bg (the old
+ * #1a211c/#212a23 steps mushed together), muted text warmed toward
+ * cream and raised past the readability floor. bg stays #121814. */
 body[data-tclot-paint='1'] .fotmob {
   --fm-bg: #121814;
-  --fm-card: #1a211c;
-  --fm-border: #2c362e;
-  --fm-text: rgba(233, 236, 229, 0.88);
-  --fm-text-strong: #f4f6f0;
-  --fm-muted: rgba(233, 236, 229, 0.55);
-  --fm-surface-2: #212a23;
-  --fm-row-hi: #263128;
-  --fm-table-head: #212a23;
-  --fm-standings-cut: #3a463b;
+  --fm-card: #1e2620;
+  --fm-border: #38463b;
+  --fm-text: rgba(238, 242, 232, 0.94);
+  --fm-text-strong: #f8faf4;
+  --fm-muted: rgba(235, 236, 222, 0.7);
+  --fm-surface-2: #29332b;
+  --fm-row-hi: #2f3b31;
+  --fm-table-head: #29332b;
+  --fm-standings-cut: #48584b;
 
   /* Chrome/selection accent — mint-leaning green readable on dark. */
   --tclot-logo-purple: #8fc9a8;
@@ -66,15 +71,17 @@ body[data-tclot-paint='1'] .fotmob {
   --fm-nav-hover-bg: color-mix(in srgb, #8fc9a8 18%, transparent);
   --fm-nav-hover-border: #8fc9a8;
   --fm-nav-hover-text: #d9ecdf;
-  --dash-nav-tab-active: #f4f6f0;
+  --dash-nav-tab-active: #f8faf4;
   --dash-nav-tab-line: #8fc9a8;
-  --dash-nav-tab-idle: rgba(233, 236, 229, 0.78);
-  --pill-active-bg: color-mix(in srgb, rgba(143, 201, 168, 0.2) 58%, var(--fm-card));
+  --dash-nav-tab-idle: rgba(238, 240, 230, 0.82);
+  /* Pills/chips: tint strength up from 0.2/48%/14% — at the old values
+   * the mint washes computed within ~2 L* of the card and vanished. */
+  --pill-active-bg: color-mix(in srgb, rgba(143, 201, 168, 0.3) 58%, var(--fm-card));
   --pill-active-fg: var(--fm-text-strong);
-  --pill-active-border: color-mix(in srgb, #8fc9a8 48%, var(--fm-border));
+  --pill-active-border: color-mix(in srgb, #8fc9a8 60%, var(--fm-border));
   --pill-idle-hover-bg: rgba(255, 255, 255, 0.06);
   --brand: #8fc9a8;
-  --brand-tint: color-mix(in srgb, #8fc9a8 14%, transparent);
+  --brand-tint: color-mix(in srgb, #8fc9a8 22%, transparent);
   --brand-grad: var(--tclot-header-grad);
 
   /* Data semantics — wins bright green, losses rust, draws/warnings gold. */
@@ -82,7 +89,7 @@ body[data-tclot-paint='1'] .fotmob {
   --fm-draw: #a3a89b;
   --fm-loss: #e08a5e;
   --fm-loss-dot: #d97a4e;
-  --fm-standings-8th-bg: color-mix(in srgb, #d97a4e 10%, #1a211c);
+  --fm-standings-8th-bg: color-mix(in srgb, #d97a4e 10%, #1e2620);
   --data-positive: #34d399;
   --data-negative: #d97a4e;
   --data-neutral: #a3a89b;
@@ -96,15 +103,34 @@ body[data-tclot-paint='1'] .fotmob {
   --live-villain-strong: #8f7fc0;
   --live-villain-tint: color-mix(in srgb, #a99bd1 14%, transparent);
 
-  /* Phase-1 surface stack */
+  /* Phase-1 surface stack (mirrors the fm-* ladder above) */
   --bg: #121814;
-  --surface: #1a211c;
-  --surface-2: #212a23;
-  --border: #2c362e;
-  --text: #dfe3da;
-  --text-strong: #f4f6f0;
-  --text-muted: #97a096;
-  --row-hi: #263128;
+  --surface: #1e2620;
+  --surface-2: #29332b;
+  --border: #38463b;
+  --text: #e7ecdf;
+  --text-strong: #f8faf4;
+  --text-muted: #b2bba8;
+  --row-hi: #2f3b31;
+}
+
+/* Variant D pill/label details (dark only — light theme was fine):
+ * the GW select pill and count chips need more than the token bump. */
+body[data-tclot-paint='1'] .fotmob:not([data-theme='light']) .cpsp__btn {
+  /* App.css draws this border at 78% of --fm-border — a hairline that
+   * vanished on dark. Mix mint in and wash the fill so the pill reads. */
+  border-color: color-mix(in srgb, #8fc9a8 26%, var(--fm-border));
+  background-color: color-mix(in srgb, #8fc9a8 7%, var(--fm-card));
+}
+body[data-tclot-paint='1'] .fotmob:not([data-theme='light']) .waivers-pts {
+  /* Count chips are bare --brand-tint fills; a faint mint ring keeps
+   * them legible even where the tint sits on surface-2. */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #8fc9a8 28%, transparent);
+}
+body[data-tclot-paint='1'] .fotmob:not([data-theme='light']) :is(.muted, .waivers-first__pick-head, th) {
+  /* Small labels: 400 sub-pixel strokes go grey on dark; 550 keeps them
+   * crisp (Schibsted Grotesk is variable 400..900). */
+  font-weight: 550;
 }
 
 /* ---------------- .fotmob light theme — Scorebook paper ---------------- */
@@ -210,17 +236,18 @@ body[data-tclot-paint='1'] .live-player-slide {
 /* Dark */
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .player-detail-overlay-shell,
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-player-slide {
-  --fm-surface: #1a211c;
-  --fm-surface-0: #1a211c;
-  --fm-card: #1a211c;
+  /* Variant D surfaces/text — keep in lockstep with the .fotmob dark block. */
+  --fm-surface: #1e2620;
+  --fm-surface-0: #1e2620;
+  --fm-card: #1e2620;
   --fm-bg: #121814;
   --fm-bg-root: #121814;
-  --fm-text: rgba(233, 236, 229, 0.88);
-  --fm-text-strong: #f4f6f0;
-  --fm-muted: rgba(233, 236, 229, 0.55);
-  --fm-border: #2c362e;
-  --fm-table-head: #212a23;
-  --fm-surface-2: #212a23;
+  --fm-text: rgba(238, 242, 232, 0.94);
+  --fm-text-strong: #f8faf4;
+  --fm-muted: rgba(235, 236, 222, 0.7);
+  --fm-border: #38463b;
+  --fm-table-head: #29332b;
+  --fm-surface-2: #29332b;
   --tclot-logo-purple: #8fc9a8;
   --fm-pitch: #2aa06b;
   --fm-accent: #2aa06b;
@@ -262,8 +289,8 @@ body[data-tclot-paint='1'] .pperf-popover__opt input[type='checkbox']:checked::a
 }
 
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .pperf-popover__opt input[type='checkbox'] {
-  border-color: color-mix(in srgb, rgba(233, 236, 229, 0.55) 50%, #2c362e);
-  background: #212a23;
+  border-color: color-mix(in srgb, rgba(235, 236, 222, 0.7) 50%, #38463b);
+  background: #29332b;
 }
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .pperf-popover__opt input[type='checkbox']:checked {
   background: #8fc9a8;
@@ -290,12 +317,12 @@ body[data-tclot-paint='1'] .tc-card {
 
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .tc-card {
   --tc-brand: #8fc9a8;
-  --tc-surface: #1a211c;
-  --tc-surface-2: #212a23;
-  --tc-border: #2c362e;
-  --tc-text: rgba(233, 236, 229, 0.88);
-  --tc-text-strong: #f4f6f0;
-  --tc-text-muted: rgba(233, 236, 229, 0.55);
+  --tc-surface: #1e2620;
+  --tc-surface-2: #29332b;
+  --tc-border: #38463b;
+  --tc-text: rgba(238, 242, 232, 0.94);
+  --tc-text-strong: #f8faf4;
+  --tc-text-muted: rgba(235, 236, 222, 0.7);
   --tc-pos: #34d399;
   --tc-neg: #d97a4e;
   --tc-shadow: rgba(0, 0, 0, 0.26);
@@ -304,12 +331,12 @@ body[data-tclot-paint='1'][data-tclot-theme='dark'] .tc-card {
 /* ---- League info modal (portalled, hardcodes --brand violet) ---- */
 body[data-tclot-paint='1'] .league-info-modal-shell {
   --brand: #8fc9a8;
-  --surface: #1a211c;
-  --surface-2: #212a23;
-  --border: #2c362e;
-  --text: #dfe3da;
-  --text-strong: #f4f6f0;
-  --text-muted: #97a096;
+  --surface: #1e2620;
+  --surface-2: #29332b;
+  --border: #38463b;
+  --text: #e7ecdf;
+  --text-strong: #f8faf4;
+  --text-muted: #b2bba8;
 }
 
 body[data-tclot-paint='1'][data-tclot-theme='light'] .league-info-modal-shell {
@@ -348,12 +375,12 @@ body[data-tclot-paint='1'] .live-contrib-row__pts--neg {
 
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--pos {
   color: #8fc9a8;
-  background: color-mix(in srgb, #8fc9a8 16%, #1a211c);
+  background: color-mix(in srgb, #8fc9a8 16%, #1e2620);
 }
 
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--neg {
   color: #d97a4e;
-  background: color-mix(in srgb, #d97a4e 16%, #1a211c);
+  background: color-mix(in srgb, #d97a4e 16%, #1e2620);
 }
 
 /* ---- Desktop brand-header banner: racing-green band ----
