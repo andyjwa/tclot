@@ -514,22 +514,28 @@ body[data-tclot-theme='dark'] .tc-card {
   background: #fff;
   border: none;
 }
-/* W/L/D as plain highlighted text (semantic colors, no bubble). */
+/* W/L/D in a tonal pill — same recipe as the H2H delta chips
+   (`.h2h-c__diff`): soft semantic tint background + semantic text color. */
 .tc-l5__res {
   font-family: var(--tc-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
   margin-top: 2px;
+  padding: 2px 6px;
+  border-radius: 6px;
 }
 .res-W {
   color: var(--tc-pos);
+  background: color-mix(in srgb, var(--tc-pos) 15%, transparent);
 }
 .res-L {
   color: var(--tc-neg);
+  background: color-mix(in srgb, var(--tc-neg) 15%, transparent);
 }
 .res-D {
   color: var(--tc-text-muted);
+  background: color-mix(in srgb, var(--tc-text-muted) 15%, transparent);
 }
 .tc-l5__pts {
   font-family: var(--tc-mono);
