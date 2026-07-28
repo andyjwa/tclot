@@ -17688,7 +17688,9 @@ button.live-xp__player-name:focus-visible {
  * follow Scorebook (pitch green / rust / gold). */
 .draft-status--kept .draft-status__dot { background: var(--data-positive); }
 .draft-status--dropped .draft-status__dot { background: var(--data-negative); }
-.draft-status--traded .draft-status__dot { background: var(--data-warning); }
+/* Traded uses Scorebook lilac (villain / special-callout token), distinct
+ * from Cut rust and On-squad green. */
+.draft-status--traded .draft-status__dot { background: var(--live-villain-color); }
 .draft-status--unknown .draft-status__dot {
   background: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 55%, transparent);
 }

@@ -2615,7 +2615,7 @@
 /* Only the dot carries colour; the label stays light + muted. */
 .mockup-draft__st--kept    .mockup-draft__st-dot { background: #34d399; }
 .mockup-draft__st--dropped .mockup-draft__st-dot { background: #f87171; }
-.mockup-draft__st--traded  .mockup-draft__st-dot { background: #fbbf24; }
+.mockup-draft__st--traded  .mockup-draft__st-dot { background: var(--live-villain-color, #a99bd1); }
 .mockup-draft__pick-num {
   position: absolute;
   top: 4px;
@@ -16720,7 +16720,7 @@
 /* Only the dot carries colour; the label stays light + muted. */
 .mockup-mdraft-status--kept    .mockup-mdraft-status__dot { background: #34d399; }
 .mockup-mdraft-status--dropped .mockup-mdraft-status__dot { background: #f87171; }
-.mockup-mdraft-status--traded  .mockup-mdraft-status__dot { background: #fbbf24; }
+.mockup-mdraft-status--traded  .mockup-mdraft-status__dot { background: var(--live-villain-color, #a99bd1); }
 
 /* M1 · Stat list --------------------------------------------------- */
 .mockup-mdraft-list__round {
