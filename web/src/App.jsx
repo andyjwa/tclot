@@ -1789,30 +1789,17 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
         >
           {view === 'live' ? 'All Time Standings' : 'Algorithm Table'}
         </h2>
-        <div
-          className="subnav heritage-cofc__viewtoggle"
-          role="tablist"
-          aria-label="Champion of Champions view"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'live'}
-            className={'subnav__tab' + (view === 'live' ? ' subnav__tab--active' : '')}
-            onClick={() => setView('live')}
-          >
-            Live
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'algorithm'}
-            className={'subnav__tab' + (view === 'algorithm' ? ' subnav__tab--active' : '')}
-            onClick={() => setView('algorithm')}
-          >
-            Algorithm
-          </button>
-        </div>
+        <CompactSelectPill
+          label="View"
+          ariaLabel="Champion of Champions view"
+          align="right"
+          value={view}
+          onChange={(next) => setView(String(next))}
+          options={[
+            { value: 'live', label: 'Live' },
+            { value: 'algorithm', label: 'Algorithm' },
+          ]}
+        />
       </div>
       {view === 'live' ? (
         <CofcLiveTable rows={liveRows} fullNameMap={fullNameMap} />
