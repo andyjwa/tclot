@@ -10927,6 +10927,17 @@ function HallOfFameSubMenu() {
               </div>
             </div>
           </div>
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              TEAM JOURNEYS · MOBILE TITLES / TITAN / MINNOW OPTIONS
+            </div>
+            <p className="mockup__section-sub">
+              Production rows feel tall and gappy with the Titles · Titan · Minnow
+              strip under each card. Open the focused gallery at{' '}
+              <code>?tjourney=1</code> for four mobile options (shipped · slim flush ·
+              league table · dense league) before locking one into History.
+            </p>
+          </div>
         </div>
       )}
       {tab === 'std' && (
