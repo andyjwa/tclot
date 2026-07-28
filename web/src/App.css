@@ -4441,10 +4441,11 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Centre total — winner number in brand purple. */
+/* Centre total — Option D / face-off Option C: both numbers ink; soft
+ * brand glass pill behind the winner only (no brand-coloured digits). */
 .trade2__total {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   flex-shrink: 0;
   font-size: 18px;
@@ -4452,9 +4453,23 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   color: var(--fm-text-strong);
   white-space: nowrap;
 }
-.trade2__total-num { color: color-mix(in srgb, var(--fm-text-strong) 88%, transparent); }
-.trade2__total-num.is-win { color: var(--brand); }
-.trade2__total-sep { font-weight: 500; color: var(--fm-muted); }
+.trade2__total-num {
+  display: inline-block;
+  color: var(--fm-text-strong);
+  font-weight: 700;
+  border-radius: 0.3em;
+}
+.trade2__total-num.is-win {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.15em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+}
+.trade2__total-sep {
+  font-weight: 500;
+  color: var(--fm-muted);
+  /* Clear the winner glass spread so the pill doesn’t kiss the dash. */
+  padding: 0 0.1em;
+}
 
 /* Per-swap rows — one row per traded player: a player on each side of a
    neutral centre score, with the kept/dropped tenure beneath each name
@@ -4516,16 +4531,30 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 }
 .trade2__pl-name:hover .trade2__pl-name-text { text-decoration: underline; }
 .trade2__pl-name-text { color: inherit; }
-/* Per-swap score — neutral + light; never carries the winner colour. */
+/* Per-swap score — Option D: muted by default; winner gets the same
+ * soft glass pill as the centre total (smaller). */
 .trade2__pl-score {
   display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 500;
   color: var(--fm-muted);
   white-space: nowrap;
+}
+.trade2__pl-score-num {
+  display: inline-block;
+  color: var(--fm-muted);
+  font-weight: 500;
+  border-radius: 0.3em;
+}
+.trade2__pl-score-num.is-win {
+  color: var(--fm-text-strong);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.12em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 .trade2__pl-score-sep {
   font-size: 11px;

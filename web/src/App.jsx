@@ -2004,19 +2004,21 @@ function TradePlayerCell({ leg, side }) {
   )
 }
 
-/** Per-swap row: offered player · neutral pts–pts score · received player. */
+/** Per-swap row: offered player · pts–pts score (winner glass) · received. */
 function TradePairRow({ pair }) {
   const offPts = Number(pair?.offeredLeg?.totalPoints) || 0
   const recPts = Number(pair?.receivedLeg?.totalPoints) || 0
+  const offWin = offPts >= recPts
+  const recWin = recPts > offPts
   return (
     <div className="trade2__pair">
       <TradePlayerCell leg={pair?.offeredLeg} side="offered" />
       <span className="trade2__pl-score tabular" aria-label={`${offPts} to ${recPts}`}>
-        <span>{offPts}</span>
+        <span className={'trade2__pl-score-num' + (offWin ? ' is-win' : '')}>{offPts}</span>
         <span className="trade2__pl-score-sep" aria-hidden>
           {'\u2013'}
         </span>
-        <span>{recPts}</span>
+        <span className={'trade2__pl-score-num' + (recWin ? ' is-win' : '')}>{recPts}</span>
       </span>
       <TradePlayerCell leg={pair?.receivedLeg} side="received" />
     </div>
@@ -2024,8 +2026,8 @@ function TradePairRow({ pair }) {
 }
 
 /** Single processed-trade card — face-off layout: team totals at the top
- *  centre (winner in brand purple), then one row per swapped player with a
- *  neutral per-swap score and the kept/dropped tenure beneath each name. */
+ *  centre (winner glass pill, Option D), then one row per swapped player
+ *  with the same winner treatment and kept/dropped tenure under each name. */
 function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
   const offeredPts = tradeSumLegs(trade.pairs, 'offeredLeg')
   const receivedPts = tradeSumLegs(trade.pairs, 'receivedLeg')
