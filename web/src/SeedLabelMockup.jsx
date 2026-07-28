@@ -88,9 +88,9 @@ const OPTIONS = [
   {
     id: 'B',
     title: 'Quiet pill',
-    tag: 'Recommended',
+    tag: 'Locked · shipped',
     tagTone: 'quiet',
-    desc: 'Same left-aligned placement, but shorter (15px), Geist Mono, hairline border, less weight — matches Waivers cream chips.',
+    desc: 'Same left-aligned placement, but shorter (15px), Geist Mono, hairline border, less weight — matches Waivers cream chips. Now live on Scores face-offs (`.live-banner-row__seed`).',
     render: () => (
       <>
         <span className="seedm-seed--b">{FIXTURE.seedCaps}</span>
@@ -200,9 +200,9 @@ export function SeedLabelMockup() {
       </div>
 
       <p className="seedm-note">
-        <strong>Suggestion:</strong> Option B keeps the familiar left-aligned
-        placement while matching Scorebook chip language. C or F if you want
-        even less chrome. Open via <code>?seed=1</code>.
+        <strong>Locked:</strong> Option B shipped to production
+        (<code>.live-banner-row__seed</code>). Gallery kept for reference —
+        open via <code>?seed=1</code>.
       </p>
     </div>
   )

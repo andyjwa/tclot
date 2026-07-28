@@ -11976,30 +11976,33 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* ============================================================ */
 
 /* Per-fixture seeding pill ("1st vs 8th"), left-aligned above the face-off
-   row in the exact FotMob "GROUP A / GROUP B" treatment: a quiet grey rounded
-   pill with uppercase tracked text. Each team's live rank is threaded in from
-   `liveStandingsRows` (see LiveScores). Block-level so it sits on its own line
-   above the row; the left margin lines it up with the row's content inset. */
+   row. Locked to Scorebook "quiet pill" (seed mockup Option B / `?seed=1`):
+   shorter mono chip, hairline border, muted weight — no longer the taller
+   FotMob GROUP pill. Each team's live rank is threaded in from
+   `liveStandingsRows` (see LiveScores). */
 .live-banner-row__seed {
   display: flex;
   width: fit-content;
   align-items: center;
-  height: 22px;
+  height: 16px;
   margin: 10px 0 0 14px;
-  padding: 0 11px;
+  padding: 0 8px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--fm-surface-2) 70%, transparent);
-  color: var(--fm-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  background: var(--surface-2, var(--fm-surface-2));
+  border: 1px solid var(--border, var(--fm-border));
+  color: var(--text-muted, var(--fm-muted));
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  line-height: 1;
 }
 .live-banner-row__seed--compact {
-  height: 20px;
-  margin: 9px 0 0 12px;
-  padding: 0 10px;
-  font-size: 10px;
+  height: 15px;
+  margin: 8px 0 0 12px;
+  padding: 0 7px;
+  font-size: 9px;
 }
 
 .live-banner-row {
