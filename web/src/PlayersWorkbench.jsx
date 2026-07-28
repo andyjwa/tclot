@@ -681,11 +681,18 @@ function PortraitWireTileList({
                 onClick={() => onColumnSort(col.id)}
               >
                 <span className="players-wire-tile-colhead__label">{col.label}</span>
-                {isActive ? (
-                  <span className="players-wire-tile-colhead__arrow" aria-hidden>
-                    {sortDir === 'asc' ? '↑' : '↓'}
-                  </span>
-                ) : null}
+                {/* Always reserve the arrow slot so switching the sorted
+                 * column doesn't nudge labels sideways and throw the
+                 * header out of line with the values below. */}
+                <span
+                  className={
+                    'players-wire-tile-colhead__arrow' +
+                    (isActive ? '' : ' players-wire-tile-colhead__arrow--idle')
+                  }
+                  aria-hidden
+                >
+                  {isActive ? (sortDir === 'asc' ? '↑' : '↓') : '↓'}
+                </span>
               </button>
             )
           })}
