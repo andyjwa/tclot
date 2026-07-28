@@ -12895,16 +12895,16 @@ button.live-xp__player-name:focus-visible {
   text-decoration-color: color-mix(in srgb, #dc2626 55%, transparent);
 }
 
-/* Orange dot — player is currently on the pitch */
-.live-xp__player-dot {
-  width: 6px;
-  height: 6px;
+/* Amber dot — FPL awarded clean-sheet points (GK / DEF / MID only) */
+.live-xp__player-cs {
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: #fbbf24;
   flex-shrink: 0;
   display: inline-block;
 }
-.fotmob[data-theme='light'] .live-xp__player-dot {
+.fotmob[data-theme='light'] .live-xp__player-cs {
   background: #d97706;
 }
 .live-xp__player-icon {

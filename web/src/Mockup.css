@@ -2153,6 +2153,7 @@
 .mockup[data-theme='light'] .mockup-table__player-name--bench  { background: color-mix(in srgb, #f59e0b 16%, transparent); }
 .mockup[data-theme='light'] .mockup-table__player-name--absent { background: color-mix(in srgb, var(--data-negative) 12%, transparent); text-decoration-color: color-mix(in srgb, var(--data-negative) 55%, transparent); }
 
+/* Confirmed clean-sheet points only (GK / DEF / MID). Not a live-on-pitch marker. */
 .mockup-table__cs {
   width: 5px;
   height: 5px;
@@ -2161,6 +2162,46 @@
   flex-shrink: 0;
 }
 .mockup[data-theme='light'] .mockup-table__cs { background: #d97706; }
+
+/* Legend + focused preview for clean-sheet-dot treatment */
+.mockup-lu-ind-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mockup-lu-ind-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--text);
+}
+.mockup-lu-ind-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mockup-lu-ind-legend__item--muted {
+  color: var(--text-muted);
+}
+.mockup-lu-ind-legend__item .mockup-table__cs {
+  width: 6px;
+  height: 6px;
+}
+.mockup-lu-ind-legend__strike {
+  width: 22px;
+  text-align: center;
+  color: color-mix(in srgb, #f59e0b 55%, var(--text-muted));
+  text-decoration: line-through;
+  opacity: 0.55;
+  font-size: 11px;
+  line-height: 1;
+}
 
 .mockup-table__inj,
 .mockup-table__autosub {

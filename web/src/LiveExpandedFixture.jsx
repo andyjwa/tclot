@@ -2,8 +2,8 @@ import { Fragment, useMemo, useState } from 'react';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
+  isCleanSheetEligible,
   minutesTone,
-  playerLiveState,
   playerXiPillKind,
   rowsByPointsContributed,
   sortStartingXIByPosition,
@@ -92,7 +92,6 @@ function AutoSubsNote({ squad }) {
  */
 function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
   const pillKind = playerXiPillKind(row);
-  const state = playerLiveState(row);
   const mins = Number(row.minutes) || 0;
   const played = mins > 0;
   const tone = minutesTone(mins, played);
@@ -102,7 +101,10 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
   const assists = Number(row.assists) || 0;
   const bonus = Number(row.bonus) || 0;
   const pts = Number(row.total_points) || 0;
-  const isLivePlayer = state.kind === 'live';
+  // FPL live element stat `clean_sheets` (already mapped on the row). Dot only
+  // when FPL has awarded CS points and the position can score them.
+  const showCleanSheet =
+    (Number(row.cleanSheets) || 0) > 0 && isCleanSheetEligible(row.posSingular);
   const displayName = row.displayName ?? row.web_name ?? `#${row.element}`;
   const numOrDash = (n, accentClass) => {
     if (!played) return <span className="live-xp__zero">—</span>;
@@ -137,11 +139,11 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
             title={`${displayName} — view season history`}
           >
             <span className="live-xp__player-name-text">{displayName}</span>
-            {isLivePlayer ? (
+            {showCleanSheet ? (
               <span
-                className="live-xp__player-dot"
-                aria-label="On pitch"
-                title="On pitch"
+                className="live-xp__player-cs"
+                aria-label="Clean sheet points"
+                title="Clean sheet points"
               />
             ) : null}
             {row.availabilityStatus === 'i' ? (
@@ -168,8 +170,12 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
         ) : (
           <span className={`live-xp__player-name live-xp__player-name--${pillKind}`}>
             <span className="live-xp__player-name-text">{displayName}</span>
-            {isLivePlayer ? (
-              <span className="live-xp__player-dot" aria-label="On pitch" />
+            {showCleanSheet ? (
+              <span
+                className="live-xp__player-cs"
+                aria-label="Clean sheet points"
+                title="Clean sheet points"
+              />
             ) : null}
             {row.availabilityStatus === 'i' ? (
               <span className="live-xp__player-icon" aria-label="Injured" role="img">🚑</span>
