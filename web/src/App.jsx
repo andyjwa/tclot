@@ -876,12 +876,85 @@ function resolveManagerFull(displayKey, fallbackFull, fullNameMap) {
   return null
 }
 
+/** Titles (gold pill) · Titan (top-4 count) · Minnow (bottom-4 count). */
+function TeamJourneyStatCols({ row, titleWins }) {
+  const titleTooltip =
+    titleWins.length > 0
+      ? titleWins
+          .map(
+            (s) =>
+              `${shortenHallSeasonLabel(s.season)}${s.team ? ` · ${s.team}` : ''}`,
+          )
+          .join(', ')
+      : 'Seasons finished 1st'
+  return (
+    <div
+      className="merged-history-timeline__mgr-cols merged-history-timeline__mgr-cols--3"
+      role="table"
+      aria-label="Titles, Titan, and Minnow finishes"
+    >
+      <div className="merged-history-timeline__mgr-cols-head" role="row">
+        <div
+          className="merged-history-timeline__mgr-col-label"
+          role="columnheader"
+          title="Seasons finished 1st"
+        >
+          Titles
+        </div>
+        <div
+          className="merged-history-timeline__mgr-col-label"
+          role="columnheader"
+          title="Seasons finishing 1st–4th (top half)"
+        >
+          Titan
+        </div>
+        <div
+          className="merged-history-timeline__mgr-col-label"
+          role="columnheader"
+          title="Seasons finishing 5th–8th (bottom half)"
+        >
+          Minnow
+        </div>
+      </div>
+      <div className="merged-history-timeline__mgr-cols-body" role="row">
+        <div
+          className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
+          role="cell"
+          title={titleTooltip}
+        >
+          <span
+            className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
+            aria-label={`${row.titles} titles`}
+          >
+            {row.titles}
+          </span>
+        </div>
+        <div
+          className="merged-history-timeline__mgr-col-num tabular"
+          role="cell"
+          title="Seasons finishing 1st–4th (top half)"
+        >
+          {row.titanCount}
+        </div>
+        <div
+          className="merged-history-timeline__mgr-col-num tabular"
+          role="cell"
+          title="Seasons finishing 5th–8th (bottom half)"
+        >
+          {row.minnowCount}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TeamHistoryDesktop({ journey, fullNameMap }) {
   return (
     <div className="merged-history-timeline">
       {journey.map((row) => {
         const seasonsPlayed = row.seasons.length
         const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+        const titleWins = row.seasons.filter((s) => Number(s.rank) === 1)
         return (
           <div key={row.key} className="merged-history-timeline__row">
             <div className="merged-history-timeline__mgr">
@@ -896,34 +969,11 @@ function TeamHistoryDesktop({ journey, fullNameMap }) {
                 </div>
               </div>
               <div
-                className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
+                className="merged-history-timeline__mgr-stats"
                 role="group"
                 aria-label={`Career stats for ${row.key}`}
               >
-                <div className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">
-                    {row.titles === 1 ? 'title' : 'titles'}
-                  </span>
-                </div>
-                <div className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.runnerUps}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
-                </div>
-                <div
-                  className="merged-history-timeline__mgr-stat"
-                  title="Seasons finishing 1st–4th (top half)"
-                >
-                  <span className="merged-history-timeline__mgr-stat-num">{row.titanCount}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">titan</span>
-                </div>
-                <div
-                  className="merged-history-timeline__mgr-stat"
-                  title="Seasons finishing 5th–8th (bottom half)"
-                >
-                  <span className="merged-history-timeline__mgr-stat-num">{row.minnowCount}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">minnow</span>
-                </div>
+                <TeamJourneyStatCols row={row} titleWins={titleWins} />
               </div>
               <div className="merged-history-timeline__mgr-meta muted tabular">
                 {seasonsPlayed} {seasonsPlayed === 1 ? 'season' : 'seasons'}
@@ -983,6 +1033,7 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
           const open = openKeys.has(row.key)
           const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
           const place = idx + 1
+          const titleWins = row.seasons.filter((s) => Number(s.rank) === 1)
           return (
             <li key={row.key} className="merged-history-mv__accordion-item">
               <button
@@ -1020,28 +1071,37 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
                 </span>
               </button>
               {open ? (
-                <ul className="merged-history-mv__journey">
-                  {row.seasons.map((s) => (
-                    <li
-                      key={s.season}
-                      className={
-                        'merged-history-mv__journey-row ' + heritageCellPosClass(s.rank)
-                      }
-                    >
-                      <span className="merged-history-mv__journey-season tabular">
-                        {shortenHallSeasonLabel(s.season)}
-                      </span>
-                      <span className="merged-history-mv__journey-team">{s.team ?? '—'}</span>
-                      <span
+                <div className="merged-history-mv__journey-wrap">
+                  <div
+                    className="merged-history-mv__journey-stats"
+                    role="group"
+                    aria-label={`Career stats for ${row.key}`}
+                  >
+                    <TeamJourneyStatCols row={row} titleWins={titleWins} />
+                  </div>
+                  <ul className="merged-history-mv__journey">
+                    {row.seasons.map((s) => (
+                      <li
+                        key={s.season}
                         className={
-                          'merged-history-mv__pos-chip ' + heritageCellPosClass(s.rank)
+                          'merged-history-mv__journey-row ' + heritageCellPosClass(s.rank)
                         }
                       >
-                        {s.rank ?? '—'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        <span className="merged-history-mv__journey-season tabular">
+                          {shortenHallSeasonLabel(s.season)}
+                        </span>
+                        <span className="merged-history-mv__journey-team">{s.team ?? '—'}</span>
+                        <span
+                          className={
+                            'merged-history-mv__pos-chip ' + heritageCellPosClass(s.rank)
+                          }
+                        >
+                          {s.rank ?? '—'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ) : null}
             </li>
           )

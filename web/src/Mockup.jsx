@@ -10200,82 +10200,121 @@ function mergedCellPosClass(rank) {
  * shows team name on top + big position below (heatmap-tinted).
  *
  * Locked spec: identity column is a vertical stack — badge + bold
- * full name on a top row, then a full-width 2×2 grid of uppercase
- * stats (TITLES · RUNNER-UP · TITAN · MINNOW) that mirrors the 25/26
- * year-label treatment (caps, muted, letter-spaced).
- *   TITLES   — finishes at 1st
- *   RUNNER-UP — finishes at 2nd
- *   TITAN    — top-half finishes (1st–4th)
- *   MINNOW   — bottom-half finishes (5th–8th)
+ * full name on a top row, then a 3-column stats strip:
+ *   TITLES  — 1st-place count in the gold pos-1 pill
+ *   TITAN   — top-half finishes (1st–4th)
+ *   MINNOW  — bottom-half finishes (5th–8th)
  * TITAN + MINNOW = seasons played. Tooltips on the TITAN/MINNOW
  * cells carry the position-range clarification so the inline labels
- * stay short. */
+ * stay short; Titles tooltip lists championship seasons. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
-      {MERGED_HISTORY_SORTED.map((row) => (
-        <div key={row.key} className="merged-history-timeline__row">
-          <div className="merged-history-timeline__mgr">
-            <div className="merged-history-timeline__mgr-head">
-              <span
-                className="merged-history-timeline__crest"
-                style={{ background: row.meta.color }}
-              >
-                {row.meta.initials}
-              </span>
-              <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
-            </div>
-            <div
-              className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
-              role="group"
-              aria-label="Career stats"
-            >
-              <div className="merged-history-timeline__mgr-stat">
-                <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
-                <span className="merged-history-timeline__mgr-stat-label">
-                  {row.titles === 1 ? 'title' : 'titles'}
+      {MERGED_HISTORY_SORTED.map((row) => {
+        const titleWins = row.seasons.filter((s) => Number(s.rank) === 1)
+        const titleTooltip =
+          titleWins.length > 0
+            ? titleWins
+                .map((s) => `${s.season}${s.team ? ` · ${s.team}` : ''}`)
+                .join(', ')
+            : 'Seasons finished 1st'
+        return (
+          <div key={row.key} className="merged-history-timeline__row">
+            <div className="merged-history-timeline__mgr">
+              <div className="merged-history-timeline__mgr-head">
+                <span
+                  className="merged-history-timeline__crest"
+                  style={{ background: row.meta.color }}
+                >
+                  {row.meta.initials}
                 </span>
-              </div>
-              <div className="merged-history-timeline__mgr-stat">
-                <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
-                <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+                <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
               </div>
               <div
-                className="merged-history-timeline__mgr-stat"
-                title="Seasons finishing 1st–4th (top half)"
+                className="merged-history-timeline__mgr-stats"
+                role="group"
+                aria-label="Career stats"
               >
-                <span className="merged-history-timeline__mgr-stat-num">{row.titan}</span>
-                <span className="merged-history-timeline__mgr-stat-label">titan</span>
-              </div>
-              <div
-                className="merged-history-timeline__mgr-stat"
-                title="Seasons finishing 5th–8th (bottom half)"
-              >
-                <span className="merged-history-timeline__mgr-stat-num">{row.minnow}</span>
-                <span className="merged-history-timeline__mgr-stat-label">minnow</span>
+                <div
+                  className="merged-history-timeline__mgr-cols merged-history-timeline__mgr-cols--3"
+                  role="table"
+                  aria-label="Titles, Titan, and Minnow finishes"
+                >
+                  <div className="merged-history-timeline__mgr-cols-head" role="row">
+                    <div
+                      className="merged-history-timeline__mgr-col-label"
+                      role="columnheader"
+                      title="Seasons finished 1st"
+                    >
+                      Titles
+                    </div>
+                    <div
+                      className="merged-history-timeline__mgr-col-label"
+                      role="columnheader"
+                      title="Seasons finishing 1st–4th (top half)"
+                    >
+                      Titan
+                    </div>
+                    <div
+                      className="merged-history-timeline__mgr-col-label"
+                      role="columnheader"
+                      title="Seasons finishing 5th–8th (bottom half)"
+                    >
+                      Minnow
+                    </div>
+                  </div>
+                  <div className="merged-history-timeline__mgr-cols-body" role="row">
+                    <div
+                      className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
+                      role="cell"
+                      title={titleTooltip}
+                    >
+                      <span
+                        className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
+                        aria-label={`${row.titles} titles`}
+                      >
+                        {row.titles}
+                      </span>
+                    </div>
+                    <div
+                      className="merged-history-timeline__mgr-col-num tabular"
+                      role="cell"
+                      title="Seasons finishing 1st–4th (top half)"
+                    >
+                      {row.titan}
+                    </div>
+                    <div
+                      className="merged-history-timeline__mgr-col-num tabular"
+                      role="cell"
+                      title="Seasons finishing 5th–8th (bottom half)"
+                    >
+                      {row.minnow}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="merged-history-timeline__cards">
-            {row.seasons.map((s) => (
-              <div
-                key={s.season}
-                className={
-                  'merged-history-timeline__card ' + mergedCellPosClass(s.rank)
-                }
-              >
-                <div className="merged-history-timeline__card-season">{s.season}</div>
-                <div className="merged-history-timeline__card-team" title={s.team ?? ''}>
-                  {s.team ?? '—'}
+            <div className="merged-history-timeline__cards">
+              {row.seasons.map((s) => (
+                <div
+                  key={s.season}
+                  className={
+                    'merged-history-timeline__card ' + mergedCellPosClass(s.rank)
+                  }
+                >
+                  <div className="merged-history-timeline__card-season">{s.season}</div>
+                  <div className="merged-history-timeline__card-team" title={s.team ?? ''}>
+                    {s.team ?? '—'}
+                  </div>
+                  <div className="merged-history-timeline__card-pos">
+                    {s.rank ?? '—'}
+                  </div>
                 </div>
-                <div className="merged-history-timeline__card-pos">
-                  {s.rank ?? '—'}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
