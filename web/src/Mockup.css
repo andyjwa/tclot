@@ -2144,8 +2144,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  flex: 0 1 auto;
-  max-width: calc(100% - 28px);
+  max-width: 100%;
 }
 .mockup-table__player-name--xi     { background: color-mix(in srgb, var(--data-positive) 18%, transparent); color: var(--text-strong); }
 .mockup-table__player-name--bench  { background: color-mix(in srgb, #fbbf24 14%, transparent); color: var(--text-strong); }
@@ -2164,27 +2163,7 @@
 }
 .mockup[data-theme='light'] .mockup-table__cs { background: #d97706; }
 
-/* Subtle match-live cue — sits in the gap between name pill and POS column. */
-.mockup-table__live-badge {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-family: 'Geist Mono', monospace;
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  text-transform: lowercase;
-  color: color-mix(in srgb, #f59e0b 72%, var(--text-muted));
-  opacity: 0.85;
-  white-space: nowrap;
-  user-select: none;
-}
-.mockup[data-theme='light'] .mockup-table__live-badge {
-  color: color-mix(in srgb, #d97706 70%, var(--text-muted));
-  opacity: 0.8;
-}
-
-/* Legend + focused preview for CS-dot / live-badge treatment */
+/* Legend + focused preview for clean-sheet-dot treatment */
 .mockup-lu-ind-preview {
   display: flex;
   flex-direction: column;
@@ -2209,11 +2188,6 @@
 }
 .mockup-lu-ind-legend__item--muted {
   color: var(--text-muted);
-}
-.mockup-lu-ind-legend__item .mockup-table__live-badge {
-  margin-left: 0;
-  min-width: 22px;
-  text-align: center;
 }
 .mockup-lu-ind-legend__item .mockup-table__cs {
   width: 6px;

@@ -323,8 +323,7 @@ const DECISIONS_DECIDED = [
     items: [
       'Stat tracking: tabbed table — G · A · CS · DC · B columns',
       'Status pills (XI / BN / OUT) on each row',
-      'Name-side amber dot = confirmed clean-sheet points only (GK/DEF/MID) — not on-pitch status',
-      'Match live: subtle lowercase “live” badge in the gap between name and POS (no orange on-pitch dots)',
+      'Name-side amber dot = FPL clean_sheets > 0 for GK/DEF/MID only (no on-pitch / live badge)',
       'Defensive-contribution threshold: green / bold when met per position',
       'Softer yellow / red in dark mode',
       'Live banner group: shared status header (not per-card)',
@@ -2815,31 +2814,30 @@ function ExpandedHeader() {
 // xi: PL matchday squad status — 'xi' (in starting XI) | 'bench' (on PL bench) | 'absent' (not in squad)
 // goals/assists: integer counts. defcon: total defensive contributions. bonus: BPS-bonus number.
 // played: derived true/false — used to gate the second-line stats strip.
-// cs: confirmed clean-sheet points locked in (>60' played, 0 conceded). Dot only for GK/DEF/MID.
-// live: club fixture still in progress — drives the subtle "live" badge between name and POS.
+// cs: confirmed clean-sheet points from FPL (`clean_sheets` > 0). Dot only for GK/DEF/MID.
 // opp: opponent club 3-letter code (replaces minute/kickoff display).
 const TEAM_CO = {
   code: 'CO',
   name: 'Crouch End',
   total: 67,
   starters: [
-    { club: 'LIV', name: 'Alisson',     pos: 'GK',  opp: 'CHE', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 0, a: 0, dc: 2,  b: 0, cs: true,  live: true  },
-    { club: 'ARS', name: 'Saliba',      pos: 'DEF', opp: 'NFO', played: true,  min: 90, pts: 9,  xi: 'xi',     g: 0, a: 0, dc: 14, b: 1, cs: true,  live: false },
-    { club: 'LIV', name: 'Van Dijk',    pos: 'DEF', opp: 'CHE', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 0, a: 0, dc: 11, b: 0, cs: true,  live: true  },
-    { club: 'TOT', name: 'Porro',       pos: 'DEF', opp: 'BRE', played: true,  min: 67, pts: 4,  xi: 'xi',     g: 0, a: 1, dc: 8,  b: 0, cs: false, live: true  },
-    { club: 'LIV', name: 'M.Salah',     pos: 'MID', opp: 'CHE', played: true,  min: 67, pts: 18, xi: 'xi',     g: 1, a: 1, dc: 0,  b: 3, cs: true,  live: true  },
-    { club: 'NEW', name: 'Bruno G.',    pos: 'MID', opp: 'WHU', played: true,  min: 90, pts: 8,  xi: 'xi',     g: 0, a: 1, dc: 12, b: 0, cs: false, live: false },
-    { club: 'CHE', name: 'Palmer',      pos: 'MID', opp: 'LIV', played: true,  min: 67, pts: 7,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false, live: true  },
-    { club: 'AVL', name: 'McGinn',      pos: 'MID', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
-    { club: 'MCI', name: 'Haaland',     pos: 'FWD', opp: 'BHA', played: true,  min: 90, pts: 5,  xi: 'xi',     g: 1, a: 0, dc: 0,  b: 0, cs: false, live: false },
-    { club: 'NEW', name: 'Isak',        pos: 'FWD', opp: 'WHU', played: true,  min: 58, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false, live: false, inj: true },
-    { club: 'BOU', name: 'Evanilson',   pos: 'FWD', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
+    { club: 'LIV', name: 'Alisson',     pos: 'GK',  opp: 'CHE', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 0, a: 0, dc: 2,  b: 0, cs: true  },
+    { club: 'ARS', name: 'Saliba',      pos: 'DEF', opp: 'NFO', played: true,  min: 90, pts: 9,  xi: 'xi',     g: 0, a: 0, dc: 14, b: 1, cs: true  },
+    { club: 'LIV', name: 'Van Dijk',    pos: 'DEF', opp: 'CHE', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 0, a: 0, dc: 11, b: 0, cs: true  },
+    { club: 'TOT', name: 'Porro',       pos: 'DEF', opp: 'BRE', played: true,  min: 67, pts: 4,  xi: 'xi',     g: 0, a: 1, dc: 8,  b: 0, cs: false },
+    { club: 'LIV', name: 'M.Salah',     pos: 'MID', opp: 'CHE', played: true,  min: 67, pts: 18, xi: 'xi',     g: 1, a: 1, dc: 0,  b: 3, cs: true  },
+    { club: 'NEW', name: 'Bruno G.',    pos: 'MID', opp: 'WHU', played: true,  min: 90, pts: 8,  xi: 'xi',     g: 0, a: 1, dc: 12, b: 0, cs: false },
+    { club: 'CHE', name: 'Palmer',      pos: 'MID', opp: 'LIV', played: true,  min: 67, pts: 7,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false },
+    { club: 'AVL', name: 'McGinn',      pos: 'MID', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'MCI', name: 'Haaland',     pos: 'FWD', opp: 'BHA', played: true,  min: 90, pts: 5,  xi: 'xi',     g: 1, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'NEW', name: 'Isak',        pos: 'FWD', opp: 'WHU', played: true,  min: 58, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false, inj: true },
+    { club: 'BOU', name: 'Evanilson',   pos: 'FWD', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false },
   ],
   bench: [
-    { club: 'BHA', name: 'Verbruggen',  pos: 'GK',  opp: 'MCI', played: true,  min: 90, pts: 2,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false, live: false },
-    { club: 'WHU', name: 'Wan-Bissaka', pos: 'DEF', opp: 'NEW', played: true,  min: 67, pts: 1,  xi: 'xi',     g: 0, a: 0, dc: 8,  b: 0, cs: false, live: true, autosub: true },
-    { club: 'CRY', name: 'Eze',         pos: 'MID', opp: 'BOU', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
-    { club: 'FUL', name: 'Muniz',       pos: 'FWD', opp: 'IPS', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
+    { club: 'BHA', name: 'Verbruggen',  pos: 'GK',  opp: 'MCI', played: true,  min: 90, pts: 2,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false },
+    { club: 'WHU', name: 'Wan-Bissaka', pos: 'DEF', opp: 'NEW', played: true,  min: 67, pts: 1,  xi: 'xi',     g: 0, a: 0, dc: 8,  b: 0, cs: false, autosub: true },
+    { club: 'CRY', name: 'Eze',         pos: 'MID', opp: 'BOU', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'FUL', name: 'Muniz',       pos: 'FWD', opp: 'IPS', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false },
   ],
 }
 
@@ -2848,23 +2846,23 @@ const TEAM_TO = {
   name: 'Toronto',
   total: 61,
   starters: [
-    { club: 'NFO', name: 'Sels',        pos: 'GK',  opp: 'ARS', played: true,  min: 90, pts: 7,  xi: 'xi',     g: 0, a: 0, dc: 3,  b: 0, cs: false, live: false },
-    { club: 'ARS', name: 'Gabriel',     pos: 'DEF', opp: 'NFO', played: true,  min: 90, pts: 6,  xi: 'xi',     g: 0, a: 1, dc: 14, b: 1, cs: true,  live: false },
-    { club: 'BOU', name: 'Kerkez',      pos: 'DEF', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
-    { club: 'AVL', name: 'Konsa',       pos: 'DEF', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
-    { club: 'TOT', name: 'Maddison',    pos: 'MID', opp: 'BRE', played: true,  min: 67, pts: 9,  xi: 'xi',     g: 0, a: 1, dc: 5,  b: 0, cs: false, live: true  },
-    { club: 'BRE', name: 'Mbeumo',      pos: 'MID', opp: 'TOT', played: true,  min: 90, pts: 11, xi: 'xi',     g: 1, a: 0, dc: 6,  b: 1, cs: false, live: false },
-    { club: 'WHU', name: 'Bowen',       pos: 'MID', opp: 'NEW', played: true,  min: 67, pts: 5,  xi: 'xi',     g: 0, a: 1, dc: 2,  b: 0, cs: false, live: true, inj: true },
-    { club: 'NEW', name: 'Gordon',      pos: 'MID', opp: 'WHU', played: true,  min: 90, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 4,  b: 0, cs: false, live: false },
-    { club: 'CHE', name: 'N.Jackson',   pos: 'FWD', opp: 'LIV', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false, live: true  },
-    { club: 'IPS', name: 'Delap',       pos: 'FWD', opp: 'FUL', played: true,  min: 88, pts: 7,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false, live: false },
-    { club: 'BRI', name: 'João Pedro',  pos: 'FWD', opp: 'WOL', played: true,  min: 64, pts: 6,  xi: 'bench',  g: 0, a: 1, dc: 1,  b: 0, cs: false, live: false },
+    { club: 'NFO', name: 'Sels',        pos: 'GK',  opp: 'ARS', played: true,  min: 90, pts: 7,  xi: 'xi',     g: 0, a: 0, dc: 3,  b: 0, cs: false },
+    { club: 'ARS', name: 'Gabriel',     pos: 'DEF', opp: 'NFO', played: true,  min: 90, pts: 6,  xi: 'xi',     g: 0, a: 1, dc: 14, b: 1, cs: true  },
+    { club: 'BOU', name: 'Kerkez',      pos: 'DEF', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'AVL', name: 'Konsa',       pos: 'DEF', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'TOT', name: 'Maddison',    pos: 'MID', opp: 'BRE', played: true,  min: 67, pts: 9,  xi: 'xi',     g: 0, a: 1, dc: 5,  b: 0, cs: false },
+    { club: 'BRE', name: 'Mbeumo',      pos: 'MID', opp: 'TOT', played: true,  min: 90, pts: 11, xi: 'xi',     g: 1, a: 0, dc: 6,  b: 1, cs: false },
+    { club: 'WHU', name: 'Bowen',       pos: 'MID', opp: 'NEW', played: true,  min: 67, pts: 5,  xi: 'xi',     g: 0, a: 1, dc: 2,  b: 0, cs: false, inj: true },
+    { club: 'NEW', name: 'Gordon',      pos: 'MID', opp: 'WHU', played: true,  min: 90, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 4,  b: 0, cs: false },
+    { club: 'CHE', name: 'N.Jackson',   pos: 'FWD', opp: 'LIV', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false },
+    { club: 'IPS', name: 'Delap',       pos: 'FWD', opp: 'FUL', played: true,  min: 88, pts: 7,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false },
+    { club: 'BRI', name: 'João Pedro',  pos: 'FWD', opp: 'WOL', played: true,  min: 64, pts: 6,  xi: 'bench',  g: 0, a: 1, dc: 1,  b: 0, cs: false },
   ],
   bench: [
-    { club: 'EVE', name: 'Pickford',    pos: 'GK',  opp: 'SOU', played: true,  min: 90, pts: 2,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false, live: false },
-    { club: 'LEI', name: 'Justin',      pos: 'DEF', opp: 'AVL', played: true,  min: 67, pts: 1,  xi: 'xi',     g: 0, a: 0, dc: 6,  b: 0, cs: false, live: true, autosub: true },
-    { club: 'WOL', name: 'Cunha',       pos: 'MID', opp: 'BRI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
-    { club: 'SOU', name: 'Armstrong',   pos: 'FWD', opp: 'EVE', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false, live: false },
+    { club: 'EVE', name: 'Pickford',    pos: 'GK',  opp: 'SOU', played: true,  min: 90, pts: 2,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false },
+    { club: 'LEI', name: 'Justin',      pos: 'DEF', opp: 'AVL', played: true,  min: 67, pts: 1,  xi: 'xi',     g: 0, a: 0, dc: 6,  b: 0, cs: false, autosub: true },
+    { club: 'WOL', name: 'Cunha',       pos: 'MID', opp: 'BRI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'SOU', name: 'Armstrong',   pos: 'FWD', opp: 'EVE', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false },
   ],
 }
 
@@ -3013,11 +3011,6 @@ function TableRow({ p, bench }) {
           {p.inj && <span className="mockup-table__inj" aria-label="Injury doubt" title="Injury doubt">🚑</span>}
           {p.autosub && <span className="mockup-table__autosub" aria-label="Autosubbed in" title="Autosubbed in">🔄</span>}
         </span>
-        {p.live ? (
-          <span className="mockup-table__live-badge" aria-label="Match live" title="Match live">
-            live
-          </span>
-        ) : null}
       </div>
       <div className="mockup-table__cell mockup-table__cell--pos">{p.pos}</div>
       <div className={`mockup-table__cell mockup-table__cell--min mockup-table__cell--min-${tone}`}>
@@ -3105,25 +3098,19 @@ function PortraitExpandedPreview() {
   )
 }
 
-/** Focused mock of lineup row indicators: CS dots + live badge (no on-pitch dots). */
+/** Focused mock of lineup row indicators: clean-sheet dots only. */
 function LiveRowIndicatorsLegend() {
   return (
     <div className="mockup-lu-ind-legend" aria-label="Row indicator key">
       <div className="mockup-lu-ind-legend__item">
         <span className="mockup-table__cs" aria-hidden />
         <span>
-          Amber dot — confirmed clean-sheet points (GK / DEF / MID only)
-        </span>
-      </div>
-      <div className="mockup-lu-ind-legend__item">
-        <span className="mockup-table__live-badge" aria-hidden>live</span>
-        <span>
-          Tiny “live” label in the name→POS gap — club fixture still in play
+          Amber dot — FPL clean-sheet points awarded (GK / DEF / MID only)
         </span>
       </div>
       <div className="mockup-lu-ind-legend__item mockup-lu-ind-legend__item--muted">
         <span className="mockup-lu-ind-legend__strike" aria-hidden>●</span>
-        <span>No orange on-pitch dots beside names</span>
+        <span>No on-pitch / live badges beside names</span>
       </div>
     </div>
   )
@@ -3136,7 +3123,7 @@ function LiveRowIndicatorsPreview() {
       <div className="mockup-portrait-row">
         <div className="mockup-portrait-col">
           <div className="mockup-portrait-col__h">
-            Lineups table · CS dots + live badge
+            Lineups table · clean-sheet dots
           </div>
           <PortraitFrame>
             <ExpandedTable />
@@ -12231,17 +12218,17 @@ export function Mockup() {
           <PortraitExpandedPreview />
         </section>
 
-        {/* 11a-3b. Lineup row indicators — CS dot + live badge */}
+        {/* 11a-3b. Lineup row indicators — CS dots only */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Lineups · row indicators</div>
           <h2 className="mockup__section-h">
-            Clean-sheet dots only · subtle live badge between name and POS
+            Clean-sheet dots only (from FPL live stats)
           </h2>
           <p className="mockup__section-sub">
-            Drop the orange on-pitch dots beside names. The amber name-side dot
-            means confirmed clean-sheet points (GK / DEF / MID). When a club
-            fixture is still live, a quiet lowercase “live” sits in the gap
-            between the name pill and the POS column — no pulse, no fill.
+            No on-pitch or live badges beside names. The amber name-side dot
+            appears when FPL’s live element stat <code>clean_sheets</code> is
+            greater than 0, and only for GK / DEF / MID (forwards never score
+            CS points).
           </p>
           <LiveRowIndicatorsPreview />
         </section>
