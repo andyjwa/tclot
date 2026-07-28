@@ -360,27 +360,31 @@ body[data-tclot-paint='1'][data-tclot-theme='dark'] .lfc-events__ico--a {
   color: #a99bd1;
 }
 
-/* ---- Points Feed: pos/neg points chips (Variant C tonal tints) ----
- * App.css tints these with ~16%-alpha color over the card, which
- * composites muddy on the cream paper. Use opaque tonal mixes instead. */
+/* ---- Points Feed: match Live Table PTS pill ----
+ * Live Table paints `.pts-cell__value` as
+ *   background: color-mix(--tclot-logo-purple 15%, transparent)
+ *   color: --fm-text-strong
+ * The feed used a cooler green-on-white wash that read as pale blue-grey
+ * next to those olive greige PTS chips. Keep pos pills in lockstep with
+ * the Live Table; neg stays rust for signed semantics. */
 body[data-tclot-paint='1'] .live-contrib-row__pts--pos {
-  color: #1f4a38;
-  background: color-mix(in srgb, #1f4a38 10%, #ffffff);
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #1f4a38) 15%, transparent);
 }
 
 body[data-tclot-paint='1'] .live-contrib-row__pts--neg {
   color: #b04f26;
-  background: color-mix(in srgb, #b04f26 10%, #ffffff);
+  background: color-mix(in srgb, #b04f26 12%, transparent);
 }
 
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--pos {
-  color: #8fc9a8;
-  background: color-mix(in srgb, #8fc9a8 16%, #1e2620);
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #8fc9a8) 15%, transparent);
 }
 
 body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--neg {
   color: #d97a4e;
-  background: color-mix(in srgb, #d97a4e 16%, #1e2620);
+  background: color-mix(in srgb, #d97a4e 16%, transparent);
 }
 
 /* ---- Desktop brand-header banner: racing-green band ----

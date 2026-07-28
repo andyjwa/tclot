@@ -13504,9 +13504,12 @@ button.live-xp__player-name:focus-visible {
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
+/* Positive points: same soft brand pill as Live Table PTS
+ * (`.standings-table--live .pts-cell__value`) — ink number on a 15%
+ * brand wash so the feed and table read as one system. */
 .live-contrib-row__pts--pos {
-  color: var(--data-positive);
-  background: color-mix(in srgb, var(--data-positive) 16%, transparent);
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 .live-contrib-row__pts--neg {
   color: var(--data-negative);
