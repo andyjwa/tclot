@@ -16280,15 +16280,17 @@ button.live-xp__player-name:focus-visible {
   text-overflow: ellipsis;
 }
 
-/* Titles · Titan · Minnow count columns (Titles uses gold 1st-place pill) */
-.merged-history-timeline__mgr-stats {
+/* Titles · Titan · Minnow count columns (Titles uses gold 1st-place pill).
+ * Scoped under .heritage-shell so production tokens win over Mockup.css
+ * (same class names, loaded later via the always-imported Mockup module). */
+.heritage-shell .merged-history-timeline__mgr-stats {
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
 }
 
-.merged-history-timeline__mgr-cols {
+.heritage-shell .merged-history-timeline__mgr-cols {
   border: 1px solid var(--fm-border);
   border-radius: 6px;
   overflow: hidden;
@@ -16298,22 +16300,17 @@ button.live-xp__player-name:focus-visible {
   gap: 1px;
 }
 
-.merged-history-timeline__mgr-cols--3 {
+.heritage-shell .merged-history-timeline__mgr-cols--3 {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.merged-history-timeline__mgr-cols-head,
-.merged-history-timeline__mgr-cols-body {
-  display: contents;
-}
-
-.merged-history-timeline__mgr-col-label,
-.merged-history-timeline__mgr-col-num {
+.heritage-shell .merged-history-timeline__mgr-col-label,
+.heritage-shell .merged-history-timeline__mgr-col-num {
   background: var(--fm-card);
   text-align: center;
 }
 
-.merged-history-timeline__mgr-col-label {
+.heritage-shell .merged-history-timeline__mgr-col-label {
   padding: 5px 8px 2px;
   font-size: 9.5px;
   font-weight: 700;
@@ -16322,7 +16319,7 @@ button.live-xp__player-name:focus-visible {
   color: var(--fm-muted);
 }
 
-.merged-history-timeline__mgr-col-num {
+.heritage-shell .merged-history-timeline__mgr-col-num {
   padding: 2px 8px 7px;
   font-size: 14px;
   font-weight: 800;
@@ -16330,7 +16327,7 @@ button.live-xp__player-name:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
-.merged-history-timeline__mgr-col-num--titles {
+.heritage-shell .merged-history-timeline__mgr-col-num--titles {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16338,14 +16335,25 @@ button.live-xp__player-name:focus-visible {
   padding-bottom: 8px;
 }
 
-.merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
+.heritage-shell .merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
   width: 28px;
   height: 28px;
   font-size: 13px;
 }
 
-.merged-history-timeline__mgr-meta {
+.heritage-shell .merged-history-timeline__mgr-meta {
   font-size: 11px;
+}
+
+.heritage-shell .merged-history-mv__journey-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 14px 10px;
+}
+
+.heritage-shell .merged-history-mv__accordion-item > .merged-history-mv__journey-stats {
+  background: var(--fm-card);
 }
 
 .merged-history-timeline__cards {
@@ -16590,7 +16598,7 @@ button.live-xp__player-name:focus-visible {
   border: none;
   width: 100%;
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto 14px;
+  grid-template-columns: 24px minmax(0, 1fr) 14px;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
@@ -16672,13 +16680,6 @@ button.live-xp__player-name:focus-visible {
 
 .merged-history-mv__journey-wrap {
   background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 4%, var(--fm-card)));
-}
-
-.merged-history-mv__journey-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 14px 4px;
 }
 
 .merged-history-mv__journey {

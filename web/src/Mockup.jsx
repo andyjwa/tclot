@@ -10279,59 +10279,49 @@ function MergedHistoryTHD() {
               >
                 <div
                   className="merged-history-timeline__mgr-cols merged-history-timeline__mgr-cols--3"
-                  role="table"
+                  role="group"
                   aria-label="Titles, Titan, and Minnow finishes"
                 >
-                  <div className="merged-history-timeline__mgr-cols-head" role="row">
-                    <div
-                      className="merged-history-timeline__mgr-col-label"
-                      role="columnheader"
-                      title="Seasons finished 1st"
-                    >
-                      Titles
-                    </div>
-                    <div
-                      className="merged-history-timeline__mgr-col-label"
-                      role="columnheader"
-                      title="Seasons finishing 1st–4th (top half)"
-                    >
-                      Titan
-                    </div>
-                    <div
-                      className="merged-history-timeline__mgr-col-label"
-                      role="columnheader"
-                      title="Seasons finishing 5th–8th (bottom half)"
-                    >
-                      Minnow
-                    </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-label"
+                    title="Seasons finished 1st"
+                  >
+                    Titles
                   </div>
-                  <div className="merged-history-timeline__mgr-cols-body" role="row">
-                    <div
-                      className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
-                      role="cell"
-                      title={titleTooltip}
+                  <div
+                    className="merged-history-timeline__mgr-col-label"
+                    title="Seasons finishing 1st–4th (top half)"
+                  >
+                    Titan
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-label"
+                    title="Seasons finishing 5th–8th (bottom half)"
+                  >
+                    Minnow
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
+                    title={titleTooltip}
+                  >
+                    <span
+                      className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
+                      aria-label={`${row.titles} titles`}
                     >
-                      <span
-                        className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
-                        aria-label={`${row.titles} titles`}
-                      >
-                        {row.titles}
-                      </span>
-                    </div>
-                    <div
-                      className="merged-history-timeline__mgr-col-num tabular"
-                      role="cell"
-                      title="Seasons finishing 1st–4th (top half)"
-                    >
-                      {row.titan}
-                    </div>
-                    <div
-                      className="merged-history-timeline__mgr-col-num tabular"
-                      role="cell"
-                      title="Seasons finishing 5th–8th (bottom half)"
-                    >
-                      {row.minnow}
-                    </div>
+                      {row.titles}
+                    </span>
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-num tabular"
+                    title="Seasons finishing 1st–4th (top half)"
+                  >
+                    {row.titan}
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-num tabular"
+                    title="Seasons finishing 5th–8th (bottom half)"
+                  >
+                    {row.minnow}
                   </div>
                 </div>
               </div>
