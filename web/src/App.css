@@ -16281,44 +16281,112 @@ button.live-xp__player-name:focus-visible {
   text-overflow: ellipsis;
 }
 
-.merged-history-timeline__mgr-stats--grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--fm-border);
+/* Titles header + listed championships; Titan / Minnow as count columns */
+.merged-history-timeline__mgr-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.merged-history-timeline__titles {
   border: 1px solid var(--fm-border);
   border-radius: 6px;
   overflow: hidden;
-}
-
-.merged-history-timeline__mgr-stats--grid .merged-history-timeline__mgr-stat {
   background: var(--fm-card);
-  padding: 7px 10px;
 }
 
-.merged-history-timeline__mgr-stat {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 10px;
+.merged-history-timeline__titles-head {
+  padding: 5px 10px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--fm-muted);
+  background: color-mix(in srgb, var(--fm-surface-2, var(--fm-card)) 55%, transparent);
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.merged-history-timeline__titles-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.merged-history-timeline__titles-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 10px;
+  min-width: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+}
+
+.merged-history-timeline__titles-item:last-child {
+  border-bottom: none;
+}
+
+.merged-history-timeline__titles-season {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
   font-variant-numeric: tabular-nums;
 }
 
-.merged-history-timeline__mgr-stat-num {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--fm-text-strong);
+.merged-history-timeline__titles-team {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fm-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.merged-history-timeline__mgr-stat-label {
+.merged-history-timeline__titles-empty {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.merged-history-timeline__mgr-cols {
+  border: 1px solid var(--fm-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--fm-border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+}
+
+.merged-history-timeline__mgr-cols-head,
+.merged-history-timeline__mgr-cols-body {
+  display: contents;
+}
+
+.merged-history-timeline__mgr-col-label,
+.merged-history-timeline__mgr-col-num {
+  background: var(--fm-card);
+  text-align: center;
+}
+
+.merged-history-timeline__mgr-col-label {
+  padding: 5px 8px 2px;
   font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--fm-muted);
+}
+
+.merged-history-timeline__mgr-col-num {
+  padding: 2px 8px 7px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+  font-variant-numeric: tabular-nums;
 }
 
 .merged-history-timeline__mgr-meta {
@@ -16647,11 +16715,22 @@ button.live-xp__player-name:focus-visible {
   transform: rotate(90deg);
 }
 
+.merged-history-mv__journey-wrap {
+  background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 4%, var(--fm-card)));
+}
+
+.merged-history-mv__journey-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px 4px;
+}
+
 .merged-history-mv__journey {
   list-style: none;
   margin: 0;
   padding: 4px 14px 12px;
-  background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 4%, var(--fm-card)));
+  background: transparent;
 }
 
 .merged-history-mv__journey-row {

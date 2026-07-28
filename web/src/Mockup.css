@@ -14108,54 +14108,102 @@
   color: var(--text-muted);
   line-height: 14px;
 }
-/* 2×2 stats grid — TITLES / RUNNER-UP on row 1, TITAN / MINNOW on
- * row 2. Pattern B: outer border + `gap: 1px` exposes the wrapper's
- * border-colored background as the internal hairlines, so all four
- * cell corners close cleanly without the per-cell border gaps that
- * Pattern A produced at the bottom-right. The grid spans the full
- * card width (the identity column is now a vertical stack, not the
- * old crest|text two-column layout). */
+/* Titles header listing championships; Titan / Minnow as count columns. */
 .merged-history-timeline__mgr-stats {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
-.merged-history-timeline__mgr-stats--grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--border);
+.merged-history-timeline__titles {
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
-}
-.merged-history-timeline__mgr-stats--grid .merged-history-timeline__mgr-stat {
   background: var(--surface);
-  padding: 7px 10px;
 }
-.merged-history-timeline__mgr-stat {
+.merged-history-timeline__titles-head {
+  padding: 5px 10px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-2, var(--surface)) 55%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+.merged-history-timeline__titles-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.merged-history-timeline__titles-item {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
+  gap: 8px;
+  padding: 5px 10px;
+  min-width: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
-.merged-history-timeline__mgr-stat-num {
+.merged-history-timeline__titles-item:last-child {
+  border-bottom: none;
+}
+.merged-history-timeline__titles-season {
+  flex: 0 0 auto;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.04em;
   color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
 }
-.merged-history-timeline__mgr-stat-label {
-  font-size: 10px;
+.merged-history-timeline__titles-team {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.merged-history-timeline__titles-empty {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.merged-history-timeline__mgr-cols {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+}
+.merged-history-timeline__mgr-cols-head,
+.merged-history-timeline__mgr-cols-body {
+  display: contents;
+}
+.merged-history-timeline__mgr-col-label,
+.merged-history-timeline__mgr-col-num {
+  background: var(--surface);
+  text-align: center;
+}
+.merged-history-timeline__mgr-col-label {
+  padding: 5px 8px 2px;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--text-muted);
+}
+.merged-history-timeline__mgr-col-num {
+  padding: 2px 8px 7px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
 }
 .merged-history-timeline__cards {
   display: grid;
