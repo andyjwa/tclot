@@ -16281,74 +16281,12 @@ button.live-xp__player-name:focus-visible {
   text-overflow: ellipsis;
 }
 
-/* Titles header + listed championships; Titan / Minnow as count columns */
+/* Titles · Titan · Minnow count columns (Titles uses gold 1st-place pill) */
 .merged-history-timeline__mgr-stats {
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
-}
-
-.merged-history-timeline__titles {
-  border: 1px solid var(--fm-border);
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--fm-card);
-}
-
-.merged-history-timeline__titles-head {
-  padding: 5px 10px;
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--fm-muted);
-  background: color-mix(in srgb, var(--fm-surface-2, var(--fm-card)) 55%, transparent);
-  border-bottom: 1px solid var(--fm-border);
-}
-
-.merged-history-timeline__titles-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.merged-history-timeline__titles-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 5px 10px;
-  min-width: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
-}
-
-.merged-history-timeline__titles-item:last-child {
-  border-bottom: none;
-}
-
-.merged-history-timeline__titles-season {
-  flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--fm-text-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-.merged-history-timeline__titles-team {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--fm-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.merged-history-timeline__titles-empty {
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 600;
 }
 
 .merged-history-timeline__mgr-cols {
@@ -16359,6 +16297,10 @@ button.live-xp__player-name:focus-visible {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
+}
+
+.merged-history-timeline__mgr-cols--3 {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .merged-history-timeline__mgr-cols-head,
@@ -16387,6 +16329,20 @@ button.live-xp__player-name:focus-visible {
   font-weight: 800;
   color: var(--fm-text-strong);
   font-variant-numeric: tabular-nums;
+}
+
+.merged-history-timeline__mgr-col-num--titles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+
+.merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
 }
 
 .merged-history-timeline__mgr-meta {

@@ -10200,18 +10200,24 @@ function mergedCellPosClass(rank) {
  * shows team name on top + big position below (heatmap-tinted).
  *
  * Locked spec: identity column is a vertical stack — badge + bold
- * full name on a top row, then:
- *   TITLES  — header listing each championship season + team name
- *   TITAN   — column counting top-half finishes (1st–4th)
- *   MINNOW  — column counting bottom-half finishes (5th–8th)
+ * full name on a top row, then a 3-column stats strip:
+ *   TITLES  — 1st-place count in the gold pos-1 pill
+ *   TITAN   — top-half finishes (1st–4th)
+ *   MINNOW  — bottom-half finishes (5th–8th)
  * TITAN + MINNOW = seasons played. Tooltips on the TITAN/MINNOW
  * cells carry the position-range clarification so the inline labels
- * stay short. */
+ * stay short; Titles tooltip lists championship seasons. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
       {MERGED_HISTORY_SORTED.map((row) => {
         const titleWins = row.seasons.filter((s) => Number(s.rank) === 1)
+        const titleTooltip =
+          titleWins.length > 0
+            ? titleWins
+                .map((s) => `${s.season}${s.team ? ` · ${s.team}` : ''}`)
+                .join(', ')
+            : 'Seasons finished 1st'
         return (
           <div key={row.key} className="merged-history-timeline__row">
             <div className="merged-history-timeline__mgr">
@@ -10229,30 +10235,19 @@ function MergedHistoryTHD() {
                 role="group"
                 aria-label="Career stats"
               >
-                <div className="merged-history-timeline__titles">
-                  <div className="merged-history-timeline__titles-head">Titles</div>
-                  {titleWins.length > 0 ? (
-                    <ul className="merged-history-timeline__titles-list">
-                      {titleWins.map((s) => (
-                        <li key={s.season} className="merged-history-timeline__titles-item">
-                          <span className="merged-history-timeline__titles-season tabular">
-                            {s.season}
-                          </span>
-                          <span
-                            className="merged-history-timeline__titles-team"
-                            title={s.team ?? ''}
-                          >
-                            {s.team ?? '—'}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="merged-history-timeline__titles-empty muted">None</div>
-                  )}
-                </div>
-                <div className="merged-history-timeline__mgr-cols" role="table" aria-label="Titan and Minnow finishes">
+                <div
+                  className="merged-history-timeline__mgr-cols merged-history-timeline__mgr-cols--3"
+                  role="table"
+                  aria-label="Titles, Titan, and Minnow finishes"
+                >
                   <div className="merged-history-timeline__mgr-cols-head" role="row">
+                    <div
+                      className="merged-history-timeline__mgr-col-label"
+                      role="columnheader"
+                      title="Seasons finished 1st"
+                    >
+                      Titles
+                    </div>
                     <div
                       className="merged-history-timeline__mgr-col-label"
                       role="columnheader"
@@ -10269,6 +10264,18 @@ function MergedHistoryTHD() {
                     </div>
                   </div>
                   <div className="merged-history-timeline__mgr-cols-body" role="row">
+                    <div
+                      className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
+                      role="cell"
+                      title={titleTooltip}
+                    >
+                      <span
+                        className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
+                        aria-label={`${row.titles} titles`}
+                      >
+                        {row.titles}
+                      </span>
+                    </div>
                     <div
                       className="merged-history-timeline__mgr-col-num tabular"
                       role="cell"

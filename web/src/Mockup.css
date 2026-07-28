@@ -14108,7 +14108,7 @@
   color: var(--text-muted);
   line-height: 14px;
 }
-/* Titles header listing championships; Titan / Minnow as count columns. */
+/* Titles · Titan · Minnow columns; Titles count uses the gold pos-1 pill. */
 .merged-history-timeline__mgr-stats {
   list-style: none;
   margin: 0;
@@ -14118,60 +14118,6 @@
   gap: 8px;
   min-width: 0;
 }
-.merged-history-timeline__titles {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--surface);
-}
-.merged-history-timeline__titles-head {
-  padding: 5px 10px;
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  background: color-mix(in srgb, var(--surface-2, var(--surface)) 55%, transparent);
-  border-bottom: 1px solid var(--border);
-}
-.merged-history-timeline__titles-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.merged-history-timeline__titles-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 5px 10px;
-  min-width: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-}
-.merged-history-timeline__titles-item:last-child {
-  border-bottom: none;
-}
-.merged-history-timeline__titles-season {
-  flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-strong);
-  font-variant-numeric: tabular-nums;
-}
-.merged-history-timeline__titles-team {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.merged-history-timeline__titles-empty {
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 600;
-}
 .merged-history-timeline__mgr-cols {
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -14180,6 +14126,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
+}
+.merged-history-timeline__mgr-cols--3 {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 .merged-history-timeline__mgr-cols-head,
 .merged-history-timeline__mgr-cols-body {
@@ -14204,6 +14153,18 @@
   font-weight: 800;
   color: var(--text-strong);
   font-variant-numeric: tabular-nums;
+}
+.merged-history-timeline__mgr-col-num--titles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+.merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
 }
 .merged-history-timeline__cards {
   display: grid;
