@@ -1826,11 +1826,21 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     min-width: 0;
   }
 
+  /* Fixed-width arrow slot — active and idle headers share the same
+   * footprint so sorting a different column never reflows the row. */
   .players-wire-tile-colhead__arrow {
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.7em;
     font-size: 9px;
     line-height: 1;
     color: var(--brand);
+  }
+
+  .players-wire-tile-colhead__arrow--idle {
+    visibility: hidden;
   }
 
   .players-wire-tile {
