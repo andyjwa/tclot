@@ -372,6 +372,21 @@
   cursor: pointer;
   text-align: left;
 }
+/* Waiver run order — plain rank left of the crest, same language as
+ * standings / `.waivers-rank-row__rank` (no pill, no # prefix). */
+.waivers-weekly-tile__rank {
+  flex: 0 0 1.25rem;
+  width: 1.25rem;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1;
+}
+.waivers-weekly-tile__rank--empty {
+  visibility: hidden;
+}
 .waivers-weekly-tile__team {
   font-size: var(--text-sm);
   font-weight: 700;
@@ -398,6 +413,7 @@
   transition: transform var(--dur-fast) var(--ease);
 }
 .waivers-weekly-tile__caret.is-open { transform: rotate(90deg); }
+/* Legacy order pill — kept for any non-tile surfaces still using it. */
 .waivers-order {
   flex: 0 0 auto;
   font-size: var(--text-xs);
