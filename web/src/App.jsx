@@ -887,62 +887,54 @@ function TeamJourneyStatCols({ row, titleWins }) {
           )
           .join(', ')
       : 'Seasons finished 1st'
+  /* Flat grid children — no `display: contents` row wrappers (those can
+   * drop cells in some WebKit layouts and hide Titan/Minnow). */
   return (
     <div
       className="merged-history-timeline__mgr-cols merged-history-timeline__mgr-cols--3"
-      role="table"
+      role="group"
       aria-label="Titles, Titan, and Minnow finishes"
     >
-      <div className="merged-history-timeline__mgr-cols-head" role="row">
-        <div
-          className="merged-history-timeline__mgr-col-label"
-          role="columnheader"
-          title="Seasons finished 1st"
-        >
-          Titles
-        </div>
-        <div
-          className="merged-history-timeline__mgr-col-label"
-          role="columnheader"
-          title="Seasons finishing 1st–4th (top half)"
-        >
-          Titan
-        </div>
-        <div
-          className="merged-history-timeline__mgr-col-label"
-          role="columnheader"
-          title="Seasons finishing 5th–8th (bottom half)"
-        >
-          Minnow
-        </div>
+      <div
+        className="merged-history-timeline__mgr-col-label"
+        title="Seasons finished 1st"
+      >
+        Titles
       </div>
-      <div className="merged-history-timeline__mgr-cols-body" role="row">
-        <div
-          className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
-          role="cell"
-          title={titleTooltip}
+      <div
+        className="merged-history-timeline__mgr-col-label"
+        title="Seasons finishing 1st–4th (top half)"
+      >
+        Titan
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-label"
+        title="Seasons finishing 5th–8th (bottom half)"
+      >
+        Minnow
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
+        title={titleTooltip}
+      >
+        <span
+          className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
+          aria-label={`${row.titles} titles`}
         >
-          <span
-            className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
-            aria-label={`${row.titles} titles`}
-          >
-            {row.titles}
-          </span>
-        </div>
-        <div
-          className="merged-history-timeline__mgr-col-num tabular"
-          role="cell"
-          title="Seasons finishing 1st–4th (top half)"
-        >
-          {row.titanCount}
-        </div>
-        <div
-          className="merged-history-timeline__mgr-col-num tabular"
-          role="cell"
-          title="Seasons finishing 5th–8th (bottom half)"
-        >
-          {row.minnowCount}
-        </div>
+          {row.titles}
+        </span>
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-num tabular"
+        title="Seasons finishing 1st–4th (top half)"
+      >
+        {row.titanCount}
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-num tabular"
+        title="Seasons finishing 5th–8th (bottom half)"
+      >
+        {row.minnowCount}
       </div>
     </div>
   )
@@ -1039,7 +1031,7 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
               <button
                 type="button"
                 aria-expanded={open}
-                aria-label={`${managerFull ?? row.key}, ${row.titles ?? 0} titles. Tap for per-season journey.`}
+                aria-label={`${managerFull ?? row.key}, ${row.titles ?? 0} titles, ${row.titanCount} titan, ${row.minnowCount} minnow. Tap for per-season journey.`}
                 className={
                   'merged-history-mv__accordion-toggle' + (open ? ' is-open' : '')
                 }
@@ -1057,12 +1049,6 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
                 <span className="merged-history-mv__accordion-mgr-name">
                   {managerFull ?? row.key}
                 </span>
-                <PointsCell
-                  value={row.titles ?? 0}
-                  label="TITLES"
-                  size="md"
-                  className="merged-history-mv__accordion-titles"
-                />
                 <span
                   className="merged-history-mv__chevron"
                   aria-hidden="true"
@@ -1070,15 +1056,15 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
                   ›
                 </span>
               </button>
+              <div
+                className="merged-history-mv__journey-stats"
+                role="group"
+                aria-label={`Career stats for ${row.key}`}
+              >
+                <TeamJourneyStatCols row={row} titleWins={titleWins} />
+              </div>
               {open ? (
                 <div className="merged-history-mv__journey-wrap">
-                  <div
-                    className="merged-history-mv__journey-stats"
-                    role="group"
-                    aria-label={`Career stats for ${row.key}`}
-                  >
-                    <TeamJourneyStatCols row={row} titleWins={titleWins} />
-                  </div>
                   <ul className="merged-history-mv__journey">
                     {row.seasons.map((s) => (
                       <li

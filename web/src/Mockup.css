@@ -14171,10 +14171,6 @@
 .merged-history-timeline__mgr-cols--3 {
   grid-template-columns: 1fr 1fr 1fr;
 }
-.merged-history-timeline__mgr-cols-head,
-.merged-history-timeline__mgr-cols-body {
-  display: contents;
-}
 .merged-history-timeline__mgr-col-label,
 .merged-history-timeline__mgr-col-num {
   background: var(--surface);
