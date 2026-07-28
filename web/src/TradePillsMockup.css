@@ -1,0 +1,480 @@
+/*
+ * Trade score-pill style options (`?tradepills=1`) — Scorebook paper,
+ * local preview only. Compares treatments for the centre H2H totals and
+ * per-player points on Moves › Trades.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap');
+
+.tpm {
+  --t-bg: #f6f1e2;
+  --t-surface: #fdfaf0;
+  --t-surface-2: #ece5cf;
+  --t-border: #ddd5b8;
+  --t-ink: #1a231a;
+  --t-text: rgba(31, 42, 31, 0.92);
+  --t-muted: #77775f;
+  --t-brand: #1f4a38;
+  --t-brand-tint: color-mix(in srgb, #1f4a38 15%, transparent);
+  --t-brand-tint-soft: color-mix(in srgb, #1f4a38 10%, transparent);
+  --t-win: #12844e;
+  --t-loss-dot: #b04f26;
+  min-height: 100vh;
+  padding: 36px clamp(16px, 3vw, 48px) 64px;
+  background: var(--t-bg);
+  color: var(--t-text);
+  font-family: 'Schibsted Grotesk', Inter, system-ui, sans-serif;
+}
+
+.tpm * { box-sizing: border-box; }
+
+.tpm-top {
+  max-width: 720px;
+  margin: 0 auto 28px;
+}
+
+.tpm-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--t-brand);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tpm-top h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--t-ink);
+}
+
+.tpm-top p {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--t-muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.tpm-top a {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--t-border);
+  border-radius: 8px;
+  background: var(--t-surface);
+  color: var(--t-ink);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tpm-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.tpm-card {
+  border: 1px solid var(--t-border);
+  border-radius: 14px;
+  background: var(--t-surface);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(31, 42, 31, 0.05);
+}
+
+.tpm-card--current {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #a87b24 35%, transparent),
+    0 1px 3px rgba(31, 42, 31, 0.05);
+}
+
+.tpm-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  padding: 12px 16px;
+  background: var(--t-surface-2);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.tpm-card__id {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--t-brand);
+  letter-spacing: 0.04em;
+}
+
+.tpm-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t-ink);
+}
+
+.tpm-card__tag {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--t-brand-tint-soft);
+  color: var(--t-brand);
+}
+
+.tpm-card__tag--loud {
+  background: color-mix(in srgb, #a87b24 18%, transparent);
+  color: #a87b24;
+}
+
+.tpm-card__desc {
+  width: 100%;
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--t-muted);
+}
+
+.tpm-card__preview {
+  padding: 12px 14px 14px;
+}
+
+/* ── Mini trade card ── */
+
+.tpm-trade {
+  border: 1px solid var(--t-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--t-surface);
+}
+
+.tpm-trade__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--t-surface-2);
+  border-bottom: 1px solid var(--t-border);
+}
+
+.tpm-trade__gw {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--t-muted) 14%, transparent);
+  color: var(--t-muted);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.tpm-trade__date {
+  color: var(--t-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tpm-trade__teams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 10px;
+}
+
+.tpm-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tpm-team--away {
+  flex-direction: row-reverse;
+}
+
+.tpm-crest {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--t-border);
+  background: linear-gradient(145deg, #2a4a38, #1a3024);
+  color: #f6f1e2;
+  display: inline-grid;
+  place-items: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tpm-crest--alt {
+  background: linear-gradient(145deg, #6b3a28, #3d2218);
+}
+
+.tpm-team__name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tpm-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-top: 1px solid color-mix(in srgb, var(--t-border) 70%, transparent);
+}
+
+.tpm-pl {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.tpm-pl--away {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.tpm-pl__badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--t-surface-2);
+  border: 1px solid var(--t-border);
+  flex-shrink: 0;
+}
+
+.tpm-pl__id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tpm-pl--away .tpm-pl__id {
+  align-items: flex-end;
+}
+
+.tpm-pl__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--t-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 7rem;
+}
+
+.tpm-pl__tenure {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--t-muted);
+}
+
+.tpm-pl__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--t-win);
+  flex-shrink: 0;
+}
+
+.tpm-pl__dot--gone {
+  background: var(--t-loss-dot);
+}
+
+/* ── Score variants ── */
+
+.tpm-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-shrink: 0;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tpm-score--total {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tpm-score--pair {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tpm-score__sep {
+  color: var(--t-muted);
+  font-weight: 500;
+}
+
+.tpm-score--pair .tpm-score__sep {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* A · Current (no pill) */
+.tpm-v-a .tpm-score__n {
+  color: color-mix(in srgb, var(--t-ink) 88%, transparent);
+}
+.tpm-v-a .tpm-score__n.is-win {
+  color: var(--t-brand);
+}
+.tpm-v-a .tpm-score--pair .tpm-score__n {
+  color: var(--t-muted);
+  font-weight: 500;
+}
+
+/* B · Linked Live-Table capsule (one greige pill around the pair) */
+.tpm-v-b .tpm-score {
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--t-brand-tint);
+}
+.tpm-v-b .tpm-score--pair {
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+.tpm-v-b .tpm-score__n {
+  color: var(--t-ink);
+}
+.tpm-v-b .tpm-score__n.is-win {
+  color: var(--t-brand);
+}
+.tpm-v-b .tpm-score--pair .tpm-score__n {
+  color: var(--t-ink);
+  font-weight: 600;
+}
+
+/* C · Split chips — each number in its own quiet pill; winner tinted */
+.tpm-v-c .tpm-score {
+  align-items: center;
+  gap: 5px;
+}
+.tpm-v-c .tpm-score__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--t-surface-2);
+  border: 1px solid var(--t-border);
+  color: var(--t-muted);
+  font-weight: 600;
+}
+.tpm-v-c .tpm-score__n.is-win {
+  background: var(--t-brand-tint);
+  border-color: color-mix(in srgb, var(--t-brand) 28%, var(--t-border));
+  color: var(--t-brand);
+}
+.tpm-v-c .tpm-score--pair .tpm-score__n {
+  min-width: 1.5em;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
+/* D · Winner glass only (face-off Option C) — pill behind winning number */
+.tpm-v-d .tpm-score {
+  align-items: center;
+  gap: 6px;
+}
+.tpm-v-d .tpm-score__n {
+  color: var(--t-ink);
+  font-weight: 700;
+}
+.tpm-v-d .tpm-score__n.is-win {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 7px;
+  background: var(--t-brand-tint);
+  color: var(--t-ink);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-brand) 12%, transparent);
+}
+.tpm-v-d .tpm-score--pair .tpm-score__n {
+  color: var(--t-muted);
+  font-weight: 500;
+}
+.tpm-v-d .tpm-score--pair .tpm-score__n.is-win {
+  color: var(--t-ink);
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+/* E · Dual quiet cream chips, ink numbers (no winner colour) */
+.tpm-v-e .tpm-score {
+  align-items: center;
+  gap: 5px;
+}
+.tpm-v-e .tpm-score__n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--t-surface-2);
+  border: 1px solid var(--t-border);
+  color: var(--t-ink);
+  font-weight: 700;
+}
+.tpm-v-e .tpm-score--pair .tpm-score__n {
+  min-width: 1.5em;
+  padding: 1px 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tpm-note {
+  max-width: 720px;
+  margin: 22px auto 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--t-border);
+  background: color-mix(in srgb, var(--t-surface) 70%, transparent);
+  color: var(--t-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.tpm-note strong {
+  color: var(--t-ink);
+  font-weight: 650;
+}
+
+@media (max-width: 520px) {
+  .tpm { padding: 24px 12px 48px; }
+  .tpm-pl__name { max-width: 5.2rem; }
+  .tpm-score--total { font-size: 16px; }
+}
