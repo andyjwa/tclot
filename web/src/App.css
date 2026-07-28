@@ -10344,9 +10344,12 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--fm-muted);
-  background: transparent;
-  border-bottom: 1px solid var(--fm-border);
+  color: var(--text-muted, var(--fm-muted));
+  /* Match Waivers / portrait Live Table header band. Landscape phones
+   * flip to this desktop table (>767px wide) — transparent here dropped
+   * the Scorebook surface-2 strip and looked unthemed. */
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
+  border-bottom: 1px solid var(--border, var(--fm-border));
 }
 .standings-table--live th,
 .standings-table--live td {
@@ -13906,6 +13909,16 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* ----- Condensed table — shared (mobile + desktop variants) -------- */
+
+/* Header band — same surface-2 strip as Waivers / Players. Landscape
+ * phones use the desktop variant-c table (width >767px), not
+ * `--variant-c-mobile`; without this they keep `--fm-card` and lose
+ * the Scorebook header treatment. */
+.standings-table--variant-c thead th {
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
+  color: var(--text-muted, var(--fm-muted));
+  border-bottom: 1px solid var(--border, var(--fm-border));
+}
 
 /* Manager name muted, under each team name. */
 .standings-table--variant-c .standings-team-id {
