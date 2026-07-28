@@ -7,6 +7,7 @@ import { Mockup } from './Mockup.jsx'
 import { GameweekStatesMockup } from './GameweekStatesMockup.jsx'
 import { RebrandGallery } from './RebrandGallery.jsx'
 import { SeedLabelMockup } from './SeedLabelMockup.jsx'
+import { TradePillsMockup } from './TradePillsMockup.jsx'
 
 // Local-only design preview (no production impact).
 // Visit `?mockup=1` to render the design system mockup instead of the live app.
@@ -22,6 +23,9 @@ const isGameweekStatesMockup =
 const isSeedLabelMockup =
   typeof window !== 'undefined' &&
   new URLSearchParams(window.location.search).get('seed') === '1'
+const isTradePillsMockup =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('tradepills') === '1'
 
 // "Scorebook" theme (PaintPreview.css) — token-level coat of paint on the
 // real app. Now the DEFAULT for everyone. `?paint=0` is a kill switch that
@@ -58,12 +62,14 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     {isRebrandGallery
       ? <RebrandGallery />
-      : isSeedLabelMockup
-        ? <SeedLabelMockup />
-        : isGameweekStatesMockup
-          ? <GameweekStatesMockup />
-          : isMockup
-            ? <Mockup />
-            : <App />}
+      : isTradePillsMockup
+        ? <TradePillsMockup />
+        : isSeedLabelMockup
+          ? <SeedLabelMockup />
+          : isGameweekStatesMockup
+            ? <GameweekStatesMockup />
+            : isMockup
+              ? <Mockup />
+              : <App />}
   </StrictMode>,
 )
