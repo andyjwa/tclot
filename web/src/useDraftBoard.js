@@ -7,8 +7,9 @@ import {
   mergeRosterStatusIntoPicks,
 } from './draftBoardRosterStatus'
 import { fetchSquadSetsForGw } from './draftSquadsFetch'
+import { leagueDataBase } from './seasonArchive.js'
 
-const DATA_BASE = `${import.meta.env.BASE_URL}league-data`
+const DATA_BASE = leagueDataBase()
 
 async function fetchOptionalJson(path) {
   try {

@@ -10,6 +10,13 @@ import {
 } from 'react'
 import { gameWeekSelectLabel, gameWeekShortLabel } from './gwLabel.js'
 import { NavIcon } from './NavIcon.jsx'
+import {
+  archivedSeasonLabel,
+  isArchiveView,
+  seasonLabelDisplay,
+  seasonHref,
+  fetchArchivedSeasons,
+} from './seasonArchive.js'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
 const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
@@ -162,6 +169,113 @@ function BrandHeaderStatusBody({ liveStatus }) {
 }
 
 /**
+ * Header season pill. Renders as the plain label until archived seasons exist
+ * (discovered via `league-data/seasons/index.json`), then becomes a button with
+ * a menu switching between the current season and archives. Selecting a season
+ * navigates with `?season=<label>` — a full reload; the data layer resolves the
+ * archived subtree at module init (see seasonArchive.js).
+ */
+function SeasonSwitcher() {
+  const [archivedSeasons, setArchivedSeasons] = useState([])
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef(null)
+  const viewingLabel = archivedSeasonLabel()
+
+  useEffect(() => {
+    let cancelled = false
+    fetchArchivedSeasons().then((labels) => {
+      if (!cancelled) setArchivedSeasons(labels)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!open) return undefined
+    function onDocPointerDown(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
+    }
+    function onKeyDown(e) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onDocPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onDocPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  const displayLabel = viewingLabel
+    ? seasonLabelDisplay(viewingLabel)
+    : BRAND_HEADER_SEASON
+
+  // No archives (and not somehow parked on one) — the original static label.
+  if (!archivedSeasons.length && !viewingLabel) {
+    return (
+      <span className="brand-header__meta brand-header__meta--season">
+        {BRAND_HEADER_SEASON}
+      </span>
+    )
+  }
+
+  const options = [
+    { label: null, display: BRAND_HEADER_SEASON, archived: false },
+    ...archivedSeasons.map((l) => ({
+      label: l,
+      display: seasonLabelDisplay(l),
+      archived: true,
+    })),
+  ]
+
+  return (
+    <span
+      className="brand-header__meta brand-header__meta--season season-switch"
+      ref={wrapRef}
+    >
+      <button
+        type="button"
+        className="season-switch__btn"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title="Switch season"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {displayLabel}
+        <span className="season-switch__caret" aria-hidden="true">
+          ▾
+        </span>
+      </button>
+      {open ? (
+        <span className="season-switch__menu" role="menu" aria-label="Season">
+          {options.map((o) => {
+            const selected = (o.label ?? null) === (viewingLabel ?? null)
+            return (
+              <a
+                key={o.label ?? 'current'}
+                role="menuitem"
+                className={
+                  'season-switch__item' +
+                  (selected ? ' season-switch__item--selected' : '')
+                }
+                href={seasonHref(o.label)}
+                aria-current={selected ? 'true' : undefined}
+              >
+                <span>{o.display}</span>
+                <span className="season-switch__tag">
+                  {o.archived ? 'Archive' : 'Current'}
+                </span>
+              </a>
+            )
+          })}
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
+/**
  * Header tile carrying the brand pill + season meta + top-8 fantasy crests
  * (rank 1 leftmost → rank 8 rightmost), with the status strip beneath. Spec:
  * variant 4 of HEADER · POST-PR-#2 EVOLUTION (Mockup.jsx `HeroVariantBSeasonAndCrests`).
@@ -197,7 +311,11 @@ function BrandHeader({
     return sorted.slice(0, BRAND_HEADER_TOP_N)
   }, [tableRows])
 
-  const showStatusStrip = !!liveStatus && liveStatus.status !== 'unknown'
+  /** Archive view: the strip's countdowns/live cues describe the *current*
+   * season and would mislead against frozen data — the archive banner below
+   * the header carries the context instead. */
+  const showStatusStrip =
+    !isArchiveView() && !!liveStatus && liveStatus.status !== 'unknown'
 
   return (
     <section
@@ -211,9 +329,7 @@ function BrandHeader({
           isOpen={leagueInfoOpen}
           onOpen={onOpenLeagueInfo}
         />
-        <span className="brand-header__meta brand-header__meta--season">
-          {BRAND_HEADER_SEASON}
-        </span>
+        <SeasonSwitcher />
         <span
           className="brand-header__crests"
           aria-label="League standings — top 8"
@@ -2205,6 +2321,9 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'preseason'
   if (parsePlayersHash()) return /** @type {const} */ ('players')
+  /** Archive view (?season=): land on the finished season's table — the
+   * preseason hub and stored default describe the *live* season. */
+  if (isArchiveView()) return /** @type {const} */ ('standings')
   return readStoredDefaultTab()
 }
 
@@ -3014,6 +3133,17 @@ function App() {
                 Or publish files: <code>python3 ingest.py ID</code>,{' '}
                 <code>cd web && npm run publish-real-league</code>, commit{' '}
                 <code>web/public/league-data/</code>. ID: <code>draft.premierleague.com/league/YOUR_ID</code>
+              </div>
+            )}
+            {isArchiveView() && (
+              <div className="data-banner data-banner--archive" role="status">
+                <strong>
+                  {seasonLabelDisplay(archivedSeasonLabel())} season archive
+                </strong>{' '}
+                — final standings and moves, frozen at end of season.{' '}
+                <a className="data-banner__link" href={seasonHref(null)}>
+                  Back to current season
+                </a>
               </div>
             )}
           </header>

@@ -3,7 +3,10 @@ import { fplElementWebName } from './fplElementNames.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
 
-const DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
+import { leagueDataBase } from './seasonArchive.js';
+
+/** Resolves to `league-data/seasons/<label>` in archive view (see seasonArchive.js). */
+const DATA_BASE = leagueDataBase();
 /** Set at build (`write-league-data-revision.mjs`) and mirrored in `revision.json`. */
 const BUILD_LEAGUE_DATA_V = String(import.meta.env.VITE_LEAGUE_DATA_REVISION || '').trim();
 

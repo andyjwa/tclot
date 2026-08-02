@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { leagueDataBase } from './seasonArchive.js';
 
 /**
  * FPL official first + last from bootstrap — for ESPN/FotMob matching, not primary UI.
@@ -73,7 +74,7 @@ export function fetchKnownNameMap(cacheKey = '') {
   if (!knownNameMapPromise) {
     knownNameMapPromise = (async () => {
       try {
-        const base = `${import.meta.env.BASE_URL}league-data/bootstrap_fpl.json`;
+        const base = `${leagueDataBase()}/bootstrap_fpl.json`;
         const url =
           cacheKey.trim() !== ''
             ? `${base}?v=${encodeURIComponent(cacheKey.trim())}`

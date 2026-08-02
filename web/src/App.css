@@ -8743,6 +8743,95 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   font-variant-numeric: tabular-nums;
 }
 
+/* Season switcher — the season meta becomes a menu button once archived
+ * seasons exist under league-data/seasons/ (see SeasonSwitcher in App.jsx). */
+.season-switch {
+  position: relative;
+  overflow: visible;
+}
+.season-switch__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.season-switch__btn:hover,
+.season-switch__btn[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.1);
+}
+.fotmob[data-theme='light'] .season-switch__btn:hover,
+.fotmob[data-theme='light'] .season-switch__btn[aria-expanded='true'] {
+  background: rgba(0, 0, 0, 0.07);
+}
+.season-switch__caret {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+.season-switch__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 168px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.fotmob[data-theme='light'] .season-switch__menu {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.season-switch__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: var(--fm-text-strong);
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+.season-switch__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.fotmob[data-theme='light'] .season-switch__item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.season-switch__item--selected {
+  background: rgba(255, 255, 255, 0.06);
+}
+.fotmob[data-theme='light'] .season-switch__item--selected {
+  background: rgba(0, 0, 0, 0.04);
+}
+.season-switch__tag {
+  font-family: inherit;
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
 /* Crest row — 8 fantasy team crests in current standings order
  * (rank 1 leftmost → rank 8 rightmost). 32px each, 6px flat gap (no
  * overlap — the shirt-silhouette fallback used for fantasy teams
@@ -8964,6 +9053,17 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .data-banner--error {
   background: rgba(239, 68, 68, 0.14);
   border-color: rgba(248, 113, 113, 0.45);
+}
+
+/* Archive-view banner (SeasonSwitcher / ?season=) — neutral, not a warning. */
+.data-banner--archive {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+.data-banner__link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .data-banner code {
