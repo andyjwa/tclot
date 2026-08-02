@@ -84,8 +84,14 @@ jobs:
           if [ -n "$ID" ]; then
             echo "Ingest: league ID is configured — fetching from FPL…"
             python3 -m pip install --user requests
-            LEAGUE_ID="$ID" python3 ingest.py
-            echo "Ingest OK ($(wc -c < data/details.json) bytes)"
+            if LEAGUE_ID="$ID" python3 ingest.py; then
+              echo "Ingest OK ($(wc -c < data/details.json) bytes)"
+            else
+              # FPL API down (e.g. seasonal "Game Updating" page) or league ID invalid.
+              # Drop partial data/ so copy-data.js falls back to committed web/public/league-data/.
+              echo "::warning::FPL ingest failed — deploying committed web/public/league-data/ instead of fresh data (FPL API may be down, e.g. season rollover)."
+              rm -rf data
+            fi
           else
             echo "No FPL_LEAGUE_ID — build will use committed web/public/league-data/ or demo."
             echo "Add secret: Settings → Secrets → Actions → FPL_LEAGUE_ID (your draft league number)"
