@@ -1,0 +1,4216 @@
+{
+  "_meta": {
+    "built": "2026-05-28T20:11:38.725Z",
+    "leagueId": 6802,
+    "gameweek": 38,
+    "elementCount": 841,
+    "failed": 0
+  },
+  "byElement": {
+    "1": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 37,
+      "defConHits": 0
+    },
+    "2": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "3": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "4": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "5": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 30,
+      "defConHits": 11
+    },
+    "6": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 28,
+      "defConHits": 4
+    },
+    "7": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 19,
+      "defConHits": 0
+    },
+    "8": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 26,
+      "defConHits": 3
+    },
+    "9": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "10": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "11": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 7,
+      "defConHits": 1
+    },
+    "12": {
+      "gamesPlayed": 5,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "13": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "14": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "15": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "16": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 23,
+      "defConHits": 5
+    },
+    "17": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 11,
+      "defConHits": 1
+    },
+    "18": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 11,
+      "defConHits": 0
+    },
+    "19": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "20": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 20,
+      "defConHits": 0
+    },
+    "21": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 35,
+      "defConHits": 14
+    },
+    "22": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "23": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "24": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "25": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "26": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 32,
+      "defConHits": 7
+    },
+    "27": {
+      "gamesPlayed": 10,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "28": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "29": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "30": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "31": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "32": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 31,
+      "defConHits": 0
+    },
+    "33": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 6,
+      "defConHits": 0
+    },
+    "34": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "35": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "36": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 33,
+      "defConHits": 1
+    },
+    "37": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 19,
+      "defConHits": 1
+    },
+    "38": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 34,
+      "defConHits": 3
+    },
+    "39": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 17,
+      "defConHits": 2
+    },
+    "40": {
+      "gamesPlayed": 17,
+      "sixtyPlus": 14,
+      "defConHits": 4
+    },
+    "41": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 18,
+      "defConHits": 2
+    },
+    "42": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "43": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "44": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "45": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "46": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "47": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 37,
+      "defConHits": 1
+    },
+    "48": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 20,
+      "defConHits": 2
+    },
+    "49": {
+      "gamesPlayed": 13,
+      "sixtyPlus": 3,
+      "defConHits": 0
+    },
+    "50": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 15,
+      "defConHits": 4
+    },
+    "51": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "52": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 13,
+      "defConHits": 2
+    },
+    "53": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "54": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 25,
+      "defConHits": 1
+    },
+    "55": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 7,
+      "defConHits": 1
+    },
+    "56": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "57": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "58": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 16,
+      "defConHits": 3
+    },
+    "59": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 20,
+      "defConHits": 7
+    },
+    "60": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "61": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "62": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "63": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "64": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 32,
+      "defConHits": 0
+    },
+    "65": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "66": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "67": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 0
+    },
+    "68": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "69": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "70": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "71": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "72": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 37,
+      "defConHits": 26
+    },
+    "73": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 11,
+      "defConHits": 0
+    },
+    "74": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 12
+    },
+    "75": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "76": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "77": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 23,
+      "defConHits": 14
+    },
+    "78": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "79": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "80": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "81": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "82": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 35,
+      "defConHits": 3
+    },
+    "83": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 24,
+      "defConHits": 2
+    },
+    "84": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 31,
+      "defConHits": 3
+    },
+    "85": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 20,
+      "defConHits": 7
+    },
+    "86": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 12,
+      "defConHits": 0
+    },
+    "87": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 7,
+      "defConHits": 1
+    },
+    "88": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 8,
+      "defConHits": 7
+    },
+    "89": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "90": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 33,
+      "defConHits": 15
+    },
+    "91": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "92": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "93": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "94": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "95": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "96": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "97": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 30,
+      "defConHits": 0
+    },
+    "98": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "99": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "100": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 20,
+      "defConHits": 0
+    },
+    "101": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 37,
+      "defConHits": 0
+    },
+    "102": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "103": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "104": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "105": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "106": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 32,
+      "defConHits": 16
+    },
+    "107": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 21,
+      "defConHits": 0
+    },
+    "108": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 19,
+      "defConHits": 9
+    },
+    "109": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 13,
+      "defConHits": 0
+    },
+    "110": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 37,
+      "defConHits": 3
+    },
+    "111": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 4,
+      "defConHits": 2
+    },
+    "112": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "113": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 30,
+      "defConHits": 12
+    },
+    "114": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "115": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "116": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 7,
+      "defConHits": 1
+    },
+    "117": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "118": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "119": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 31,
+      "defConHits": 0
+    },
+    "120": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 30,
+      "defConHits": 0
+    },
+    "121": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 22,
+      "defConHits": 6
+    },
+    "122": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "123": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "124": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 19,
+      "defConHits": 3
+    },
+    "125": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 15,
+      "defConHits": 7
+    },
+    "126": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 26,
+      "defConHits": 4
+    },
+    "127": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "128": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "129": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 29,
+      "defConHits": 11
+    },
+    "130": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "131": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "132": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "133": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "134": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "135": {
+      "gamesPlayed": 19,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "136": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 37,
+      "defConHits": 1
+    },
+    "137": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "138": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "139": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 0
+    },
+    "140": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "141": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "142": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "143": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 8,
+      "defConHits": 2
+    },
+    "144": {
+      "gamesPlayed": 5,
+      "sixtyPlus": 2,
+      "defConHits": 1
+    },
+    "145": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 12,
+      "defConHits": 0
+    },
+    "146": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 31,
+      "defConHits": 8
+    },
+    "147": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "148": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 35,
+      "defConHits": 2
+    },
+    "149": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 1,
+      "defConHits": 1
+    },
+    "150": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "151": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 36,
+      "defConHits": 13
+    },
+    "152": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 9,
+      "defConHits": 3
+    },
+    "153": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "154": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "155": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "156": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "157": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 17,
+      "defConHits": 0
+    },
+    "158": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 18,
+      "defConHits": 1
+    },
+    "159": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "160": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 25,
+      "defConHits": 1
+    },
+    "161": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "162": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "163": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 20,
+      "defConHits": 1
+    },
+    "164": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "165": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "166": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 20,
+      "defConHits": 5
+    },
+    "167": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 15,
+      "defConHits": 4
+    },
+    "168": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "169": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 23,
+      "defConHits": 3
+    },
+    "170": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "171": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "172": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "173": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 20,
+      "defConHits": 11
+    },
+    "174": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "175": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "176": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "177": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "178": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 25,
+      "defConHits": 0
+    },
+    "179": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "180": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "181": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "182": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "183": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 3,
+      "defConHits": 0
+    },
+    "184": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "185": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "186": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "187": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 34,
+      "defConHits": 4
+    },
+    "188": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "189": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "190": {
+      "gamesPlayed": 19,
+      "sixtyPlus": 17,
+      "defConHits": 9
+    },
+    "191": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 33,
+      "defConHits": 19
+    },
+    "192": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 21,
+      "defConHits": 3
+    },
+    "193": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 18,
+      "defConHits": 6
+    },
+    "194": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "195": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 14,
+      "defConHits": 1
+    },
+    "196": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "197": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "198": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 13,
+      "defConHits": 5
+    },
+    "199": {
+      "gamesPlayed": 11,
+      "sixtyPlus": 4,
+      "defConHits": 4
+    },
+    "200": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 30,
+      "defConHits": 1
+    },
+    "201": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "202": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "203": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "204": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "205": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 17,
+      "defConHits": 6
+    },
+    "206": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 11,
+      "defConHits": 0
+    },
+    "207": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 12,
+      "defConHits": 2
+    },
+    "208": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "209": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 16,
+      "defConHits": 4
+    },
+    "210": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 12,
+      "defConHits": 1
+    },
+    "211": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "212": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "213": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "214": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "215": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 20,
+      "defConHits": 0
+    },
+    "216": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "217": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 14,
+      "defConHits": 0
+    },
+    "218": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "219": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "220": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 34,
+      "defConHits": 0
+    },
+    "221": {
+      "gamesPlayed": 5,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "222": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "223": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "224": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 29,
+      "defConHits": 2
+    },
+    "225": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 19,
+      "defConHits": 2
+    },
+    "226": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 30,
+      "defConHits": 14
+    },
+    "227": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 2,
+      "defConHits": 2
+    },
+    "228": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 23,
+      "defConHits": 0
+    },
+    "229": {
+      "gamesPlayed": 8,
+      "sixtyPlus": 3,
+      "defConHits": 1
+    },
+    "230": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 18,
+      "defConHits": 7
+    },
+    "231": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "232": {
+      "gamesPlayed": 16,
+      "sixtyPlus": 7,
+      "defConHits": 4
+    },
+    "233": {
+      "gamesPlayed": 17,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "234": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "235": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 21,
+      "defConHits": 2
+    },
+    "236": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 30,
+      "defConHits": 0
+    },
+    "237": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 35,
+      "defConHits": 2
+    },
+    "238": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "239": {
+      "gamesPlayed": 16,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "240": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "241": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 31,
+      "defConHits": 13
+    },
+    "242": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 29,
+      "defConHits": 5
+    },
+    "243": {
+      "gamesPlayed": 15,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "244": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "245": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "246": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 11,
+      "defConHits": 2
+    },
+    "247": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "248": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "249": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 30,
+      "defConHits": 0
+    },
+    "250": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "251": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "252": {
+      "gamesPlayed": 10,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "253": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 37,
+      "defConHits": 0
+    },
+    "254": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "255": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "256": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 26,
+      "defConHits": 7
+    },
+    "257": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 34,
+      "defConHits": 20
+    },
+    "258": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 35,
+      "defConHits": 6
+    },
+    "259": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "260": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 35,
+      "defConHits": 11
+    },
+    "261": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 31,
+      "defConHits": 13
+    },
+    "262": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 6,
+      "defConHits": 1
+    },
+    "263": {
+      "gamesPlayed": 10,
+      "sixtyPlus": 6,
+      "defConHits": 0
+    },
+    "264": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "265": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "266": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 18,
+      "defConHits": 0
+    },
+    "267": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 22,
+      "defConHits": 0
+    },
+    "268": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "269": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "270": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 13,
+      "defConHits": 0
+    },
+    "271": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 20,
+      "defConHits": 5
+    },
+    "272": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 16,
+      "defConHits": 4
+    },
+    "273": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 28,
+      "defConHits": 9
+    },
+    "274": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "275": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "276": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 7,
+      "defConHits": 1
+    },
+    "277": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "278": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "279": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "280": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "281": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "282": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "283": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 23,
+      "defConHits": 0
+    },
+    "284": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "285": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "286": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "287": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 0
+    },
+    "288": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "289": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "290": {
+      "gamesPlayed": 10,
+      "sixtyPlus": 7,
+      "defConHits": 3
+    },
+    "291": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 37,
+      "defConHits": 22
+    },
+    "292": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 33,
+      "defConHits": 7
+    },
+    "293": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 36,
+      "defConHits": 6
+    },
+    "294": {
+      "gamesPlayed": 5,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "295": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 29,
+      "defConHits": 15
+    },
+    "296": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 3,
+      "defConHits": 2
+    },
+    "297": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "298": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "299": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 32,
+      "defConHits": 6
+    },
+    "300": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 12,
+      "defConHits": 2
+    },
+    "301": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "302": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 24,
+      "defConHits": 5
+    },
+    "303": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 20
+    },
+    "304": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 16,
+      "defConHits": 7
+    },
+    "305": {
+      "gamesPlayed": 13,
+      "sixtyPlus": 5,
+      "defConHits": 1
+    },
+    "306": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "307": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "308": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "309": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "310": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 19,
+      "defConHits": 0
+    },
+    "311": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 16,
+      "defConHits": 0
+    },
+    "312": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "313": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "314": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 0
+    },
+    "315": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "316": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 16,
+      "defConHits": 4
+    },
+    "317": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 31,
+      "defConHits": 20
+    },
+    "318": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 28,
+      "defConHits": 8
+    },
+    "319": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 19,
+      "defConHits": 2
+    },
+    "320": {
+      "gamesPlayed": 13,
+      "sixtyPlus": 8,
+      "defConHits": 1
+    },
+    "321": {
+      "gamesPlayed": 15,
+      "sixtyPlus": 10,
+      "defConHits": 7
+    },
+    "322": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 19,
+      "defConHits": 7
+    },
+    "323": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "324": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 28,
+      "defConHits": 1
+    },
+    "325": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 19,
+      "defConHits": 0
+    },
+    "326": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "327": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "328": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 20,
+      "defConHits": 5
+    },
+    "329": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 30,
+      "defConHits": 1
+    },
+    "330": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 33,
+      "defConHits": 5
+    },
+    "331": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "332": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 17,
+      "defConHits": 3
+    },
+    "333": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "334": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "335": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 13,
+      "defConHits": 0
+    },
+    "336": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "337": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 23,
+      "defConHits": 0
+    },
+    "338": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "339": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "340": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "341": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 22,
+      "defConHits": 0
+    },
+    "342": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 31,
+      "defConHits": 2
+    },
+    "343": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 32,
+      "defConHits": 13
+    },
+    "344": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 21,
+      "defConHits": 11
+    },
+    "345": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 4,
+      "defConHits": 1
+    },
+    "346": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "347": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 28,
+      "defConHits": 2
+    },
+    "348": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 32,
+      "defConHits": 10
+    },
+    "349": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "350": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 28,
+      "defConHits": 3
+    },
+    "351": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "352": {
+      "gamesPlayed": 11,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "353": {
+      "gamesPlayed": 19,
+      "sixtyPlus": 3,
+      "defConHits": 0
+    },
+    "354": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 35,
+      "defConHits": 19
+    },
+    "355": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "356": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 14,
+      "defConHits": 1
+    },
+    "357": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "358": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 12,
+      "defConHits": 4
+    },
+    "359": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "360": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "361": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "362": {
+      "gamesPlayed": 16,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "363": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "364": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "365": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "366": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 26,
+      "defConHits": 0
+    },
+    "367": {
+      "gamesPlayed": 10,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "368": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "369": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "370": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "371": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 23,
+      "defConHits": 1
+    },
+    "372": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "373": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 16
+    },
+    "374": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 34,
+      "defConHits": 13
+    },
+    "375": {
+      "gamesPlayed": 15,
+      "sixtyPlus": 9,
+      "defConHits": 1
+    },
+    "376": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "377": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "378": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "379": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "380": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "381": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 23,
+      "defConHits": 0
+    },
+    "382": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 27,
+      "defConHits": 1
+    },
+    "383": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "384": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 31,
+      "defConHits": 1
+    },
+    "385": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "386": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 29,
+      "defConHits": 4
+    },
+    "387": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 36,
+      "defConHits": 10
+    },
+    "388": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 18,
+      "defConHits": 4
+    },
+    "389": {
+      "gamesPlayed": 5,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "390": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 33,
+      "defConHits": 7
+    },
+    "391": {
+      "gamesPlayed": 8,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "392": {
+      "gamesPlayed": 8,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "393": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "394": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "395": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "396": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "397": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "398": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "399": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "400": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 3,
+      "defConHits": 0
+    },
+    "401": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "402": {
+      "gamesPlayed": 17,
+      "sixtyPlus": 10,
+      "defConHits": 1
+    },
+    "403": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 14,
+      "defConHits": 3
+    },
+    "404": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "405": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 7,
+      "defConHits": 1
+    },
+    "406": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 14,
+      "defConHits": 5
+    },
+    "407": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 30,
+      "defConHits": 4
+    },
+    "408": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 23,
+      "defConHits": 5
+    },
+    "409": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 5,
+      "defConHits": 1
+    },
+    "410": {
+      "gamesPlayed": 11,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "411": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 28,
+      "defConHits": 1
+    },
+    "412": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "413": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "414": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 22,
+      "defConHits": 3
+    },
+    "415": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 6,
+      "defConHits": 0
+    },
+    "416": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 31,
+      "defConHits": 2
+    },
+    "417": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 16,
+      "defConHits": 2
+    },
+    "418": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 18,
+      "defConHits": 0
+    },
+    "419": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 18,
+      "defConHits": 0
+    },
+    "420": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "421": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 16,
+      "defConHits": 8
+    },
+    "422": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "423": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 17,
+      "defConHits": 7
+    },
+    "424": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "425": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "426": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "427": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 17,
+      "defConHits": 1
+    },
+    "428": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "429": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "430": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 33,
+      "defConHits": 0
+    },
+    "431": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 6,
+      "defConHits": 0
+    },
+    "432": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "433": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "434": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "435": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "436": {
+      "gamesPlayed": 13,
+      "sixtyPlus": 13,
+      "defConHits": 4
+    },
+    "437": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 12,
+      "defConHits": 4
+    },
+    "438": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 10,
+      "defConHits": 1
+    },
+    "439": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "440": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 28,
+      "defConHits": 3
+    },
+    "441": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 14,
+      "defConHits": 1
+    },
+    "442": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 19,
+      "defConHits": 8
+    },
+    "443": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 37,
+      "defConHits": 5
+    },
+    "444": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 17,
+      "defConHits": 3
+    },
+    "445": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "446": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "447": {
+      "gamesPlayed": 17,
+      "sixtyPlus": 10,
+      "defConHits": 5
+    },
+    "448": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "449": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 34,
+      "defConHits": 5
+    },
+    "450": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 28,
+      "defConHits": 1
+    },
+    "451": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "452": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 23,
+      "defConHits": 0
+    },
+    "453": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "454": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "455": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 10,
+      "defConHits": 2
+    },
+    "456": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 6,
+      "defConHits": 0
+    },
+    "457": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 29,
+      "defConHits": 14
+    },
+    "458": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 16,
+      "defConHits": 6
+    },
+    "459": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 8,
+      "defConHits": 4
+    },
+    "460": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "461": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "462": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "463": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "464": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "465": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "466": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "467": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "468": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "469": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 27,
+      "defConHits": 0
+    },
+    "470": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 35,
+      "defConHits": 0
+    },
+    "471": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "472": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "473": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 23,
+      "defConHits": 5
+    },
+    "474": {
+      "gamesPlayed": 16,
+      "sixtyPlus": 11,
+      "defConHits": 6
+    },
+    "475": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 20,
+      "defConHits": 11
+    },
+    "476": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 24,
+      "defConHits": 10
+    },
+    "477": {
+      "gamesPlayed": 17,
+      "sixtyPlus": 14,
+      "defConHits": 1
+    },
+    "478": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 18,
+      "defConHits": 1
+    },
+    "479": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "480": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "481": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "482": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "483": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "484": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "485": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 21,
+      "defConHits": 0
+    },
+    "486": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 11,
+      "defConHits": 0
+    },
+    "487": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 18,
+      "defConHits": 0
+    },
+    "488": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 27,
+      "defConHits": 5
+    },
+    "489": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 17,
+      "defConHits": 0
+    },
+    "490": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 20,
+      "defConHits": 8
+    },
+    "491": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 27,
+      "defConHits": 4
+    },
+    "492": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "493": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 9,
+      "defConHits": 2
+    },
+    "494": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "495": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "496": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "497": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 15,
+      "defConHits": 5
+    },
+    "498": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "499": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "500": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "501": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "502": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 29,
+      "defConHits": 0
+    },
+    "503": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "504": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "505": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 37,
+      "defConHits": 13
+    },
+    "506": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 23,
+      "defConHits": 10
+    },
+    "507": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 18,
+      "defConHits": 2
+    },
+    "508": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 34,
+      "defConHits": 4
+    },
+    "509": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "510": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 4,
+      "defConHits": 1
+    },
+    "511": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 14,
+      "defConHits": 7
+    },
+    "512": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "513": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "514": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "515": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 35,
+      "defConHits": 1
+    },
+    "516": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 17,
+      "defConHits": 0
+    },
+    "517": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 37,
+      "defConHits": 26
+    },
+    "518": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "519": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 8,
+      "defConHits": 1
+    },
+    "520": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "521": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 22,
+      "defConHits": 9
+    },
+    "522": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 3,
+      "defConHits": 1
+    },
+    "523": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "524": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "525": {
+      "gamesPlayed": 15,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "526": {
+      "gamesPlayed": 37,
+      "sixtyPlus": 24,
+      "defConHits": 0
+    },
+    "527": {
+      "gamesPlayed": 17,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "528": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "529": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "530": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "531": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 22,
+      "defConHits": 15
+    },
+    "532": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 32,
+      "defConHits": 2
+    },
+    "533": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "534": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "535": {
+      "gamesPlayed": 8,
+      "sixtyPlus": 2,
+      "defConHits": 1
+    },
+    "536": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "537": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "538": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "539": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 6,
+      "defConHits": 1
+    },
+    "540": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "541": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 21,
+      "defConHits": 4
+    },
+    "542": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "543": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "544": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 15,
+      "defConHits": 0
+    },
+    "545": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "546": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "547": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 33,
+      "defConHits": 8
+    },
+    "548": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "549": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "550": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "551": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "552": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 33,
+      "defConHits": 4
+    },
+    "553": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 16,
+      "defConHits": 0
+    },
+    "554": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "555": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "556": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "557": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "558": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "559": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "560": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "561": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "562": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "563": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "564": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "565": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 31,
+      "defConHits": 0
+    },
+    "566": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "567": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "568": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 31,
+      "defConHits": 8
+    },
+    "569": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 20,
+      "defConHits": 9
+    },
+    "570": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 15,
+      "defConHits": 12
+    },
+    "571": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "572": {
+      "gamesPlayed": 10,
+      "sixtyPlus": 5,
+      "defConHits": 4
+    },
+    "573": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 22,
+      "defConHits": 1
+    },
+    "574": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 13,
+      "defConHits": 0
+    },
+    "575": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 33,
+      "defConHits": 3
+    },
+    "576": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "577": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "578": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "579": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "580": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 16,
+      "defConHits": 0
+    },
+    "581": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "582": {
+      "gamesPlayed": 19,
+      "sixtyPlus": 17,
+      "defConHits": 0
+    },
+    "583": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "584": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 12,
+      "defConHits": 0
+    },
+    "585": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 21,
+      "defConHits": 13
+    },
+    "586": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 9,
+      "defConHits": 1
+    },
+    "587": {
+      "gamesPlayed": 11,
+      "sixtyPlus": 5,
+      "defConHits": 2
+    },
+    "588": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "589": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "590": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "591": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 15,
+      "defConHits": 0
+    },
+    "592": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "593": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 13,
+      "defConHits": 4
+    },
+    "594": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "595": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "596": {
+      "gamesPlayed": 15,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "597": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 19,
+      "defConHits": 0
+    },
+    "598": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "599": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "600": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 20,
+      "defConHits": 0
+    },
+    "601": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "602": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "603": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 30,
+      "defConHits": 4
+    },
+    "604": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "605": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 17,
+      "defConHits": 6
+    },
+    "606": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 27,
+      "defConHits": 18
+    },
+    "607": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 2,
+      "defConHits": 1
+    },
+    "608": {
+      "gamesPlayed": 13,
+      "sixtyPlus": 7,
+      "defConHits": 2
+    },
+    "609": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 19,
+      "defConHits": 8
+    },
+    "610": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 23,
+      "defConHits": 8
+    },
+    "611": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "612": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 18,
+      "defConHits": 2
+    },
+    "613": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 23,
+      "defConHits": 2
+    },
+    "614": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 12,
+      "defConHits": 3
+    },
+    "615": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 28,
+      "defConHits": 1
+    },
+    "616": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "617": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "618": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "619": {
+      "gamesPlayed": 5,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "620": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "621": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "622": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "623": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 10,
+      "defConHits": 1
+    },
+    "624": {
+      "gamesPlayed": 38,
+      "sixtyPlus": 38,
+      "defConHits": 6
+    },
+    "625": {
+      "gamesPlayed": 8,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "626": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "627": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 12,
+      "defConHits": 0
+    },
+    "628": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 23,
+      "defConHits": 0
+    },
+    "629": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 3,
+      "defConHits": 0
+    },
+    "630": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "631": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 11,
+      "defConHits": 6
+    },
+    "632": {
+      "gamesPlayed": 11,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "633": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 24,
+      "defConHits": 3
+    },
+    "634": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 24,
+      "defConHits": 10
+    },
+    "635": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "636": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 28,
+      "defConHits": 5
+    },
+    "637": {
+      "gamesPlayed": 19,
+      "sixtyPlus": 15,
+      "defConHits": 8
+    },
+    "638": {
+      "gamesPlayed": 8,
+      "sixtyPlus": 4,
+      "defConHits": 1
+    },
+    "639": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "640": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 2,
+      "defConHits": 0
+    },
+    "641": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "642": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 15,
+      "defConHits": 0
+    },
+    "643": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 30,
+      "defConHits": 16
+    },
+    "644": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 12,
+      "defConHits": 0
+    },
+    "645": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "646": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 31,
+      "defConHits": 15
+    },
+    "647": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "648": {
+      "gamesPlayed": 13,
+      "sixtyPlus": 9,
+      "defConHits": 3
+    },
+    "649": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "650": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "651": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "652": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "653": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "654": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 23,
+      "defConHits": 0
+    },
+    "655": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "656": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "657": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "658": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "659": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 14,
+      "defConHits": 2
+    },
+    "660": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 8,
+      "defConHits": 2
+    },
+    "661": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 22,
+      "defConHits": 0
+    },
+    "662": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "663": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "664": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 27,
+      "defConHits": 10
+    },
+    "665": {
+      "gamesPlayed": 16,
+      "sixtyPlus": 16,
+      "defConHits": 0
+    },
+    "666": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 19,
+      "defConHits": 0
+    },
+    "667": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 32,
+      "defConHits": 13
+    },
+    "668": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 10,
+      "defConHits": 2
+    },
+    "669": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "670": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 35,
+      "defConHits": 0
+    },
+    "671": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "672": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 10,
+      "defConHits": 1
+    },
+    "673": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 11,
+      "defConHits": 0
+    },
+    "674": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 21,
+      "defConHits": 12
+    },
+    "675": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 26,
+      "defConHits": 4
+    },
+    "676": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "677": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "678": {
+      "gamesPlayed": 24,
+      "sixtyPlus": 8,
+      "defConHits": 1
+    },
+    "679": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 14,
+      "defConHits": 0
+    },
+    "680": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "681": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 18,
+      "defConHits": 0
+    },
+    "682": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 13,
+      "defConHits": 4
+    },
+    "683": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 32,
+      "defConHits": 12
+    },
+    "684": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 31,
+      "defConHits": 12
+    },
+    "685": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "686": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "687": {
+      "gamesPlayed": 19,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "688": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "689": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "690": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "691": {
+      "gamesPlayed": 35,
+      "sixtyPlus": 30,
+      "defConHits": 0
+    },
+    "692": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "693": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 15,
+      "defConHits": 1
+    },
+    "694": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 31,
+      "defConHits": 13
+    },
+    "695": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "696": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 17,
+      "defConHits": 2
+    },
+    "697": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 8,
+      "defConHits": 1
+    },
+    "698": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 18,
+      "defConHits": 0
+    },
+    "699": {
+      "gamesPlayed": 21,
+      "sixtyPlus": 8,
+      "defConHits": 0
+    },
+    "700": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "701": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "702": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "703": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "704": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "705": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "706": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 2,
+      "defConHits": 1
+    },
+    "707": {
+      "gamesPlayed": 29,
+      "sixtyPlus": 20,
+      "defConHits": 4
+    },
+    "708": {
+      "gamesPlayed": 36,
+      "sixtyPlus": 34,
+      "defConHits": 15
+    },
+    "709": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 27,
+      "defConHits": 3
+    },
+    "710": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "711": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "712": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 19,
+      "defConHits": 1
+    },
+    "713": {
+      "gamesPlayed": 17,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "714": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 25,
+      "defConHits": 2
+    },
+    "715": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 21,
+      "defConHits": 0
+    },
+    "716": {
+      "gamesPlayed": 5,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "717": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 10,
+      "defConHits": 0
+    },
+    "718": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 18,
+      "defConHits": 3
+    },
+    "719": {
+      "gamesPlayed": 22,
+      "sixtyPlus": 9,
+      "defConHits": 3
+    },
+    "720": {
+      "gamesPlayed": 25,
+      "sixtyPlus": 18,
+      "defConHits": 7
+    },
+    "721": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 23,
+      "defConHits": 14
+    },
+    "722": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 4,
+      "defConHits": 3
+    },
+    "723": {
+      "gamesPlayed": 20,
+      "sixtyPlus": 14,
+      "defConHits": 10
+    },
+    "724": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "725": {
+      "gamesPlayed": 16,
+      "sixtyPlus": 6,
+      "defConHits": 1
+    },
+    "726": {
+      "gamesPlayed": 23,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "727": {
+      "gamesPlayed": 26,
+      "sixtyPlus": 6,
+      "defConHits": 0
+    },
+    "728": {
+      "gamesPlayed": 34,
+      "sixtyPlus": 34,
+      "defConHits": 0
+    },
+    "729": {
+      "gamesPlayed": 32,
+      "sixtyPlus": 32,
+      "defConHits": 0
+    },
+    "730": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "731": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "732": {
+      "gamesPlayed": 28,
+      "sixtyPlus": 17,
+      "defConHits": 2
+    },
+    "733": {
+      "gamesPlayed": 31,
+      "sixtyPlus": 21,
+      "defConHits": 0
+    },
+    "734": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 7,
+      "defConHits": 0
+    },
+    "735": {
+      "gamesPlayed": 30,
+      "sixtyPlus": 17,
+      "defConHits": 0
+    },
+    "736": {
+      "gamesPlayed": 33,
+      "sixtyPlus": 14,
+      "defConHits": 0
+    },
+    "737": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "738": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "739": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "740": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "741": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "742": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "743": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "744": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "745": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "746": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "747": {
+      "gamesPlayed": 6,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "748": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "749": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "750": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "751": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "752": {
+      "gamesPlayed": 27,
+      "sixtyPlus": 18,
+      "defConHits": 1
+    },
+    "753": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "754": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "755": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "756": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "757": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "758": {
+      "gamesPlayed": 11,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "759": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "760": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "761": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "762": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "763": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "764": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "765": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "766": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "767": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "768": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "769": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "770": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "771": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "772": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "773": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "774": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "775": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "776": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "777": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "778": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "779": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "780": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "781": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "782": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "783": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "784": {
+      "gamesPlayed": 19,
+      "sixtyPlus": 18,
+      "defConHits": 2
+    },
+    "785": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 9,
+      "defConHits": 0
+    },
+    "786": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "787": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "788": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "789": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "790": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "791": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "792": {
+      "gamesPlayed": 18,
+      "sixtyPlus": 17,
+      "defConHits": 0
+    },
+    "793": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "794": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "795": {
+      "gamesPlayed": 2,
+      "sixtyPlus": 1,
+      "defConHits": 1
+    },
+    "796": {
+      "gamesPlayed": 16,
+      "sixtyPlus": 13,
+      "defConHits": 2
+    },
+    "797": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "798": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "799": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "800": {
+      "gamesPlayed": 9,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "801": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "802": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "803": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "804": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "805": {
+      "gamesPlayed": 4,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "806": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 1,
+      "defConHits": 0
+    },
+    "807": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "808": {
+      "gamesPlayed": 15,
+      "sixtyPlus": 13,
+      "defConHits": 0
+    },
+    "809": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "810": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "811": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "812": {
+      "gamesPlayed": 7,
+      "sixtyPlus": 3,
+      "defConHits": 1
+    },
+    "813": {
+      "gamesPlayed": 3,
+      "sixtyPlus": 3,
+      "defConHits": 0
+    },
+    "814": {
+      "gamesPlayed": 8,
+      "sixtyPlus": 5,
+      "defConHits": 0
+    },
+    "815": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 14,
+      "defConHits": 2
+    },
+    "816": {
+      "gamesPlayed": 12,
+      "sixtyPlus": 4,
+      "defConHits": 0
+    },
+    "817": {
+      "gamesPlayed": 14,
+      "sixtyPlus": 13,
+      "defConHits": 0
+    },
+    "818": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "819": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "820": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "821": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "822": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "823": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "824": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "825": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "826": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "827": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "828": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "829": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "830": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "831": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "832": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "833": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "834": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "835": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "836": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "837": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "838": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "839": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "840": {
+      "gamesPlayed": 1,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    },
+    "841": {
+      "gamesPlayed": 0,
+      "sixtyPlus": 0,
+      "defConHits": 0
+    }
+  }
+}

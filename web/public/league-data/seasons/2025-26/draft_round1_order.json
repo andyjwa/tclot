@@ -1,0 +1,6 @@
+{
+  "_meta": {
+    "note": "Round-1 snake order as FPL entry_id values. `waiver_pick` from the API is current waiver priority and no longer matches the original draft after in-season claims — use this file for an accurate board. Edit if any slot is wrong (check the draft recap on draft.premierleague.com)."
+  },
+  "fplEntryIds": [40240, 74425, 27870, 31812, 40385, 41410, 27134, 27040]
+}

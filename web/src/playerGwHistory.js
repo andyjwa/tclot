@@ -1,4 +1,5 @@
 import { defensiveContributionPointThreshold, fixturesForTeamInGw } from './fplBonusFromBps'
+import { leagueDataBase } from './seasonArchive.js'
 
 /** @type {object[] | null} */
 let leagueFixturesCache = null
@@ -10,7 +11,7 @@ let leagueFixturesLoad = null
  * @param {string} [baseUrl]
  * @returns {Promise<object[]>}
  */
-export function loadLeagueFixtures(baseUrl = `${import.meta.env.BASE_URL}league-data`) {
+export function loadLeagueFixtures(baseUrl = leagueDataBase()) {
   if (leagueFixturesCache) return Promise.resolve(leagueFixturesCache)
   if (!leagueFixturesLoad) {
     leagueFixturesLoad = fetch(`${baseUrl}/fixtures.json`)

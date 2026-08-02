@@ -7,7 +7,10 @@
  * under `/TCLOT/` and refreshes when league-data is rebuilt. All fetches degrade
  * gracefully: a missing artifact resolves to `null` rather than throwing.
  */
-const DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
+import { leagueDataBase } from './seasonArchive.js';
+
+/** Resolves to `league-data/seasons/<label>` in archive view (see seasonArchive.js). */
+const DATA_BASE = leagueDataBase();
 const BUILD_LEAGUE_DATA_V = String(import.meta.env.VITE_LEAGUE_DATA_REVISION || '').trim();
 
 /** Resolve the cache-busting revision: build-time env wins, else revision.json. */

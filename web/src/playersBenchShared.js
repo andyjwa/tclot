@@ -4,9 +4,10 @@ import {
   fplElementDisplayName,
 } from './fplElementNames.js'
 import { POS_LABEL } from './playersWireList.js'
+import { leagueDataBase } from './seasonArchive.js'
 
-/** League JSON under `web/public/league-data` */
-export const PLAYERS_LEAGUE_DATA_BASE = `${import.meta.env.BASE_URL}league-data`
+/** League JSON under `web/public/league-data` (or a season archive subtree). */
+export const PLAYERS_LEAGUE_DATA_BASE = leagueDataBase()
 
 export async function fetchBootstrapDraft(cacheKey = '') {
   const base = `${PLAYERS_LEAGUE_DATA_BASE}/bootstrap_draft.json`
