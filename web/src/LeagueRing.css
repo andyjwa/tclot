@@ -190,31 +190,45 @@
   }
 }
 
-@media (max-width: 720px) and (orientation: portrait) {
-  .league-ring {
+@media (max-width: 1080px) {
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring {
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
-    gap: 12px;
+    gap: 8px;
   }
 
-  .league-ring__header {
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__header {
     aspect-ratio: auto;
     flex: 1 1 auto;
     min-height: 0;
-    max-height: 38dvh;
+    max-height: none;
     overflow: hidden;
   }
 
-  .league-ring__header-img {
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__header-img {
     object-fit: contain;
-    object-position: center top;
+    object-position: center center;
   }
 
-  .league-ring__roster {
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__roster {
     flex: 0 0 auto;
     overflow: hidden;
-    padding-top: 4px;
-    row-gap: 12px;
+    padding-top: 0;
+    row-gap: 8px;
+    column-gap: 6px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__cell {
+    gap: 4px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__cell-badge {
+    width: clamp(48px, 14vw, 72px);
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__cell-name {
+    min-height: 0;
+    font-size: clamp(0.58rem, 2.7vw, 0.74rem);
   }
 }

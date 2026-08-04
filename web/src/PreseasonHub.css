@@ -63,31 +63,40 @@
   }
 }
 
-/* Portrait: pin the LotR/badge hub so the image does not scroll or pan.
- * 56px is the mobile brand-header row (status strip is separate). */
-@media (max-width: 720px) and (orientation: portrait) {
-  .preseason-hub {
+@media (max-width: 1080px) {
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-hub {
+    width: 100%;
+    margin: 0;
     min-height: 0;
-    height: calc(
-      100dvh - env(safe-area-inset-top, 0px) - 56px -
-        var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) - 28px
-    );
-    max-height: calc(
-      100dvh - env(safe-area-inset-top, 0px) - 56px -
-        var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) - 28px
-    );
+    height: 100%;
+    max-height: none;
     overflow: hidden;
     overscroll-behavior: none;
-    touch-action: manipulation;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    touch-action: none;
+    background-attachment: scroll;
+    padding: 8px 12px 10px;
   }
 
-  .preseason-hub__inner {
-    flex: 1 1 auto;
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-hub__inner {
+    height: 100%;
     min-height: 0;
+    max-width: none;
     overflow: hidden;
-    gap: 12px;
+    gap: 8px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-countdown {
+    flex: 0 0 auto;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-countdown__value {
+    font-size: clamp(1.45rem, 6.4vw, 2.15rem);
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-countdown__sep {
+    min-height: 34px;
   }
 }
 
