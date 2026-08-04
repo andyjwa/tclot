@@ -18,6 +18,7 @@ import {
   fetchSeasonCatalog,
 } from './seasonArchive.js'
 import { getSeasonLabel } from './seasonString.js'
+import { isPreDraftAllowedView, resolveDraftGate } from './draftGate.js'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
 const BRAND_HEADER_TOP_N = 8
@@ -421,7 +422,6 @@ import {
 } from './waiverMovesSort.js'
 import {
   HALL_SEASON_FINAL_TABLES,
-  LIVE_HALL_SEASON_LABEL,
   buildManagerFullNameByHallKey,
   computeHallAlgorithmRows,
   computeHallManagerJourney,
@@ -873,7 +873,7 @@ function HeritageTrophyRoom() {
 /* ---------------- TCLOT Records (sits below the trophy carousel) ----
  * League-wide all-time records — derived from `HALL_SEASON_FINAL_TABLES`
  * via `computeHallRecords()`. Records auto-refresh as new seasons land
- * (or when the live `2025-26` season exceeds an existing ceiling/floor)
+ * (or when the live `2026-27` season exceeds an existing ceiling/floor)
  * — no UI edits required. The two GW-level records (highest losing /
  * lowest winning GW points) are still manually curated since we don't
  * archive fixture-level history yet; flagged in the data via `_static`. */
@@ -1362,7 +1362,7 @@ function formatHeritageSeasonLabel(seasonKey) {
 
 /** When rendered embedded inside the History sub-tab, `headingTag` is `'h3'`. */
 function HeritageHistoricStandings({ fullNameMap, headingTag = 'h3' }) {
-  /* Completed historic seasons only — current 25/26 lives on the Standings tab. */
+  /* Completed historic seasons only — current 26/27 lives on the Standings tab. */
   const seasonOptions = useMemo(
     () => [...HALL_SEASON_FINAL_TABLES].reverse(),
     [],
@@ -1534,7 +1534,7 @@ const COFC_LIVE_COLUMNS = [
   { key: 'totalD', label: 'D', numeric: true, align: 'right', mobile: true, title: 'Draws (cumulative)' },
   { key: 'totalL', label: 'L', numeric: true, align: 'right', mobile: true, title: 'Losses (cumulative)' },
   { key: 'totalPf', label: 'For', numeric: true, align: 'right', mobile: true, title: 'Total FPL points scored' },
-  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (live season only — historic data not yet transcribed)' },
+  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (from 2025-26 onward; earlier seasons not yet transcribed)' },
   { key: 'totalPts', label: 'PTS', numeric: true, align: 'right', mobile: true, title: 'League points (3 / 1 / 0 per H2H)' },
   { key: 'titles', label: 'Titles', numeric: true, align: 'right', mobile: false, title: 'Seasons finished 1st' },
   { key: 'lastRank', label: 'Last', numeric: true, align: 'right', mobile: false, title: 'Most recent finishing position' },
@@ -2478,6 +2478,7 @@ function App() {
     winMarginBucketRows = [],
     lossMarginBucketRows = [],
     tradesPanelRows = [],
+    league = null,
     matches = [],
     waiverOutGwRows = [],
     firstWaiverOrderPicks = [],
@@ -2556,14 +2557,28 @@ function App() {
    * of the dashboard layout) share the same open state. */
   const [leagueInfoOpen, setLeagueInfoOpen] = useState(false)
 
+  const draftGate = useMemo(
+    () => resolveDraftGate(league, statusNow, { archiveView: isArchiveView() }),
+    [league, statusNow],
+  )
+  const mobileLayout = useMobileLayout()
+  const showBrandHeader = !(mobileLayout && draftGate.hideMobilePreseasonHeader)
+  const showPageHero =
+    showBrandHeader || fetchFailedDemo || isSampleData || isArchiveView()
+
   const bottomNavHidden = useAutoHideBottomNav({
     enabled:
+      !draftGate.navLocked &&
       dashboardView !== 'more' &&
       !playerDetailOverlayOpen,
   })
 
   const selectDashboardView = useCallback((view) => {
-    setDashboardView(view)
+    if (draftGate.navLocked && !isPreDraftAllowedView(view)) {
+      setDashboardView('preseason')
+    } else {
+      setDashboardView(view)
+    }
     setPlayerDetailOverlayOpen(false)
     if (view !== 'players') {
       stripPlayersHash()
@@ -2571,7 +2586,14 @@ function App() {
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0)
     }
-  }, [])
+  }, [draftGate.navLocked])
+
+  useEffect(() => {
+    if (!draftGate.navLocked) return
+    if (!isPreDraftAllowedView(dashboardView)) {
+      setDashboardView('preseason')
+    }
+  }, [draftGate.navLocked, dashboardView])
 
   useLayoutEffect(() => {
     document.body.dataset.tclotTheme = colorTheme
@@ -2582,11 +2604,12 @@ function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
     function onPlayersHashNavigate() {
+      if (draftGate.navLocked) return
       if (parsePlayersHash()) setDashboardView('players')
     }
     window.addEventListener('hashchange', onPlayersHashNavigate)
     return () => window.removeEventListener('hashchange', onPlayersHashNavigate)
-  }, [])
+  }, [draftGate.navLocked])
 
   useEffect(() => {
     try {
@@ -2795,7 +2818,6 @@ function App() {
 
   /** Mobile (tabbed single-column) layout for the waivers panel — drives the
    *  compact "GW38" GW pill so it fits on the same row as the view toggle. */
-  const waiversMobileLayout = useMobileLayout()
 
   /** Waiver GW picker: drops-gw-live GWs plus draft bootstrap current/next (shows GW35 before redeploy). */
   const waiverGwPickerOptions = useMemo(() => {
@@ -3134,10 +3156,15 @@ function App() {
       className="app fotmob"
       data-theme={colorTheme}
       data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
+      data-preseason-chrome={
+        mobileLayout && draftGate.hideMobilePreseasonHeader ? 'minimal' : undefined
+      }
     >
       <main className="dashboard-layout dashboard-layout--with-nav">
+        {showPageHero ? (
         <div className="dashboard-page-hero">
           <header className="page-header">
+            {showBrandHeader ? (
             <BrandHeader
               tableRows={tableRows}
               leagueEntries={leagueEntries}
@@ -3149,6 +3176,7 @@ function App() {
               currentSeasonLabel={seasonCatalog.current}
               archivedSeasons={seasonCatalog.archived}
             />
+            ) : null}
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
                 <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}
@@ -3179,10 +3207,12 @@ function App() {
             )}
           </header>
         </div>
+        ) : null}
         <DashboardNav
           variant="top"
           dashboardView={dashboardView}
           onSelect={selectDashboardView}
+          navLocked={draftGate.navLocked}
         />
         <div className="dashboard-content">
           {dashboardView === 'preseason' ? <PreseasonHub /> : null}
@@ -3775,7 +3805,7 @@ function App() {
                     gwPill={
                       waiverGwPickerOptions.length > 0 ? (
                         <CompactSelectPill
-                          label={waiversMobileLayout ? undefined : 'GW'}
+                          label={mobileLayout ? undefined : 'GW'}
                           ariaLabel="Waivers game week"
                           align="right"
                           isActive={false}
@@ -3783,7 +3813,7 @@ function App() {
                           onChange={(next) => setWaiverGwView(Number(next))}
                           options={waiverGwPickerOptions.map((gw) => ({
                             value: String(gw),
-                            label: waiversMobileLayout
+                            label: mobileLayout
                               ? gameWeekShortLabel(gw)
                               : gameWeekSelectLabel(gw),
                           }))}
@@ -4024,6 +4054,7 @@ function App() {
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
         liveStatus={brandHeaderStatus}
+        navLocked={draftGate.navLocked}
       />
       <LeagueInfoModal
         open={leagueInfoOpen}

@@ -436,6 +436,10 @@
   scrollbar-width: thin;
 }
 
+.dashboard-layout--with-nav > .dashboard-nav.dashboard-nav--pre-draft {
+  overflow-x: hidden;
+}
+
 .dashboard-layout--with-nav > .dashboard-content {
   grid-column: 1;
   grid-row: 3;
@@ -654,6 +658,11 @@
 }
 
 @media (max-width: 1080px) {
+  .app.fotmob[data-preseason-chrome='minimal'] {
+    padding-top: 0;
+    overflow-x: hidden;
+  }
+
   .dashboard-nav--top {
     display: none !important;
   }
@@ -8749,6 +8758,9 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   position: relative;
   overflow: visible;
 }
+.brand-header__meta.season-switch {
+  overflow: visible;
+}
 .season-switch__btn {
   display: inline-flex;
   align-items: center;
@@ -8978,6 +8990,14 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
     font-size: 10px;
     justify-self: end;
     color: rgba(255, 255, 255, 0.78);
+  }
+  /* Trigger sits on the right edge — open the menu leftward so it
+   * stays on-screen instead of clipping past the viewport. */
+  .season-switch__menu {
+    left: auto;
+    right: 0;
+    min-width: 156px;
+    max-width: min(220px, calc(100vw - 24px));
   }
   .brand-header__crests {
     display: none;
