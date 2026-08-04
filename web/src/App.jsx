@@ -414,6 +414,7 @@ import {
   readStoredDefaultTab,
 } from './settingsStorage'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
+import { useLockBodyScroll } from './useLockBodyScroll.js'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
 import {
   WeeklyWaivers,
@@ -2569,6 +2570,7 @@ function App() {
   const mobileLayout = useMobileLayout()
   const hideMobileStatusStrip =
     mobileLayout && draftGate.hideMobileStatusStrip
+  useLockBodyScroll(mobileLayout && dashboardView === 'preseason')
 
   const bottomNavHidden = useAutoHideBottomNav({
     enabled:
