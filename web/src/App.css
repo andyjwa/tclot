@@ -662,26 +662,24 @@
     display: none !important;
   }
 
-  /* 26/27 hub is a single static frame — no document scroll, no white
-   * gutter under the parchment. svh keeps the frame inside the visible
-   * viewport even while iOS chrome is showing. */
+  /* 26/27 hub: one static frame between the header and the tab bar. */
   html:has(.app.fotmob[data-dashboard-view='preseason']),
-  body:has(.app.fotmob[data-dashboard-view='preseason']) {
+  html:has(.app.fotmob[data-dashboard-view='preseason']) body,
+  html:has(.app.fotmob[data-dashboard-view='preseason']) #root {
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
-    touch-action: none;
+  }
+
+  html:has(.app.fotmob[data-dashboard-view='preseason']) #root {
+    min-height: 0;
   }
 
   .app.fotmob[data-dashboard-view='preseason'] {
-    /* `.fotmob { min-height: 100vh }` beats `max-height: 100svh` when the
-     * two disagree (iOS large vs small viewport). Zero min-height so the
-     * static frame cannot grow past the visible screen. */
     height: 100svh;
     max-height: 100svh;
     min-height: 0;
     overflow: hidden;
-    overscroll-behavior: none;
     padding-top: 0;
     padding-left: 0;
     padding-right: 0;

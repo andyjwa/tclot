@@ -40,33 +40,3 @@ body[data-tclot-theme='light'] {
 #root {
   min-height: 100vh;
 }
-
-/* iOS will still rubber-band a document that is only `overflow: hidden`.
- * The preseason hub adds this class and pins `body` with position:fixed. */
-html.tclot-scroll-lock,
-html.tclot-scroll-lock body {
-  height: 100%;
-  overflow: hidden !important;
-  overscroll-behavior: none;
-  touch-action: none;
-}
-
-html.tclot-scroll-lock body {
-  position: fixed;
-  left: 0;
-  right: 0;
-  width: 100%;
-}
-
-html.tclot-scroll-lock #root {
-  min-height: 0;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
-}
-
-html.tclot-scroll-lock .app.fotmob[data-dashboard-view='preseason'] {
-  height: 100%;
-  max-height: 100%;
-  min-height: 0;
-}
