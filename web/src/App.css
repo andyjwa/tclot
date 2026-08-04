@@ -658,11 +658,6 @@
 }
 
 @media (max-width: 1080px) {
-  .app.fotmob[data-preseason-chrome='minimal'] {
-    padding-top: 0;
-    overflow-x: hidden;
-  }
-
   .dashboard-nav--top {
     display: none !important;
   }

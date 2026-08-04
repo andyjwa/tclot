@@ -280,6 +280,7 @@ function SeasonSwitcher({ currentSeasonLabel, archivedSeasons = [] }) {
  *   teamLogoMap?: Record<string, string>,
  *   kitIndexByEntry?: Record<string, number>,
  *   liveStatus?: object | null,
+ *   hideStatusStrip?: boolean,
  * }} props
  */
 function BrandHeader({
@@ -292,6 +293,7 @@ function BrandHeader({
   onOpenLeagueInfo,
   currentSeasonLabel,
   archivedSeasons = [],
+  hideStatusStrip = false,
 }) {
   const entryById = useMemo(() => {
     const m = new Map()
@@ -320,7 +322,10 @@ function BrandHeader({
    * season and would mislead against frozen data — the archive banner below
    * the header carries the context instead. */
   const showStatusStrip =
-    !isArchiveView() && !!liveStatus && liveStatus.status !== 'unknown'
+    !hideStatusStrip &&
+    !isArchiveView() &&
+    !!liveStatus &&
+    liveStatus.status !== 'unknown'
 
   return (
     <section
@@ -2562,9 +2567,8 @@ function App() {
     [league, statusNow],
   )
   const mobileLayout = useMobileLayout()
-  const showBrandHeader = !(mobileLayout && draftGate.hideMobilePreseasonHeader)
-  const showPageHero =
-    showBrandHeader || fetchFailedDemo || isSampleData || isArchiveView()
+  const hideMobileStatusStrip =
+    mobileLayout && draftGate.hideMobileStatusStrip
 
   const bottomNavHidden = useAutoHideBottomNav({
     enabled:
@@ -3156,15 +3160,10 @@ function App() {
       className="app fotmob"
       data-theme={colorTheme}
       data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
-      data-preseason-chrome={
-        mobileLayout && draftGate.hideMobilePreseasonHeader ? 'minimal' : undefined
-      }
     >
       <main className="dashboard-layout dashboard-layout--with-nav">
-        {showPageHero ? (
         <div className="dashboard-page-hero">
           <header className="page-header">
-            {showBrandHeader ? (
             <BrandHeader
               tableRows={tableRows}
               leagueEntries={leagueEntries}
@@ -3175,8 +3174,8 @@ function App() {
               onOpenLeagueInfo={() => setLeagueInfoOpen(true)}
               currentSeasonLabel={seasonCatalog.current}
               archivedSeasons={seasonCatalog.archived}
+              hideStatusStrip={hideMobileStatusStrip}
             />
-            ) : null}
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
                 <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}
@@ -3207,7 +3206,6 @@ function App() {
             )}
           </header>
         </div>
-        ) : null}
         <DashboardNav
           variant="top"
           dashboardView={dashboardView}

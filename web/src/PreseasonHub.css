@@ -63,19 +63,18 @@
   }
 }
 
-/* Portrait + pre-draft (header hidden): pin the LotR/badge hub so the
- * image does not scroll or pan. After the header returns, normal scroll
- * resumes. */
+/* Portrait: pin the LotR/badge hub so the image does not scroll or pan.
+ * 56px is the mobile brand-header row (status strip is separate). */
 @media (max-width: 720px) and (orientation: portrait) {
-  .app.fotmob[data-preseason-chrome='minimal'] .preseason-hub {
+  .preseason-hub {
     min-height: 0;
     height: calc(
-      100dvh - var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) -
-        28px
+      100dvh - env(safe-area-inset-top, 0px) - 56px -
+        var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) - 28px
     );
     max-height: calc(
-      100dvh - var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) -
-        28px
+      100dvh - env(safe-area-inset-top, 0px) - 56px -
+        var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) - 28px
     );
     overflow: hidden;
     overscroll-behavior: none;
@@ -84,7 +83,7 @@
     padding-bottom: 12px;
   }
 
-  .app.fotmob[data-preseason-chrome='minimal'] .preseason-hub__inner {
+  .preseason-hub__inner {
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;

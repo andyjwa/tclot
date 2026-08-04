@@ -2,8 +2,9 @@
  * Pre-draft chrome gate.
  *
  * Until the FPL draft is complete, desktop + mobile nav only expose 26/27
- * and Heritage. The mobile brand header stays hidden until one hour after
- * the draft finishes, then returns.
+ * and Heritage. On mobile, the brand-header status strip ("Pre-season · …")
+ * stays hidden until one hour after the draft finishes, then returns.
+ * The TCLOT + season row stays visible throughout.
  */
 
 export const DRAFT_HEADER_RESUME_MS = 60 * 60 * 1000
@@ -26,7 +27,7 @@ export function resolveDraftGate(league, now = new Date(), opts = {}) {
   if (opts.archiveView) {
     return {
       navLocked: false,
-      hideMobilePreseasonHeader: false,
+      hideMobileStatusStrip: false,
       draftCompletedAtMs: null,
       headerResumeAtMs: null,
     }
@@ -49,7 +50,7 @@ export function resolveDraftGate(league, now = new Date(), opts = {}) {
       DRAFT_HEADER_RESUME_MS
     : null
 
-  const hideMobilePreseasonHeader =
+  const hideMobileStatusStrip =
     !isComplete ||
     (headerResumeAtMs != null &&
       Number.isFinite(nowMs) &&
@@ -57,7 +58,7 @@ export function resolveDraftGate(league, now = new Date(), opts = {}) {
 
   return {
     navLocked: !isComplete,
-    hideMobilePreseasonHeader,
+    hideMobileStatusStrip,
     draftCompletedAtMs: completedAtMs,
     headerResumeAtMs,
   }

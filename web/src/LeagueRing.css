@@ -191,14 +191,14 @@
 }
 
 @media (max-width: 720px) and (orientation: portrait) {
-  .app.fotmob[data-preseason-chrome='minimal'] .league-ring {
+  .league-ring {
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
     gap: 12px;
   }
 
-  .app.fotmob[data-preseason-chrome='minimal'] .league-ring__header {
+  .league-ring__header {
     aspect-ratio: auto;
     flex: 1 1 auto;
     min-height: 0;
@@ -206,12 +206,12 @@
     overflow: hidden;
   }
 
-  .app.fotmob[data-preseason-chrome='minimal'] .league-ring__header-img {
+  .league-ring__header-img {
     object-fit: contain;
     object-position: center top;
   }
 
-  .app.fotmob[data-preseason-chrome='minimal'] .league-ring__roster {
+  .league-ring__roster {
     flex: 0 0 auto;
     overflow: hidden;
     padding-top: 4px;
