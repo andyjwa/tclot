@@ -662,35 +662,23 @@
     display: none !important;
   }
 
-  /* 26/27 hub: one static frame between the header and the tab bar. */
-  html:has(.app.fotmob[data-dashboard-view='preseason']),
-  html:has(.app.fotmob[data-dashboard-view='preseason']) body,
-  html:has(.app.fotmob[data-dashboard-view='preseason']) #root {
-    height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
-
-  html:has(.app.fotmob[data-dashboard-view='preseason']) #root {
-    min-height: 0;
-  }
-
+  /* 26/27 hub fills the space above the tab bar. Keep overflow/height off
+   * `.app` — the tab bar is a child, and locking `.app` / html/body makes
+   * iOS inflate safe-area-inset-bottom into a huge empty footer. */
   .app.fotmob[data-dashboard-view='preseason'] {
-    height: 100svh;
-    max-height: 100svh;
     min-height: 0;
-    overflow: hidden;
     padding-top: 0;
     padding-left: 0;
     padding-right: 0;
-    padding-bottom: calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--mobile-bottom-nav-h) + min(env(safe-area-inset-bottom, 0px), 34px));
     box-sizing: border-box;
   }
 
   .app.fotmob[data-dashboard-view='preseason'] .dashboard-layout--with-nav {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: calc(100svh - var(--mobile-bottom-nav-h) - min(env(safe-area-inset-bottom, 0px), 34px));
+    max-height: calc(100svh - var(--mobile-bottom-nav-h) - min(env(safe-area-inset-bottom, 0px), 34px));
     min-height: 0;
     gap: 0;
     overflow: hidden;
