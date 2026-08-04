@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-18T18:49:28.151Z",
-  "season": "2526",
-  "seasonLabel": "2025-26",
+  "generatedAt": "2026-08-04T20:10:56.774Z",
+  "season": "2627",
+  "seasonLabel": "2026-27",
   "primaryJoinKey": "code (Opta)",
   "counts": {
     "regular": 822,

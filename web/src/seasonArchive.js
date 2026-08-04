@@ -58,24 +58,37 @@ export function seasonHref(label) {
 }
 
 /**
- * Fetch `seasons/index.json` and return archived labels older than the current
- * season, newest first. Returns [] on any miss (feature quietly disabled).
+ * Fetch `seasons/index.json`. `current` is the live tree's label (`2026-27`);
+ * `archived` is older labels only, newest first. Empty catalog on any miss.
  */
-export async function fetchArchivedSeasons() {
+export async function fetchSeasonCatalog() {
   try {
     const res = await fetch(
       `${import.meta.env.BASE_URL}league-data/seasons/index.json`,
       { cache: 'no-store' },
     );
-    if (!res.ok) return [];
+    if (!res.ok) return { current: null, archived: [] };
     const j = await res.json();
-    const current = typeof j?.current === 'string' ? j.current : null;
-    return (Array.isArray(j?.seasons) ? j.seasons : [])
+    const current =
+      typeof j?.current === 'string' && SEASON_LABEL_RE.test(j.current)
+        ? j.current
+        : null;
+    const archived = (Array.isArray(j?.seasons) ? j.seasons : [])
       .filter((s) => typeof s === 'string' && SEASON_LABEL_RE.test(s))
       .filter((s) => s !== current)
       .sort()
       .reverse();
+    return { current, archived };
   } catch {
-    return [];
+    return { current: null, archived: [] };
   }
+}
+
+/**
+ * Fetch `seasons/index.json` and return archived labels older than the current
+ * season, newest first. Returns [] on any miss (feature quietly disabled).
+ */
+export async function fetchArchivedSeasons() {
+  const { archived } = await fetchSeasonCatalog();
+  return archived;
 }

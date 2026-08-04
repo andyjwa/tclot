@@ -16,17 +16,22 @@
 
 ## Option B — your own filenames
 
-1. Copy all images here (any names, e.g. `hanson.png`).
+1. Copy all images here (any names, e.g. `hanson.png`), **or** leave named
+   preseason art in `team-logos-web/` (the logo build resolves both).
 2. Create **`manifest.json`** in this folder:
 
    ```json
    {
-     "26587": "hanson.png",
-     "26675": "meat-loaf.webp"
+     "4259": "Bilbo.JPG",
+     "4898": "Toronto.JPG"
    }
    ```
 
-   Keys are the same **`id`** values from step A; values are filenames in this folder.
+   Keys are the same **`id`** values from step A; values are filenames.
+
+   26/27 LOTR badges use this map (FPL issues new ids each season). Last
+   season’s numbered `{id}.png` files stay so `?season=2025-26` still
+   shows the old crests.
 
 3. Restart / refresh the dev server.
 

@@ -15,17 +15,20 @@ import {
   isArchiveView,
   seasonLabelDisplay,
   seasonHref,
-  fetchArchivedSeasons,
+  fetchSeasonCatalog,
 } from './seasonArchive.js'
+import { getSeasonLabel } from './seasonString.js'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
-const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
-/** Single source of truth for the header season label. Hardcoded for now — when we
- * introduce dynamic season detection (driven off `events.data[0].deadline_time` or a
- * build-time constant), update this and `brandHeaderStatus.deriveBrandHeaderStatus`'s
- * `season` arg in lockstep. */
-const BRAND_HEADER_SEASON = '2025/26'
 const BRAND_HEADER_TOP_N = 8
+
+function wallClockSeasonLabel() {
+  return getSeasonLabel()
+}
+
+function leagueTitle(seasonLabel) {
+  return `Tri-Continental League of Titans, ${seasonLabel || wallClockSeasonLabel()} season`
+}
 
 // Lion silhouette extracted verbatim from public/tclot-fantasy-style-banner.svg.
 // Kept inline so it inherits currentColor (no second network fetch, themable).
@@ -175,21 +178,11 @@ function BrandHeaderStatusBody({ liveStatus }) {
  * navigates with `?season=<label>` — a full reload; the data layer resolves the
  * archived subtree at module init (see seasonArchive.js).
  */
-function SeasonSwitcher() {
-  const [archivedSeasons, setArchivedSeasons] = useState([])
+function SeasonSwitcher({ currentSeasonLabel, archivedSeasons = [] }) {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
   const viewingLabel = archivedSeasonLabel()
-
-  useEffect(() => {
-    let cancelled = false
-    fetchArchivedSeasons().then((labels) => {
-      if (!cancelled) setArchivedSeasons(labels)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const currentDisplay = seasonLabelDisplay(currentSeasonLabel)
 
   useEffect(() => {
     if (!open) return undefined
@@ -209,19 +202,19 @@ function SeasonSwitcher() {
 
   const displayLabel = viewingLabel
     ? seasonLabelDisplay(viewingLabel)
-    : BRAND_HEADER_SEASON
+    : currentDisplay
 
   // No archives (and not somehow parked on one) — the original static label.
   if (!archivedSeasons.length && !viewingLabel) {
     return (
       <span className="brand-header__meta brand-header__meta--season">
-        {BRAND_HEADER_SEASON}
+        {currentDisplay}
       </span>
     )
   }
 
   const options = [
-    { label: null, display: BRAND_HEADER_SEASON, archived: false },
+    { label: null, display: currentDisplay, archived: false },
     ...archivedSeasons.map((l) => ({
       label: l,
       display: seasonLabelDisplay(l),
@@ -296,6 +289,8 @@ function BrandHeader({
   liveStatus,
   leagueInfoOpen = false,
   onOpenLeagueInfo,
+  currentSeasonLabel,
+  archivedSeasons = [],
 }) {
   const entryById = useMemo(() => {
     const m = new Map()
@@ -307,9 +302,18 @@ function BrandHeader({
 
   const topRows = useMemo(() => {
     const list = Array.isArray(tableRows) ? tableRows : []
-    const sorted = [...list].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
-    return sorted.slice(0, BRAND_HEADER_TOP_N)
-  }, [tableRows])
+    if (list.length > 0) {
+      const sorted = [...list].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
+      return sorted.slice(0, BRAND_HEADER_TOP_N)
+    }
+    // Pre-season / no table yet — show joined clubs in join order.
+    const entries = Array.isArray(leagueEntries) ? [...leagueEntries] : []
+    return entries
+      .filter((e) => e?.id != null)
+      .sort((a, b) => String(a.joined_time ?? '').localeCompare(String(b.joined_time ?? '')))
+      .slice(0, BRAND_HEADER_TOP_N)
+      .map((e, i) => ({ league_entry: e.id, rank: i + 1 }))
+  }, [tableRows, leagueEntries])
 
   /** Archive view: the strip's countdowns/live cues describe the *current*
    * season and would mislead against frozen data — the archive banner below
@@ -320,7 +324,7 @@ function BrandHeader({
   return (
     <section
       className="tile tile--brand-header"
-      aria-label={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
+      aria-label={`${LEAGUE_TITLE_ABBR} — ${leagueTitle(currentSeasonLabel)}`}
     >
       <div className="brand-header__row">
         <BrandHeaderWordmark
@@ -329,7 +333,10 @@ function BrandHeader({
           isOpen={leagueInfoOpen}
           onOpen={onOpenLeagueInfo}
         />
-        <SeasonSwitcher />
+        <SeasonSwitcher
+          currentSeasonLabel={currentSeasonLabel}
+          archivedSeasons={archivedSeasons}
+        />
         <span
           className="brand-header__crests"
           aria-label="League standings — top 8"
@@ -2438,6 +2445,23 @@ function App() {
     const id = window.setInterval(() => setStatusNow(new Date()), 60_000)
     return () => window.clearInterval(id)
   }, [])
+  const [seasonCatalog, setSeasonCatalog] = useState(() => ({
+    current: wallClockSeasonLabel(),
+    archived: /** @type {string[]} */ ([]),
+  }))
+  useEffect(() => {
+    let cancelled = false
+    fetchSeasonCatalog().then((cat) => {
+      if (cancelled) return
+      setSeasonCatalog({
+        current: cat.current || wallClockSeasonLabel(),
+        archived: cat.archived,
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
   const {
     tableRows = [],
     teamsForFormSelect = [],
@@ -2645,7 +2669,7 @@ function App() {
         currentEvent: draftBootstrapEvents.currentEvent,
         nextEvent: draftBootstrapEvents.nextEvent,
         lastFinishedEvent: draftBootstrapEvents.lastFinishedEvent,
-        season: BRAND_HEADER_SEASON,
+        season: seasonLabelDisplay(seasonCatalog.current),
         now: statusNow,
         liveFixtureCount: brandLiveFixtureCount,
         minute: brandLiveMinute,
@@ -2656,6 +2680,7 @@ function App() {
       draftBootstrapEvents.currentEvent,
       draftBootstrapEvents.nextEvent,
       draftBootstrapEvents.lastFinishedEvent,
+      seasonCatalog.current,
       statusNow,
       brandLiveFixtureCount,
       brandLiveMinute,
@@ -3002,7 +3027,11 @@ function App() {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
         <header className="page-header">
-          <BrandHeader liveStatus={brandHeaderStatus} />
+          <BrandHeader
+            liveStatus={brandHeaderStatus}
+            currentSeasonLabel={seasonCatalog.current}
+            archivedSeasons={seasonCatalog.archived}
+          />
         </header>
         <main className="main-tiles">
           <section className="tile error-tile">
@@ -3117,6 +3146,8 @@ function App() {
               liveStatus={brandHeaderStatus}
               leagueInfoOpen={leagueInfoOpen}
               onOpenLeagueInfo={() => setLeagueInfoOpen(true)}
+              currentSeasonLabel={seasonCatalog.current}
+              archivedSeasons={seasonCatalog.archived}
             />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
@@ -3764,7 +3795,7 @@ function App() {
                         gw={waiversForSelectedGw.gw}
                         groups={waiversForSelectedGw.groups}
                         leagueTitleAbbr={LEAGUE_TITLE_ABBR}
-                        leagueTitle={LEAGUE_TITLE}
+                        leagueTitle={leagueTitle(seasonCatalog.current)}
                         teamLogoMap={teamLogoMap}
                         kitIndexByEntry={kitIndexByEntry}
                         showGwPicker={false}

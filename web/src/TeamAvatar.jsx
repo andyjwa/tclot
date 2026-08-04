@@ -30,7 +30,14 @@ const SHIRT_TEXT = {
 function buildSrcList(entryId, logoMap, customLogoOnly) {
   const key = String(entryId)
   const mapped = logoMap[key]
-  if (mapped) return [`${RAW_BASE}${mapped}`]
+  if (mapped) {
+    const mappedRaw = `${RAW_BASE}${mapped}`
+    // Named LOTR sources may live only under team-logos-web/ (preseason drop).
+    const mappedWeb = `${WEB_BASE}${mapped}`
+    if (customLogoOnly) return [mappedRaw, mappedWeb]
+    // Prefer 192×192 pipeline output keyed by entry id (avoids huge JPG decode).
+    return [`${WEB_BASE}${entryId}.png`, mappedWeb, mappedRaw]
+  }
 
   const rawList = []
   for (const ext of LOGO_EXTS) {

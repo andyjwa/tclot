@@ -5,7 +5,8 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const leagueDataDir = join(__dirname, '../public/league-data')
+/** Completed-season snapshot — live league-data is 26/27 pre-season (no waivers yet). */
+const leagueDataDir = join(__dirname, '../public/league-data/seasons/2025-26')
 
 /**
  * Successful waiver swaps always have both element_in and element_out, so
