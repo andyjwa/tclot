@@ -27,7 +27,7 @@
     /* A touch of blur for the safe-area strip below the row. */
     backdrop-filter: blur(18px) saturate(160%);
     -webkit-backdrop-filter: blur(18px) saturate(160%);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: min(env(safe-area-inset-bottom, 0px), 34px);
   }
 
   .mobile-tab-bar__row {
