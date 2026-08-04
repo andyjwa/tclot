@@ -6,6 +6,8 @@ import {
   currentStreak,
   ordinal,
 } from './teamCardStats.js'
+import { archivedSeasonLabel } from './seasonArchive.js'
+import { getSeasonLabel } from './seasonString.js'
 import './TeamDetailView.css'
 
 const NET_POS = 'var(--tc-pos)'
@@ -326,7 +328,9 @@ export function TeamDetailView({
           </div>
         </div>
 
-        <div className="tc-foot">TC LEAGUE OF TITANS · 2025-26</div>
+        <div className="tc-foot">
+          TC LEAGUE OF TITANS · {archivedSeasonLabel() || getSeasonLabel()}
+        </div>
       </div>
     </div>
   )

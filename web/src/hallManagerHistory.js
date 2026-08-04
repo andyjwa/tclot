@@ -4,7 +4,7 @@
  */
 
 /** Substrings (lowercase) — team name must include one to count as Nick G (checked before Nick M). */
-const NICK_G_TEAM_MATCHERS = ['hanson of york']
+const NICK_G_TEAM_MATCHERS = ['hanson of york', 'bilbo']
 
 /** Substrings (lowercase) — team name must include one to count as Nick M */
 const NICK_M_TEAM_MATCHERS = [
@@ -14,6 +14,7 @@ const NICK_M_TEAM_MATCHERS = [
   'dalston montgomery',
   'london gaston',
   'hackney meat',
+  'mordor',
 ]
 
 export function hallManagerDisplayKey(teamName, managerFirstName) {
@@ -96,7 +97,7 @@ export function buildManagerFullNameByHallKey(tableRows) {
   return map
 }
 
-/** @type {{ season: string, rows: { team: string, manager: string, rank: number, w: number, d: number, l: number, pf: number, pts: number }[] }[]} */
+/** @type {{ season: string, rows: { team: string, manager: string, rank: number, w: number, d: number, l: number, pf: number, pa?: number|null, pts: number }[] }[]} */
 export const HALL_SEASON_FINAL_TABLES = [
   {
     season: '2020-21',
@@ -163,9 +164,22 @@ export const HALL_SEASON_FINAL_TABLES = [
       { team: 'Ipswich Towelie', manager: 'Jon', rank: 8, w: 15, d: 2, l: 21, pf: 1672, pts: 47 },
     ],
   },
+  {
+    season: '2025-26',
+    rows: [
+      { team: 'Crouch End Oashisu', manager: 'David', rank: 1, w: 22, d: 1, l: 15, pf: 1673, pa: 1610, pts: 67 },
+      { team: 'Clapton Cornershop', manager: 'Mike', rank: 2, w: 22, d: 0, l: 16, pf: 1740, pa: 1577, pts: 66 },
+      { team: 'Toronto Oizo', manager: 'Andy', rank: 3, w: 22, d: 0, l: 16, pf: 1635, pa: 1661, pts: 66 },
+      { team: 'Hanson of York AFC', manager: 'Nick', rank: 4, w: 20, d: 0, l: 18, pf: 1812, pa: 1690, pts: 60 },
+      { team: 'Seoul Club 7', manager: 'Luke', rank: 5, w: 18, d: 0, l: 20, pf: 1556, pa: 1627, pts: 54 },
+      { team: 'Hackney Meat Loaf', manager: 'Nick', rank: 6, w: 17, d: 0, l: 21, pf: 1710, pa: 1662, pts: 51 },
+      { team: 'Morpeth Jamiroquai', manager: 'Jon', rank: 7, w: 16, d: 0, l: 22, pf: 1586, pa: 1795, pts: 48 },
+      { team: 'Brampton II Men', manager: 'Eddy', rank: 8, w: 14, d: 1, l: 23, pf: 1616, pa: 1706, pts: 43 },
+    ],
+  },
 ]
 
-export const LIVE_HALL_SEASON_LABEL = '2025-26'
+export const LIVE_HALL_SEASON_LABEL = '2026-27'
 
 /**
  * @param {object[] | null | undefined} tableRows from useLeagueData (current standings)
@@ -186,6 +200,26 @@ export function buildLiveSeasonHallRows(tableRows) {
     pa: row.ga ?? null,
     pts: row.total ?? 0,
   }))
+}
+
+/** True once any live H2H has been played — skip folding empty pre-season tables into CofC. */
+export function liveHallSeasonHasResults(liveRows) {
+  return (liveRows ?? []).some(
+    (r) =>
+      Number(r?.w ?? 0) + Number(r?.d ?? 0) + Number(r?.l ?? 0) > 0 ||
+      Number(r?.pts ?? 0) > 0 ||
+      Number(r?.pf ?? 0) > 0,
+  )
+}
+
+/**
+ * Archived finals plus the in-progress live table once results exist.
+ * @param {object[] | null | undefined} tableRows
+ */
+function hallSeasonDefsWithLive(tableRows) {
+  const liveRows = buildLiveSeasonHallRows(tableRows)
+  if (!liveHallSeasonHasResults(liveRows)) return HALL_SEASON_FINAL_TABLES
+  return [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
 }
 
 /** 1st → 8, 2nd → 7, … 8th → 1 (nine minus rank). */
@@ -284,18 +318,12 @@ export function computeHallManagerCareerRows() {
 }
 
 /**
- * Historical seasons plus current league table as LIVE_HALL_SEASON_LABEL.
+ * Historical seasons plus current league table as LIVE_HALL_SEASON_LABEL
+ * once the live season has results (empty pre-season tables are omitted).
  * @param {object[] | null | undefined} tableRows
  */
 export function computeLiveHallManagerCareerRows(tableRows) {
-  const liveRows = buildLiveSeasonHallRows(tableRows)
-  if (!liveRows.length) {
-    return computeHallManagerCareerRows()
-  }
-  return aggregateHallManagerCareerFromSeasons([
-    ...HALL_SEASON_FINAL_TABLES,
-    { season: LIVE_HALL_SEASON_LABEL, rows: liveRows },
-  ])
+  return aggregateHallManagerCareerFromSeasons(hallSeasonDefsWithLive(tableRows))
 }
 
 /**
@@ -305,11 +333,7 @@ export function computeLiveHallManagerCareerRows(tableRows) {
  * @returns {{ key: string, entries: { season: string, team: string, rank: number|null }[] }[]}
  */
 export function computeHallManagerTeamHistory(tableRows) {
-  const liveRows = buildLiveSeasonHallRows(tableRows)
-  const seasonDefs =
-    liveRows.length > 0
-      ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
-      : HALL_SEASON_FINAL_TABLES
+  const seasonDefs = hallSeasonDefsWithLive(tableRows)
 
   const byKey = new Map()
   for (const { season, rows } of seasonDefs) {
@@ -358,11 +382,7 @@ export function computeHallManagerJourney(tableRows) {
  * @param {object[] | null | undefined} tableRows
  */
 export function computeHallAlgorithmRows(tableRows) {
-  const liveRows = buildLiveSeasonHallRows(tableRows)
-  const seasonDefs =
-    liveRows.length > 0
-      ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
-      : HALL_SEASON_FINAL_TABLES
+  const seasonDefs = hallSeasonDefsWithLive(tableRows)
   const seasonLabels = seasonDefs.map((s) => s.season)
   const byKey = new Map()
   for (const { season, rows } of seasonDefs) {
@@ -411,15 +431,11 @@ export function computeHallAlgorithmRows(tableRows) {
  * `_static` field so the caller can render them in the same grid.
  *
  * @param {object[] | null | undefined} tableRows live `useLeagueData`
- *   rows — when present, the live `2025-26` season is folded into the
- *   record search so Andy / Luke can break records mid-season.
+ *   rows — when present with results, the live `2026-27` season is folded
+ *   into the record search so managers can break records mid-season.
  */
 export function computeHallRecords(tableRows) {
-  const liveRows = buildLiveSeasonHallRows(tableRows)
-  const seasons =
-    liveRows.length > 0
-      ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
-      : HALL_SEASON_FINAL_TABLES
+  const seasons = hallSeasonDefsWithLive(tableRows)
 
   /** Flat (season, row) pairs for max/min over all entries. */
   const flat = seasons.flatMap(({ season, rows }) =>

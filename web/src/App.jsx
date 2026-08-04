@@ -421,7 +421,6 @@ import {
 } from './waiverMovesSort.js'
 import {
   HALL_SEASON_FINAL_TABLES,
-  LIVE_HALL_SEASON_LABEL,
   buildManagerFullNameByHallKey,
   computeHallAlgorithmRows,
   computeHallManagerJourney,
@@ -873,7 +872,7 @@ function HeritageTrophyRoom() {
 /* ---------------- TCLOT Records (sits below the trophy carousel) ----
  * League-wide all-time records — derived from `HALL_SEASON_FINAL_TABLES`
  * via `computeHallRecords()`. Records auto-refresh as new seasons land
- * (or when the live `2025-26` season exceeds an existing ceiling/floor)
+ * (or when the live `2026-27` season exceeds an existing ceiling/floor)
  * — no UI edits required. The two GW-level records (highest losing /
  * lowest winning GW points) are still manually curated since we don't
  * archive fixture-level history yet; flagged in the data via `_static`. */
@@ -1362,7 +1361,7 @@ function formatHeritageSeasonLabel(seasonKey) {
 
 /** When rendered embedded inside the History sub-tab, `headingTag` is `'h3'`. */
 function HeritageHistoricStandings({ fullNameMap, headingTag = 'h3' }) {
-  /* Completed historic seasons only — current 25/26 lives on the Standings tab. */
+  /* Completed historic seasons only — current 26/27 lives on the Standings tab. */
   const seasonOptions = useMemo(
     () => [...HALL_SEASON_FINAL_TABLES].reverse(),
     [],
@@ -1534,7 +1533,7 @@ const COFC_LIVE_COLUMNS = [
   { key: 'totalD', label: 'D', numeric: true, align: 'right', mobile: true, title: 'Draws (cumulative)' },
   { key: 'totalL', label: 'L', numeric: true, align: 'right', mobile: true, title: 'Losses (cumulative)' },
   { key: 'totalPf', label: 'For', numeric: true, align: 'right', mobile: true, title: 'Total FPL points scored' },
-  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (live season only — historic data not yet transcribed)' },
+  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (from 2025-26 onward; earlier seasons not yet transcribed)' },
   { key: 'totalPts', label: 'PTS', numeric: true, align: 'right', mobile: true, title: 'League points (3 / 1 / 0 per H2H)' },
   { key: 'titles', label: 'Titles', numeric: true, align: 'right', mobile: false, title: 'Seasons finished 1st' },
   { key: 'lastRank', label: 'Last', numeric: true, align: 'right', mobile: false, title: 'Most recent finishing position' },
