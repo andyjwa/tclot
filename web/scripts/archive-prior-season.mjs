@@ -5,8 +5,8 @@
  *
  * When the incoming season differs from the season currently on disk, this snapshots the
  * entire live public/league-data/ tree into public/league-data/seasons/<old-label>/ so a
- * refresh never destroys the prior season. It also resets the accretive projections-history/
- * directory (gw-NN.json files are keyed only by GW number and would otherwise mix seasons).
+ * refresh never destroys the prior season, then clears the live tree (except seasons/) so
+ * copy-data + downstream scripts populate a clean new-season tree.
  *
  * Same-season rebuilds (the common case) are a no-op. First-ever run (no on-disk season) is a
  * no-op. Disable with SKIP_SEASON_ARCHIVE=1.
@@ -19,7 +19,6 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
-  writeFileSync,
   readdirSync,
   rmSync,
   cpSync,
@@ -61,28 +60,6 @@ function onDiskSeason() {
   return seasonFromBootstrapFile(join(leagueDataDir, 'bootstrap_draft.json'));
 }
 
-/** Reset the live projections-history dir so new-season GW files don't mix with the archived season. */
-function resetProjectionsHistory() {
-  const dir = join(leagueDataDir, 'projections-history');
-  if (existsSync(dir)) {
-    rmSync(dir, { recursive: true, force: true });
-  }
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, 'index.json'),
-    JSON.stringify(
-      {
-        schemaVersion: 1,
-        updatedAt: new Date().toISOString(),
-        gameweeks: [],
-        note: 'Reset at season rollover; regenerate via npm run build or build-projections-history.mjs',
-      },
-      null,
-      2,
-    ),
-  );
-}
-
 function main() {
   if (process.env.SKIP_SEASON_ARCHIVE === '1') {
     log('skip (SKIP_SEASON_ARCHIVE=1)');
@@ -122,10 +99,18 @@ function main() {
     copied += 1;
   }
 
-  resetProjectionsHistory();
+  // Drop live artifacts (except seasons/) so copy-data + downstream scripts
+  // populate a clean new-season tree instead of mixing stale derived JSON
+  // (predictions, understat, draft_picks, …) from the archived season.
+  let cleared = 0;
+  for (const entry of readdirSync(leagueDataDir)) {
+    if (entry === 'seasons') continue;
+    rmSync(join(leagueDataDir, entry), { recursive: true, force: true });
+    cleared += 1;
+  }
 
   log(
-    `season change ${onDisk.label} → ${incoming.label}: archived ${copied} entr${copied === 1 ? 'y' : 'ies'} to seasons/${onDisk.label}/ and reset projections-history.`,
+    `season change ${onDisk.label} → ${incoming.label}: archived ${copied} entr${copied === 1 ? 'y' : 'ies'} to seasons/${onDisk.label}/ and cleared ${cleared} live entr${cleared === 1 ? 'y' : 'ies'}.`,
   );
 }
 

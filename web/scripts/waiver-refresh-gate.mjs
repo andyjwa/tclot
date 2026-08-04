@@ -8,6 +8,7 @@
  * Data: draft bootstrap-static { events: { data: [{ id, waivers_time }, ...] } }.
  */
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 const DRAFT_BOOTSTRAP = 'https://draft.premierleague.com/api/bootstrap-static'
 /** FPL usually exposes successful waiver rows a short time after this timestamp */
@@ -133,7 +134,11 @@ async function main() {
   process.exit(1)
 }
 
-main().catch((e) => {
-  console.error('waiver-refresh-gate:', e)
-  process.exit(1)
-})
+const invokedDirectly =
+  Boolean(process.argv[1]) && fileURLToPath(import.meta.url) === process.argv[1]
+if (invokedDirectly) {
+  main().catch((e) => {
+    console.error('waiver-refresh-gate:', e)
+    process.exit(1)
+  })
+}
