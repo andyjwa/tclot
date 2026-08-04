@@ -662,6 +662,53 @@
     display: none !important;
   }
 
+  /* 26/27 hub is a single static frame — no document scroll, no white
+   * gutter under the parchment. svh keeps the frame inside the visible
+   * viewport even while iOS chrome is showing. */
+  html:has(.app.fotmob[data-dashboard-view='preseason']),
+  body:has(.app.fotmob[data-dashboard-view='preseason']) {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] {
+    height: 100svh;
+    max-height: 100svh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .dashboard-layout--with-nav {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .dashboard-page-hero {
+    flex: 0 0 auto;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .tile.tile--brand-header {
+    margin: 0;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .dashboard-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    gap: 0;
+  }
+}
+
   .app.fotmob.dashboard-layout-host,
   .app.fotmob {
     /* Floating bottom-nav (mockup Variant B): nav is detached from the

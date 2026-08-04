@@ -3160,6 +3160,7 @@ function App() {
       className="app fotmob"
       data-theme={colorTheme}
       data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
+      data-dashboard-view={dashboardView}
     >
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
