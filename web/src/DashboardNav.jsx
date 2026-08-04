@@ -61,9 +61,14 @@ function NavButton({ item, active, onSelect, variant }) {
 }
 
 /**
- * @param {{ variant: 'top' | 'bottom', dashboardView: DashboardViewId, onSelect: (id: DashboardViewId) => void }} props
+ * @param {{
+ *   variant: 'top' | 'bottom',
+ *   dashboardView: DashboardViewId,
+ *   onSelect: (id: DashboardViewId) => void,
+ *   navLocked?: boolean,
+ * }} props
  */
-export function DashboardNav({ variant, dashboardView, onSelect }) {
+export function DashboardNav({ variant, dashboardView, onSelect, navLocked = false }) {
   const isBottom = variant === 'bottom'
 
   // Single source of truth for nav order (left → right on desktop, also the
@@ -124,7 +129,10 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
   ]
 
   const topItems = primaryItems.filter((i) => !i.bottomOnly)
-  const items = isBottom ? primaryItems : topItems
+  const unlockedItems = isBottom ? primaryItems : topItems
+  const items = navLocked
+    ? unlockedItems.filter((i) => i.id === 'preseason' || i.id === 'hall')
+    : unlockedItems
 
   const isActive = (id) => {
     if (id === 'more') {
@@ -138,7 +146,9 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
   return (
     <nav
       className={
-        'dashboard-nav' + (isBottom ? ' dashboard-nav--bottom' : ' dashboard-nav--top')
+        'dashboard-nav' +
+        (isBottom ? ' dashboard-nav--bottom' : ' dashboard-nav--top') +
+        (navLocked ? ' dashboard-nav--pre-draft' : '')
       }
       aria-label={isBottom ? 'App navigation' : 'Dashboard sections'}
     >
@@ -151,7 +161,7 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
           variant={variant}
         />
       ))}
-      {!isBottom && (
+      {!isBottom && !navLocked && (
         <button
           type="button"
           className={

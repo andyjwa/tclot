@@ -59,6 +59,36 @@
   .preseason-hub {
     width: calc(100% + 32px);
     margin-inline: -16px;
+    background-attachment: scroll;
+  }
+}
+
+/* Portrait + pre-draft (header hidden): pin the LotR/badge hub so the
+ * image does not scroll or pan. After the header returns, normal scroll
+ * resumes. */
+@media (max-width: 720px) and (orientation: portrait) {
+  .app.fotmob[data-preseason-chrome='minimal'] .preseason-hub {
+    min-height: 0;
+    height: calc(
+      100dvh - var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) -
+        28px
+    );
+    max-height: calc(
+      100dvh - var(--mobile-bottom-nav-h, 56px) - env(safe-area-inset-bottom, 0px) -
+        28px
+    );
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .app.fotmob[data-preseason-chrome='minimal'] .preseason-hub__inner {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    gap: 12px;
   }
 }
 

@@ -240,6 +240,16 @@
   }
 }
 
+@media (max-width: 1080px) {
+  .mobile-tab-bar--pre-draft .mobile-tab-bar__row {
+    justify-content: stretch;
+  }
+
+  .mobile-tab-bar--pre-draft .mobile-tab-bar__btn {
+    flex: 1 1 0;
+  }
+}
+
 /* Desktop — explicitly remove the bar (top nav handles navigation). */
 @media (min-width: 1081px) {
   .mobile-tab-bar {

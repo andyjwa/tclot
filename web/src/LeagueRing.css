@@ -41,6 +41,8 @@
   object-fit: cover;
   user-select: none;
   -webkit-user-drag: none;
+  touch-action: none;
+  pointer-events: none;
   /* Soft feathered edges so the header's green texture fades into
    * the page parchment instead of showing a hard rectangular seam.
    * Both axes get the same feather; the centre of the image (where
@@ -185,5 +187,34 @@
 
   .league-ring__cell-name-short {
     display: inline;
+  }
+}
+
+@media (max-width: 720px) and (orientation: portrait) {
+  .app.fotmob[data-preseason-chrome='minimal'] .league-ring {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    gap: 12px;
+  }
+
+  .app.fotmob[data-preseason-chrome='minimal'] .league-ring__header {
+    aspect-ratio: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 38dvh;
+    overflow: hidden;
+  }
+
+  .app.fotmob[data-preseason-chrome='minimal'] .league-ring__header-img {
+    object-fit: contain;
+    object-position: center top;
+  }
+
+  .app.fotmob[data-preseason-chrome='minimal'] .league-ring__roster {
+    flex: 0 0 auto;
+    overflow: hidden;
+    padding-top: 4px;
+    row-gap: 12px;
   }
 }

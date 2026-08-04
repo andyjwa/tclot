@@ -436,6 +436,10 @@
   scrollbar-width: thin;
 }
 
+.dashboard-layout--with-nav > .dashboard-nav.dashboard-nav--pre-draft {
+  overflow-x: hidden;
+}
+
 .dashboard-layout--with-nav > .dashboard-content {
   grid-column: 1;
   grid-row: 3;
@@ -654,6 +658,11 @@
 }
 
 @media (max-width: 1080px) {
+  .app.fotmob[data-preseason-chrome='minimal'] {
+    padding-top: 0;
+    overflow-x: hidden;
+  }
+
   .dashboard-nav--top {
     display: none !important;
   }

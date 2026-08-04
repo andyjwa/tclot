@@ -68,9 +68,10 @@ const CENTER_BY_STATE = {
  *   dashboardView: string,
  *   onSelect: (id: string) => void,
  *   liveStatus?: { status?: 'live' | 'idle' | 'pre-season' | 'unknown' } | null,
+ *   navLocked?: boolean,
  * }} props
  */
-export function MobileBottomNav({ dashboardView, onSelect, liveStatus }) {
+export function MobileBottomNav({ dashboardView, onSelect, liveStatus, navLocked = false }) {
   const gwState = gwStateFromStatus(liveStatus?.status)
   const center = CENTER_BY_STATE[gwState]
   const centerActive = dashboardView === center.view
@@ -88,6 +89,47 @@ export function MobileBottomNav({ dashboardView, onSelect, liveStatus }) {
     dashboardView === 'more' ||
     dashboardView === 'hall' ||
     dashboardView === 'settings'
+
+  if (navLocked) {
+    return (
+      <nav
+        className="mobile-tab-bar mobile-tab-bar--pre-draft"
+        aria-label="App navigation"
+        data-gwstate="pre"
+      >
+        <div className="mobile-tab-bar__row">
+          <button
+            type="button"
+            className={
+              'mobile-tab-bar__btn' + (dashboardView === 'preseason' ? ' is-active' : '')
+            }
+            onClick={() => onSelect('preseason')}
+            aria-current={dashboardView === 'preseason' ? 'page' : undefined}
+            aria-label="26/27 season hub"
+          >
+            <span className="mobile-tab-bar__ico" aria-hidden>
+              <NavIcon name="film" size={22} />
+            </span>
+            <span className="mobile-tab-bar__label">26/27</span>
+          </button>
+          <button
+            type="button"
+            className={
+              'mobile-tab-bar__btn' + (dashboardView === 'hall' ? ' is-active' : '')
+            }
+            onClick={() => onSelect('hall')}
+            aria-current={dashboardView === 'hall' ? 'page' : undefined}
+            aria-label="TCLOT Heritage"
+          >
+            <span className="mobile-tab-bar__ico" aria-hidden>
+              <NavIcon name="column" size={22} />
+            </span>
+            <span className="mobile-tab-bar__label">Heritage</span>
+          </button>
+        </div>
+      </nav>
+    )
+  }
 
   return (
     <nav className="mobile-tab-bar" aria-label="App navigation" data-gwstate={gwState}>
