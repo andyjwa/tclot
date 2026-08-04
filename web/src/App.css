@@ -670,11 +670,16 @@
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
+    touch-action: none;
   }
 
   .app.fotmob[data-dashboard-view='preseason'] {
+    /* `.fotmob { min-height: 100vh }` beats `max-height: 100svh` when the
+     * two disagree (iOS large vs small viewport). Zero min-height so the
+     * static frame cannot grow past the visible screen. */
     height: 100svh;
     max-height: 100svh;
+    min-height: 0;
     overflow: hidden;
     overscroll-behavior: none;
     padding-top: 0;
@@ -707,7 +712,6 @@
     overflow: hidden;
     gap: 0;
   }
-}
 
   .app.fotmob.dashboard-layout-host,
   .app.fotmob {
