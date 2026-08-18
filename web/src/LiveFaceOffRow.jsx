@@ -33,16 +33,39 @@ import { firstWord } from './teamNameUtils.js';
 function FittedTeamName({ fullName, displayName, className, title }) {
   const candidate = displayName ?? fullName;
   const short = firstWord(fullName);
+  /** Last-resort single token — covers curated labels that are already
+   * multi-word (e.g. `Seoul Shire`, `Atleti Bilbo`): without it, a slot
+   * too narrow for the curated label would ellipsize mid-word. */
+  const tiniest = String(short || candidate || '')
+    .trim()
+    .split(/\s+/)[0] ?? '';
   const ref = useRef(null);
 
   const apply = useCallback(() => {
     const el = ref.current;
     if (!el) return;
+    /** `scrollWidth`/`clientWidth` are integer-rounded, which can hide a
+     * sub-pixel overflow that CSS still ellipsizes (e.g. 76.2px of text in
+     * a 74.6px box reads as 75 <= 75). Measure the fractional text width
+     * with a Range instead; keep the integer check as a cheap first cut. */
+    const fits = () => {
+      if (el.scrollWidth > el.clientWidth) return false;
+      if (typeof document === 'undefined' || !document.createRange) return true;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const textWidth = range.getBoundingClientRect().width;
+      return textWidth <= el.getBoundingClientRect().width + 0.1;
+    };
     el.textContent = candidate;
-    if (short && short !== candidate && el.scrollWidth > el.clientWidth + 0.5) {
+    if (fits()) return;
+    if (short && short !== candidate) {
       el.textContent = short;
+      if (fits()) return;
     }
-  }, [candidate, short]);
+    if (tiniest && tiniest !== el.textContent) {
+      el.textContent = tiniest;
+    }
+  }, [candidate, short, tiniest]);
 
   // Re-apply after every render so a re-render (e.g. live score tick) that
   // resets the text node to the full name is re-fitted before the browser
