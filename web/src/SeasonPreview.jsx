@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
-import {
-  buildSquadFplValueByLeagueEntryId,
-  plClubBadgeUrl,
-  squadPlayersByPosition,
-} from './fplSquadValues.js'
+import { buildSquadFplValueByLeagueEntryId } from './fplSquadValues.js'
 import './SeasonPreview.css'
 
 /** Grade chip tone: A-family green, B-family amber, C-family gray. */
@@ -32,47 +28,6 @@ function OddsBar({ pct }) {
       </span>
       <span className="season-preview__odds-num tabular">{pct}%</span>
     </span>
-  )
-}
-
-/**
- * A squad's owned players, grouped GK → DEF → MID → FWD. Each row reads:
- * club badge · full name · position.
- */
-function SquadList({ players }) {
-  const sections = squadPlayersByPosition(players)
-  return (
-    <div className="season-preview-card__squad">
-      <div className="season-preview-card__squad-label">Squad</div>
-      {sections.map((section) => (
-        <div key={section.pos ?? 'other'} className="season-preview-card__squad-group">
-          <div className="season-preview-card__squad-pos">{section.pos ?? '—'}</div>
-          <ul className="season-preview-card__squad-list">
-            {section.players.map((p) => {
-              const badge = plClubBadgeUrl(p.teamCode)
-              return (
-                <li key={p.elementId} className="season-preview-card__squad-row">
-                  {badge ? (
-                    <img
-                      className="season-preview-card__squad-badge"
-                      src={badge}
-                      alt={p.teamShort || ''}
-                      loading="lazy"
-                      width="18"
-                      height="18"
-                    />
-                  ) : (
-                    <span className="season-preview-card__squad-badge" aria-hidden />
-                  )}
-                  <span className="season-preview-card__squad-name">{p.fullName}</span>
-                  <span className="season-preview-card__squad-rowpos">{p.posLabel ?? ''}</span>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ))}
-    </div>
   )
 }
 
@@ -325,9 +280,6 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
                 </dd>
               </div>
             </dl>
-            {v && v.players.length ? (
-              <SquadList players={v.players} />
-            ) : null}
           </section>
         )
       })}
