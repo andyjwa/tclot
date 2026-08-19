@@ -259,6 +259,15 @@ body[data-tclot-theme='dark'] .season-preview__grade--b {
   color: var(--fm-muted);
 }
 
+@media (max-width: 1080px) {
+  /* Mobile layout (bottom nav): drop FPL value from the summary table so Draft
+   * grade stays on-screen. Value remains in each team's preview card. */
+  .season-preview__th--value,
+  .season-preview__td--value {
+    display: none;
+  }
+}
+
 @media (max-width: 560px) {
   .season-preview__odds-track {
     width: 40px;

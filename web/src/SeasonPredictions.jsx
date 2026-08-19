@@ -187,7 +187,7 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
                 <th scope="col" className="season-preview__th season-preview__th--num">
                   Proj
                 </th>
-                <th scope="col" className="season-preview__th season-preview__th--num">
+                <th scope="col" className="season-preview__th season-preview__th--num season-preview__th--value">
                   FPL value
                 </th>
                 <th
@@ -241,7 +241,7 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
                     <td className="season-preview__td season-preview__td--num tabular">
                       {Math.round(t.projPts)}
                     </td>
-                    <td className="season-preview__td season-preview__td--num tabular">
+                    <td className="season-preview__td season-preview__td--num season-preview__td--value tabular">
                       {v ? `£${v.totalValue.toFixed(1)}m` : '—'}
                       {v ? (
                         <span className="season-preview__meta-count muted"> · {v.playerCount} players</span>
