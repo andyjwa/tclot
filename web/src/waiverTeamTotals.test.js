@@ -1,19 +1,21 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 /** Completed-season snapshot — live league-data is 26/27 pre-season (no waivers yet). */
 const leagueDataDir = join(__dirname, '../public/league-data/seasons/2025-26')
+/** Fresh forks (no committed season archive) have no fixture to test against. */
+const hasArchive = existsSync(join(leagueDataDir, 'transactions.json'))
 
 /**
  * Successful waiver swaps always have both element_in and element_out, so
  * per-team In and Out claim counts must match. The UI used to show distinct
  * waivered-in players vs out transaction count, which made volume look wrong.
  */
-test('every successful waiver has both in and out', () => {
+test('every successful waiver has both in and out', { skip: !hasArchive }, () => {
   const { transactions } = JSON.parse(
     readFileSync(join(leagueDataDir, 'transactions.json'), 'utf8')
   )
@@ -27,7 +29,7 @@ test('every successful waiver has both in and out', () => {
   }
 })
 
-test('teamWaiverInTotals.waiverInCount matches waived-out transaction volume', () => {
+test('teamWaiverInTotals.waiverInCount matches waived-out transaction volume', { skip: !hasArchive }, () => {
   const tenure = JSON.parse(
     readFileSync(join(leagueDataDir, 'pickups-tenure.json'), 'utf8')
   )

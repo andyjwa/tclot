@@ -1,6 +1,0 @@
-{
-  "schemaVersion": 1,
-  "updatedAt": "2026-08-17T14:14:25.558Z",
-  "gameweeks": [],
-  "note": "Reset at season rollover; regenerate via npm run build or build-projections-history.mjs"
-}

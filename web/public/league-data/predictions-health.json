@@ -1,20 +1,20 @@
 {
   "gameweek": 1,
-  "updatedAt": "2026-08-17T14:19:45.628Z",
+  "updatedAt": "2026-08-19T00:58:22.340Z",
   "idMismatches": {
     "idSpaceDivergences": 21,
     "nameFallback": 0,
     "unresolved": 0
   },
-  "understatAvailable": true,
-  "understatPlayerMatchRate": 0.578,
-  "teamsEnriched": 17,
+  "understatAvailable": false,
+  "understatPlayerMatchRate": 0,
+  "teamsEnriched": 0,
   "fixturesRun": 10,
   "playerCount": 590,
   "coldStart": {
-    "priorSeasonLabel": "2025-26",
+    "priorSeasonLabel": null,
     "applied": 287,
-    "fromHistory": 157,
-    "fromBaseline": 130
+    "fromHistory": 0,
+    "fromBaseline": 287
   }
 }
