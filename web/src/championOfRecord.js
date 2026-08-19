@@ -21,9 +21,14 @@ export const REIGNING_CHAMPION_LEAGUE_ENTRY_ID = 6849;
 /** Manager surname rendered as the standout label on the splash. */
 export const REIGNING_CHAMPION_MANAGER_SURNAME = 'Higman';
 
-/** Current-season team name, surfaced in screen-reader labels and the
- * collapsed-strip caption. */
+/** Current-season team name, surfaced in screen-reader labels. */
 export const REIGNING_CHAMPION_TEAM_NAME = 'Rokesly Regorasu';
+
+/** Team name the title was actually WON under (pre-rebrand). The
+ * collapsed Guard of Honour strip honours the champion by this name —
+ * "Guard of Honour for the Crouch End Oashisu" — since that's the club
+ * on the 2025/26 trophy engraving. */
+export const REIGNING_CHAMPION_TITLE_TEAM_NAME = 'Crouch End Oashisu';
 
 /** Season label rendered in the ribbon caption. */
 export const REIGNING_CHAMPION_SEASON_LABEL = '2025/26 CHAMPION';

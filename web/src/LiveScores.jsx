@@ -31,6 +31,7 @@ import {
 import {
   REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
   REIGNING_CHAMPION_TEAM_NAME,
+  REIGNING_CHAMPION_TITLE_TEAM_NAME,
   championSplashAutoCollapsed,
   findChampionFixture,
   managerSurnameFromFullName,
@@ -1404,7 +1405,7 @@ export function LiveScores({
       {championFixtureBundle ? (
         gohCollapsed ? (
           <GuardOfHonourCollapsedStrip
-            championTeamName={championFixtureBundle.championTeamName}
+            titleTeamName={REIGNING_CHAMPION_TITLE_TEAM_NAME}
             onExpand={() => setGohCollapsedOverride(false)}
           />
         ) : (
