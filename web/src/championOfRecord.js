@@ -4,19 +4,26 @@
  * mark the champion: the GW1 "Guard of Honour" splash, the persistent champion
  * marker on the live face-off row, the Hall of Champions hero card, etc.
  *
- * 2025/26 champion: David Higman · Crouch End Oashisu.
+ * 2025/26 champion: David Higman — won the title as Crouch End Oashisu,
+ * rebranded to Rokesly Regorasu for 2026/27.
  *
- * NB: the `entry_id` for this team is `27870` (FPL global) — that's the wrong
+ * IMPORTANT: draft leagues mint NEW league_entry ids every season, so this id
+ * (and the team name below) must be refreshed from the new season's
+ * `details.json` on every rollover or the GW1 fixture lookup silently fails
+ * and the splash never renders. 2026/27 id for Higman: `6849`.
+ *
+ * NB: the `entry_id` for this team is `6845` (FPL global) — that's the wrong
  * one. Internal H2H records, `gwMatches[*].league_entry_1`/`_2`, and the
- * `squad.leagueEntryId` field all use the `id` field (`27370`).
+ * `squad.leagueEntryId` field all use the `id` field (`6849`).
  */
-export const REIGNING_CHAMPION_LEAGUE_ENTRY_ID = 27370;
+export const REIGNING_CHAMPION_LEAGUE_ENTRY_ID = 6849;
 
 /** Manager surname rendered as the standout label on the splash. */
 export const REIGNING_CHAMPION_MANAGER_SURNAME = 'Higman';
 
-/** Team name surfaced in screen-reader labels and dismiss confirmations. */
-export const REIGNING_CHAMPION_TEAM_NAME = 'Crouch End Oashisu';
+/** Current-season team name, surfaced in screen-reader labels and the
+ * collapsed-strip caption. */
+export const REIGNING_CHAMPION_TEAM_NAME = 'Rokesly Regorasu';
 
 /** Season label rendered in the ribbon caption. */
 export const REIGNING_CHAMPION_SEASON_LABEL = '2025/26 CHAMPION';
@@ -43,6 +50,36 @@ export function managerSurnameFromFullName(fullName) {
   if (!s) return null;
   const tokens = s.split(/\s+/);
   return tokens[tokens.length - 1];
+}
+
+/**
+ * Should the Guard of Honour splash render COLLAPSED by default?
+ *
+ * The splash stays fully expanded (auto-playing the cinematic) through the
+ * end of the gameweek's DEADLINE DAY in the viewer's local time — for GW1
+ * 2026/27 that's opening Friday — and auto-collapses to the slim strip from
+ * the next local midnight onward (Saturday / Sunday of the gameweek), so the
+ * ceremony gets out of the way once matches are actually being played.
+ *
+ * Returns false (stay expanded) when the deadline is missing/unparseable so
+ * a data hiccup degrades to the celebratory state, not a hidden one.
+ *
+ * @param {string | null | undefined} deadlineTimeIso — the GW's
+ *   `deadline_time` from the draft bootstrap (e.g. `2026-08-21T17:30:00Z`).
+ * @param {number} [nowMs] — injection point for tests; defaults to now.
+ * @returns {boolean}
+ */
+export function championSplashAutoCollapsed(deadlineTimeIso, nowMs = Date.now()) {
+  const t = Date.parse(String(deadlineTimeIso ?? ''));
+  if (!Number.isFinite(t)) return false;
+  const d = new Date(t);
+  // Local midnight AFTER the deadline day.
+  const endOfDeadlineDay = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate() + 1,
+  ).getTime();
+  return nowMs >= endOfDeadlineDay;
 }
 
 /**

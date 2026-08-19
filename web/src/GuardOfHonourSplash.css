@@ -688,3 +688,76 @@
     animation: none !important;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Collapsed strip — the slim single-row state the section auto-       */
+/* collapses to after the GW1 deadline day (and when the user hits ×). */
+/* Shares the splash's pitch-green surface + gold framing so the strip */
+/* still reads as the same ceremonial section, just folded up. The     */
+/* whole strip is a button that expands back to the full splash.       */
+/* ------------------------------------------------------------------ */
+.goh-collapsed-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: min(960px, 100%);
+  margin: clamp(0.5rem, 1.8vw, 0.9rem) auto;
+  padding: 10px clamp(12px, 2.5vw, 18px);
+  border: none;
+  border-radius: 12px;
+  background: #1c2a1a;
+  color: #f4f1e6;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--fm-border, #d4d4d8) 55%, transparent);
+  outline: 1px solid color-mix(in srgb, #ffd166 35%, transparent);
+  outline-offset: -1px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.goh-collapsed-strip:hover {
+  background: #223321;
+}
+
+.goh-collapsed-strip:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 2px;
+}
+
+.goh-collapsed-strip__crown {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 16px;
+  display: block;
+}
+
+.goh-collapsed-strip__title {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffd166;
+  white-space: nowrap;
+}
+
+.goh-collapsed-strip__caption {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: color-mix(in srgb, #f4f1e6 75%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goh-collapsed-strip__chevron {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: color-mix(in srgb, #f4f1e6 65%, transparent);
+}

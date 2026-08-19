@@ -24,10 +24,14 @@ import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { effectiveStarters } from './liveSquadEffective.js';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureCardDeck } from './LiveFixtureCardDeck.jsx';
-import { GuardOfHonourSplash } from './GuardOfHonourSplash.jsx';
+import {
+  GuardOfHonourSplash,
+  GuardOfHonourCollapsedStrip,
+} from './GuardOfHonourSplash.jsx';
 import {
   REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
   REIGNING_CHAMPION_TEAM_NAME,
+  championSplashAutoCollapsed,
   findChampionFixture,
   managerSurnameFromFullName,
 } from './championOfRecord.js';
@@ -871,9 +875,17 @@ export function LiveScores({
    * reigning champion's first fixture of a new season. Production trigger
    * (`gameweek === 1`) is OR'd with a manual `?gohSplash=1` URL flag so the
    * splash can be previewed against current (mid-season) data before the
-   * new season opener. Dismiss state is local to the component instance —
-   * resets on page reload, which matches how the FplLiveTripleThreatBanner
-   * promo behaves.
+   * new season opener.
+   *
+   * Collapse behaviour: the section renders fully expanded through the end
+   * of GW1's DEADLINE DAY (opening Friday, viewer-local) and auto-collapses
+   * to {@link GuardOfHonourCollapsedStrip} from the next local midnight
+   * (Saturday / Sunday of the gameweek) so the cinematic gets out of the
+   * way once matches are on. The user can override either way — the splash
+   * × collapses it early, tapping the strip expands it back — and the
+   * override is local to the component instance (resets on reload, which
+   * matches how the FplLiveTripleThreatBanner promo behaved). The
+   * `?gohSplash=1` preview flag always starts expanded.
    */
   const gohForceFlag = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -883,9 +895,14 @@ export function LiveScores({
       return false;
     }
   }, []);
-  const [gohDismissed, setGohDismissed] = useState(false);
+  /** null = follow the deadline-day default; true/false = user override. */
+  const [gohCollapsedOverride, setGohCollapsedOverride] = useState(null);
+  const gohCollapsed =
+    gohCollapsedOverride ??
+    (gohForceFlag
+      ? false
+      : championSplashAutoCollapsed(eventSnapshot?.deadline_time));
   const championFixtureBundle = useMemo(() => {
-    if (gohDismissed) return null;
     const shouldRender = gohForceFlag || Number(gameweek) === 1;
     if (!shouldRender) return null;
     const fx = findChampionFixture(gwMatches, REIGNING_CHAMPION_LEAGUE_ENTRY_ID);
@@ -910,7 +927,6 @@ export function LiveScores({
       opponentManagerSurname: managerSurnameFromFullName(opponentTeam?.manager),
     };
   }, [
-    gohDismissed,
     gohForceFlag,
     gameweek,
     gwMatches,
@@ -1386,14 +1402,21 @@ export function LiveScores({
       ) : (
         <>
       {championFixtureBundle ? (
-        <GuardOfHonourSplash
-          championStarters={championFixtureBundle.championStarters}
-          opponentStarters={championFixtureBundle.opponentStarters}
-          championTeamName={championFixtureBundle.championTeamName}
-          opponentTeamName={championFixtureBundle.opponentTeamName}
-          opponentManagerSurname={championFixtureBundle.opponentManagerSurname}
-          onDismiss={() => setGohDismissed(true)}
-        />
+        gohCollapsed ? (
+          <GuardOfHonourCollapsedStrip
+            championTeamName={championFixtureBundle.championTeamName}
+            onExpand={() => setGohCollapsedOverride(false)}
+          />
+        ) : (
+          <GuardOfHonourSplash
+            championStarters={championFixtureBundle.championStarters}
+            opponentStarters={championFixtureBundle.opponentStarters}
+            championTeamName={championFixtureBundle.championTeamName}
+            opponentTeamName={championFixtureBundle.opponentTeamName}
+            opponentManagerSurname={championFixtureBundle.opponentManagerSurname}
+            onCollapse={() => setGohCollapsedOverride(true)}
+          />
+        )
       ) : null}
       {useFixtureLayout ? (
         <section
