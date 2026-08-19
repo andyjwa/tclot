@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
+import { buildSquadFplValueByLeagueEntryId } from './fplSquadValues.js'
 import './SeasonPreview.css'
 
 /** Grade chip tone: A-family green, B-family amber, C-family gray. */
@@ -38,6 +39,7 @@ function OddsBar({ pct }) {
  */
 export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
   const [data, setData] = useState(null)
+  const [squadValues, setSquadValues] = useState(() => new Map())
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
@@ -50,6 +52,34 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
       .catch(() => {
         if (alive) setFailed(true)
       })
+    Promise.allSettled([
+      fetch(`${import.meta.env.BASE_URL}league-data/element_status.json`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
+      ),
+      fetch(`${import.meta.env.BASE_URL}league-data/bootstrap_fpl.json`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
+      ),
+      fetch(`${import.meta.env.BASE_URL}league-data/details.json`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
+      ),
+    ]).then((results) => {
+      if (!alive) return
+      const [elementStatus, bootstrapFpl, details] = results
+      if (
+        elementStatus.status !== 'fulfilled' ||
+        bootstrapFpl.status !== 'fulfilled' ||
+        details.status !== 'fulfilled'
+      ) {
+        return
+      }
+      setSquadValues(
+        buildSquadFplValueByLeagueEntryId({
+          elementStatus: elementStatus.value,
+          bootstrapFpl: bootstrapFpl.value,
+          details: details.value,
+        }),
+      )
+    })
     return () => {
       alive = false
     }
@@ -103,6 +133,9 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
                 <th scope="col" className="season-preview__th season-preview__th--num">
                   Pts
                 </th>
+                <th scope="col" className="season-preview__th season-preview__th--num">
+                  FPL value
+                </th>
                 <th scope="col" className="season-preview__th season-preview__th--num season-preview__th--record">
                   W-D-L
                 </th>
@@ -112,7 +145,10 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
               </tr>
             </thead>
             <tbody>
-              {teams.map((t, i) => (
+              {teams.map((t, i) => {
+                // Regular-FPL market value of the full 15-man draft squad.
+                const v = squadValues.get(Number(t.leagueEntryId))
+                return (
                 <tr key={t.leagueEntryId}>
                   <td className="season-preview__td season-preview__td--rank tabular">{i + 1}</td>
                   <td className="season-preview__td">
@@ -135,6 +171,12 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
                   <td className="season-preview__td season-preview__td--num tabular">
                     {Math.round(t.sim.avgPts)}
                   </td>
+                  <td className="season-preview__td season-preview__td--num tabular">
+                    {v ? `£${v.totalValue.toFixed(1)}m` : '—'}
+                    {v ? (
+                      <span className="season-preview__meta-count muted"> · {v.playerCount} players</span>
+                    ) : null}
+                  </td>
                   <td className="season-preview__td season-preview__td--num season-preview__td--record tabular">
                     {fmtRecord(t.sim)}
                   </td>
@@ -146,7 +188,8 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
                     </span>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>

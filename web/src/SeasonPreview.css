@@ -71,6 +71,10 @@
   font-weight: 400;
 }
 
+.season-preview__meta-count {
+  font-size: 0.72rem;
+}
+
 .season-preview__odds {
   display: inline-flex;
   align-items: center;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { SeasonPreview } from './SeasonPreview'
 import { standingsMobileTeamName } from './teamNameUtils.js'
+import { buildSquadFplValueByLeagueEntryId } from './fplSquadValues.js'
 import './SeasonPreview.css'
 import './SeasonPredictions.css'
 
@@ -55,6 +56,7 @@ function oddsDelta(current, prevSnapshot, entryId) {
  */
 export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
   const [data, setData] = useState(null)
+  const [squadValues, setSquadValues] = useState(() => new Map())
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
@@ -67,6 +69,34 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
       .catch(() => {
         if (alive) setFailed(true)
       })
+    Promise.allSettled([
+      fetch(`${import.meta.env.BASE_URL}league-data/element_status.json`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
+      ),
+      fetch(`${import.meta.env.BASE_URL}league-data/bootstrap_fpl.json`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
+      ),
+      fetch(`${import.meta.env.BASE_URL}league-data/details.json`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
+      ),
+    ]).then((results) => {
+      if (!alive) return
+      const [elementStatus, bootstrapFpl, details] = results
+      if (
+        elementStatus.status !== 'fulfilled' ||
+        bootstrapFpl.status !== 'fulfilled' ||
+        details.status !== 'fulfilled'
+      ) {
+        return
+      }
+      setSquadValues(
+        buildSquadFplValueByLeagueEntryId({
+          elementStatus: elementStatus.value,
+          bootstrapFpl: bootstrapFpl.value,
+          details: details.value,
+        }),
+      )
+    })
     return () => {
       alive = false
     }
@@ -157,6 +187,9 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
                 <th scope="col" className="season-preview__th season-preview__th--num">
                   Proj
                 </th>
+                <th scope="col" className="season-preview__th season-preview__th--num">
+                  FPL value
+                </th>
                 <th
                   scope="col"
                   className="season-preview__th season-preview__th--num season-preview__th--record"
@@ -168,6 +201,7 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
             <tbody>
               {current.teams.map((t, i) => {
                 const delta = oddsDelta(t.titlePct, prevSnapshot, t.leagueEntryId)
+                const v = squadValues.get(Number(t.leagueEntryId))
                 return (
                   <tr key={t.leagueEntryId}>
                     <td className="season-preview__td season-preview__td--rank tabular">
@@ -206,6 +240,12 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
                     </td>
                     <td className="season-preview__td season-preview__td--num tabular">
                       {Math.round(t.projPts)}
+                    </td>
+                    <td className="season-preview__td season-preview__td--num tabular">
+                      {v ? `£${v.totalValue.toFixed(1)}m` : '—'}
+                      {v ? (
+                        <span className="season-preview__meta-count muted"> · {v.playerCount} players</span>
+                      ) : null}
                     </td>
                     <td className="season-preview__td season-preview__td--num season-preview__td--record tabular">
                       {t.banked.pts}
