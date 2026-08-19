@@ -211,65 +211,78 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
         </div>
       </section>
 
-      {teams.map((t, i) => (
-        <section
-          key={t.leagueEntryId}
-          className="tile tile--compact season-preview-card"
-          aria-label={`${t.name} season preview`}
-        >
-          <div className="season-preview-card__head">
-            <span className="season-preview-card__rank tabular" aria-hidden>
-              {i + 1}
-            </span>
-            <TeamAvatar
-              entryId={t.leagueEntryId}
-              name={t.name}
-              size="md"
-              logoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-            <div className="season-preview-card__title">
-              <h3 className="season-preview-card__name">{standingsMobileTeamName(t.name)}</h3>
-              <span className="season-preview-card__sub">
-                Projected {ordinal(i + 1)} · {Math.round(t.sim.avgPts)} pts · title{' '}
-                {t.sim.titlePct}%
+      {teams.map((t, i) => {
+        const v = squadValues.get(Number(t.leagueEntryId))
+        return (
+          <section
+            key={t.leagueEntryId}
+            className="tile tile--compact season-preview-card"
+            aria-label={`${t.name} season preview`}
+          >
+            <div className="season-preview-card__head">
+              <span className="season-preview-card__rank tabular" aria-hidden>
+                {i + 1}
+              </span>
+              <TeamAvatar
+                entryId={t.leagueEntryId}
+                name={t.name}
+                size="md"
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+              <div className="season-preview-card__title">
+                <h3 className="season-preview-card__name">{standingsMobileTeamName(t.name)}</h3>
+                <span className="season-preview-card__sub">
+                  Projected {ordinal(i + 1)} · {Math.round(t.sim.avgPts)} pts · title{' '}
+                  {t.sim.titlePct}%
+                </span>
+              </div>
+              <span
+                className={`season-preview__grade season-preview__grade--lg season-preview__grade--${gradeTone(t.grade)}`}
+                title="Draft grade"
+              >
+                {t.grade}
               </span>
             </div>
-            <span
-              className={`season-preview__grade season-preview__grade--lg season-preview__grade--${gradeTone(t.grade)}`}
-              title="Draft grade"
-            >
-              {t.grade}
-            </span>
-          </div>
-          <p className="season-preview-card__verdict">{t.verdict}</p>
-          <dl className="season-preview-card__meta">
-            <div className="season-preview-card__meta-item">
-              <dt>Key player</dt>
-              <dd>
-                {t.keyPlayer.name} <span className="season-preview-card__meta-dim">{t.keyPlayer.teamShort}</span>
-              </dd>
-            </div>
-            {t.steal ? (
+            <p className="season-preview-card__verdict">{t.verdict}</p>
+            <dl className="season-preview-card__meta">
               <div className="season-preview-card__meta-item">
-                <dt>Best value</dt>
+                <dt>Key player</dt>
                 <dd>
-                  {t.steal.name}{' '}
-                  <span className="season-preview-card__meta-dim">R{t.steal.round}</span>
+                  {t.keyPlayer.name}{' '}
+                  <span className="season-preview-card__meta-dim">{t.keyPlayer.teamShort}</span>
                 </dd>
               </div>
-            ) : null}
-            <div className="season-preview-card__meta-item">
-              <dt>Best XI shape</dt>
-              <dd>{t.shape}</dd>
-            </div>
-            <div className="season-preview-card__meta-item">
-              <dt>Top-half odds</dt>
-              <dd className="tabular">{t.sim.topHalfPct}%</dd>
-            </div>
-          </dl>
-        </section>
-      ))}
+              {t.steal ? (
+                <div className="season-preview-card__meta-item">
+                  <dt>Best value</dt>
+                  <dd>
+                    {t.steal.name}{' '}
+                    <span className="season-preview-card__meta-dim">R{t.steal.round}</span>
+                  </dd>
+                </div>
+              ) : null}
+              <div className="season-preview-card__meta-item">
+                <dt>Best XI shape</dt>
+                <dd>{t.shape}</dd>
+              </div>
+              <div className="season-preview-card__meta-item">
+                <dt>Top-half odds</dt>
+                <dd className="tabular">{t.sim.topHalfPct}%</dd>
+              </div>
+              <div className="season-preview-card__meta-item">
+                <dt>FPL value</dt>
+                <dd className="tabular">
+                  {v ? `£${v.totalValue.toFixed(1)}m` : '—'}
+                  {v ? (
+                    <span className="season-preview-card__meta-dim"> · {v.playerCount} players</span>
+                  ) : null}
+                </dd>
+              </div>
+            </dl>
+          </section>
+        )
+      })}
 
       <section className="tile tile--compact season-preview-method" aria-label="How this preview works">
         <h3 className="season-preview-method__title">How this works</h3>
