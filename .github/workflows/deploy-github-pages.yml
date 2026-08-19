@@ -75,7 +75,24 @@ jobs:
             echo "::error::VITE_FPL_PROXY_URL is not set — GitHub Pages cannot call FPL from the browser (CORS). Add the Cloudflare Worker base URL under Settings → Secrets and variables → Actions (or github-pages Environment) as repository secret **VITE_FPL_PROXY_URL** (no trailing slash). See DEPLOY.md § Live tab proxy. Forks/demo only: create repository Variable **FPL_PROXY_OPTIONAL** = true."
             exit 1
           fi
-          echo "VITE_FPL_PROXY_URL configured — baked into this build for FPL Live + draft picks in browser."
+          # A set-but-malformed value bakes a broken URL into the bundle: the browser's
+          # fetch() then throws (Safari: "URL is not valid or contains user credentials.")
+          # and the Live tab dies at runtime while CI stays green. Fail here instead.
+          if ! node -e "
+            const raw = (process.env.VITE_FPL_PROXY_URL ?? '').trim();
+            let u;
+            try { u = new URL(raw); } catch {
+              console.error('not parseable as a URL');
+              process.exit(1);
+            }
+            if (u.protocol !== 'https:') { console.error('protocol is ' + u.protocol + ' — must be https:'); process.exit(1); }
+            if (u.username || u.password) { console.error('contains user credentials — browsers refuse to fetch such URLs'); process.exit(1); }
+            if (/\s/.test(raw)) { console.error('contains whitespace'); process.exit(1); }
+          "; then
+            echo "::error::VITE_FPL_PROXY_URL is set but is not a valid https URL. The value must be the bare Worker base URL, e.g. https://your-worker.workers.dev — no quotes, no NAME= prefix, no embedded credentials, no stray whitespace/newline. Check BOTH Settings → Secrets and variables → Actions AND Settings → Environments → github-pages (environment secrets silently override repository secrets)."
+            exit 1
+          fi
+          echo "VITE_FPL_PROXY_URL configured and valid — baked into this build for FPL Live + draft picks in browser."
 
       # League id: committed `league-id` file is source of truth. The github-pages
       # Environment secret FPL_LEAGUE_ID silently overrides the repository secret
