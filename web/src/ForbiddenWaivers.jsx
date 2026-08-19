@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import './ForbiddenWaivers.css'
 
+/** PL club badge for an FPL team `code`. */
+function plClubBadgeUrl(code) {
+  if (code == null) return null
+  return `https://resources.premierleague.com/premierleague/badges/50/t${code}.png`
+}
+
+/** Position sort order so rows are grouped GK → DEF → MID → FWD. */
+const POS_RANK = { GKP: 1, GK: 1, DEF: 2, MID: 3, FWD: 4 }
+
 /**
  * Forbidden Waivers — league rule tile. Any player added to the FPL Draft
  * game after the committed baseline (Aug 18, 2026 ~3:30 PM EST) and before
@@ -53,22 +62,40 @@ export function ForbiddenWaivers() {
         </p>
       ) : (
         <ul className="forbidden-waivers__list">
-          {players.map((p) => (
-            <li key={p.id} className="forbidden-waivers__row">
-              <span
-                className={`forbidden-waivers__pos forbidden-waivers__pos--${p.position.toLowerCase()}`}
-              >
-                {p.position}
-              </span>
-              <span className="forbidden-waivers__name" title={p.fullName}>
-                {p.webName}
-              </span>
-              <span className="forbidden-waivers__team">{p.team}</span>
-              <span className="forbidden-waivers__ban" aria-label="Cannot be added">
-                ⛔
-              </span>
-            </li>
-          ))}
+          {players
+            .slice()
+            .sort(
+              (a, b) =>
+                (POS_RANK[a.position] ?? 5) - (POS_RANK[b.position] ?? 5) ||
+                (a.fullName || a.webName || '').localeCompare(b.fullName || b.webName || ''),
+            )
+            .map((p) => {
+              const badge = plClubBadgeUrl(p.teamCode)
+              return (
+                <li key={p.id} className="forbidden-waivers__row">
+                  {badge ? (
+                    <img
+                      className="forbidden-waivers__badge"
+                      src={badge}
+                      alt={p.team || ''}
+                      loading="lazy"
+                      width="20"
+                      height="20"
+                    />
+                  ) : (
+                    <span className="forbidden-waivers__badge" aria-hidden />
+                  )}
+                  <span className="forbidden-waivers__name" title={p.fullName}>
+                    {p.fullName || p.webName}
+                  </span>
+                  <span
+                    className={`forbidden-waivers__pos forbidden-waivers__pos--${p.position.toLowerCase()}`}
+                  >
+                    {p.position}
+                  </span>
+                </li>
+              )
+            })}
         </ul>
       )}
     </section>

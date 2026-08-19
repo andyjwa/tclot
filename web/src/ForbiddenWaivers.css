@@ -33,7 +33,23 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--negative, #f87171) 5%, transparent);
 }
+.forbidden-waivers__badge {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.forbidden-waivers__name {
+  flex: 1;
+  font-weight: 700;
+  color: var(--text, #e8ecf4);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .forbidden-waivers__pos {
+  margin-left: auto;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -43,20 +59,4 @@
   color: var(--text-dim, #8b93a7);
   min-width: 34px;
   text-align: center;
-}
-.forbidden-waivers__name {
-  font-weight: 700;
-  color: var(--text, #e8ecf4);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.forbidden-waivers__team {
-  font-size: 11.5px;
-  color: var(--text-dim, #8b93a7);
-}
-.forbidden-waivers__ban {
-  margin-left: auto;
-  font-size: 13px;
 }

@@ -72,6 +72,7 @@ if (windowClosed) {
 
 const baselineIds = new Set(baseline.elementIds.map(Number))
 const teamShort = new Map((boot.teams ?? []).map((t) => [Number(t.id), t.short_name]))
+const teamCode = new Map((boot.teams ?? []).map((t) => [Number(t.id), t.code]))
 const POS = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
 
 const players = (boot.elements ?? [])
@@ -81,6 +82,7 @@ const players = (boot.elements ?? [])
     webName: e.web_name,
     fullName: `${e.first_name} ${e.second_name}`.trim(),
     team: teamShort.get(Number(e.team)) ?? String(e.team),
+    teamCode: teamCode.get(Number(e.team)) ?? null,
     position: POS[Number(e.element_type)] ?? 'MID',
   }))
   .sort((a, b) => a.id - b.id)
