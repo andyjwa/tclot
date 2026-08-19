@@ -280,4 +280,11 @@ body[data-tclot-theme='dark'] .season-preview__grade--b {
   .season-preview__td--record {
     display: none;
   }
+
+  /* Drop the FPL value column on phones so the Draft grade stays on-screen;
+   * the value still lives in each team's preview card. */
+  .season-preview__th--value,
+  .season-preview__td--value {
+    display: none;
+  }
 }
