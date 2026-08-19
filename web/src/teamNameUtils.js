@@ -20,6 +20,7 @@ const MOBILE_SHORT_NAMES = new Map([
   ['Rokesly Regorasu', 'Regorasu'],
   ['Hackney Rohirrim', 'Rohirrim'],
   ['Mordor S.F.G', 'MSFG'],
+  ['Mordor SFG', 'MSFG'],
   ['Seoul Shire', 'Seoul Shire'],
   ['Brampton Balrogs', 'Balrogs'],
 ]);

@@ -40,6 +40,7 @@ test('firstWord — 2026-27 squads use curated mobile labels', () => {
   assert.equal(firstWord('Rokesly Regorasu'), 'Regorasu');
   assert.equal(firstWord('Hackney Rohirrim'), 'Rohirrim');
   assert.equal(firstWord('Mordor S.F.G'), 'MSFG');
+  assert.equal(firstWord('Mordor SFG'), 'MSFG');
   assert.equal(firstWord('Seoul Shire'), 'Seoul Shire');
   assert.equal(firstWord('Brampton Balrogs'), 'Balrogs');
 });

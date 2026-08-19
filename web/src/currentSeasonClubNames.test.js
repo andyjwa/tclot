@@ -43,14 +43,14 @@ test('managerMatchKey — first-name and spelling aliases', () => {
   )
 })
 
-test('currentSeasonClubLabel — MSFG stays MSFG', () => {
+test('currentSeasonClubLabel — MSFG renders as Mordor SFG', () => {
   assert.equal(currentSeasonClubLabel({ name: 'Atlético Bilbo' }), 'Atlético Bilbo')
   assert.equal(
     currentSeasonClubLabel({
       name: 'Mr Mordorlicious School for Girls',
       shortName: 'Mr. MSFG',
     }),
-    'MSFG',
+    'Mordor SFG',
   )
 })
 
@@ -89,7 +89,7 @@ test('overlayCurrentSeasonEntryName — maps 25/26 FPL entries to 26/27 clubs', 
       { player_first_name: 'Nick', player_last_name: 'Mottershead', entry_name: 'Hackney Meat Loaf' },
       byManager,
     ),
-    'MSFG',
+    'Mordor SFG',
   )
   assert.equal(
     overlayCurrentSeasonEntryName(

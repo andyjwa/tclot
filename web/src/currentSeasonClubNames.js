@@ -1,8 +1,9 @@
 import { isMsfgTeamName } from './teamNameUtils.js'
 
-/** Data-level entry name for the MSFG club (desktop shows this as-is;
- * mobile re-labels it via `standingsMobileTeamName` → `Mordor SFG`). */
-const MSFG_ENTRY_NAME = 'MSFG'
+/** Data-level entry name for the MSFG club — desktop and mobile both show
+ * `Mordor SFG` (mobile's `standingsMobileTeamName` re-label is a no-op on it);
+ * tight surfaces still collapse it to `MSFG` via `firstWord`. */
+const MSFG_ENTRY_NAME = 'Mordor SFG'
 
 const FIRST_ALIASES = {
   michael: 'mike',
