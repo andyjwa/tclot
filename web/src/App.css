@@ -10498,17 +10498,12 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 /* Live Table — redesign Phase 2                                */
 /* ============================================================ */
 /*
- * Re-tunes the standings sidebar to share typography, spacing, and
- * surface chrome with the rest of the FPL Live redesign (face-off
- * rows, expanded fixtures, hero/villain bands). Inter for labels,
- * Geist Mono for the tabular numbers that scan vertically, and the
- * --space-* token scale for paddings so it reads as part of the same
- * visual system instead of FotMob-era inherited treatment.
- *
- * Scope: targeted at `.tile--live-standings` (the wrapper tile JSX
- * sets) and `.standings-table--live` (only present on the FPL Live
- * tab — the Hall historic tables share `.standings-table--sidebar`
- * but not `--live`, so they aren't pulled into these overrides).
+ * Wrapper-tile spacing for the Live Table. The table itself now
+ * shares the production Standings variant-c treatment (see the
+ * `.standings-table--variant-c` block below): the desktop render is
+ * `.standings-table--sidebar.standings-table--variant-c` plus a
+ * `--live-desktop` modifier that carries only the Live-specific
+ * deltas (non-clickable rows, plain-text headers, `Last` dot column).
  */
 .tile.tile--live-standings {
   padding: var(--space-4) var(--space-4) var(--space-3);
@@ -10522,71 +10517,6 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   letter-spacing: 0.01em;
 }
 
-.standings-table--live {
-  font-size: var(--text-sm, 13px);
-  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
-  /* Tabular figures site-wide on this table so columns line up; per-cell
-   * `.tabular` already exists, but spelling it on the table avoids drift
-   * when new columns land. */
-  font-variant-numeric: tabular-nums;
-}
-.standings-table--live thead th {
-  font-family: 'Geist Mono', monospace;
-  font-size: var(--text-xs, 11px);
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-muted, var(--fm-muted));
-  /* Match Waivers / portrait Live Table header band. Landscape phones
-   * flip to this desktop table (>767px wide) — transparent here dropped
-   * the Scorebook surface-2 strip and looked unthemed. */
-  background: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
-  border-bottom: 1px solid var(--border, var(--fm-border));
-}
-.standings-table--live th,
-.standings-table--live td {
-  padding: var(--space-2) var(--space-2);
-  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
-}
-.standings-table--live tbody tr:last-child td {
-  border-bottom: none;
-}
-.standings-table--live tbody td {
-  /* Slightly tighter line-height than the global standings table so
-   * the row reads closer to the face-off row vertical rhythm. */
-  line-height: var(--lh-snug, 1.3);
-}
-.standings-table--live .col-rank {
-  font-family: 'Geist Mono', monospace;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--fm-muted);
-  width: 28px;
-}
-.standings-table--live tbody tr.row-highlight .col-rank {
-  color: var(--fm-text-strong);
-}
-.standings-table--live .col-num.col-pts,
-.standings-table--live td.col-num.col-pts {
-  font-family: 'Geist Mono', monospace;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  color: var(--fm-text-strong);
-}
-.standings-table--live .col-num.col-for,
-.standings-table--live .col-num.col-played,
-.standings-table--live .col-num.col-wdl,
-.standings-table--live .col-num.col-against,
-.standings-table--live .col-num.col-gd {
-  font-family: 'Geist Mono', monospace;
-  font-variant-numeric: tabular-nums;
-}
-.standings-table--live .live-standings-team-name {
-  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
-  font-weight: 600;
-  color: var(--fm-text-strong);
-}
-
 /* Column alignment fix (PR #5i):
  * `.standings-table--sidebar td.col-{for,faced,gd,pts}` reserves
  *  `calc(7px + var(--standings-sort-arrow-slot))` of padding-right so
@@ -10597,70 +10527,15 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
  *  centered, for PTS) header, producing a visible drift between every
  *  numeric column header and the digits below it.
  *
- *  Selector uses `.--live.--sidebar` (2 classes) to outrank the
- *  one-class `.--sidebar` rule above without disturbing Hall / historic
- *  tables that share `.--sidebar` and do render sort buttons. */
-.standings-table--live.standings-table--sidebar td.col-for,
-.standings-table--live.standings-table--sidebar td.col-faced,
-.standings-table--live.standings-table--sidebar td.col-gd,
-.standings-table--live.standings-table--sidebar td.col-num.col-pts {
+ *  Selector uses `.--live-desktop.--sidebar` (2 classes) to outrank
+ *  the one-class `.--sidebar` rule above without disturbing Hall /
+ *  historic tables that share `.--sidebar` and do render sort
+ *  buttons. */
+.standings-table--live-desktop.standings-table--sidebar td.col-for,
+.standings-table--live-desktop.standings-table--sidebar td.col-faced,
+.standings-table--live-desktop.standings-table--sidebar td.col-gd,
+.standings-table--live-desktop.standings-table--sidebar td.col-num.col-pts {
   padding-right: var(--space-2);
-}
-
-/* ============================================================ */
-/* FOR / AGT / GD visual grouping — desktop only (PR #5j)        */
-/* ============================================================ */
-/*
- * Treat the three "season-points" columns as one visual unit so
- * they read distinctly from the W/D/L block on the left and the
- * Last 5 / GW / PTS block on the right. Two ingredients:
- *
- *   1. Tighten interior padding within the group (4px between
- *      FOR↔AGT and AGT↔GD instead of the table's default 8px).
- *   2. Subtle hairline dividers on the *outer* edges of the group
- *      (left edge of `.col-for`, right edge of `.col-gd`). Colour
- *      is `--fm-border` mixed to ~55% so the line reads as a hint
- *      rather than a hard rule, on both light and dark themes.
- *
- * Mobile (<=880px) hides AGT and GD entirely (see column visibility
- * block below), so the grouping treatment is desktop-only.
- *
- * Specificity: the existing column-alignment-fix block above uses
- * `.standings-table--live.standings-table--sidebar td.col-{for,gd}`
- * (0,3,1) to override the sidebar's padding-right reservation. The
- * rules below match that specificity for the data cells and reach
- * `<th>`s with the same chained classes.
- */
-@media (min-width: 881px) {
-  .standings-table--live.standings-table--sidebar th.col-for,
-  .standings-table--live.standings-table--sidebar td.col-for {
-    border-left: 1px solid
-      color-mix(in srgb, var(--fm-border) 55%, transparent);
-    padding-left: var(--space-3);
-    padding-right: var(--space-1);
-  }
-  .standings-table--live.standings-table--sidebar th.col-against,
-  .standings-table--live.standings-table--sidebar td.col-against {
-    padding-left: var(--space-1);
-    padding-right: var(--space-1);
-  }
-  .standings-table--live.standings-table--sidebar th.col-gd,
-  .standings-table--live.standings-table--sidebar td.col-gd {
-    border-right: 1px solid
-      color-mix(in srgb, var(--fm-border) 55%, transparent);
-    padding-left: var(--space-1);
-    padding-right: var(--space-3);
-  }
-}
-
-/* Row tints — soften the leader & 8th bands so they read as part of
- * the new low-contrast aesthetic. The hero-defeat / villain-victory
- * row tints are intentionally untouched (preserved from PR #5e). */
-.standings-table--live tbody tr.row-highlight td {
-  background: color-mix(in srgb, var(--brand) 6%, transparent);
-}
-.standings-table--live tbody tr.standings-row--8th td {
-  background: color-mix(in srgb, var(--data-negative, #ef4444) 7%, transparent);
 }
 
 /* ============================================================ */
@@ -10846,11 +10721,12 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 /* live` on desktop, `.standings-table--live-mobile` on phones)   */
 /* ============================================================ */
 /*
- * The Live Table now mirrors the production Standings variant-c
- * table for visual parity. Two distinct renders (no shared markup):
+ * The Live Table mirrors the production Standings variant-c table
+ * for visual parity. Two distinct renders (no shared markup):
  *
  *   • Desktop (>767px) — `.standings-table--sidebar
- *     .standings-table--live` with the full column set
+ *     .standings-table--variant-c .standings-table--live-desktop`
+ *     with the full column set
  *     (#, Team, PL, W, D, L, For, Faced, GD, PTS, Last).
  *
  *   • Mobile  (≤767px) — `.standings-table--variant-c
@@ -10858,9 +10734,12 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
  *     mobile` with the condensed 5-column set
  *     (#, Team, For, PTS, Last). The variant-c-mobile base sizes
  *     the row padding so full club names fit a 390px viewport
- *     without horizontal scroll; the `--live-mobile`
- *     suffix carries Live-only overrides (kill the variant-c
- *     hover/cursor since rows aren't clickable on Live).
+ *     without horizontal scroll.
+ *
+ * Both renders share the variant-c base (header band, row tints,
+ * Minnows divider); the `--live-desktop` / `--live-mobile` modifiers
+ * carry only Live-only overrides (kill the variant-c hover/cursor
+ * since rows aren't clickable on Live, centre the `Last` dot column).
  *
  * The legacy `Last 5` 5-dot column was dropped; the `GW` 1-dot
  * column was renamed `Last`. Single dot drawn with the existing
@@ -10869,73 +10748,37 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 
 /* Live Table rows are not clickable — suppress the variant-c
  * hover-tint + cursor: pointer rules that apply to the Standings
- * variant-c table (mobile shares those base classes for column
- * widths + Minnows divider styling). Specificity matches the
- * variant-c rule (0,2,3) thanks to the chained `--live-mobile`
- * class. */
-.standings-table--live tbody tr,
-.standings-table--live-mobile tbody tr {
+ * variant-c table (both renders share those base classes for the
+ * header band, column widths + Minnows divider styling). The
+ * variant-c hover/cursor rules live *later* in this file, so chain
+ * `--variant-c` with the `--live-*` modifier to outrank them on
+ * specificity rather than order. */
+.standings-table--variant-c.standings-table--live-desktop tbody tr,
+.standings-table--variant-c.standings-table--live-mobile tbody tr {
   cursor: default;
 }
-.standings-table--live tbody tr:hover td,
-.standings-table--live-mobile tbody tr:hover td {
+.standings-table--variant-c.standings-table--live-desktop tbody tr:hover td,
+.standings-table--variant-c.standings-table--live-mobile tbody tr:hover td {
   background: inherit;
 }
-.standings-table--live tbody tr.row-highlight:hover td,
-.standings-table--live-mobile tbody tr.row-highlight:hover td {
+.standings-table--variant-c.standings-table--live-desktop tbody tr.row-highlight:hover td,
+.standings-table--variant-c.standings-table--live-mobile tbody tr.row-highlight:hover td {
   background: var(--fm-table-head, #f2f5fb);
 }
-.standings-table--live tbody tr.standings-row--8th:hover td,
-.standings-table--live-mobile tbody tr.standings-row--8th:hover td {
+.standings-table--variant-c.standings-table--live-desktop tbody tr.standings-row--8th:hover td,
+.standings-table--variant-c.standings-table--live-mobile tbody tr.standings-row--8th:hover td {
   background: var(--fm-standings-8th-bg);
-}
-/* Hero/villain row tints — re-assert the dim-not-saturate treatment
- * on hover so the variant-c brand-tinted hover doesn't wipe them. */
-.standings-table--live tbody tr.standings-row--villain-victory:hover td,
-.standings-table--live-mobile tbody tr.standings-row--villain-victory:hover td {
-  background: color-mix(in srgb, var(--data-negative, #ef4444) 9%, transparent);
-}
-.standings-table--live tbody tr.standings-row--hero-defeat:hover td,
-.standings-table--live-mobile tbody tr.standings-row--hero-defeat:hover td {
-  background: color-mix(in srgb, var(--data-positive, #12a15a) 9%, transparent);
-}
-
-/* Minnows divider on the Live Table desktop render — the mobile
- * render inherits the divider treatment from `.standings-table--
- * variant-c tbody tr.standings-divider`. Desktop opts out of
- * `--variant-c` to avoid the hover/cursor side effects above, so
- * style the divider band explicitly here. */
-.standings-table--live tbody tr.standings-divider {
-  cursor: default;
-}
-.standings-table--live tbody tr.standings-divider:hover td {
-  background: transparent;
-}
-.standings-table--live tbody tr.standings-divider td {
-  padding: 10px 10px 4px;
-  border-top: 1px dashed
-    color-mix(in srgb, var(--brand) 30%, var(--fm-border));
-  background: transparent;
-  text-align: left;
-}
-.standings-table--live .standings-divider__label {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: color-mix(in srgb, var(--brand) 60%, var(--text-muted));
 }
 
 /* `Last` single-dot column on both renders — centre the dot and
  * give it the same horizontal padding the form column has on the
  * Standings variant-c table so columns line up at the same widths. */
-.standings-table--live .col-last,
+.standings-table--live-desktop .col-last,
 .standings-table--live-mobile .col-last {
   text-align: center;
   vertical-align: middle;
 }
-.standings-table--live td.col-last,
+.standings-table--live-desktop td.col-last,
 .standings-table--live-mobile td.col-last {
   padding-left: 8px;
   padding-right: 8px;
@@ -13713,9 +13556,9 @@ button.live-xp__player-name:focus-visible {
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
-/* Positive points: same soft brand pill as Live Table PTS
- * (`.standings-table--live .pts-cell__value`) — ink number on a 15%
- * brand wash so the feed and table read as one system. */
+/* Positive points: same soft brand pill as the mobile Live Table PTS
+ * (`.standings-table--live-mobile .pts-cell__value`) — ink number on
+ * a 15% brand wash so the feed and table read as one system. */
 .live-contrib-row__pts--pos {
   color: var(--fm-text-strong);
   background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
@@ -17645,9 +17488,8 @@ button.live-xp__player-name:focus-visible {
 /* Live Table (FPL live scores) PTS column: render the violet points value as a
    soft purple "glass" pill to match the live face-off score (Option C) and the
    Players PTS pill. The number drops to ink so the pill carries the purple.
-   Scoped to the live tables only — the production Standings / Historic / CofC
-   PointsCell stays plain violet. */
-.standings-table--live .pts-cell__value,
+   Scoped to the mobile live table only — the desktop Live Table and the
+   production Standings / Historic / CofC render PTS as plain bold text. */
 .standings-table--live-mobile .pts-cell__value {
   display: inline-flex;
   align-items: center;

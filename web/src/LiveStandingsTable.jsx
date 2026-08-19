@@ -16,11 +16,13 @@ function teamNameForEntry(teams, leagueEntryId) {
 /**
  * Row tint for the Live Table. Mirrors the production Standings
  * variant-c row treatment: rank-1 row tint (`row-highlight`) and the
- * rank-8 8th-place band.
+ * rank-8 8th-place band. When every team shares rank 1 (pre-season /
+ * all tied on 0 pts) the leader tint would band the whole table, so
+ * it's suppressed until there's an actual leader.
  */
-function liveStandingsRowClass(row) {
+function liveStandingsRowClass(row, allTiedAtTop) {
   return [
-    row.liveRank === 1 ? 'row-highlight' : '',
+    row.liveRank === 1 && !allTiedAtTop ? 'row-highlight' : '',
     row.liveRank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
   ]
     .filter(Boolean)
@@ -152,6 +154,9 @@ export function LiveStandingsTable({
   const lastTitle = gwStandingsFrozen
     ? 'This GW’s H2H result: green win, amber draw, red loss'
     : 'Live H2H result vs opponent: green winning, amber drawing, red losing, muted pre-kickoff';
+  const allTiedAtTop =
+    liveStandingsRows.length > 1 &&
+    liveStandingsRows.every((r) => r.liveRank === 1);
 
   if (mobile) {
     return (
@@ -174,7 +179,7 @@ export function LiveStandingsTable({
           </thead>
           <tbody>
             {liveStandingsRows.map((row) => {
-              const rowClass = liveStandingsRowClass(row);
+              const rowClass = liveStandingsRowClass(row, allTiedAtTop);
               return (
                 <Fragment key={row.league_entry}>
                   <tr className={rowClass || undefined}>
@@ -235,7 +240,7 @@ export function LiveStandingsTable({
   return (
     <div className="table-scroll table-scroll--standings-open table-scroll--live">
       <table
-        className="standings-table standings-table--sidebar standings-table--live"
+        className="standings-table standings-table--sidebar standings-table--variant-c standings-table--live-desktop"
         role="table"
         aria-label="Live Table — ranks 1 through 8 (sorted by projected points)"
       >
@@ -305,7 +310,7 @@ export function LiveStandingsTable({
         </thead>
         <tbody>
           {liveStandingsRows.map((row) => {
-            const rowClass = liveStandingsRowClass(row);
+            const rowClass = liveStandingsRowClass(row, allTiedAtTop);
             return (
               <Fragment key={row.league_entry}>
                 <tr className={rowClass || undefined}>
@@ -350,7 +355,7 @@ export function LiveStandingsTable({
                     {row.projectedGd > 0 ? `+${row.projectedGd}` : row.projectedGd}
                   </td>
                   <td className="col-num col-pts tabular">
-                    <PointsCell value={row.projectedPts} size="md" showLabel={false} />
+                    <strong>{row.projectedPts}</strong>
                   </td>
                   <td className="col-last">
                     <LiveLastDot
