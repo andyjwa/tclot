@@ -1,8 +1,42 @@
 /**
  * Settings rows for browser push notifications.
+ * Matches Theme / Default landing tab: label on the left, control on the right.
  */
 
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+
+/**
+ * @param {{
+ *   id: string,
+ *   label: string,
+ *   hint?: string,
+ *   checked: boolean,
+ *   disabled?: boolean,
+ *   onChange: (next: boolean) => void,
+ * }} props
+ */
+function SettingsToggleRow({ id, label, hint, checked, disabled, onChange }) {
+  return (
+    <div className="settings-row">
+      <div className="settings-row__copy">
+        <span className="settings-row__label" id={id}>
+          {label}
+        </span>
+        {hint ? <p className="settings-row__hint">{hint}</p> : null}
+      </div>
+      <label className="settings-toggle">
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          aria-labelledby={id}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <span className="settings-toggle__track" aria-hidden="true" />
+      </label>
+    </div>
+  )
+}
 
 /**
  * @param {{
@@ -32,7 +66,7 @@ export function PushNotificationSettings({
 }) {
   const disabled = !capability.supported || !capability.configured
 
-  let hint = 'Get deadline, waiver, and live GW alerts from the TCLOT web app.'
+  let hint = 'Deadline, waiver, and live XI alerts from this web app.'
   if (!capability.supported) {
     hint = 'This browser does not support web push notifications.'
   } else if (!capability.configured) {
@@ -41,31 +75,21 @@ export function PushNotificationSettings({
 
   return (
     <>
-      <div className="settings-row settings-row--stack">
-        <div className="settings-row__stack-head">
-          <span className="settings-row__label" id="settings-push-label">
-            Push notifications
-          </span>
-          <label className="settings-toggle">
-            <input
-              type="checkbox"
-              checked={enabled}
-              disabled={disabled || status === 'working'}
-              aria-labelledby="settings-push-label"
-              onChange={async (e) => {
-                try {
-                  await setEnabled(e.target.checked)
-                } catch {
-                  /* error surfaced via `error` prop */
-                }
-              }}
-            />
-            <span className="settings-toggle__track" aria-hidden="true" />
-          </label>
-        </div>
-        <p className="settings-row__hint">{hint}</p>
-        {error ? <p className="settings-row__error" role="alert">{error}</p> : null}
-      </div>
+      <SettingsToggleRow
+        id="settings-push-label"
+        label="Push notifications"
+        hint={hint}
+        checked={enabled}
+        disabled={disabled || status === 'working'}
+        onChange={(next) => {
+          setEnabled(next).catch(() => {})
+        }}
+      />
+      {error ? (
+        <p className="settings-row__error" role="alert">
+          {error}
+        </p>
+      ) : null}
 
       {enabled && !disabled ? (
         <>
@@ -86,38 +110,31 @@ export function PushNotificationSettings({
             />
           </div>
 
-          <fieldset className="settings-row settings-row--checks">
-            <legend className="settings-row__label">Alert types</legend>
-            <label className="settings-check">
-              <input
-                type="checkbox"
-                checked={prefs.deadlineReminders}
-                onChange={(e) => setPref('deadlineReminders', e.target.checked)}
-              />
-              <span>Deadline reminders (waivers &amp; lineup)</span>
-            </label>
-            <label className="settings-check">
-              <input
-                type="checkbox"
-                checked={prefs.waiverResults}
-                onChange={(e) => setPref('waiverResults', e.target.checked)}
-              />
-              <span>Waiver results</span>
-            </label>
-            <label className="settings-check">
-              <input
-                type="checkbox"
-                checked={prefs.liveXi}
-                onChange={(e) => setPref('liveXi', e.target.checked)}
-              />
-              <span>Your live XI (goals, assists, defcon)</span>
-            </label>
-            {prefs.liveXi && entryId == null ? (
-              <p className="settings-row__hint">
-                Pick <strong>My team</strong> above to receive live XI alerts.
-              </p>
-            ) : null}
-          </fieldset>
+          <SettingsToggleRow
+            id="settings-push-deadlines"
+            label="Deadline reminders"
+            hint="Waivers and lineup lock — 24 hours and 1 hour before."
+            checked={prefs.deadlineReminders}
+            onChange={(next) => setPref('deadlineReminders', next)}
+          />
+          <SettingsToggleRow
+            id="settings-push-waivers"
+            label="Waiver results"
+            hint="Once, after claims process."
+            checked={prefs.waiverResults}
+            onChange={(next) => setPref('waiverResults', next)}
+          />
+          <SettingsToggleRow
+            id="settings-push-live-xi"
+            label="Your live XI"
+            hint={
+              prefs.liveXi && entryId == null
+                ? 'Pick My team above to receive these alerts.'
+                : 'Goals, assists, and defcon for your starters.'
+            }
+            checked={prefs.liveXi}
+            onChange={(next) => setPref('liveXi', next)}
+          />
         </>
       ) : null}
     </>

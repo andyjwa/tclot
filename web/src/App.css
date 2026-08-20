@@ -11902,35 +11902,41 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   }
 }
 
-.settings-row--stack {
+.settings-row__copy {
+  display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
-.settings-row__stack-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
+.settings-row:has(.settings-row__copy) {
+  align-items: flex-start;
+}
+
+.settings-row:has(.settings-row__copy) .settings-toggle {
+  margin-top: 1px;
 }
 
 .settings-row__hint,
 .settings-row__error {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--text-sm, 13px);
+  font-weight: 400;
   line-height: 1.45;
-  color: var(--tclot-muted, rgba(255, 255, 255, 0.72));
+  color: var(--text-muted, #6b6b78);
 }
 
 .settings-row__error {
   color: var(--tclot-danger, #c0392b);
+  padding: 0 0 var(--space-3, 12px);
 }
 
 .settings-toggle {
   position: relative;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   cursor: pointer;
 }
@@ -11946,7 +11952,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   width: 44px;
   height: 26px;
   border-radius: 999px;
-  background: rgba(127, 127, 127, 0.35);
+  background: color-mix(in srgb, var(--fm-text-strong, #1a1a1a) 18%, transparent);
   transition: background 0.15s ease;
   position: relative;
 }
@@ -11960,11 +11966,17 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   height: 20px;
   border-radius: 50%;
   background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
   transition: transform 0.15s ease;
 }
 
 .settings-toggle input:checked + .settings-toggle__track {
-  background: var(--tclot-accent, #17402f);
+  background: #17402f;
+}
+
+.settings-toggle input:focus-visible + .settings-toggle__track {
+  outline: 2px solid #17402f;
+  outline-offset: 2px;
 }
 
 .settings-toggle input:checked + .settings-toggle__track::after {
@@ -11976,34 +11988,8 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   cursor: not-allowed;
 }
 
-.settings-row--checks {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 10px;
-  border: 0;
-  padding-inline: 0;
-  margin: 0;
-}
-
-.settings-row--checks legend {
-  padding: 0;
-}
-
-.settings-check {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.875rem;
-}
-
-.settings-check input {
-  width: 16px;
-  height: 16px;
-}
-
-.league-info-modal-shell .li-card--settings .settings-row--stack,
-.league-info-modal-shell .li-card--settings .settings-row--checks {
-  padding-inline: 0;
+.settings-toggle input:disabled {
+  cursor: not-allowed;
 }
 
 /* ============================================================ */
