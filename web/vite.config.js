@@ -88,12 +88,34 @@ export default defineConfig(({ command }) => {
     open: command === 'serve' ? '/' : '/TCLOT/',
     // Live tab: same-origin `/__fpl/*` when `npm run dev` and VITE_FPL_PROXY_URL is unset
     // (avoids CORS + works without redeploying the Cloudflare worker).
-    proxy: fplRelatedProxy,
+    proxy: {
+      ...fplRelatedProxy,
+      ...(process.env.VITE_PUSH_API_URL
+        ? {
+            '^/__push': {
+              target: process.env.VITE_PUSH_API_URL.replace(/\/$/, ''),
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/__push/, ''),
+            },
+          }
+        : {}),
+    },
   },
   preview: {
     port: 5175,
     strictPort: true,
-    proxy: fplRelatedProxy,
+    proxy: {
+      ...fplRelatedProxy,
+      ...(process.env.VITE_PUSH_API_URL
+        ? {
+            '^/__push': {
+              target: process.env.VITE_PUSH_API_URL.replace(/\/$/, ''),
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/__push/, ''),
+            },
+          }
+        : {}),
+    },
   },
   }
 })

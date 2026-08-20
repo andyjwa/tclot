@@ -150,6 +150,8 @@ jobs:
           LEAGUE_ID: ${{ secrets.FPL_LEAGUE_ID || vars.FPL_LEAGUE_ID }}
           # Repository secret/variable, or add the same name under Settings → Environments → github-pages
           VITE_FPL_PROXY_URL: ${{ secrets.VITE_FPL_PROXY_URL || vars.VITE_FPL_PROXY_URL }}
+          VITE_PUSH_API_URL: ${{ secrets.VITE_PUSH_API_URL || vars.VITE_PUSH_API_URL }}
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY || vars.VITE_VAPID_PUBLIC_KEY }}
           VITE_LEAGUE_DATA_REVISION: gw-${{ github.sha }}
         run: |
           echo "VITE_BASE_PATH=$VITE_BASE_PATH (relative — use URL with trailing slash: …/repo-name/)"
@@ -157,6 +159,11 @@ jobs:
             echo "VITE_FPL_PROXY_URL is set for Vite (Live tab + draft API proxy)"
           else
             echo "VITE_FPL_PROXY_URL omitted (allowed only when FPL_PROXY_OPTIONAL=true)"
+          fi
+          if [ -n "$VITE_PUSH_API_URL" ] && [ -n "$VITE_VAPID_PUBLIC_KEY" ]; then
+            echo "Web push env is set — Settings push toggle will be enabled"
+          else
+            echo "Web push env omitted — Settings shows push as not configured"
           fi
           if [ -f ../league-id ]; then
             export FPL_LEAGUE_ID="$(tr -d '[:space:]' < ../league-id)"
@@ -187,6 +194,30 @@ jobs:
               echo "::warning::pickups-tenure has no team totals but transactions exist — check waiver analytics build logs"
             fi
           fi
+      - name: Notify push subscribers after waiver ingest
+        if: steps.gate.outputs.proceed == '1'
+        env:
+          PUSH_API_URL: ${{ secrets.VITE_PUSH_API_URL || vars.VITE_PUSH_API_URL }}
+          PUSH_INTERNAL_SECRET: ${{ secrets.PUSH_INTERNAL_SECRET }}
+        run: |
+          if [ -z "${PUSH_API_URL:-}" ] || [ -z "${PUSH_INTERNAL_SECRET:-}" ]; then
+            echo "Push notify skipped — set VITE_PUSH_API_URL and PUSH_INTERNAL_SECRET to enable"
+            exit 0
+          fi
+          GW=""
+          if [ -f web/dist/league-data/bootstrap_draft.json ]; then
+            GW="$(node -e "const j=require('./web/dist/league-data/bootstrap_draft.json');const e=(j.events?.data||[]).find(x=>x.is_current||x.is_next);process.stdout.write(String(e?.id||''))")"
+          fi
+          if [ -z "$GW" ]; then
+            echo "Push notify skipped — could not resolve current/next GW"
+            exit 0
+          fi
+          curl -fsS -X POST "${PUSH_API_URL%/}/internal/notify" \
+            -H "Authorization: Bearer ${PUSH_INTERNAL_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "{\"type\":\"waiver_processed\",\"gw\":${GW}}" \
+            && echo "Push notify sent for GW${GW}" \
+            || echo "::warning::Push notify request failed (non-fatal)"
       - uses: actions/upload-pages-artifact@v5
         if: steps.gate.outputs.proceed == '1'
         with:

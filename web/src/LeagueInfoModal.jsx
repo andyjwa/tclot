@@ -114,6 +114,7 @@ export function LeagueInfoModal({
   onThemePrefChange,
   defaultTab,
   onDefaultTabChange,
+  push,
 }) {
   const closeBtnRef = useRef(null)
   const modalRef = useRef(null)
@@ -402,6 +403,7 @@ export function LeagueInfoModal({
                 onThemePrefChange={onThemePrefChange}
                 defaultTab={defaultTab}
                 onDefaultTabChange={onDefaultTabChange}
+                push={push}
               />
             </div>
           ) : null}

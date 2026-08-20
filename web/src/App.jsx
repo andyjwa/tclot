@@ -487,6 +487,7 @@ import {
   DEFAULT_TAB_STORAGE_KEY,
   readStoredDefaultTab,
 } from './settingsStorage'
+import { usePushNotifications } from './usePushNotifications.js'
 import { initialDashboardView, initialMovesTab } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
@@ -2741,6 +2742,8 @@ function App() {
     }
   }, [])
 
+  const pushNotifications = usePushNotifications({ leagueEntries })
+
   const onBootstrapLiveMeta = useCallback((meta) => {
     setFplLiveLandingGw(meta?.currentGw ?? null)
   }, [])
@@ -4073,6 +4076,7 @@ function App() {
               onThemePrefChange={setThemePref}
               defaultTab={defaultTabPref}
               onDefaultTabChange={setDefaultTabPref}
+              push={pushNotifications}
             />
           ) : null}
 
@@ -4213,6 +4217,7 @@ function App() {
         onThemePrefChange={setThemePref}
         defaultTab={defaultTabPref}
         onDefaultTabChange={setDefaultTabPref}
+        push={pushNotifications}
       />
     </div>
     </PlayerHistoryProvider>

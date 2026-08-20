@@ -18,6 +18,7 @@
 import { ThemeToggle } from './ThemeToggle'
 import { DEFAULT_TAB_OPTIONS } from './settingsStorage'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import { PushNotificationSettings } from './PushNotificationSettings.jsx'
 
 /**
  * Just the form rows — Theme segmented + Default landing tab pill.
@@ -29,6 +30,7 @@ import { CompactSelectPill } from './CompactSelectPill.jsx'
  *   onThemePrefChange: (t: 'light' | 'dark' | 'system') => void,
  *   defaultTab: string,
  *   onDefaultTabChange: (id: string) => void,
+ *   push?: ReturnType<typeof import('./usePushNotifications.js').usePushNotifications>,
  * }} props
  */
 export function SettingsPanelBody({
@@ -36,6 +38,7 @@ export function SettingsPanelBody({
   onThemePrefChange,
   defaultTab,
   onDefaultTabChange,
+  push,
 }) {
   return (
     <div className="settings-card">
@@ -69,6 +72,8 @@ export function SettingsPanelBody({
           }))}
         />
       </div>
+
+      {push ? <PushNotificationSettings {...push} /> : null}
     </div>
   )
 }
@@ -79,6 +84,7 @@ export function SettingsPanelBody({
  *   onThemePrefChange: (t: 'light' | 'dark' | 'system') => void,
  *   defaultTab: string,
  *   onDefaultTabChange: (id: string) => void,
+ *   push?: ReturnType<typeof import('./usePushNotifications.js').usePushNotifications>,
  * }} props
  */
 export function SettingsPage({
@@ -86,6 +92,7 @@ export function SettingsPage({
   onThemePrefChange,
   defaultTab,
   onDefaultTabChange,
+  push,
 }) {
   return (
     <section className="tile tile--compact settings-page" aria-label="Settings">
@@ -95,6 +102,7 @@ export function SettingsPage({
         onThemePrefChange={onThemePrefChange}
         defaultTab={defaultTab}
         onDefaultTabChange={onDefaultTabChange}
+        push={push}
       />
     </section>
   )

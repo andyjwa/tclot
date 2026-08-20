@@ -86,6 +86,21 @@ Optional: in `web/workers/fpl-proxy/wrangler.toml`, set `[vars] ALLOW_ORIGIN = "
 
 ---
 
+## 1c. Web push notifications (optional)
+
+Managers can opt in from **Settings → Push notifications** once a push worker is deployed. Alert types: **Deadline reminders** (waivers + lineup, 24h/1h), **Waiver results**, and **Your live XI** (goals/assists/defcon for your starting XI — requires picking **My team**).
+
+1. Deploy the push worker (see **`web/workers/push-api/README.md`**):
+   - Create KV namespace, set VAPID + `PUSH_INTERNAL_SECRET` secrets, `npm run deploy`.
+2. Bake into the web build (repository secret or variable, same pattern as the FPL proxy):
+   - **`VITE_PUSH_API_URL`** — worker origin, no trailing slash (e.g. `https://tclot-push-api.your-subdomain.workers.dev`)
+   - **`VITE_VAPID_PUBLIC_KEY`** — public key from `npm run generate-vapid` in `web/workers/push-api`
+3. Optional CI hook after waiver ingest: set **`PUSH_INTERNAL_SECRET`** (same value as the worker secret) so the deploy workflow can POST `/internal/notify`.
+
+If these env vars are missing, the Settings toggle shows **“Push is not configured for this deploy”** and the rest of the site is unaffected.
+
+---
+
 ## 2. Team logos (PNG)
 
 Logos are **not** fetched from FPL. They only exist if **you** put files in the repo.

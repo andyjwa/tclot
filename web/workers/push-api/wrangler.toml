@@ -1,0 +1,27 @@
+# Cloudflare Worker — Web Push subscriptions + scheduled league alerts for TCLOT.
+# https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "tclot-push-api"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# Create once: npx wrangler kv:namespace create SUBSCRIPTIONS
+# Then paste the id below (preview id for local dev is optional).
+[[kv_namespaces]]
+binding = "SUBSCRIPTIONS"
+id = "47a2cf6223c84316937df4067b3f8bbc"
+preview_id = "47a2cf6223c84316937df4067b3f8bbc"
+
+# Every 5 min: deadline/waiver checks are deduped; live XI polls draft live
+# stats during matches. Cloudflare free plan allows down to 1-min crons.
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Set via `wrangler secret put`:
+#   VAPID_SUBJECT            — mailto:you@example.com
+#   VAPID_SERVER_PUBLIC_KEY  — from scripts/generate-vapid-keys.mjs
+#   VAPID_SERVER_PRIVATE_KEY — from scripts/generate-vapid-keys.mjs
+#   PUSH_INTERNAL_SECRET     — random string for CI / admin notify calls
+#
+# Optional vars (wrangler.toml [vars] or dashboard):
+# ALLOW_ORIGIN = "https://tclot.vercel.app"

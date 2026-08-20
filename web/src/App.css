@@ -11902,6 +11902,110 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   }
 }
 
+.settings-row--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.settings-row__stack-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.settings-row__hint,
+.settings-row__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--tclot-muted, rgba(255, 255, 255, 0.72));
+}
+
+.settings-row__error {
+  color: var(--tclot-danger, #c0392b);
+}
+
+.settings-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-toggle__track {
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.35);
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.settings-toggle__track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.settings-toggle input:checked + .settings-toggle__track {
+  background: var(--tclot-accent, #17402f);
+}
+
+.settings-toggle input:checked + .settings-toggle__track::after {
+  transform: translateX(18px);
+}
+
+.settings-toggle input:disabled + .settings-toggle__track {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.settings-row--checks {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  border: 0;
+  padding-inline: 0;
+  margin: 0;
+}
+
+.settings-row--checks legend {
+  padding: 0;
+}
+
+.settings-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+}
+
+.settings-check input {
+  width: 16px;
+  height: 16px;
+}
+
+.league-info-modal-shell .li-card--settings .settings-row--stack,
+.league-info-modal-shell .li-card--settings .settings-row--checks {
+  padding-inline: 0;
+}
+
 /* ============================================================ */
 /* Live scores redesign (PR #5 Phase 2 — desktop + mobile + expanded) */
 /* ============================================================ */
