@@ -496,7 +496,9 @@ import {
   WaiverTotalsToggle,
   FirstWaiverPicks,
   WaiverPickupsToggle,
+  WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
+import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
 import {
   sortGroupsByFirstWaiverOrder,
   sortMovesWaiverThenFa,
@@ -2559,6 +2561,7 @@ function App() {
     gwRankExtremesMeta = { maxGw: 0, teamCount: 0 },
     gwWeeksAtFirst = [],
     gwWeeksAtLast = [],
+    leagueDataBuiltAt = null,
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
@@ -3125,6 +3128,26 @@ function App() {
     const groups = sortGroupsByFirstWaiverOrder([...byEntry.values()])
     return { gw, groups }
   }, [waiverOutGwRows, teamsForFormSelect, waiverGwEffective])
+
+  const waiverFreshnessNotice = useMemo(
+    () =>
+      deriveWaiverFreshnessNotice({
+        draftEvents: draftBootstrapEvents.events,
+        leagueDataBuiltAt,
+        selectedGw: waiverGwEffective,
+        hasMovesForSelectedGw: (waiversForSelectedGw.groups?.length ?? 0) > 0,
+        isGwInProcessedList: processedWaiverGws.includes(waiverGwEffective),
+        now: statusNow,
+      }),
+    [
+      draftBootstrapEvents.events,
+      leagueDataBuiltAt,
+      waiverGwEffective,
+      waiversForSelectedGw.groups,
+      processedWaiverGws,
+      statusNow,
+    ],
+  )
 
   /** H2H rivals (Stats sub-tab) defaults to rank-1 team once data loads —
    * matches the spec's "Default to the rank-1 team" guidance. Once the user
@@ -3886,6 +3909,8 @@ function App() {
               {teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
               <ForbiddenWaivers />
+
+              <WaiverFreshnessBanner notice={waiverFreshnessNotice} />
 
               <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
                 <div className="tile-head-row tile-head-row--tight">
