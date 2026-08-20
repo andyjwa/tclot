@@ -4,9 +4,11 @@
  */
 
 import {
+  WAIVER_BURST_WINDOW_MS,
   WAIVER_FRESH_WINDOW_MS,
   WAIVER_GRACE_START_MS,
   msUntilNextHourlyCron,
+  msUntilNextQuarterHour,
   postWaiverRefreshEvent,
   waiversTimeForGameweek,
 } from './waiverRefreshSchedule.js'
@@ -73,18 +75,23 @@ export function deriveWaiverFreshnessNotice({
       kind: 'grace',
       title: 'Waiver results pending',
       message:
-        'FPL usually publishes successful claims a few minutes after waivers run. This site starts refreshing about 20 minutes after waivers.',
+        'FPL usually publishes successful claims within ~10 minutes of waivers running. This site starts refreshing about 10 minutes after waivers.',
     }
   }
 
   if (inPostWaiverWindow) {
-    const minsToCron = Math.max(1, Math.ceil(msUntilNextHourlyCron(nowMs) / 60_000))
+    const inBurst = nowMs < waiversTimeMs + WAIVER_BURST_WINDOW_MS
+    const msToNext = inBurst ? msUntilNextQuarterHour(nowMs) : msUntilNextHourlyCron(nowMs)
+    const minsToNext = Math.max(1, Math.ceil(msToNext / 60_000))
     const builtAgo = formatLeagueDataBuiltAgo(builtAtMs, nowMs)
     const builtPart = builtAgo ? ` Site data last built ${builtAgo}.` : ''
+    const cadence = inBurst
+      ? 'Moves appear after the site redeploys (every ~15 min for the first 90 min after waivers). Typical total delay is 15–35 minutes.'
+      : 'Moves appear after the site redeploys (hourly for ~36h after waivers).'
     return {
       kind: 'awaiting-deploy',
       title: 'Waivers not in this build yet',
-      message: `Moves appear after the site redeploys (hourly for ~36h after waivers). Typical total delay is 20–90 minutes. Next automatic refresh in ~${minsToCron} min.${builtPart} Reload after deploy — refreshing alone won't fetch new moves.`,
+      message: `${cadence} Next automatic refresh in ~${minsToNext} min.${builtPart} Reload after deploy — refreshing alone won't fetch new moves.`,
     }
   }
 

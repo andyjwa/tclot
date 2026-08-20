@@ -11,6 +11,7 @@
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import {
+  burstWaiverRefreshEvent,
   inDailyCatchAllWindow,
   postDeadlineIngestEvent,
   postWaiverRefreshEvent,
@@ -19,16 +20,12 @@ import {
 
 const DRAFT_BOOTSTRAP = 'https://draft.premierleague.com/api/bootstrap-static'
 
+/** Cron string of the high-frequency burst trigger (see deploy-github-pages.yml). */
+const BURST_CRON = '*/15 * * * *'
+
 export { postDeadlineIngestEvent, preWaiverRefreshEvent } from '../src/waiverRefreshSchedule.js'
 
-async function main() {
-  if (inDailyCatchAllWindow()) {
-    console.log(
-      'waiver-refresh-gate: in daily catch-all window (05:26–05:45 / 13:26–13:45 / 21:26–21:45 UTC) — run full deploy',
-    )
-    process.exit(0)
-  }
-
+async function fetchEventList() {
   const r = await fetch(DRAFT_BOOTSTRAP, {
     headers: { Accept: 'application/json' },
   })
@@ -42,7 +39,41 @@ async function main() {
     console.error('waiver-refresh-gate: no events.data — skip')
     process.exit(1)
   }
+  return list
+}
 
+/**
+ * The 15-minute burst cron ONLY deploys inside the tight post-waiver burst window; every
+ * other time of day it skips immediately. This keeps intra-hour deploys confined to the
+ * ~90 min after each `waivers_time` without multiplying the hourly cadence elsewhere.
+ */
+async function burstGate() {
+  const list = await fetchEventList()
+  const burst = burstWaiverRefreshEvent(list, Date.now())
+  if (burst) {
+    console.log(
+      `waiver-refresh-gate: burst window for GW${burst.id} (waivers_time ${burst.waiversTime}) — run deploy`,
+    )
+    process.exit(0)
+  }
+  console.log('waiver-refresh-gate: burst cron outside any post-waiver burst window — skip deploy')
+  process.exit(1)
+}
+
+async function main() {
+  if (process.env.SCHEDULE_CRON === BURST_CRON) {
+    await burstGate()
+    return
+  }
+
+  if (inDailyCatchAllWindow()) {
+    console.log(
+      'waiver-refresh-gate: in daily catch-all window (05:26–05:45 / 13:26–13:45 / 21:26–21:45 UTC) — run full deploy',
+    )
+    process.exit(0)
+  }
+
+  const list = await fetchEventList()
   const now = Date.now()
   const postWaivers = postWaiverRefreshEvent(list, now)
   if (postWaivers) {

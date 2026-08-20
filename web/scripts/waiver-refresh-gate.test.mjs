@@ -4,6 +4,7 @@ import {
   postDeadlineIngestEvent,
   preWaiverRefreshEvent,
 } from './waiver-refresh-gate.mjs'
+import { burstWaiverRefreshEvent } from '../src/waiverRefreshSchedule.js'
 
 test('postDeadlineIngestEvent — allows ingest after finished GW deadline', () => {
   const dl = '2026-05-01T17:30:00Z'
@@ -78,4 +79,12 @@ test('preWaiverRefreshEvent — null on bad input', () => {
     preWaiverRefreshEvent([{ id: 4 }], Date.parse('2026-09-02T09:00:00Z')),
     null,
   )
+})
+
+test('burstWaiverRefreshEvent — allows inside 90-min post-waiver burst only', () => {
+  const wt = Date.parse(WT)
+  assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 5 * 60_000), null) // inside grace
+  assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 30 * 60_000)?.id, 4) // burst
+  assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 120 * 60_000), null) // past burst
+  assert.equal(burstWaiverRefreshEvent(null, wt + 30 * 60_000), null)
 })
