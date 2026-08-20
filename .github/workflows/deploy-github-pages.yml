@@ -11,14 +11,15 @@ on:
   # - 0 * * * *  — every hour: post-waivers window, post-deadline ingest window, pre-waivers 3-hourly
   #   window (24h before waivers_time), or the daily catch-all windows
   #   (see web/scripts/waiver-refresh-gate.mjs). Push / workflow_dispatch always deploy.
-  # - */15 * * * * — burst cron: gate deploys ONLY inside ~90 min after each waivers_time
-  #   (waivers land within minutes); skips immediately at all other times.
+  # - */5 * * * * — burst cron: gate deploys ONLY inside ~40 min after each waivers_time
+  #   (10-min grace + 30 min of 5-minute bursts, so waivers land within minutes);
+  #   skips immediately at all other times.
   schedule:
     - cron: '30 5 * * *'
     - cron: '30 13 * * *'
     - cron: '30 21 * * *'
     - cron: '0 * * * *'
-    - cron: '*/15 * * * *'
+    - cron: '*/5 * * * *'
 
 permissions:
   contents: read

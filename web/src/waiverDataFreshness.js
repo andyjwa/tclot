@@ -7,8 +7,8 @@ import {
   WAIVER_BURST_WINDOW_MS,
   WAIVER_FRESH_WINDOW_MS,
   WAIVER_GRACE_START_MS,
+  msUntilNextBurstCron,
   msUntilNextHourlyCron,
-  msUntilNextQuarterHour,
   postWaiverRefreshEvent,
   waiversTimeForGameweek,
 } from './waiverRefreshSchedule.js'
@@ -81,12 +81,12 @@ export function deriveWaiverFreshnessNotice({
 
   if (inPostWaiverWindow) {
     const inBurst = nowMs < waiversTimeMs + WAIVER_BURST_WINDOW_MS
-    const msToNext = inBurst ? msUntilNextQuarterHour(nowMs) : msUntilNextHourlyCron(nowMs)
+    const msToNext = inBurst ? msUntilNextBurstCron(nowMs) : msUntilNextHourlyCron(nowMs)
     const minsToNext = Math.max(1, Math.ceil(msToNext / 60_000))
     const builtAgo = formatLeagueDataBuiltAgo(builtAtMs, nowMs)
     const builtPart = builtAgo ? ` Site data last built ${builtAgo}.` : ''
     const cadence = inBurst
-      ? 'Moves appear after the site redeploys (every ~15 min for the first 90 min after waivers). Typical total delay is 15–35 minutes.'
+      ? 'Moves appear after the site redeploys (every ~5 min for the first 30 min after waivers). Typical total delay is 10–20 minutes.'
       : 'Moves appear after the site redeploys (hourly for ~36h after waivers).'
     return {
       kind: 'awaiting-deploy',

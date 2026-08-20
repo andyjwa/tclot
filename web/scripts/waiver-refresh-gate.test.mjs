@@ -81,10 +81,12 @@ test('preWaiverRefreshEvent — null on bad input', () => {
   )
 })
 
-test('burstWaiverRefreshEvent — allows inside 90-min post-waiver burst only', () => {
+test('burstWaiverRefreshEvent — allows inside 40-min post-waiver burst only', () => {
   const wt = Date.parse(WT)
   assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 5 * 60_000), null) // inside grace
   assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 30 * 60_000)?.id, 4) // burst
+  assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 39 * 60_000)?.id, 4) // end of burst
+  assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 45 * 60_000), null) // past burst — hourly takes over
   assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 120 * 60_000), null) // past burst
   assert.equal(burstWaiverRefreshEvent(null, wt + 30 * 60_000), null)
 })

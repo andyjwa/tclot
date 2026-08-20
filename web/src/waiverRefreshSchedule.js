@@ -10,12 +10,13 @@
  */
 export const WAIVER_GRACE_START_MS = 10 * 60 * 1000
 /**
- * "Burst" window right after each `waivers_time`: a high-frequency 15-minute cron is
+ * "Burst" window right after each `waivers_time`: a high-frequency 5-minute cron is
  * allowed to deploy during (waivers_time + grace .. waivers_time + burst) so freshly
  * processed waivers appear within minutes instead of waiting for the next hourly cron.
- * Outside this window the burst cron skips and the hourly cadence takes over.
+ * 10-min grace + 30 min of bursting = 40 min total; after that the hourly cadence
+ * (post-waivers window) takes over.
  */
-export const WAIVER_BURST_WINDOW_MS = 90 * 60 * 1000
+export const WAIVER_BURST_WINDOW_MS = 40 * 60 * 1000
 /** Re-run builds at most this long after each `waivers_time` to pick up stragglers. */
 export const WAIVER_FRESH_WINDOW_MS = 36 * 60 * 60 * 1000
 /**
@@ -145,8 +146,8 @@ export function postWaiverRefreshEvent(eventList, nowMs) {
 }
 
 /**
- * GW whose burst window is active (waivers_time + grace … waivers_time + 90m).
- * Used by the high-frequency 15-minute cron so waivers land within minutes.
+ * GW whose burst window is active (waivers_time + grace … waivers_time + 40m).
+ * Used by the high-frequency 5-minute cron so waivers land within minutes.
  *
  * @param {object[]} eventList
  * @param {number} nowMs
@@ -195,9 +196,9 @@ export function msUntilNextHourlyCron(nowMs) {
   return Math.max(0, next.getTime() - nowMs)
 }
 
-/** Milliseconds until the next :00/:15/:30/:45 (15-minute burst cron). */
-export function msUntilNextQuarterHour(nowMs) {
-  const period = 15 * 60 * 1000
+/** Milliseconds until the next 5-minute mark (:00/:05/:10/…, the burst cron). */
+export function msUntilNextBurstCron(nowMs) {
+  const period = 5 * 60 * 1000
   const next = Math.ceil((nowMs + 1) / period) * period
   return Math.max(0, next - nowMs)
 }
