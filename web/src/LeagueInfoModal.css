@@ -503,9 +503,8 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
 .league-info-modal-shell .li-card--settings .settings-row + .settings-row {
   border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
-.league-info-modal-shell .li-card--settings .settings-row__label {
-  font-size: var(--text-md);
-  color: var(--text);
+.league-info-modal-shell .li-card--settings .settings-row__hint {
+  color: var(--text-muted);
 }
 
 .league-info-modal-shell .league-info-modal__placeholder {
