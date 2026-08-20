@@ -41,7 +41,7 @@ test('deriveWaiverFreshnessNotice — grace period copy', () => {
 })
 
 test('deriveWaiverFreshnessNotice — awaiting deploy inside burst window', () => {
-  // 30 min after waivers: past 10-min grace, still inside 90-min burst window
+  // 30 min after waivers: past 10-min grace, still inside 40-min burst window
   const now = new Date(Date.parse(WT) + 30 * 60_000)
   const notice = deriveWaiverFreshnessNotice({
     draftEvents: EVENTS,
@@ -52,13 +52,13 @@ test('deriveWaiverFreshnessNotice — awaiting deploy inside burst window', () =
     now,
   })
   assert.equal(notice?.kind, 'awaiting-deploy')
-  assert.match(notice?.message ?? '', /15–35 minutes/)
-  assert.match(notice?.message ?? '', /every ~15 min/)
+  assert.match(notice?.message ?? '', /10–20 minutes/)
+  assert.match(notice?.message ?? '', /every ~5 min/)
   assert.match(notice?.message ?? '', /Next automatic refresh/)
 })
 
 test('deriveWaiverFreshnessNotice — awaiting deploy after burst reverts to hourly', () => {
-  // 3h after waivers: past 90-min burst, still inside 36h post-waiver window
+  // 3h after waivers: past 40-min burst, still inside 36h post-waiver window
   const now = new Date(Date.parse(WT) + 3 * 60 * 60_000)
   const notice = deriveWaiverFreshnessNotice({
     draftEvents: EVENTS,
@@ -106,12 +106,12 @@ test('postWaiverRefreshEvent — active inside window', () => {
   assert.ok(isInPostWaiverRefreshWindow(EVENTS, 4, now))
 })
 
-test('burstWaiverRefreshEvent — active inside 90-min burst, off outside', () => {
+test('burstWaiverRefreshEvent — active inside 40-min burst, off outside', () => {
   const wt = Date.parse(WT)
   // 5 min in: still inside 10-min grace → not yet
   assert.equal(burstWaiverRefreshEvent(EVENTS, wt + 5 * 60_000), null)
   // 30 min in: inside burst
   assert.equal(burstWaiverRefreshEvent(EVENTS, wt + 30 * 60_000)?.id, 4)
-  // 2h in: past 90-min burst → off (hourly cron takes over)
-  assert.equal(burstWaiverRefreshEvent(EVENTS, wt + 120 * 60_000), null)
+  // 45 min in: past 40-min burst → off (hourly cron takes over)
+  assert.equal(burstWaiverRefreshEvent(EVENTS, wt + 45 * 60_000), null)
 })

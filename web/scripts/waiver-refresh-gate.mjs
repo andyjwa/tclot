@@ -21,7 +21,7 @@ import {
 const DRAFT_BOOTSTRAP = 'https://draft.premierleague.com/api/bootstrap-static'
 
 /** Cron string of the high-frequency burst trigger (see deploy-github-pages.yml). */
-const BURST_CRON = '*/15 * * * *'
+const BURST_CRON = '*/5 * * * *'
 
 export { postDeadlineIngestEvent, preWaiverRefreshEvent } from '../src/waiverRefreshSchedule.js'
 
@@ -43,9 +43,9 @@ async function fetchEventList() {
 }
 
 /**
- * The 15-minute burst cron ONLY deploys inside the tight post-waiver burst window; every
+ * The 5-minute burst cron ONLY deploys inside the tight post-waiver burst window; every
  * other time of day it skips immediately. This keeps intra-hour deploys confined to the
- * ~90 min after each `waivers_time` without multiplying the hourly cadence elsewhere.
+ * ~40 min after each `waivers_time` without multiplying the hourly cadence elsewhere.
  */
 async function burstGate() {
   const list = await fetchEventList()
