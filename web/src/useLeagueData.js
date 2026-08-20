@@ -14,16 +14,26 @@ const DATA_BASE = leagueDataBase();
 /** Set at build (`write-league-data-revision.mjs`) and mirrored in `revision.json`. */
 const BUILD_LEAGUE_DATA_V = String(import.meta.env.VITE_LEAGUE_DATA_REVISION || '').trim();
 
-async function leagueDataCacheKey() {
-  if (BUILD_LEAGUE_DATA_V) return BUILD_LEAGUE_DATA_V;
+async function fetchLeagueDataRevision() {
+  if (BUILD_LEAGUE_DATA_V) {
+    return { v: BUILD_LEAGUE_DATA_V, builtAt: null };
+  }
   try {
     const r = await fetch(`${DATA_BASE}/revision.json`, { cache: 'no-store' });
-    if (!r.ok) return '';
+    if (!r.ok) return { v: '', builtAt: null };
     const j = await r.json();
-    return j?.v != null ? String(j.v) : '';
+    return {
+      v: j?.v != null ? String(j.v) : '',
+      builtAt: typeof j?.builtAt === 'string' ? j.builtAt : null,
+    };
   } catch {
-    return '';
+    return { v: '', builtAt: null };
   }
+}
+
+async function leagueDataCacheKey() {
+  const { v } = await fetchLeagueDataRevision();
+  return v;
 }
 
 function leagueDataUrl(path, cacheKey) {
@@ -293,7 +303,8 @@ export function useLeagueData() {
     let cancelled = false;
     async function load() {
       try {
-        const leagueDataV = await leagueDataCacheKey();
+        const leagueDataRevision = await fetchLeagueDataRevision();
+        const leagueDataV = leagueDataRevision.v;
         let details;
         let fetchFailedDemo = false;
         try {
@@ -366,6 +377,7 @@ export function useLeagueData() {
             }),
             teamLogoMap,
             fetchFailedDemo,
+            leagueDataBuiltAt: leagueDataRevision.builtAt,
           });
       } catch (e) {
         if (!cancelled) setError(e.message);

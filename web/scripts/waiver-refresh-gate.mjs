@@ -10,120 +10,22 @@
  */
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import {
+  burstWaiverRefreshEvent,
+  inDailyCatchAllWindow,
+  postDeadlineIngestEvent,
+  postWaiverRefreshEvent,
+  preWaiverRefreshEvent,
+} from '../src/waiverRefreshSchedule.js'
 
 const DRAFT_BOOTSTRAP = 'https://draft.premierleague.com/api/bootstrap-static'
-/** FPL usually exposes successful waiver rows a short time after this timestamp */
-const WAIVER_GRACE_START_MS = 20 * 60 * 1000
-/** Re-run builds at most this long after each `waivers_time` to pick up stragglers */
-const WAIVER_FRESH_WINDOW_MS = 36 * 60 * 60 * 1000
-/**
- * After the PL GW deadline, draft `details.json` H2H rows often flip to `finished` before
- * the next `waivers_time`. Hourly cron must still ingest in that gap (otherwise the site can
- * sit on an old committed `details.json` until the next waiver window or 05:30 UTC daily).
- */
-const POST_DEADLINE_INGEST_DELAY_MS = 2 * 60 * 60 * 1000
-/** Stop hourly post-deadline ingests once the next GW deadline is this close */
-const POST_DEADLINE_STOP_BEFORE_NEXT_DEADLINE_MS = 3 * 60 * 60 * 1000
-/**
- * When a daily catch-all cron (`30 5/13/21 * * *`, ~05:30/13:30/21:30 UTC) fires,
- * always allow full refresh (also covers missed windows). Accept a few minutes' drift.
- */
-const DAILY_UTC_WINDOWS = [5, 13, 21].map((h) => ({
-  startMin: h * 60 + 26,
-  endMin: h * 60 + 45,
-}))
-/** In the day before a GW's `waivers_time`, refresh on this UTC-hour cadence. */
-const PRE_WAIVER_WINDOW_MS = 24 * 60 * 60 * 1000
-const PRE_WAIVER_CADENCE_HOURS = 3
 
-function minuteOfDayUtc(d) {
-  return d.getUTCHours() * 60 + d.getUTCMinutes()
-}
+/** Cron string of the high-frequency burst trigger (see deploy-github-pages.yml). */
+const BURST_CRON = '*/15 * * * *'
 
-function inDailyCatchAllWindow() {
-  const m = minuteOfDayUtc(new Date())
-  return DAILY_UTC_WINDOWS.some((w) => m >= w.startMin && m <= w.endMin)
-}
+export { postDeadlineIngestEvent, preWaiverRefreshEvent } from '../src/waiverRefreshSchedule.js'
 
-/**
- * @param {object[]} eventList — bootstrap `events.data`
- * @param {number} nowMs
- * @returns {{ id: number, deadline: string } | null}
- */
-export function postDeadlineIngestEvent(eventList, nowMs) {
-  if (!Array.isArray(eventList)) return null
-  const now = Number(nowMs)
-  if (!Number.isFinite(now)) return null
-
-  const rows = eventList
-    .map((e) => {
-      const id = Number(e?.id)
-      const deadline = e?.deadline_time
-      if (!Number.isFinite(id) || typeof deadline !== 'string' || !deadline) return null
-      const dl = Date.parse(deadline)
-      if (!Number.isFinite(dl)) return null
-      return {
-        id,
-        finished: e?.finished === true,
-        deadline,
-        dl,
-      }
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.id - b.id)
-
-  for (let i = 0; i < rows.length; i++) {
-    const cur = rows[i]
-    if (!cur.finished) continue
-    const ingestAfter = cur.dl + POST_DEADLINE_INGEST_DELAY_MS
-    if (now < ingestAfter) continue
-
-    const next = rows[i + 1]
-    if (next) {
-      const stopAt = next.dl - POST_DEADLINE_STOP_BEFORE_NEXT_DEADLINE_MS
-      if (now >= stopAt) continue
-    }
-
-    return { id: cur.id, deadline: cur.deadline }
-  }
-  return null
-}
-
-/**
- * Every-3-hours refresh in the 24 hours leading up to a GW's `waivers_time`,
- * so waiver-day decisions (free agents, forbidden list, projections) run on
- * fresh data. The hourly cron fires at minute 0; this admits only runs whose
- * UTC hour is on the 3-hour cadence (00/03/06/…/21).
- *
- * @param {object[]} eventList — bootstrap `events.data`
- * @param {number} nowMs
- * @returns {{ id: number, waiversTime: string } | null}
- */
-export function preWaiverRefreshEvent(eventList, nowMs) {
-  if (!Array.isArray(eventList)) return null
-  const now = Number(nowMs)
-  if (!Number.isFinite(now)) return null
-  if (new Date(now).getUTCHours() % PRE_WAIVER_CADENCE_HOURS !== 0) return null
-  for (const e of eventList) {
-    const raw = e?.waivers_time
-    if (typeof raw !== 'string' || !raw) continue
-    const wt = Date.parse(raw)
-    if (!Number.isFinite(wt)) continue
-    if (now >= wt - PRE_WAIVER_WINDOW_MS && now < wt) {
-      return { id: e.id, waiversTime: raw }
-    }
-  }
-  return null
-}
-
-async function main() {
-  if (inDailyCatchAllWindow()) {
-    console.log(
-      'waiver-refresh-gate: in daily 05:26–05:45 UTC window — run full deploy',
-    )
-    process.exit(0)
-  }
-
+async function fetchEventList() {
   const r = await fetch(DRAFT_BOOTSTRAP, {
     headers: { Accept: 'application/json' },
   })
@@ -137,21 +39,48 @@ async function main() {
     console.error('waiver-refresh-gate: no events.data — skip')
     process.exit(1)
   }
+  return list
+}
 
+/**
+ * The 15-minute burst cron ONLY deploys inside the tight post-waiver burst window; every
+ * other time of day it skips immediately. This keeps intra-hour deploys confined to the
+ * ~90 min after each `waivers_time` without multiplying the hourly cadence elsewhere.
+ */
+async function burstGate() {
+  const list = await fetchEventList()
+  const burst = burstWaiverRefreshEvent(list, Date.now())
+  if (burst) {
+    console.log(
+      `waiver-refresh-gate: burst window for GW${burst.id} (waivers_time ${burst.waiversTime}) — run deploy`,
+    )
+    process.exit(0)
+  }
+  console.log('waiver-refresh-gate: burst cron outside any post-waiver burst window — skip deploy')
+  process.exit(1)
+}
+
+async function main() {
+  if (process.env.SCHEDULE_CRON === BURST_CRON) {
+    await burstGate()
+    return
+  }
+
+  if (inDailyCatchAllWindow()) {
+    console.log(
+      'waiver-refresh-gate: in daily catch-all window (05:26–05:45 / 13:26–13:45 / 21:26–21:45 UTC) — run full deploy',
+    )
+    process.exit(0)
+  }
+
+  const list = await fetchEventList()
   const now = Date.now()
-  for (const e of list) {
-    const raw = e?.waivers_time
-    if (typeof raw !== 'string' || !raw) continue
-    const wt = Date.parse(raw)
-    if (!Number.isFinite(wt)) continue
-    const start = wt + WAIVER_GRACE_START_MS
-    const end = wt + WAIVER_FRESH_WINDOW_MS
-    if (now > start && now < end) {
-      console.log(
-        `waiver-refresh-gate: inside post-waivers window for GW${e.id} (waivers_time ${raw}) — run deploy`,
-      )
-      process.exit(0)
-    }
+  const postWaivers = postWaiverRefreshEvent(list, now)
+  if (postWaivers) {
+    console.log(
+      `waiver-refresh-gate: inside post-waivers window for GW${postWaivers.id} (waivers_time ${postWaivers.waiversTime}) — run deploy`,
+    )
+    process.exit(0)
   }
 
   const preGw = preWaiverRefreshEvent(list, now)

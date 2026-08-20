@@ -122,6 +122,8 @@ The deploy workflow ingests the id in committed **`league-id`** (currently **157
 
 Each deploy runs `ingest.py`, then builds with real standings, fixtures, and waivers. Re-push or **Actions → Deploy site to Pages → Run workflow** to refresh.
 
+**Waiver timing:** moves appear only after a deploy ingests FPL’s `transactions` API — not in real time. On waiver day expect **~15–35 minutes** after `waivers_time` (a `*/15` burst cron deploys for the first 90 min after waivers; ~10 min FPL grace + build). See **[DEPLOY.md § Waiver visibility latency](./DEPLOY.md#waiver-visibility-latency)** for why last season lagged and how to force a refresh.
+
 ### Team logos (replace letter bubbles)
 
 Copy images into **`web/public/team-logos/`**. Name each file **`{id}.png`** where `id` is the FPL `league_entries[].id` (see `web/public/team-logos/README.md`), or add a **`manifest.json`** mapping ids to filenames. No upload step — files on disk are served by the dev server and included in `npm run build`.

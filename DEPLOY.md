@@ -16,7 +16,24 @@ The live site reads **`league-data/details.json`** (and other JSON next to it).
 
 On each build, GitHub runs **`ingest.py`** with the committed id, then builds the site.
 
-**Scheduled builds are gated** (`web/scripts/waiver-refresh-gate.mjs`): the hourly cron only deploys during ~36h after each FPL `waivers_time`, during **05:26–05:45 UTC** daily, or (after a finished gameweek) from **2h after that GW’s deadline** until **3h before the next GW deadline** — so H2H `details.json` can update when a week ends, not only when waivers run. **Pushes to `main` and manual “Run workflow” always deploy.** If the live site looks a week behind, run the workflow or push after `python3 ingest.py` + `npm run publish-real-league`; open `deploy-check.json` on the site and confirm `details.json` reflects the latest finished GW.
+**Scheduled builds are gated** (`web/scripts/waiver-refresh-gate.mjs`): the hourly cron only deploys during ~36h after each FPL `waivers_time`, during **05:26–05:45 / 13:26–13:45 / 21:26–21:45 UTC** daily catch-alls, every **3 hours** in the **24h** before the next `waivers_time`, or (after a finished gameweek) from **2h after that GW’s deadline** until **3h before the next GW deadline** — so H2H `details.json` can update when a week ends, not only when waivers run. A separate **`*/15` burst cron** deploys **only** during the **~90 min after each `waivers_time`** (and skips at all other times) so freshly processed waivers appear within minutes. **Pushes to `main` and manual “Run workflow” always deploy.** If the live site looks a week behind, run the workflow or push after `python3 ingest.py` + `npm run publish-real-league`; open `deploy-check.json` on the site and confirm `details.json` reflects the latest finished GW.
+
+### Waiver visibility latency
+
+TCLOT does **not** process waivers — FPL Draft does. The Moves → Waivers tab only updates after GitHub Actions runs `ingest.py`, builds static JSON (`transactions.json`, `drops-gw-live.json`), and deploys.
+
+| Stage | Typical delay |
+| --- | --- |
+| FPL publishes successful claims | Usually within **~10 min** of `waivers_time`; the gate waits **10 min** before trusting rows |
+| Next scheduled ingest | **≤~15–20 min** during the burst window — the `*/15` cron deploys for the first **90 min** after `waivers_time` (GitHub cron jitter adds a few min); reverts to hourly for the rest of the 36h window |
+| Build + deploy | A few minutes |
+| Browser | **Reload after deploy** — the Waivers tab does not poll FPL live |
+
+**On a normal waiver day:** plan for **~15–35 minutes** end-to-end. Manual **Actions → Deploy site to Pages → Run workflow** (or any push to `main`) is the fast path once FPL has the rows.
+
+**Note on GitHub cron jitter:** scheduled workflows are not punctual — under load they can run several minutes late or occasionally be skipped, so `*/15` is effectively "every ~15–20 min." That jitter (plus FPL's own ~10 min) is the practical floor; a tighter cron mostly adds wasted runner starts, not proportionally faster visibility.
+
+**Why last season felt huge:** the site used to sit on old committed JSON for **hours to days** between rare scheduled refreshes (once-daily catch-all, hourly cron only inside post-waiver windows). Mitigations since then: hourly post-waiver window (Apr 2026), post-deadline hourly ingest (May 2026), thrice-daily catch-alls + pre-waiver 3-hourly refresh (Aug 2026), and the `*/15` post-waiver burst cron. Constants live in [`web/src/waiverRefreshSchedule.js`](web/src/waiverRefreshSchedule.js); the Waivers tab shows a banner when static data lags FPL ([`web/src/waiverDataFreshness.js`](web/src/waiverDataFreshness.js)).
 
 You can also set **Repository variable** `FPL_LEAGUE_ID` (Settings → Variables) if you prefer — same name.
 

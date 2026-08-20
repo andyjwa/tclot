@@ -771,3 +771,17 @@ export function WaiverPickupsToggle({
     </div>
   )
 }
+
+/** Explains static-site waiver lag when FPL has processed claims but deploy JSON hasn't caught up. */
+export function WaiverFreshnessBanner({ notice }) {
+  if (!notice) return null
+  const isStale = notice.kind === 'stale'
+  return (
+    <div
+      className={isStale ? 'data-banner data-banner--error' : 'data-banner'}
+      role={isStale ? 'alert' : 'status'}
+    >
+      <strong>{notice.title}</strong> {notice.message}
+    </div>
+  )
+}
