@@ -294,11 +294,6 @@ function WeeklyWaiversList({ groups, teamLogoMap, kitIndexByEntry }) {
                 kitIndexByEntry={kitIndexByEntry}
               />
               <span className="waivers-glance__team">{firstWord(m.teamName)}</span>
-              <span className="waivers-glance__crests">
-                <span className="waivers-glance__crest">
-                  <PlayerKit badgeUrl={m.pickedBadgeUrl} teamShort={m.pickedTeamShort} />
-                </span>
-              </span>
               <span className="waivers-glance__counts">
                 {order != null ? (
                   <span
