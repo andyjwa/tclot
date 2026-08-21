@@ -446,8 +446,45 @@
   font-weight: 700;
   color: var(--fm-text-strong);
   overflow: hidden;
+}
+/* Inner span carries the confirmed-lineup pill so the tint hugs the name
+   (not the whole flex column) while ellipsis still clips long names. */
+.lfc-split__name-inner {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  vertical-align: bottom;
+}
+/* Confirmed PL lineup pills — green XI / amber bench / red absent. Shown
+   only once ESPN confirms both Published XIs (see playerXiPillKind). */
+.lfc-split__name-inner--xi {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, #10b981 22%, transparent);
+}
+.lfc-split__name-inner--bench {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, #eab308 24%, transparent);
+}
+.lfc-split__name-inner--absent {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, #ef4444 20%, transparent);
+  color: var(--fm-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, #ef4444 55%, transparent);
+}
+.fotmob[data-theme='dark'] .lfc-split__name-inner--xi {
+  background: color-mix(in srgb, #34d399 18%, rgba(255, 255, 255, 0.07));
+}
+.fotmob[data-theme='dark'] .lfc-split__name-inner--bench {
+  background: color-mix(in srgb, #fbbf24 20%, rgba(255, 255, 255, 0.08));
+}
+.fotmob[data-theme='dark'] .lfc-split__name-inner--absent {
+  background: color-mix(in srgb, #f87171 16%, rgba(255, 255, 255, 0.07));
 }
 .lfc-split__dot {
   flex: none;

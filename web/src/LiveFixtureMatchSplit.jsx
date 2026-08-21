@@ -5,6 +5,7 @@ import {
   dcThresholdReached,
   minutesTone,
   playerLiveState,
+  playerXiPillKind,
   rowsByPointsContributed,
   sortStartingXIByPosition,
 } from './liveScoresDerivations.js';
@@ -30,10 +31,18 @@ function SplitRow({ row, onOpenPlayer }) {
   const pts = Number(row.total_points) || 0;
   const played = (Number(row.minutes) || 0) > 0;
   const displayName = row.displayName ?? row.web_name ?? `#${row.element}`;
+  // Confirmed-only lineup pill on the name: green XI / yellow bench / red
+  // absent once PL lineups publish, otherwise a plain name (no colour).
+  const pillKind = playerXiPillKind(row);
+  const nameInnerClass =
+    'lfc-split__name-inner' +
+    (pillKind ? ` lfc-split__name-inner--${pillKind}` : '');
   const inner = (
     <>
       <span className="lfc-split__pos">{row.posSingular}</span>
-      <span className="lfc-split__name">{displayName}</span>
+      <span className="lfc-split__name">
+        <span className={nameInnerClass}>{displayName}</span>
+      </span>
       <span className={`lfc-split__dot lfc-split__dot--${dotKind(row)}`} aria-hidden="true" />
       <span className="lfc-split__pts">{played || pts !== 0 ? pts : '–'}</span>
     </>
