@@ -5,12 +5,28 @@ The **Live** tab calls FPL from the browser. Many hosts (e.g. GitHub Pages) hit 
 - **`/*`** → `https://fantasy.premierleague.com/api/*` (bootstrap-static, event live, etc.)
 - **`/draft/*`** → `https://draft.premierleague.com/api/*` (draft GW lineups — **not** classic `/entry/.../picks/`)
 - **`/fotmob/*`** → `https://www.fotmob.com/api/*` (unofficial read-only JSON used for Live **Player Points** ordering — not affiliated with FotMob; respect their terms and rate limits)
+- **`/espn/*`** → `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/*` (open scoreboard + summary; lineups ~T-60)
+- **`/pulselive/*`** → `https://footballapi.pulselive.com/football/*` (official PL backend; team sheets ~T-75 + wallclock events; the worker adds the required `Account: premierleague` header)
 
 Draft leagues must use the draft host for picks; classic picks would show the wrong XI for each manager.
 
-### 404 on `/draft/entry/...` after an app update
+### HTML 404 on a prefix (`/pulselive/...`, `/espn/...`, `/draft/...`) after an app update
 
-Older deployments forwarded **every** path to `fantasy.premierleague.com`, so `/draft/...` returned **404**. Run **`npx wrangler deploy`** again from `web/workers/fpl-proxy/`.
+**This worker only updates when someone runs `npm run deploy`.** Unrecognised prefixes fall through to `fantasy.premierleague.com`, so a **stale deploy** turns a newly-added prefix into a confusing **404 with `Content-Type: text/html`** (Django error page — note `Vary: Cookie` / `X-Frame-Options: DENY` in the response headers). The upstream feed is fine; the proxy simply doesn't know the route yet.
+
+Check which prefixes the **deployed** worker actually knows:
+
+```bash
+curl https://tclot-fpl-proxy.<you>.workers.dev/__health
+```
+
+If a prefix you expect is missing from `upstreams`, redeploy from `web/workers/fpl-proxy/`:
+
+```bash
+npm run deploy
+```
+
+Whenever you add a new upstream prefix to `src/index.js`, **redeploy** — a frontend deploy alone does not update this worker.
 
 **Local dev without redeploying:** in `web/.env.local`, **remove or comment out** `VITE_FPL_PROXY_URL` and use `npm run dev` — Vite proxies `/__fpl/*` and `/__fotmob/*` automatically (see `web/vite.config.js`).
 
