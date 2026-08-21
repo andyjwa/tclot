@@ -488,7 +488,11 @@ import {
   readStoredDefaultTab,
 } from './settingsStorage'
 import { usePushNotifications } from './usePushNotifications.js'
-import { initialDashboardView, initialMovesTab } from './seasonOpenLanding.js'
+import {
+  initialDashboardView,
+  initialMovesTab,
+  shouldDefaultToLiveScores,
+} from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
 import { ForbiddenWaivers } from './ForbiddenWaivers'
@@ -2402,7 +2406,9 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
 
 /** Resolve initial dashboard view: players hash > archive > Moves/Draft.
  * Season-open default is Moves (Draft until the first Thursday waivers).
- * Stored Settings prefs do not override that landing. */
+ * When the current GW is live, a later one-shot effect redirects to FPL Live
+ * → Scores (see `shouldDefaultToLiveScores`). Stored Settings prefs do not
+ * override that landing. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'teamSelection'
   return initialDashboardView({
@@ -2570,6 +2576,8 @@ function App() {
     /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
   )
   const [movesTabPrimed, setMovesTabPrimed] = useState(false)
+  /** One-shot: once brand status resolves to live, leave Moves for Scores. */
+  const [liveScoresLandingPrimed, setLiveScoresLandingPrimed] = useState(false)
   /* FPL Live sub-tab. `null` = no explicit choice yet — the rendered tab then
    * follows the season phase (see `fplLiveTab` below, derived after the brand
    * header status). Legacy values are coerced to `'live'` so a persisted pref
@@ -2809,6 +2817,36 @@ function App() {
       brandTotalFixtureCount,
     ],
   )
+
+  /**
+   * Cold load opens Moves until bootstrap status is known. Once it resolves
+   * to a live GW, land on FPL Live → Scores (same destination as the mobile
+   * centre Live button). Skip if the user already left Moves, is draft-gated,
+   * or arrived via players hash / archive.
+   */
+  useEffect(() => {
+    if (liveScoresLandingPrimed) return
+    if (brandHeaderStatus?.status === 'unknown') return
+    setLiveScoresLandingPrimed(true)
+    if (
+      !shouldDefaultToLiveScores({
+        status: brandHeaderStatus?.status,
+        hasPlayersHash: Boolean(parsePlayersHash()),
+        archiveView: isArchiveView(),
+        navLocked: draftGate.navLocked,
+        dashboardView,
+      })
+    ) {
+      return
+    }
+    selectLiveHub('fplLive', 'live')
+  }, [
+    liveScoresLandingPrimed,
+    brandHeaderStatus?.status,
+    draftGate.navLocked,
+    dashboardView,
+    selectLiveHub,
+  ])
 
   /* Effective FPL Live sub-tab. Until the user picks one, the default follows
    * the season phase: live GW → Scores; between GWs → Recap; pre-season (and
