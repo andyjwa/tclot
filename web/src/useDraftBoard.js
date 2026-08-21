@@ -3,6 +3,7 @@ import { draftEntryEventUrl } from './fplDraftUrl'
 import { reconstructDraftPicks } from './draftBoardPicks'
 import {
   draftCurrentGameweek,
+  draftSeasonStarted,
   buildFirstLeftGameweekMap,
   mergeRosterStatusIntoPicks,
 } from './draftBoardRosterStatus'
@@ -94,6 +95,9 @@ function enrichPicksFromBootstrap(boot, picks) {
   if (!boot || !picks?.length) return picks
   const elementById = new Map((boot.elements || []).map((e) => [e.id, e]))
   const teamById = new Map((boot.teams || []).map((t) => [t.id, t]))
+  // Pre-GW1 the bootstrap's total_points still holds LAST season's totals —
+  // show 0 until the new season has actually started.
+  const seasonStarted = draftSeasonStarted(boot)
   return picks.map((p) => {
     const el = elementById.get(p.element)
     const tm = el != null ? teamById.get(el.team) : null
@@ -105,7 +109,7 @@ function enrichPicksFromBootstrap(boot, picks) {
     let totalPoints = null
     if (el?.total_points != null) {
       const n = Number(el.total_points)
-      if (Number.isFinite(n)) totalPoints = n
+      if (Number.isFinite(n)) totalPoints = seasonStarted ? n : 0
     }
     const full = [el?.first_name, el?.second_name].filter(Boolean).join(' ').trim()
     const playerFullName = full || el?.web_name || p.playerName

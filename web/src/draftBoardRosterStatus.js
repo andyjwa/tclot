@@ -2,6 +2,22 @@
  * Current squad + first gameweek a drafted player left a manager (waiver/free agent or trade).
  */
 
+/**
+ * Whether the new season has actually kicked off. FPL's draft bootstrap keeps
+ * every player's LAST-season `total_points` until current-season data starts
+ * flowing, so pre-GW1 those totals must not be shown as this season's points.
+ *
+ * @param {object} boot draft `bootstrap-static` JSON
+ */
+export function draftSeasonStarted(boot) {
+  const ev = boot?.events
+  if (ev == null) return false
+  if (typeof ev.current === 'number' && ev.current >= 1) return true
+  const data = ev.data
+  if (!Array.isArray(data)) return false
+  return data.some((x) => x?.is_current === true || x?.finished === true)
+}
+
 /** @param {object} boot draft `bootstrap-static` JSON */
 export function draftCurrentGameweek(boot) {
   const ev = boot?.events
