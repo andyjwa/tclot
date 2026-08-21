@@ -42,15 +42,21 @@ function buildWaiverShareText({ gw, flatRows, leagueTitleAbbr, leagueTitle }) {
   return lines.join('\n').trimEnd()
 }
 
+function shareCardDensity(rowCount) {
+  if (rowCount > 16) return 'dense'
+  if (rowCount > 8) return 'compact'
+  return 'airy'
+}
+
 /**
- * Portrait, one-screen, screenshot-friendly waiver card. Rows flex (flex: 1 1 0)
- * to divide the fixed card height evenly, so a light week reads large and the
- * full record week still fits with no scroll. Density scales type to row count.
- * Real GW data: IN player + club crest ← OUT player, league-wide waiver order
- * (FA = none), and the manager's fantasy-team crest pinned right.
+ * Portrait, screenshot-friendly waiver card. Rows stack at a fixed compact
+ * height (no flex-grow between rows) so a light week stays tight and
+ * 15–20 picks still fit in one phone screenshot. Density scales type/crests
+ * to row count. Real GW data: IN player + club crest ← OUT player,
+ * league-wide waiver order (FA = none), manager fantasy crest pinned right.
  */
 function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEntry }) {
-  const density = rows.length > 12 ? 'dense' : 'airy'
+  const density = shareCardDensity(rows.length)
   return (
     <div className={'waivers-share waivers-share--' + density} aria-label="Waiver summary for sharing">
       <div className="waivers-share__head">
