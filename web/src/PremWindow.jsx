@@ -993,12 +993,12 @@ function FixtureRow({
         <div className="prem-fxbody">
           {fx.fetchError ? (
             <div className="data-banner data-banner--error" role="alert">
-              Could not load ESPN match summary: {fx.fetchError}
+              Could not load live lineups (Pulselive / ESPN): {fx.fetchError}
             </div>
           ) : null}
-          {!fx.matchId ? (
+          {!fx.matchId && !fx.fetchError ? (
             <p className="muted muted--tight">
-              No ESPN match mapped for this fixture yet.
+              No live match mapped for this fixture yet.
             </p>
           ) : null}
           {fx.matchId && fx.detailsBlockedReason ? (

@@ -471,6 +471,26 @@ export async function fetchPulselivePremWindow({
   if (!fxList.length) return [];
 
   /**
+   * A top-level Pulselive failure (season discovery / fixtures list unreachable, e.g. the
+   * premierleague.com backend rejecting the proxy's datacenter IP) used to `return []`,
+   * which is indistinguishable from "no fixtures" downstream — the row silently vanished
+   * and the merger fell back to ESPN with no hint that Pulselive had died. Instead return
+   * one row per fixture carrying `fetchError` so the fail-loud UI can surface *why*
+   * Pulselive contributed nothing. ESPN still wins per-fixture wherever it has real data
+   * (the merger prefers a source with actual lineups/events over a bare error row).
+   */
+  const errorRows = (message) =>
+    fxList.map((fx) => ({
+      fplFixture: fx,
+      matchId: null,
+      score: null,
+      events: [],
+      lineups: null,
+      fetchError: message,
+      detailsBlockedReason: null,
+    }));
+
+  /**
    * Pulselive's only effective date filter on `/fixtures` is `compSeasons={id}`; the
    * `fromDate`/`toDate` query params are silently ignored. Discover the current season
    * id from `/competitions/1/compseasons` (latest-first) using one of the GW kickoffs
@@ -489,17 +509,20 @@ export async function fetchPulselivePremWindow({
       return null;
     })();
     compSeasonId = pickCurrentCompSeasonId(seasonsJson, firstKickoffMs);
-  } catch {
-    return [];
+  } catch (e) {
+    return errorRows(`Pulselive season lookup failed: ${e?.message || String(e)}`);
   }
-  if (!compSeasonId || signal?.aborted) return [];
+  if (signal?.aborted) return [];
+  if (!compSeasonId) {
+    return errorRows('Pulselive season could not be resolved for this gameweek.');
+  }
 
   let listJson;
   try {
     const query = `fixtures?comps=${PL_COMP_ID}&compSeasons=${compSeasonId}&page=0&pageSize=400&sort=asc&statuses=U,L,C`;
     listJson = await fetchPulseliveJson(query);
-  } catch {
-    return [];
+  } catch (e) {
+    return errorRows(`Pulselive fixtures list failed: ${e?.message || String(e)}`);
   }
   if (signal?.aborted) return [];
 

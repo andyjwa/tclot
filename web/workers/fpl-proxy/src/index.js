@@ -29,17 +29,15 @@ function corsHeaders(env, request) {
 
 /** Edge cache TTL (seconds) — reduces upstream + worker load on the free tier. */
 function cacheTtlSeconds(path, upstreamBase) {
-  if (path === 'bootstrap-static') return 600;
-  if (path.includes('/live')) return 45;
-  if (path.startsWith('fixtures')) return 180;
-  if (path.includes('/entry/') && path.includes('/event/')) return 45;
-  if (upstreamBase === FOTMOB_API) return 60;
-  if (upstreamBase === ESPN_API) return 120;
   /**
    * Pulselive is the T-75 lineup source — lineups + events flip from absent → published
    * within seconds of clubs submitting team sheets, so a short TTL on per-fixture reads
    * keeps the "Confirmed" badge and the live event ticker fresh. The seasons + fixtures
    * list endpoints don't churn within a GW so they get a longer TTL.
+   *
+   * NB: this MUST be checked before the generic `fixtures` rule below — after the
+   * `pulselive/` prefix is stripped the per-fixture path is `fixtures/{id}`, which the
+   * generic rule would otherwise pin at 180s and staled the just-published team sheet.
    */
   if (upstreamBase === PULSELIVE_API) {
     if (path.startsWith('fixtures/') && !path.includes('?')) return 30;
@@ -47,6 +45,12 @@ function cacheTtlSeconds(path, upstreamBase) {
     if (path.startsWith('competitions/') && path.includes('/compseasons')) return 86400;
     return 60;
   }
+  if (upstreamBase === FOTMOB_API) return 60;
+  if (upstreamBase === ESPN_API) return 120;
+  if (path === 'bootstrap-static') return 600;
+  if (path.includes('/live')) return 45;
+  if (path.startsWith('fixtures')) return 180;
+  if (path.includes('/entry/') && path.includes('/event/')) return 45;
   return 0;
 }
 

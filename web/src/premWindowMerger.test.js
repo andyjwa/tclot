@@ -14,14 +14,17 @@ function side(confirmed, nXi = 11, nBench = 7) {
   };
 }
 
-function row(fxId, { lineups = null, events = [], score = null, matchId = null } = {}) {
+function row(
+  fxId,
+  { lineups = null, events = [], score = null, matchId = null, fetchError = null } = {},
+) {
   return {
     fplFixture: { id: fxId, team_h: 1, team_a: 2 },
     matchId,
     score,
     events,
     lineups,
-    fetchError: null,
+    fetchError,
     detailsBlockedReason: null,
   };
 }
@@ -166,6 +169,27 @@ test('mergePremWindowSources — primary empty falls through entirely to fallbac
 test('mergePremWindowSources — both empty returns empty', () => {
   assert.deepEqual(mergePremWindowSources([], [], LABELS), []);
   assert.deepEqual(mergePremWindowSources(null, null, LABELS), []);
+});
+
+test('pickPreferredRow — losing source fetchError is suppressed when the row has data', () => {
+  /** Pulselive failed at the season/list step (error row, no data) but ESPN filled the
+   *  row with confirmed lineups — the user should see the XI, not a scary error banner. */
+  const pulseErr = row(1, { fetchError: 'Pulselive fixtures list failed: HTTP 403' });
+  const espnGood = row(1, {
+    lineups: { home: side(true), away: side(true) },
+    matchId: 200,
+  });
+  const merged = pickPreferredRow(pulseErr, espnGood, LABELS);
+  assert.equal(merged.lineupSource, 'espn');
+  assert.equal(merged.fetchError, null, 'error suppressed because ESPN filled the row');
+});
+
+test('pickPreferredRow — fetchError surfaces when neither source has data', () => {
+  const pulseErr = row(1, { fetchError: 'Pulselive fixtures list failed: HTTP 403' });
+  const espnEmpty = row(1);
+  const merged = pickPreferredRow(pulseErr, espnEmpty, LABELS);
+  assert.equal(merged.lineups, null);
+  assert.equal(merged.fetchError, 'Pulselive fixtures list failed: HTTP 403');
 });
 
 test('mergePremWindowSources — primary partial confirms + fallback fills the gaps', () => {

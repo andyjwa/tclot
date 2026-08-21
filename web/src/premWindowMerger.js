@@ -116,9 +116,17 @@ export function pickPreferredRow(primary, fallback, labels = {}) {
   else if (scoreSource === pLabel) matchId = primary?.matchId ?? null;
   else if (scoreSource === fLabel) matchId = fallback?.matchId ?? null;
 
-  /** Preserve fetch errors from whichever source we drew the row's identity from, so the
-   *  UI's "data freshness" badge still surfaces upstream issues. */
-  const fetchError = primary?.fetchError ?? fallback?.fetchError ?? null;
+  /** Surface an upstream fetch error only when the merged row has nothing useful to show.
+   *  A source can fail (e.g. Pulselive rejecting the proxy IP) while the other still fills
+   *  the row — in that case we don't want the losing source's error alarming a row that
+   *  actually rendered lineups/events/score. */
+  const rowHasUsableSignal =
+    lineupsHaveAnyPlayers(lineups) ||
+    (Array.isArray(events) && events.length > 0) ||
+    hasAnyScore(score);
+  const fetchError = rowHasUsableSignal
+    ? null
+    : primary?.fetchError ?? fallback?.fetchError ?? null;
 
   const fplFixture = primary?.fplFixture ?? fallback?.fplFixture ?? null;
 
