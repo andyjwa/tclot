@@ -15,9 +15,9 @@ export const DEFAULT_TAB_OPTIONS = /** @type {const} */ ([
 
 export const DEFAULT_TAB_STORAGE_KEY = 'tclot:settings:default-tab'
 /* Season-open cold load is Moves/Draft (see seasonOpenLanding.js), not this
- * stored pref. The pref still drives Settings and post-waivers visits.
- * Stored `'preseason'` prefs are treated as missing so they don't resurrect
- * the hub. */
+ * stored pref — except a live GW redirects to FPL Live → Scores once status
+ * resolves. The pref still drives Settings UI. Stored `'preseason'` prefs are
+ * treated as missing so they don't resurrect the hub. */
 export const DEFAULT_TAB_FALLBACK = 'teamSelection'
 
 const VALID_TAB_IDS = new Set(DEFAULT_TAB_OPTIONS.map((o) => o.id))

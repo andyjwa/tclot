@@ -1,6 +1,9 @@
 /**
  * Season-open landing: the site opens on Moves → Draft until the first GW
  * waivers run, then Waivers. Independent of the retired preseason hub.
+ *
+ * Exception: once bootstrap resolves and the current GW is live (deadline
+ * passed, not finished), cold load lands on FPL Live → Scores instead.
  */
 
 /** Cold-load dashboard view. Players hash and archive views still win. */
@@ -11,6 +14,33 @@ export function initialDashboardView({
   if (hasPlayersHash) return 'players'
   if (archiveView) return 'standings'
   return 'teamSelection'
+}
+
+/**
+ * Whether a cold-load session should redirect from Moves to FPL Live → Scores.
+ * Bootstrap status is usually unknown on first paint, so App applies this once
+ * `deriveBrandHeaderStatus` resolves (not in `initialDashboardView`).
+ *
+ * @param {{
+ *   status?: 'live' | 'idle' | 'pre-season' | 'unknown' | null,
+ *   hasPlayersHash?: boolean,
+ *   archiveView?: boolean,
+ *   navLocked?: boolean,
+ *   dashboardView?: string,
+ * }} [p]
+ * @returns {boolean}
+ */
+export function shouldDefaultToLiveScores({
+  status = null,
+  hasPlayersHash = false,
+  archiveView = false,
+  navLocked = false,
+  dashboardView = 'teamSelection',
+} = {}) {
+  if (status !== 'live') return false
+  if (hasPlayersHash || archiveView || navLocked) return false
+  // Only nudge the season-open Moves landing — never yank an explicit nav.
+  return dashboardView === 'teamSelection'
 }
 
 function eventsArray(events) {
