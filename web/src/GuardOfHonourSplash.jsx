@@ -3,6 +3,32 @@ import { sortStartingXIByPosition } from './liveScoresDerivations.js';
 import { REIGNING_CHAMPION_MANAGER_SURNAME } from './championOfRecord.js';
 import './GuardOfHonourSplash.css';
 
+// Native fullscreen attempt — returns a promise so callers can fall
+// back to CSS pseudo-fullscreen when the platform rejects (iOS Safari
+// on iPhone refuses requestFullscreen() on non-<video> elements).
+function tryNativeFullscreen(el) {
+  if (!el) return Promise.reject(new Error('no element'));
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if (!fn) return Promise.reject(new Error('no api'));
+  try {
+    const result = fn.call(el);
+    return Promise.resolve(result);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
+function tryExitFullscreen() {
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  if (!fn) return;
+  try {
+    const result = fn.call(document);
+    if (result && typeof result.catch === 'function') result.catch(() => {});
+  } catch {
+    // Swallow — best-effort.
+  }
+}
+
 /**
  * Per-tab session cap on how many times the entrance cinematic plays back
  * automatically. After the cap is reached the splash still shows, but as a
@@ -62,12 +88,13 @@ const SESSION_PLAY_CAP = 3;
  * `championOfRecord.js` and the wiring in `LiveScores.jsx`. The ×
  * control closes the splash — exiting fullscreen first when active,
  * then collapsing (rather than fully dismissing) so the strip stays
- * available to re-expand. A ⤢ control (hidden where the Fullscreen API
- * is unavailable) toggles the whole container fullscreen, letterboxed
- * via the `.goh-splash:fullscreen` CSS. The visual is rendered as a
- * single inline
- * SVG so it scales cleanly without a PNG asset and so we can
- * data-drive labels (real surnames + shirt numbers) from squad
+ * available to re-expand. A ⤢ control always toggles fullscreen:
+ * native Fullscreen API where available, otherwise a CSS
+ * pseudo-fullscreen fallback (iPhone Safari refuses native fullscreen
+ * on non-<video> elements). Letterboxed via `.goh-splash:fullscreen`
+ * / `.goh-splash--pseudo-fullscreen`. The visual is rendered as a
+ * single inline SVG so it scales cleanly without a PNG asset and so we
+ * can data-drive labels (real surnames + shirt numbers) from squad
  * payloads.
  *
  * @param {{
@@ -131,40 +158,64 @@ export function GuardOfHonourSplash({
 
   /**
    * Fullscreen support — the whole `.goh-splash` container (SVG +
-   * overlay controls) goes fullscreen so the × / ↻ / ⛶ buttons stay
-   * usable while the cinematic fills the screen. `isFullscreen` mirrors
-   * the document state via the `fullscreenchange` event so the toggle
-   * button's icon/label stay honest however the user exits (button,
-   * Esc, browser chrome). The button is omitted entirely where the
-   * Fullscreen API is unavailable (e.g. iPhone Safari only exposes it
-   * for <video>), so no dead control ships.
+   * overlay controls) goes fullscreen so the × / ↻ / ⤢ buttons stay
+   * usable while the cinematic fills the screen. `isNativeFullscreen`
+   * tracks the Fullscreen API (Android Chrome, desktop, iPad Safari);
+   * `isPseudoFullscreen` is the CSS-only fallback when the native API
+   * rejects or is missing (iPhone Safari). The toggle is always shown.
    */
   const containerRef = useRef(null);
-  const fullscreenEnabled =
-    typeof document !== 'undefined' && Boolean(document.fullscreenEnabled);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPseudoFullscreen, setIsPseudoFullscreen] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const isFullscreen = isPseudoFullscreen || isNativeFullscreen;
+
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     const onChange = () => {
-      setIsFullscreen(document.fullscreenElement === containerRef.current);
+      const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      setIsNativeFullscreen(fsEl === containerRef.current);
     };
     document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('webkitfullscreenchange', onChange);
+    };
   }, []);
+
+  // While pseudo-fullscreen is active: lock body scroll and let Esc
+  // exit. Native fullscreen handles both of those itself.
+  useEffect(() => {
+    if (!isPseudoFullscreen) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => {
+      if (e.key === 'Escape') setIsPseudoFullscreen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [isPseudoFullscreen]);
+
   const handleFullscreenToggle = () => {
-    if (typeof document === 'undefined') return;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen?.();
-    } else {
-      void containerRef.current?.requestFullscreen?.();
+    if (isNativeFullscreen) {
+      tryExitFullscreen();
+      return;
     }
+    if (isPseudoFullscreen) {
+      setIsPseudoFullscreen(false);
+      return;
+    }
+    tryNativeFullscreen(containerRef.current).catch(() => setIsPseudoFullscreen(true));
   };
+
   /** × always fully "closes": leave fullscreen first (when active), then
    * collapse to the strip — one press does both. */
   const handleClose = () => {
-    if (typeof document !== 'undefined' && document.fullscreenElement) {
-      void document.exitFullscreen?.();
-    }
+    if (isNativeFullscreen) tryExitFullscreen();
+    if (isPseudoFullscreen) setIsPseudoFullscreen(false);
     onCollapse?.();
   };
 
@@ -186,7 +237,10 @@ export function GuardOfHonourSplash({
   return (
     <div
       ref={containerRef}
-      className={`goh-splash${isPlaying ? ' goh-splash--playing' : ''}`}
+      className={
+        `goh-splash${isPlaying ? ' goh-splash--playing' : ''}` +
+        (isPseudoFullscreen ? ' goh-splash--pseudo-fullscreen' : '')
+      }
       role="region"
       aria-label={`Guard of honour for ${championTeamName ?? 'the reigning champion'}`}
     >
@@ -209,23 +263,21 @@ export function GuardOfHonourSplash({
         <span className="goh-splash__replay-icon" aria-hidden="true">↻</span>
       </button>
 
-      {fullscreenEnabled ? (
-        <button
-          type="button"
-          className="goh-splash__fullscreen"
-          onClick={handleFullscreenToggle}
-          aria-label={
-            isFullscreen
-              ? 'Exit fullscreen'
-              : 'Watch guard of honour fullscreen'
-          }
-          title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-        >
-          <span className="goh-splash__fullscreen-icon" aria-hidden="true">
-            {isFullscreen ? '⤡' : '⤢'}
-          </span>
-        </button>
-      ) : null}
+      <button
+        type="button"
+        className="goh-splash__fullscreen"
+        onClick={handleFullscreenToggle}
+        aria-label={
+          isFullscreen
+            ? 'Exit fullscreen'
+            : 'Watch guard of honour fullscreen'
+        }
+        title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+      >
+        <span className="goh-splash__fullscreen-icon" aria-hidden="true">
+          {isFullscreen ? '⤡' : '⤢'}
+        </span>
+      </button>
 
       <svg
         key={playId}
