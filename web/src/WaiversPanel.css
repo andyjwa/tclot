@@ -315,11 +315,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Move count — total swaps for the team, rendered as the shared tonal
- * `.waivers-pts` chip (brand tint behind the number, same language as the
- * points chips below). The old paired ↑/↓ arrow glyphs were decorative
- * only and have been removed. */
+/* Successful waiver order (or FA tag) for the List row. */
 .waivers-glance__counts { display: inline-flex; align-items: center; justify-content: flex-end; flex: 0 0 auto; min-width: 2.75em; }
+.waivers-glance__count.waivers-order {
+  min-width: 1.75em;
+  text-align: center;
+}
 .waivers-glance__crests { display: inline-flex; flex: 0 0 auto; }
 .waivers-glance__crest {
   display: inline-flex;
