@@ -252,98 +252,96 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
   )
 }
 
-/** Mobile · at-a-glance by team — per-team summary, tap a row to expand its swaps. */
-function WeeklyWaiversGlance({ groups, teamLogoMap, kitIndexByEntry }) {
-  const MAX_CRESTS = 5
-  const [open, setOpen] = useState(() => new Set())
-  const toggle = (entry) =>
-    setOpen((prev) => {
+/** Mobile · List — every successful pick in league waiver order, cards expanded. */
+function WeeklyWaiversList({ groups, teamLogoMap, kitIndexByEntry }) {
+  const rows = useMemo(() => {
+    const flat = flattenWaiverGroups(groups)
+    return [...flat].sort(sortMovesWaiverThenFa)
+  }, [groups])
+
+  /* Track collapsed ids so new GW data stays expanded by default. */
+  const [closed, setClosed] = useState(() => new Set())
+  const toggle = (id) =>
+    setClosed((prev) => {
       const next = new Set(prev)
-      if (next.has(entry)) next.delete(entry)
-      else next.add(entry)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
+
   return (
     <ul className="waivers-glance__list">
-      {groups.map((g) => {
-        const ins = g.moves || []
-        const shownCrests = ins.slice(0, MAX_CRESTS)
-        const extraCrests = ins.length - shownCrests.length
-        const hasMoves = ins.length > 0
-        const isOpen = hasMoves && open.has(g.entry)
+      {rows.map((m) => {
+        const id = m.transactionId
+        const isOpen = !closed.has(id)
+        const order =
+          m.waiverProcessOrder != null && Number.isFinite(Number(m.waiverProcessOrder))
+            ? Number(m.waiverProcessOrder)
+            : null
         return (
-          <li className="waivers-glance__item" key={g.entry}>
+          <li className="waivers-glance__item" key={id}>
             <button
               type="button"
-              className={'waivers-glance__row' + (isOpen ? ' is-open' : '')}
-              aria-expanded={hasMoves ? isOpen : undefined}
-              disabled={!hasMoves}
-              onClick={() => hasMoves && toggle(g.entry)}
+              className="waivers-glance__row"
+              aria-expanded={isOpen}
+              onClick={() => toggle(id)}
             >
               <TeamAvatar
-                entryId={g.leagueEntryId}
-                name={g.teamName}
+                entryId={m.leagueEntryId}
+                name={m.teamName}
                 size="sm"
                 logoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
-              <span className="waivers-glance__team">{firstWord(g.teamName)}</span>
-              {hasMoves ? (
-                <>
-                  <span className="waivers-glance__crests">
-                    {shownCrests.map((m) => (
-                      <span className="waivers-glance__crest" key={m.transactionId}>
-                        <PlayerKit badgeUrl={m.pickedBadgeUrl} teamShort={m.pickedTeamShort} />
-                      </span>
-                    ))}
-                    {extraCrests > 0 ? (
-                      <span className="waivers-glance__crest-more">+{extraCrests}</span>
-                    ) : null}
-                  </span>
-                  <span className="waivers-glance__counts">
-                    <span
-                      className="waivers-glance__count waivers-pts"
-                      aria-label={`${ins.length} ${ins.length === 1 ? 'move' : 'moves'}`}
-                    >
-                      {ins.length}
-                    </span>
-                  </span>
+              <span className="waivers-glance__team">{firstWord(m.teamName)}</span>
+              <span className="waivers-glance__crests">
+                <span className="waivers-glance__crest">
+                  <PlayerKit badgeUrl={m.pickedBadgeUrl} teamShort={m.pickedTeamShort} />
+                </span>
+              </span>
+              <span className="waivers-glance__counts">
+                {order != null ? (
                   <span
-                    className={'waivers-glance__caret' + (isOpen ? ' is-open' : '')}
-                    aria-hidden="true"
+                    className="waivers-glance__count waivers-order"
+                    aria-label={`Waiver order ${order}`}
+                    title="Successful waiver order this GW (1 = first)"
                   >
-                    ›
+                    {order}
                   </span>
-                </>
-              ) : (
-                <span className="waivers-glance__none">No moves</span>
-              )}
+                ) : (
+                  <span className="waivers-fa-tag">FA</span>
+                )}
+              </span>
+              <span
+                className={'waivers-glance__caret' + (isOpen ? ' is-open' : '')}
+                aria-hidden="true"
+              >
+                ›
+              </span>
             </button>
             {isOpen ? (
               <div className="waivers-glance__moves">
-                {ins.map((m) => (
-                  <div className="waivers-swap" key={m.transactionId}>
-                    <WvPlayerCell
-                      element={m.element_in}
-                      name={m.pickedName}
-                      badgeUrl={m.pickedBadgeUrl}
-                      teamShort={m.pickedTeamShort}
-                      pos={m.pickedPos}
-                      dir="in"
-                    />
-                    <WvPlayerCell
-                      element={m.element_out}
-                      name={m.droppedName}
-                      badgeUrl={m.droppedBadgeUrl}
-                      teamShort={m.droppedTeamShort}
-                      pos={m.droppedPos}
-                      dir="out"
-                    />
-                    {m.transactionKind === 'f' ? (
-                      <span className="waivers-fa-chip">FA</span>
-                    ) : null}
-                  </div>
-                ))}
+                <div className="waivers-swap">
+                  <WvPlayerCell
+                    element={m.element_in}
+                    name={m.pickedName}
+                    badgeUrl={m.pickedBadgeUrl}
+                    teamShort={m.pickedTeamShort}
+                    pos={m.pickedPos}
+                    dir="in"
+                  />
+                  <WvPlayerCell
+                    element={m.element_out}
+                    name={m.droppedName}
+                    badgeUrl={m.droppedBadgeUrl}
+                    teamShort={m.droppedTeamShort}
+                    pos={m.droppedPos}
+                    dir="out"
+                  />
+                  {m.transactionKind === 'f' ? (
+                    <span className="waivers-fa-chip">FA</span>
+                  ) : null}
+                </div>
               </div>
             ) : null}
           </li>
@@ -439,7 +437,7 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
 /**
  * Section 1 wrapper.
  *  • Desktop: flat / by-team swap table (toggle + inline GW pill).
- *  • Mobile: a segmented toggle of "At a glance" · "By team" · "Waiver summary"
+ *  • Mobile: a segmented toggle of "List" · "By team" · "Waiver summary"
  *    (the share view, folded in here so there's no separate top-level pill).
  * `gwPill` renders inline beside the toggle; `summaryView` is the share card.
  */
@@ -452,13 +450,13 @@ export function WeeklyWaivers({
   summaryView,
 }) {
   const isMobile = useMobileLayout()
-  const [mobileView, setMobileView] = useState('glance')
+  const [mobileView, setMobileView] = useState('list')
 
   const hasGroups = Boolean(groups && groups.length > 0)
 
   if (isMobile) {
     const options = [
-      { v: 'glance', label: 'At a glance' },
+      { v: 'list', label: 'List' },
       { v: 'tiles', label: 'By team' },
       ...(summaryView ? [{ v: 'summary', label: 'Waiver summary' }] : []),
     ]
@@ -489,8 +487,8 @@ export function WeeklyWaivers({
           summaryView
         ) : !hasGroups ? (
           <p className="muted muted--tight">{emptyMessage}</p>
-        ) : mobileView === 'glance' ? (
-          <WeeklyWaiversGlance
+        ) : mobileView === 'list' ? (
+          <WeeklyWaiversList
             groups={groups}
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
