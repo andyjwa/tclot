@@ -46,13 +46,13 @@ test('dcThresholdReached — GK/DEF 10+, MID/FWD 12+, unknown false', () => {
   assert.equal(dcThresholdReached('FWD', null), false)
 })
 
-test('playerXiPillKind — maps ESPN matchday role; defaults to xi', () => {
+test('playerXiPillKind — confirmed-only; null when lineups unknown', () => {
   assert.equal(playerXiPillKind({ espnMatchdayRole: 'xi' }), 'xi')
   assert.equal(playerXiPillKind({ espnMatchdayRole: 'bench' }), 'bench')
   assert.equal(playerXiPillKind({ espnMatchdayRole: 'absent' }), 'absent')
-  assert.equal(playerXiPillKind({ espnMatchdayRole: null }), 'xi')
-  assert.equal(playerXiPillKind({}), 'xi')
-  assert.equal(playerXiPillKind(null), 'xi')
+  assert.equal(playerXiPillKind({ espnMatchdayRole: null }), null)
+  assert.equal(playerXiPillKind({}), null)
+  assert.equal(playerXiPillKind(null), null)
 })
 
 test('playerLiveState — on pitch shows red minute counter', () => {

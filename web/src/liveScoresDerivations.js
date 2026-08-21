@@ -47,19 +47,23 @@ export function dcThresholdReached(pos, dc) {
 
 /**
  * Map an FPL pick row's `espnMatchdayRole` (`xi` / `bench` / `absent`) to
- * the status pill kind used in the redesigned expanded view. When the role
- * is unknown (no published lineups, DGW edge cases) we fall back to `'xi'`
- * — production already styles unknown rows as the default starter colour
- * via `live-picks-row` selectors.
+ * the status pill kind used in the redesigned expanded / match views.
+ *
+ * Pills are confirmed-only: they appear solely once the Premier League
+ * lineups are published (`espnMatchdayRole` resolves to `xi` / `bench` /
+ * `absent`). When the role is unknown — no published lineups yet, DGW
+ * edge cases, or low ESPN→FPL name coverage — we return `null` so the
+ * caller renders a plain (pill-less) name rather than guessing a colour.
  *
  * @param {{ espnMatchdayRole?: string | null } | null | undefined} row
- * @returns {'xi' | 'bench' | 'absent'}
+ * @returns {'xi' | 'bench' | 'absent' | null}
  */
 export function playerXiPillKind(row) {
   const r = row?.espnMatchdayRole;
+  if (r === 'xi') return 'xi';
   if (r === 'bench') return 'bench';
   if (r === 'absent') return 'absent';
-  return 'xi';
+  return null;
 }
 
 /**

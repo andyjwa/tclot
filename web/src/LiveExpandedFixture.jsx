@@ -91,7 +91,12 @@ function AutoSubsNote({ squad }) {
  * mockup `mockup-table__row` — columns: PLAYER · POS · MIN · DC · G · A · B · PTS.
  */
 function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
+  // Confirmed-only pill: `xi` / `bench` / `absent` once PL lineups publish,
+  // otherwise null → plain name (no colour) so we never guess pre-lineups.
   const pillKind = playerXiPillKind(row);
+  const nameClass =
+    'live-xp__player-name' +
+    (pillKind ? ` live-xp__player-name--${pillKind}` : '');
   const mins = Number(row.minutes) || 0;
   const played = mins > 0;
   const tone = minutesTone(mins, played);
@@ -134,7 +139,7 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
         {onOpenPlayer ? (
           <button
             type="button"
-            className={`live-xp__player-name live-xp__player-name--${pillKind}`}
+            className={nameClass}
             onClick={() => onOpenPlayer(row)}
             title={`${displayName} — view season history`}
           >
@@ -168,7 +173,7 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
             ) : null}
           </button>
         ) : (
-          <span className={`live-xp__player-name live-xp__player-name--${pillKind}`}>
+          <span className={nameClass}>
             <span className="live-xp__player-name-text">{displayName}</span>
             {showCleanSheet ? (
               <span
