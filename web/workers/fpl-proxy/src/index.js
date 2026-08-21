@@ -88,6 +88,29 @@ export default {
       return new Response('Bad path', { status: 400, headers: ch });
     }
 
+    /**
+     * Deployment probe. The Worker only updates when someone runs `npm run deploy`, so a
+     * stale deploy can silently lack a newer upstream prefix — the request then falls
+     * through to the default FPL base and comes back as a confusing Django 404 (HTML).
+     * Hitting `/__health` tells you exactly which prefixes the *deployed* Worker knows.
+     */
+    if (path === '__health') {
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          upstreams: ['(default) fantasy', 'draft/', 'fotmob/', 'espn/', 'pulselive/'],
+        }),
+        {
+          status: 200,
+          headers: {
+            ...ch,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+          },
+        },
+      );
+    }
+
     let upstreamBase = FANTASY_API;
     if (path.startsWith('draft/')) {
       path = path.slice('draft/'.length);

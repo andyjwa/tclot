@@ -15,6 +15,7 @@
  */
 
 import { espnResourceUrl } from './espnUrl.js';
+import { fetchProxyJson } from './proxyJsonFetch.js';
 import { matchFplElementId } from './fotmobPremTimeline.js';
 
 export { matchFplElementId };
@@ -30,9 +31,7 @@ export function yyyymmddUtc(iso) {
 
 async function fetchEspn(pathAndQuery) {
   const url = espnResourceUrl(pathAndQuery);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`ESPN ${pathAndQuery} HTTP ${r.status}`);
-  return r.json();
+  return fetchProxyJson(url, `ESPN ${pathAndQuery}`);
 }
 
 /**
