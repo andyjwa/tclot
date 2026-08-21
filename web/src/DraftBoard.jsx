@@ -203,6 +203,14 @@ export function DraftBoard({
 
   return (
     <Fragment>
+      <DraftQuality
+        picks={picks}
+        loading={loading}
+        error={error}
+        pointsForByFplEntryId={pointsForByFplEntryId}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
       <section
         className="tile tile--standings draft-board-tile"
         aria-labelledby="draft-board-heading"
@@ -434,14 +442,6 @@ export function DraftBoard({
           </>
         )}
       </section>
-      <DraftQuality
-        picks={picks}
-        loading={loading}
-        error={error}
-        pointsForByFplEntryId={pointsForByFplEntryId}
-        teamLogoMap={teamLogoMap}
-        kitIndexByEntry={kitIndexByEntry}
-      />
     </Fragment>
   )
 }
