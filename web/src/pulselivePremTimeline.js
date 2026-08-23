@@ -21,6 +21,7 @@
 
 import { pulseliveResourceUrl } from './pulseliveUrl.js';
 import { isValidPulseId } from './fplPulseId.js';
+import { fetchProxyJson } from './proxyJsonFetch.js';
 
 /** Pulselive comp id for the Premier League. Stable across seasons. */
 export const PL_COMP_ID = 1;
@@ -86,9 +87,7 @@ export function dateRangeFromGwFixtures(gwFixtures) {
 
 export async function fetchPulseliveJson(pathAndQuery) {
   const url = pulseliveResourceUrl(pathAndQuery);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`Pulselive ${pathAndQuery} HTTP ${r.status}`);
-  return r.json();
+  return fetchProxyJson(url, `Pulselive ${pathAndQuery}`);
 }
 
 function normalizeTeamName(s) {

@@ -15,6 +15,7 @@
  */
 
 import { espnResourceUrl } from './espnUrl.js';
+import { fetchProxyJson } from './proxyJsonFetch.js';
 import { matchFplElementId } from './fotmobPremTimeline.js';
 
 export { matchFplElementId };
@@ -30,9 +31,7 @@ export function yyyymmddUtc(iso) {
 
 async function fetchEspn(pathAndQuery) {
   const url = espnResourceUrl(pathAndQuery);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`ESPN ${pathAndQuery} HTTP ${r.status}`);
-  return r.json();
+  return fetchProxyJson(url, `ESPN ${pathAndQuery}`);
 }
 
 /**
@@ -45,27 +44,75 @@ const ESPN_TO_FPL_SHORT = new Map([
 ]);
 
 /**
+ * Normalize a club name for cross-source matching: lower-case, strip punctuation and the
+ * `AFC` / `FC` noise words, collapse whitespace. Mirrors the helpers in
+ * `pulselivePremTimeline` / `fotmobPremWindow` so ESPN gets the same name fallback they
+ * already have.
+ * @param {unknown} s
+ */
+function normalizeTeamName(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[.'`]/g, '')
+    .replace(/\b(afc|fc)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Build espnTeamId → fplTeamId.
+ *
+ * ESPN's 3-letter `abbreviation` usually equals FPL's `short_name`, but clubs that rarely
+ * appear in ESPN's PL dataset (e.g. newly-promoted sides) can carry a code that diverges
+ * from FPL's. Abbreviation-only matching silently drops those fixtures (no `matchId` → no
+ * lineups), even though ESPN's own site shows them. So we mirror the Pulselive / FotMob
+ * mappers: try the abbreviation (with the known Manchester aliases) first, then fall back
+ * to a normalized `displayName` match — exact first, then a unique-substring match so
+ * "Bournemouth" resolves to "AFC Bournemouth" without ever ambiguously matching
+ * "Manchester".
+ *
  * @param {Record<number, object>} teamById — FPL `teams` keyed by id
- * @param {Array<{ id: number, abbreviation: string }>} espnTeams
+ * @param {Array<{ id: number, abbreviation?: string, displayName?: string }>} espnTeams
  * @returns {Map<number, number>} espnTeamId → fplTeamId
  */
 export function mapEspnTeamsToFpl(teamById, espnTeams) {
   const fplByShort = new Map();
+  /** @type {Array<{ id: number, name: string }>} normalized FPL names for fallback */
+  const fplNameRows = [];
   for (const [k, pl] of Object.entries(teamById || {})) {
     const id = Number(k);
     if (!Number.isFinite(id)) continue;
     const sh = String(pl?.short_name || '').toUpperCase();
     if (sh) fplByShort.set(sh, id);
+    const nm = normalizeTeamName(pl?.name);
+    if (nm) fplNameRows.push({ id, name: nm });
   }
+
   const out = new Map();
   for (const t of espnTeams || []) {
     const espnId = Number(t?.id);
     if (!Number.isFinite(espnId)) continue;
+
     let abbr = String(t?.abbreviation || '').toUpperCase();
-    if (!abbr) continue;
     if (ESPN_TO_FPL_SHORT.has(abbr)) abbr = ESPN_TO_FPL_SHORT.get(abbr);
-    const fplId = fplByShort.get(abbr);
-    if (fplId != null) out.set(espnId, fplId);
+    const fplFromAbbr = abbr ? fplByShort.get(abbr) : null;
+    if (fplFromAbbr != null) {
+      out.set(espnId, fplFromAbbr);
+      continue;
+    }
+
+    /** Name fallback — only when the abbreviation didn't resolve. */
+    const name = normalizeTeamName(t?.displayName);
+    if (!name) continue;
+    const exact = fplNameRows.find((r) => r.name === name);
+    if (exact) {
+      out.set(espnId, exact.id);
+      continue;
+    }
+    const subs = fplNameRows.filter(
+      (r) => r.name.includes(name) || name.includes(r.name),
+    );
+    if (subs.length === 1) out.set(espnId, subs[0].id);
   }
   return out;
 }

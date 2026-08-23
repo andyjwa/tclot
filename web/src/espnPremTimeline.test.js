@@ -118,6 +118,43 @@ test('mapEspnTeamsToFpl — Manchester abbreviation aliases (MNC→MCI, MAN→MU
   assert.equal(m.get(360), 14);
 });
 
+test('mapEspnTeamsToFpl — displayName fallback when abbreviation diverges', () => {
+  const teamById = {
+    1: { short_name: 'ARS', name: 'Arsenal' },
+    // FPL short_name for Coventry is COV; simulate ESPN sending a different code.
+    7: { short_name: 'COV', name: 'Coventry City' },
+  };
+  const espnTeams = [
+    { id: 359, abbreviation: 'ARS', displayName: 'Arsenal' },
+    { id: 388, abbreviation: 'CVC', displayName: 'Coventry City' },
+  ];
+  const m = mapEspnTeamsToFpl(teamById, espnTeams);
+  assert.equal(m.get(359), 1, 'abbreviation still wins when it matches');
+  assert.equal(m.get(388), 7, 'diverging abbr resolves via displayName');
+});
+
+test('mapEspnTeamsToFpl — unique-substring name fallback (AFC Bournemouth)', () => {
+  const teamById = {
+    3: { short_name: 'BOU', name: 'AFC Bournemouth' },
+  };
+  const espnTeams = [{ id: 349, abbreviation: 'BOU', displayName: 'Bournemouth' }];
+  // Direct abbr match already resolves; force the name path with a mismatched abbr.
+  const espnTeamsNameOnly = [{ id: 349, abbreviation: 'BMH', displayName: 'Bournemouth' }];
+  assert.equal(mapEspnTeamsToFpl(teamById, espnTeams).get(349), 3);
+  assert.equal(mapEspnTeamsToFpl(teamById, espnTeamsNameOnly).get(349), 3);
+});
+
+test('mapEspnTeamsToFpl — ambiguous substring name is rejected', () => {
+  const teamById = {
+    13: { short_name: 'MCI', name: 'Manchester City' },
+    14: { short_name: 'MUN', name: 'Manchester United' },
+  };
+  // Bare "Manchester" matches both clubs → must not silently pick one.
+  const espnTeams = [{ id: 999, abbreviation: 'ZZZ', displayName: 'Manchester' }];
+  const m = mapEspnTeamsToFpl(teamById, espnTeams);
+  assert.equal(m.has(999), false);
+});
+
 test('matchFplElementId — full name matches FPL first + second', () => {
   const elementById = {
     321: { id: 321, team: 6, first_name: 'Ferdi', second_name: 'Kadıoğlu', web_name: 'F.Kadıoğlu' },

@@ -4,6 +4,7 @@
  */
 
 import { espnResourceUrl } from './espnUrl.js';
+import { fetchProxyJson } from './proxyJsonFetch.js';
 import { enrichWithFplElements } from './fotmobPremWindow.js';
 import {
   classifyEspnEvent,
@@ -22,9 +23,7 @@ function coerceInt(v) {
 
 async function fetchEspnJson(pathAndQuery) {
   const url = espnResourceUrl(pathAndQuery);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`ESPN ${pathAndQuery} HTTP ${r.status}`);
-  return r.json();
+  return fetchProxyJson(url, `ESPN ${pathAndQuery}`);
 }
 
 /**

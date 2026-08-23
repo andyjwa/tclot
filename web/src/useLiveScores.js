@@ -14,6 +14,7 @@ import { fetchEspnPremWindow } from './espnPremWindow.js';
 import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
 import { mergePremWindowSources } from './premWindowMerger.js';
 import { computeEspnMatchdayRole } from './espnMatchdayRoleForAutosub.js';
+import { shouldPollLiveGw } from './liveGwPollGate.js';
 import {
   FPL_DIRECT,
   draftEntryEventUrl,
@@ -701,13 +702,14 @@ export function useLiveScores({
   const canPollLiveGw = (() => {
     if (!tabVisible) return false;
     if (pollIntervalMs == null || !(Number(pollIntervalMs) > 0)) return false;
-    const gw = Number(gameweek);
-    if (!Number.isFinite(gw)) return false;
-    const curEv = events.find((e) => e.is_current);
-    const cur = curEv?.id;
-    if (cur == null || Number(cur) !== gw) return false;
-    if (eventSnapshot?.finished) return false;
-    return true;
+    /**
+     * Poll when FPL flags this GW current OR (crucially) once its lineup
+     * deadline has passed — FPL's `is_current` flip can lag the deadline by
+     * minutes (compounded by the proxy's ~10-min bootstrap cache), during
+     * which confirmed XIs are already publishing at T-75. See
+     * {@link shouldPollLiveGw}.
+     */
+    return shouldPollLiveGw({ events, eventSnapshot, gameweek });
   })();
 
   useEffect(() => {

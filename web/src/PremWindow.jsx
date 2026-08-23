@@ -109,6 +109,46 @@ function fixtureKey(fx) {
   return 0;
 }
 
+/**
+ * Placeholder shown in an expanded fixture when we don't (yet) have a
+ * confirmed XI. Fails loud: distinguishes "still waiting for team news",
+ * "couldn't match this fixture to any live source", and "the source errored"
+ * so a blank row never silently masquerades as "no lineups".
+ *
+ * @param {{ fx: { matchId?: number | null, fetchError?: string | null, detailsBlockedReason?: string | null } }} props
+ */
+function LineupPending({ fx }) {
+  if (fx?.detailsBlockedReason) {
+    return (
+      <p className="muted muted--tight">
+        Lineups unavailable for this fixture: {fx.detailsBlockedReason}
+      </p>
+    );
+  }
+  if (fx?.fetchError) {
+    return (
+      <p className="muted muted--tight">
+        Couldn’t reach the live lineup source (Pulselive / ESPN): {fx.fetchError}. This retries
+        automatically — use Refresh to try now.
+      </p>
+    );
+  }
+  if (fx?.matchId == null) {
+    return (
+      <p className="muted muted--tight">
+        Waiting to match this fixture to a live source. Lineups appear here once Pulselive or
+        ESPN lists it (official team sheets are published ~75 min before kickoff).
+      </p>
+    );
+  }
+  return (
+    <p className="muted muted--tight">
+      Lineups not confirmed yet — both sides’ XIs usually land around team news (~75 min before
+      kickoff).
+    </p>
+  );
+}
+
 /** Live minute string for the LIVE chip (e.g. "67'", "HT"). */
 function liveMinuteLabel(fx) {
   const s = fx?.score;
@@ -953,12 +993,12 @@ function FixtureRow({
         <div className="prem-fxbody">
           {fx.fetchError ? (
             <div className="data-banner data-banner--error" role="alert">
-              Could not load ESPN match summary: {fx.fetchError}
+              Could not load live lineups (Pulselive / ESPN): {fx.fetchError}
             </div>
           ) : null}
-          {!fx.matchId ? (
+          {!fx.matchId && !fx.fetchError ? (
             <p className="muted muted--tight">
-              No ESPN match mapped for this fixture yet.
+              No live match mapped for this fixture yet.
             </p>
           ) : null}
           {fx.matchId && fx.detailsBlockedReason ? (
@@ -1023,12 +1063,9 @@ function FixtureRow({
                 </>
               )}
             </div>
-          ) : fx.matchId && !fx.detailsBlockedReason ? (
-            <p className="muted muted--tight">
-              Lineups not confirmed yet — they often fill in close to team news (~1 hour before
-              kickoff).
-            </p>
-          ) : null}
+          ) : (
+            <LineupPending fx={fx} />
+          )}
         </div>
       ) : null}
     </div>
@@ -1101,6 +1138,7 @@ export function PremWindow({
     events,
     squads,
     contributionLiveContext,
+    refresh: refreshLive,
   } = useLiveScores({
     teams,
     gameweek,
@@ -1228,6 +1266,31 @@ export function PremWindow({
   }, [doPremWindowFetch]);
 
   /**
+   * Manual refresh: bust the FPL live cache (reloads bootstrap/events/fixtures
+   * so a lagging `is_current` flag is re-read) AND force a fresh
+   * Pulselive/ESPN lineup fetch. Gives the user an escape hatch when the 90s
+   * poll or the deadline-flag lag leaves the tab stale.
+   */
+  const handleManualRefresh = useCallback(() => {
+    if (typeof refreshLive === 'function') void refreshLive();
+    void doPremWindowFetch({ forceRefresh: true });
+  }, [refreshLive, doPremWindowFetch]);
+
+  /**
+   * Refetch lineups when the tab returns to the foreground — the poll pauses
+   * while hidden, so without this a backgrounded phone would show stale
+   * "not confirmed" rows until the next tick.
+   */
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const onVis = () => {
+      if (document.visibilityState === 'visible') void doPremWindowFetch();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [doPremWindowFetch]);
+
+  /**
    * Sort rows by earliest kickoff first. Split out live (in-play) fixtures
    * into a separate list for the pinned 'Live now' strip; the rest are
    * grouped by day.
@@ -1319,13 +1382,26 @@ export function PremWindow({
       <section className="prem-window-chrome" aria-label="Lineups">
         {/* Same navigator the Scores subtab uses (`GameWeekNavigator` from
             `LiveScores.jsx`). Auto-refresh is handled by the 90s
-            `useLiveScores` poll plus the GW-change effect, so no manual
-            refresh control is rendered. */}
-        <GameWeekNavigator
-          gameweek={gameweek}
-          gwOptions={gwOptions}
-          onGameweekChange={onGameweekChange}
-        />
+            `useLiveScores` poll plus the GW-change effect; the manual Refresh
+            button is an escape hatch for when FPL's `is_current` flag lags the
+            deadline (confirmed XIs publish at T-75 but the poll gate can stay
+            off for minutes otherwise). */}
+        <div className="prem-window-toolbar">
+          <GameWeekNavigator
+            gameweek={gameweek}
+            gwOptions={gwOptions}
+            onGameweekChange={onGameweekChange}
+          />
+          <button
+            type="button"
+            className="prem-window-refresh"
+            onClick={handleManualRefresh}
+            disabled={liveLoading || premWindowLoading}
+            aria-label="Refresh lineups"
+          >
+            {liveLoading || premWindowLoading ? 'Refreshing…' : 'Refresh'}
+          </button>
+        </div>
 
         {liveError ? (
           <div className="data-banner data-banner--error" role="alert">
