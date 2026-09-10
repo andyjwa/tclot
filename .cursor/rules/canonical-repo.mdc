@@ -4,6 +4,6 @@ globs:
 alwaysApply: true
 ---
 
-This codebase's GitHub home is **andyjwar/TCLOT** (https://github.com/andyjwar/TCLOT). Live site is https://tclot.vercel.app.
+This codebase's GitHub home is **andyjwa/tclot** (https://github.com/andyjwa/tclot). Live site is https://tclot.vercel.app.
 
-Do not push, open PRs, or merge into **andyjwa/tclot** (no trailing "r") — that is the old canonical location. If origin points there, retarget to `andyjwar/TCLOT` before committing.
+Do not push, open PRs, or merge into **andyjwar/TCLOT**. That repository is retired and will be removed. If a remote still points there, retarget to `andyjwa/tclot` before committing.
