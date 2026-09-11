@@ -323,60 +323,81 @@ function OfferForm({
     )
   }
 
+  const stakeCap = Math.min(maxStake, balance)
+  const presets = [10, 25, 50, 100].filter((n) => n >= minStake && n <= stakeCap)
+
   return (
     <form className="sidebets__form" onSubmit={submit}>
-      {lockedOpponentId == null ? (
-        <label className="sidebets__field">
-          <span>Opponent</span>
-          <select value={opponentId} onChange={(e) => setOpponentId(e.target.value)} required>
-            <option value="">Pick a team</option>
-            {opponents.map((r) => (
-              <option key={r.entryId} value={r.entryId}>
-                {shortName(r.name)}
-              </option>
-            ))}
-          </select>
-        </label>
-      ) : (
-        <p className="sidebets__note">
-          Offered to <strong>{shortName(lockedOpponentName)}</strong>. They have to accept before it is live.
-        </p>
-      )}
-      <label className="sidebets__field">
-        <span>Stake each</span>
-        <input
-          type="number"
-          inputMode="numeric"
-          min={minStake}
-          max={Math.min(maxStake, balance)}
-          step="1"
-          value={stake}
-          onChange={(e) => setStake(e.target.value)}
-        />
-      </label>
-      <label className="sidebets__field">
-        <span>The bet</span>
-        <textarea
-          rows={3}
-          maxLength={sentenceMax}
-          value={sentence}
-          placeholder="Eddy outscores Jon this week"
-          onChange={(e) => setSentence(e.target.value)}
-        />
-      </label>
-      <p className="sidebets__note">
-        Holds {valid ? fmtCoins(stakeNum) : fmtCoins(minStake)} of your coins until they accept, decline, or you cancel.
-        No odds. Settling needs them to confirm.
-      </p>
-      {error ? <p className="sidebets__error">{error}</p> : null}
-      <div className="sidebets__actions">
-        <button type="submit" className="sidebets__btn--primary" disabled={!valid || busy}>
-          Offer bet
-        </button>
-        <button type="button" disabled={busy} onClick={() => setOpen(false)}>
-          Close
-        </button>
+      <div className="sidebets__line">
+        <span className="sidebets__kicker">Vs</span>
+        {lockedOpponentId == null ? (
+          <div className="sidebets__pills" role="listbox" aria-label="Opponent">
+            {opponents.map((r) => {
+              const on = opponentId === String(r.entryId)
+              return (
+                <button
+                  key={r.entryId}
+                  type="button"
+                  role="option"
+                  aria-selected={on}
+                  className={on ? 'is-on' : undefined}
+                  onClick={() => setOpponentId(String(r.entryId))}
+                >
+                  {shortName(r.name)}
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <span className="sidebets__lock">{shortName(lockedOpponentName)}</span>
+        )}
       </div>
+      <div className="sidebets__line">
+        <span className="sidebets__kicker">Stake</span>
+        <div className="sidebets__pills">
+          {presets.map((n) => (
+            <button
+              key={n}
+              type="button"
+              className={stakeNum === n ? 'is-on' : undefined}
+              onClick={() => setStake(String(n))}
+            >
+              {n}
+            </button>
+          ))}
+          <input
+            className="sidebets__stake-input"
+            type="text"
+            inputMode="numeric"
+            aria-label="Custom stake"
+            value={stake}
+            onChange={(e) => setStake(e.target.value.replace(/[^\d]/g, ''))}
+          />
+        </div>
+      </div>
+      <input
+        className="sidebets__sentence-input"
+        type="text"
+        maxLength={sentenceMax}
+        value={sentence}
+        placeholder="The bet, in one line"
+        aria-label="The bet"
+        onChange={(e) => setSentence(e.target.value)}
+      />
+      <div className="sidebets__submit">
+        <p className="sidebets__note">
+          Holds {valid ? fmtCoins(stakeNum) : fmtCoins(minStake)} until they answer.
+        </p>
+        <div className="sidebets__actions">
+          <button type="submit" className="sidebets__btn--primary" disabled={!valid || busy}>
+            Offer
+          </button>
+          <button type="button" disabled={busy} onClick={() => setOpen(false)}>
+            Close
+          </button>
+        </div>
+      </div>
+      {error ? <p className="sidebets__error">{error}</p> : null}
     </form>
   )
 }
@@ -469,9 +490,7 @@ export function SideBetsBand({
       </div>
       {tone === 'bookie' ? (
         <p className="sidebets__lead">
-          Two managers, one sentence, equal stakes. Your coins are held until they accept
-          or you cancel. Nobody else can join, and the pot only moves when the other
-          person confirms who won, or that it is void.
+          Challenge a rival with a bet. Your coins are held until they accept or you cancel.
         </p>
       ) : null}
       {canOffer ? (
