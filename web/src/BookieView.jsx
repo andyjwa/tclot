@@ -338,6 +338,8 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           maxStake={state.sideMaxStake}
           sentenceMin={state.sideSentenceMin}
           sentenceMax={state.sideSentenceMax}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
           tone="bookie"
         />
       </section>
@@ -796,6 +798,8 @@ function WeeklyMarkets({
                   maxStake={sideMaxStake}
                   sentenceMin={sideSentenceMin}
                   sentenceMax={sideSentenceMax}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
                   tone="fixture"
                   title="Side bet"
                   hideWhenEmpty

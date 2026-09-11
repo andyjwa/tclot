@@ -395,7 +395,12 @@ export function TeamDetailView({
           </>
         )}
 
-        <TeamSideBets teamId={teamId} idToName={idToName} />
+        <TeamSideBets
+          teamId={teamId}
+          idToName={idToName}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
 
         <div className="tc-foot">
           TC LEAGUE OF TITANS · {archivedSeasonLabel() || getSeasonLabel()}

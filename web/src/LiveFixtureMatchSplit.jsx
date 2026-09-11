@@ -317,6 +317,8 @@ export function LiveFixtureMatchSplit({ fixture, ctx, onOpenPlayer }) {
         awayName={awayName}
         tone="match"
         title="Side bet"
+        teamLogoMap={ctx.teamLogoMap}
+        kitIndexByEntry={ctx.kitIndexByEntry}
         hideWhenEmpty
       />
     </div>

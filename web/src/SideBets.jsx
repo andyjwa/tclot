@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import {
   actOnSideBet,
@@ -251,6 +252,102 @@ function SideBetCard({ bet, me, token, onChanged }) {
   )
 }
 
+/** +5 up to 100, then +10. Minus mirrors that, landing on 100 when crossing it. */
+function nudgeStake(current, dir, min, max) {
+  const n = Number(current)
+  const base = Number.isInteger(n) ? n : min
+  let next
+  if (dir > 0) next = base < 100 ? Math.min(100, base + 5) : base + 10
+  else next = base > 100 ? Math.max(100, base - 10) : base - 5
+  return Math.min(max, Math.max(min, next))
+}
+
+function TeamFace({ entryId, name, logoMap, kitIndexByEntry }) {
+  if (entryId == null || !name) return null
+  return (
+    <span className="sidebets__crest">
+      <TeamAvatar
+        entryId={entryId}
+        name={name}
+        size="sm"
+        logoMap={logoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+    </span>
+  )
+}
+
+function TeamPick({ opponents, value, onChange, logoMap, kitIndexByEntry }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  const selected = opponents.find((r) => String(r.entryId) === String(value)) ?? null
+
+  useEffect(() => {
+    if (!open) return undefined
+    const onDoc = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', onDoc)
+    return () => document.removeEventListener('pointerdown', onDoc)
+  }, [open])
+
+  return (
+    <div className={'sidebets__pick' + (open ? ' is-open' : '')} ref={rootRef}>
+      <button
+        type="button"
+        className="sidebets__pick-btn"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {selected ? (
+          <TeamFace
+            entryId={selected.entryId}
+            name={selected.name}
+            logoMap={logoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+        ) : (
+          <span className="sidebets__crest sidebets__crest--empty" aria-hidden />
+        )}
+        <span className={'sidebets__pick-name' + (selected ? '' : ' is-placeholder')}>
+          {selected?.name || 'Pick a team'}
+        </span>
+        <span className="sidebets__chev" aria-hidden />
+      </button>
+      {open ? (
+        <ul className="sidebets__menu" role="listbox">
+          {opponents.map((r) => {
+            const on = String(r.entryId) === String(value)
+            return (
+              <li key={r.entryId}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={on}
+                  className={on ? 'is-on' : undefined}
+                  onClick={() => {
+                    onChange(String(r.entryId))
+                    setOpen(false)
+                  }}
+                >
+                  <TeamFace
+                    entryId={r.entryId}
+                    name={r.name}
+                    logoMap={logoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                  <span>{r.name}</span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      ) : null}
+    </div>
+  )
+}
+
 function OfferForm({
   me,
   token,
@@ -262,6 +359,8 @@ function OfferForm({
   sentenceMin,
   sentenceMax,
   onChanged,
+  teamLogoMap = {},
+  kitIndexByEntry,
 }) {
   const opponents = useMemo(() => {
     const rows = (roster ?? []).filter((r) => Number(r.entryId) !== Number(me?.entryId))
@@ -324,63 +423,66 @@ function OfferForm({
   }
 
   const stakeCap = Math.min(maxStake, balance)
-  const presets = [10, 25, 50, 100].filter((n) => n >= minStake && n <= stakeCap)
+  const lockedName =
+    lockedOpponentName ||
+    opponents.find((r) => Number(r.entryId) === Number(lockedOpponentId))?.name ||
+    'Opponent'
 
   return (
     <form className="sidebets__form" onSubmit={submit}>
-      <div className="sidebets__line">
-        <span className="sidebets__kicker">Vs</span>
+      <div className="sidebets__controls">
         {lockedOpponentId == null ? (
-          <div className="sidebets__pills" role="listbox" aria-label="Opponent">
-            {opponents.map((r) => {
-              const on = opponentId === String(r.entryId)
-              return (
-                <button
-                  key={r.entryId}
-                  type="button"
-                  role="option"
-                  aria-selected={on}
-                  className={on ? 'is-on' : undefined}
-                  onClick={() => setOpponentId(String(r.entryId))}
-                >
-                  {shortName(r.name)}
-                </button>
-              )
-            })}
-          </div>
+          <TeamPick
+            opponents={opponents}
+            value={opponentId}
+            onChange={setOpponentId}
+            logoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
         ) : (
-          <span className="sidebets__lock">{shortName(lockedOpponentName)}</span>
+          <div className="sidebets__pick-btn sidebets__pick-btn--locked">
+            <TeamFace
+              entryId={lockedOpponentId}
+              name={lockedName}
+              logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+            <span className="sidebets__pick-name">{lockedName}</span>
+          </div>
         )}
-      </div>
-      <div className="sidebets__line">
-        <span className="sidebets__kicker">Stake</span>
-        <div className="sidebets__pills">
-          {presets.map((n) => (
-            <button
-              key={n}
-              type="button"
-              className={stakeNum === n ? 'is-on' : undefined}
-              onClick={() => setStake(String(n))}
-            >
-              {n}
-            </button>
-          ))}
+        <div className="sidebets__stepper">
+          <button
+            type="button"
+            aria-label="Decrease stake"
+            disabled={!Number.isInteger(stakeNum) || stakeNum <= minStake}
+            onClick={() => setStake(String(nudgeStake(stakeNum, -1, minStake, stakeCap)))}
+          >
+            −
+          </button>
           <input
             className="sidebets__stake-input"
             type="text"
             inputMode="numeric"
-            aria-label="Custom stake"
+            aria-label="Stake"
             value={stake}
             onChange={(e) => setStake(e.target.value.replace(/[^\d]/g, ''))}
           />
+          <button
+            type="button"
+            aria-label="Increase stake"
+            disabled={!Number.isInteger(stakeNum) || stakeNum >= stakeCap}
+            onClick={() => setStake(String(nudgeStake(stakeNum, 1, minStake, stakeCap)))}
+          >
+            +
+          </button>
         </div>
       </div>
-      <input
-        className="sidebets__sentence-input"
-        type="text"
+      <textarea
+        className="sidebets__message"
+        rows={2}
         maxLength={sentenceMax}
         value={sentence}
-        placeholder="The bet, in one line"
+        placeholder="The bet"
         aria-label="The bet"
         onChange={(e) => setSentence(e.target.value)}
       />
@@ -419,6 +521,8 @@ export function SideBetsBand({
   maxStake = null,
   sentenceMin = null,
   sentenceMax = null,
+  teamLogoMap = {},
+  kitIndexByEntry = null,
   tone = 'bookie',
   title = 'Side bets',
   lockedOpponentId = null,
@@ -512,6 +616,8 @@ export function SideBetsBand({
           maxStake={stakeMax}
           sentenceMin={sentMin}
           sentenceMax={sentMax}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
           onChanged={changed}
         />
       ) : null}
@@ -537,7 +643,7 @@ export function SideBetsBand({
 }
 
 /** Team card. Hidden on archive seasons and when there is nothing to show. */
-export function TeamSideBets({ teamId, idToName = {} }) {
+export function TeamSideBets({ teamId, idToName = {}, teamLogoMap = {}, kitIndexByEntry = null }) {
   if (typeof window !== 'undefined') {
     const season = new URLSearchParams(window.location.search).get('season')
     if (season && /^\d{4}-\d{2}$/.test(season)) return null
@@ -554,6 +660,8 @@ export function TeamSideBets({ teamId, idToName = {} }) {
       title="Side bets"
       lockedOpponentId={locked?.id ?? null}
       lockedOpponentName={locked?.name ?? null}
+      teamLogoMap={teamLogoMap}
+      kitIndexByEntry={kitIndexByEntry}
       hideWhenEmpty
     />
   )
