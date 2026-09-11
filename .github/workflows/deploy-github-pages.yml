@@ -151,6 +151,7 @@ jobs:
           LEAGUE_ID: ${{ secrets.FPL_LEAGUE_ID || vars.FPL_LEAGUE_ID }}
           # Repository secret/variable, or add the same name under Settings → Environments → github-pages
           VITE_FPL_PROXY_URL: ${{ secrets.VITE_FPL_PROXY_URL || vars.VITE_FPL_PROXY_URL }}
+          VITE_BOOKIE_API_URL: ${{ secrets.VITE_BOOKIE_API_URL || vars.VITE_BOOKIE_API_URL || 'https://tclot-bookie.tclot.workers.dev' }}
           VITE_PUSH_API_URL: ${{ secrets.VITE_PUSH_API_URL || vars.VITE_PUSH_API_URL }}
           VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY || vars.VITE_VAPID_PUBLIC_KEY }}
           VITE_LEAGUE_DATA_REVISION: gw-${{ github.sha }}

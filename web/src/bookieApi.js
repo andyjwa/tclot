@@ -9,10 +9,17 @@
 
 const SESSION_STORAGE_KEY = 'tclotBookieSession.v1'
 
+/** Production Worker. Used when a deploy forgot VITE_BOOKIE_API_URL (the new
+ * Vercel project did). Local `vite` still requires the var so dev doesn't
+ * write to the live book. */
+const DEFAULT_BOOKIE_API = 'https://tclot-bookie.tclot.workers.dev'
+
 export function bookieApiBase() {
   const raw = import.meta.env.VITE_BOOKIE_API_URL
   const trimmed = typeof raw === 'string' ? raw.trim().replace(/\/+$/, '') : ''
-  return trimmed || null
+  if (trimmed) return trimmed
+  if (import.meta.env.DEV) return null
+  return DEFAULT_BOOKIE_API
 }
 
 export function bookieEnabled() {
