@@ -43,7 +43,9 @@ if (existsSync(tw)) {
   webLogos = readdirSync(tw).filter((f) => /\.png$/i.test(f)).length
 }
 
-const proxyUrl = (process.env.VITE_FPL_PROXY_URL || '').trim()
+const proxyUrl =
+  (process.env.VITE_FPL_PROXY_URL || '').trim() ||
+  (process.env.VERCEL ? 'https://tclot-fpl-proxy.tclot.workers.dev' : '')
 const liveProxyConfigured = proxyUrl.length > 0
 
 const out = {

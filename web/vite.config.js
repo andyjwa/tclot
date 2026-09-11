@@ -26,6 +26,12 @@ function redirectRootToBasePath(base) {
 // GitHub Pages sets VITE_BASE_PATH. Vercel serves the site at /, so do not use the Pages subpath there.
 const productionBase = process.env.VITE_BASE_PATH || (process.env.VERCEL ? '/' : '/TCLOT/')
 
+/** Live FPL/draft/FotMob proxy. The new Vercel project has no VITE_FPL_PROXY_URL. */
+const DEFAULT_FPL_PROXY = 'https://tclot-fpl-proxy.tclot.workers.dev'
+const fplProxyUrl =
+  (process.env.VITE_FPL_PROXY_URL || '').trim() ||
+  (process.env.VERCEL ? DEFAULT_FPL_PROXY : '')
+
 /** Dev + `vite preview`: Live / ESPN / FotMob / Pulselive same-origin proxies (`fplDraftUrl.js` uses `/__fpl` on localhost). */
 const fplRelatedProxy = {
   '^/__fpl/draft/': {
@@ -73,6 +79,9 @@ export default defineConfig(({ command }) => {
     'import.meta.env.VITE_LEAGUE_DATA_REVISION': JSON.stringify(
       process.env.VITE_LEAGUE_DATA_REVISION || '',
     ),
+    ...(fplProxyUrl
+      ? { 'import.meta.env.VITE_FPL_PROXY_URL': JSON.stringify(fplProxyUrl) }
+      : {}),
   },
   plugins: [react(), redirectRootToBasePath(base)].filter(Boolean),
   server: {
