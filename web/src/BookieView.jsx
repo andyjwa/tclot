@@ -327,6 +327,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         />
       ) : null}
 
+      <div className="tile bookie-menu">
       <WeeklyMarkets
         gw={openGw}
         markets={weeklyOpen}
@@ -337,20 +338,6 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
       />
-
-      {slip && me ? (
-        <BetSlip
-          slip={slip}
-          me={me}
-          minStake={state.minStake ?? 10}
-          token={session?.token}
-          onClose={() => setSlip(null)}
-          onPlaced={() => {
-            setSlip(null)
-            refresh()
-          }}
-        />
-      ) : null}
 
       {placeMarkets.length > 0 ? (
         <CouponFold title="Season">
@@ -415,6 +402,21 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           kitIndexByEntry={kitIndexByEntry}
         />
       </CouponFold>
+      </div>
+
+      {slip && me ? (
+        <BetSlip
+          slip={slip}
+          me={me}
+          minStake={state.minStake ?? 10}
+          token={session?.token}
+          onClose={() => setSlip(null)}
+          onPlaced={() => {
+            setSlip(null)
+            refresh()
+          }}
+        />
+      ) : null}
 
       <details className="bookie-rules">
         <summary>House rules</summary>
@@ -594,20 +596,18 @@ function OddsButton({ label, odds, active, disabled, onClick, tag = false }) {
 }
 
 /**
- * A tile whose whole body folds behind its title row. Starts closed.
- * `aside` stays visible on the summary (deadline) without opening the fold.
+ * One row in the shared menu. Starts closed. `aside` stays on the summary
+ * (deadline) without opening the fold.
  */
 function CouponFold({ title, aside, children }) {
   return (
-    <section className="tile tile--compact bookie-coupon-fold">
-      <details className="bookie-fold">
-        <summary className="bookie-fold__summary">
-          <h3 className="bookie__section-title bookie-fold__title">{title}</h3>
-          {aside ? <span className="bookie-fold__aside tabular">{aside}</span> : null}
-        </summary>
-        <div className="bookie-fold__body">{children}</div>
-      </details>
-    </section>
+    <details className="bookie-fold">
+      <summary className="bookie-fold__summary">
+        <h3 className="bookie__section-title bookie-fold__title">{title}</h3>
+        {aside ? <span className="bookie-fold__aside tabular">{aside}</span> : null}
+      </summary>
+      <div className="bookie-fold__body">{children}</div>
+    </details>
   )
 }
 
@@ -750,7 +750,7 @@ function FixtureCoupon({
     })
   const isActive = (selection) => slip?.marketId === market.id && slip?.selection === selection
   return (
-    <article className="tile tile--compact bookie-coupon">
+    <article className="bookie-coupon">
       <div className="bookie-coupon__teams">
         <span className="bookie-coupon__side">
           <TeamAvatar
