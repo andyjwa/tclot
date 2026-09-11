@@ -29,6 +29,8 @@
  *   POST /api/bets         — { marketId, selection, stake } (Bearer auth)
  *   GET  /api/cashout      — live cash-out quotes for my open bets (auth)
  *   POST /api/cashout      — { betId, quote? } take the money (auth)
+ *   POST /api/side-bets    — { opponentId, stake, sentence } offer (auth)
+ *   POST /api/side-bets/:id/accept|decline|cancel|propose|confirm|reject
  *
  * Deploy: cd web/workers/bookie && npm run deploy  (see README.md for setup)
  */
@@ -37,6 +39,17 @@ import { footballComplete, footballOfficial, finishedEventIdsFromEvents, h2hResu
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 import { applyFreshStart } from './freshStart.js';
 import { PAY_STIPEND_SQL, STIPEND_FLOOR } from './stipend.js';
+import {
+  SIDE_MAX_STAKE,
+  SIDE_MIN_STAKE,
+  SIDE_SENTENCE_MAX,
+  SIDE_SENTENCE_MIN,
+  mergeSideBetLedger,
+  normalizeSentence,
+  parseStake,
+  planSideAction,
+  publicSideBet,
+} from './sideBets.js';
 
 const STARTING_BALANCE = 1000;
 const WEEKLY_STIPEND = 50;
@@ -983,6 +996,19 @@ async function handleState(request, env, ctx, ch) {
     ]),
   );
 
+  let sideBets = [];
+  try {
+    const sideBetRows = await db
+      .prepare(`SELECT * FROM side_bets WHERE season = ? ORDER BY id DESC LIMIT 200`)
+      .bind(seasonNow)
+      .all();
+    sideBets = sideBetRows.results ?? [];
+  } catch (e) {
+    // Missing table during a deploy window should not take the house book down.
+    console.error('bookie: side bets unavailable', e);
+  }
+  mergeSideBetLedger(ledgerByEntry, sideBets);
+
   // Weekly net P/L per punter per GW (H2H + player specials).
   const weekly = await db
     .prepare(
@@ -1021,6 +1047,10 @@ async function handleState(request, env, ctx, ch) {
     weeklyStipend: WEEKLY_STIPEND,
     stipendFloor: STIPEND_FLOOR,
     minStake: MIN_STAKE,
+    sideMinStake: SIDE_MIN_STAKE,
+    sideMaxStake: SIDE_MAX_STAKE,
+    sideSentenceMin: SIDE_SENTENCE_MIN,
+    sideSentenceMax: SIDE_SENTENCE_MAX,
     markets: marketRows,
     leaderboard: (users.results ?? []).map((u) => {
       const stats = ledgerByEntry.get(Number(u.entry_id)) ?? { won: 0, lost: 0, live: 0 };
@@ -1041,6 +1071,7 @@ async function handleState(request, env, ctx, ch) {
     })),
     openBets: betRows.filter((b) => b.status === 'open'),
     closedBets: betRows.filter((b) => b.status !== 'open'),
+    sideBets: sideBets.map((row) => publicSideBet(row)).filter(Boolean),
   };
 
   const session = await sessionFromRequest(request, env);
@@ -1069,6 +1100,185 @@ async function handleState(request, env, ctx, ch) {
     }
   }
   return json(out, 200, ch);
+}
+
+/* ------------------------------------------------------------------ */
+/* Peer side bets                                                       */
+/* ------------------------------------------------------------------ */
+
+async function refundCoins(db, entryId, season, amount) {
+  await db
+    .prepare(`UPDATE users SET balance = balance + ? WHERE entry_id = ? AND season = ?`)
+    .bind(amount, entryId, season)
+    .run();
+}
+
+async function userBalance(db, entryId, season) {
+  const user = await db
+    .prepare(`SELECT balance FROM users WHERE entry_id = ? AND season = ?`)
+    .bind(entryId, season)
+    .first();
+  return user?.balance ?? null;
+}
+
+async function handleOfferSideBet(request, env, ch) {
+  const session = await sessionFromRequest(request, env);
+  if (!session) return errorJson('login required', 401, ch);
+  const body = await request.json().catch(() => null);
+  const opponentId = Number(body?.opponentId);
+  const stake = parseStake(body?.stake);
+  const sentence = normalizeSentence(body?.sentence);
+  if (!Number.isFinite(opponentId)) return errorJson('pick an opponent', 400, ch);
+  if (opponentId === session.entryId) return errorJson('pick someone else', 400, ch);
+  if (stake == null) {
+    return errorJson(
+      `stake must be a whole number from ${SIDE_MIN_STAKE} to ${SIDE_MAX_STAKE} coins`,
+      400,
+      ch,
+    );
+  }
+  if (!sentence) {
+    return errorJson(
+      `describe the bet in ${SIDE_SENTENCE_MIN}-${SIDE_SENTENCE_MAX} characters`,
+      400,
+      ch,
+    );
+  }
+
+  const db = env.DB;
+  const roster = await rosterForSeason(db, session.season);
+  if (!roster?.has(session.entryId) || !roster.has(opponentId)) {
+    return errorJson('unknown league entry', 400, ch);
+  }
+
+  const nowIso = new Date().toISOString();
+  const debit = await db
+    .prepare(
+      `UPDATE users SET balance = balance - ?
+       WHERE entry_id = ? AND season = ? AND balance >= ?`,
+    )
+    .bind(stake, session.entryId, session.season, stake)
+    .run();
+  if ((debit.meta?.changes ?? 0) === 0) return errorJson('insufficient balance', 400, ch);
+
+  let inserted;
+  try {
+    inserted = await db
+      .prepare(
+        `INSERT INTO side_bets (
+           season, proposer_id, proposer_name, opponent_id, opponent_name,
+           stake, sentence, status, created_at, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, 'offered', ?, ?)`,
+      )
+      .bind(
+        session.season,
+        session.entryId,
+        roster.get(session.entryId),
+        opponentId,
+        roster.get(opponentId),
+        stake,
+        sentence,
+        nowIso,
+        nowIso,
+      )
+      .run();
+  } catch (e) {
+    await refundCoins(db, session.entryId, session.season, stake);
+    throw e;
+  }
+
+  const row = await db
+    .prepare(`SELECT * FROM side_bets WHERE id = ?`)
+    .bind(inserted.meta?.last_row_id)
+    .first();
+  return json(
+    { ok: true, balance: await userBalance(db, session.entryId, session.season), sideBet: publicSideBet(row) },
+    200,
+    ch,
+  );
+}
+
+async function claimSideBet(db, sql, binds) {
+  const claimed = await db.prepare(sql).bind(...binds).run();
+  return (claimed.meta?.changes ?? 0) > 0;
+}
+
+async function handleSideBetAction(request, env, ch, id, action) {
+  const session = await sessionFromRequest(request, env);
+  if (!session) return errorJson('login required', 401, ch);
+  const body = action === 'propose' ? await request.json().catch(() => null) : null;
+  const db = env.DB;
+  const row = await db
+    .prepare(`SELECT * FROM side_bets WHERE id = ? AND season = ?`)
+    .bind(id, session.season)
+    .first();
+  if (!row) return errorJson('unknown side bet', 404, ch);
+
+  const plan = planSideAction(row, session.entryId, action, body);
+  if (!plan.ok) return errorJson(plan.error, plan.status);
+
+  if (plan.debit) {
+    const debit = await db
+      .prepare(
+        `UPDATE users SET balance = balance - ?
+         WHERE entry_id = ? AND season = ? AND balance >= ?`,
+      )
+      .bind(plan.debit.amount, plan.debit.entryId, session.season, plan.debit.amount)
+      .run();
+    if ((debit.meta?.changes ?? 0) === 0) return errorJson('insufficient balance', 400, ch);
+  }
+
+  const nowIso = new Date().toISOString();
+  let claimed = false;
+  if (plan.kind === 'status') {
+    claimed = await claimSideBet(
+      db,
+      `UPDATE side_bets SET status = ?, updated_at = ? WHERE id = ? AND status = ?`,
+      [plan.status, nowIso, id, plan.from],
+    );
+  } else if (plan.kind === 'propose') {
+    claimed = await claimSideBet(
+      db,
+      `UPDATE side_bets SET proposed_by = ?, proposed_result = ?, updated_at = ?
+       WHERE id = ? AND status = 'accepted'`,
+      [plan.proposedBy, plan.proposedResult, nowIso, id],
+    );
+  } else if (plan.kind === 'clear-proposal') {
+    claimed = await claimSideBet(
+      db,
+      `UPDATE side_bets SET proposed_by = NULL, proposed_result = NULL, updated_at = ?
+       WHERE id = ? AND status = 'accepted' AND proposed_result IS NOT NULL`,
+      [nowIso, id],
+    );
+  } else if (plan.kind === 'settle') {
+    claimed = await claimSideBet(
+      db,
+      `UPDATE side_bets
+       SET status = ?, winner_id = ?, proposed_by = NULL, proposed_result = NULL, updated_at = ?
+       WHERE id = ? AND status = 'accepted' AND proposed_result = ? AND proposed_by = ?`,
+      [plan.status, plan.winnerId, nowIso, id, plan.expectProposedResult, plan.expectProposedBy],
+    );
+  }
+
+  if (!claimed) {
+    if (plan.debit) await refundCoins(db, plan.debit.entryId, session.season, plan.debit.amount);
+    return errorJson('that bet already moved on', 409, ch);
+  }
+
+  for (const credit of plan.credits) {
+    await refundCoins(db, credit.entryId, session.season, credit.amount);
+  }
+
+  const fresh = await db.prepare(`SELECT * FROM side_bets WHERE id = ?`).bind(id).first();
+  return json(
+    {
+      ok: true,
+      balance: await userBalance(db, session.entryId, session.season),
+      sideBet: publicSideBet(fresh),
+    },
+    200,
+    ch,
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -1104,6 +1314,13 @@ export default {
       }
       if (path === '/api/cashout' && request.method === 'POST') {
         return await handleCashoutTake(request, env, ch);
+      }
+      if (path === '/api/side-bets' && request.method === 'POST') {
+        return await handleOfferSideBet(request, env, ch);
+      }
+      const sideAction = /^\/api\/side-bets\/(\d+)\/(accept|decline|cancel|propose|confirm|reject)$/.exec(path);
+      if (sideAction && request.method === 'POST') {
+        return await handleSideBetAction(request, env, ch, Number(sideAction[1]), sideAction[2]);
       }
       return errorJson('not found', 404, ch);
     } catch (e) {

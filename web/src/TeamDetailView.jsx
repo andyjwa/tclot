@@ -8,6 +8,7 @@ import {
 } from './teamCardStats.js'
 import { TeamCurrentSquad } from './TeamCurrentSquad.jsx'
 import { archivedSeasonLabel } from './seasonArchive.js'
+import { TeamSideBets } from './SideBets.jsx'
 import { getSeasonLabel } from './seasonString.js'
 import './TeamDetailView.css'
 
@@ -393,6 +394,8 @@ export function TeamDetailView({
         </div>
           </>
         )}
+
+        <TeamSideBets teamId={teamId} idToName={idToName} />
 
         <div className="tc-foot">
           TC LEAGUE OF TITANS · {archivedSeasonLabel() || getSeasonLabel()}

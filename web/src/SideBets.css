@@ -1,0 +1,190 @@
+.sidebets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebets--bookie {
+  margin-top: 4px;
+}
+
+.sidebets--card {
+  padding: 14px 14px 8px;
+}
+
+.sidebets--fixture {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--fm-muted, #8b93a7) 28%, transparent);
+}
+
+.sidebets--match {
+  grid-column: 1 / -1;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--fm-border, var(--tc-border, rgba(255, 255, 255, 0.08)));
+  background: var(--fm-surface-2, var(--tc-surface, transparent));
+}
+
+.sidebets__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebets__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.sidebets--card .sidebets__title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tc-text-muted, var(--fm-muted));
+}
+
+.sidebets__lead,
+.sidebets__note {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--fm-muted, var(--tc-text-muted, #8b93a7));
+}
+
+.sidebets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebets__card {
+  border: 1px solid color-mix(in srgb, var(--fm-muted, #8b93a7) 28%, transparent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebets__card--declined,
+.sidebets__card--cancelled,
+.sidebets__card--void,
+.sidebets__card--settled {
+  opacity: 0.82;
+}
+
+.sidebets__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebets__who {
+  font-size: 0.82rem;
+  font-weight: 650;
+  min-width: 0;
+}
+
+.sidebets__vs {
+  font-weight: 500;
+  color: var(--fm-muted, var(--tc-text-muted, #8b93a7));
+}
+
+.sidebets__chip {
+  flex: none;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-muted, #8b93a7) 18%, transparent);
+}
+
+.sidebets__chip--accepted,
+.sidebets__chip--settled {
+  background: color-mix(in srgb, #2bb673 22%, transparent);
+}
+
+.sidebets__chip--offered {
+  background: color-mix(in srgb, #e0a500 22%, transparent);
+}
+
+.sidebets__sentence {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.sidebets__stake {
+  margin: 0;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebets__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sidebets__actions button,
+.sidebets__offer-toggle {
+  border: 1px solid color-mix(in srgb, var(--fm-muted, #8b93a7) 40%, transparent);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sidebets__btn--primary,
+.sidebets__offer-toggle {
+  background: var(--fm-pitch, var(--tc-pos, #14532d));
+  border-color: transparent;
+  color: #fff;
+  font-weight: 650;
+}
+
+.sidebets__actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebets__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebets__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--fm-muted, var(--tc-text-muted, #8b93a7));
+}
+
+.sidebets__field select,
+.sidebets__field input,
+.sidebets__field textarea {
+  font: inherit;
+  font-size: 0.9rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--fm-muted, #8b93a7) 40%, transparent);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.sidebets__error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #ef4444;
+}

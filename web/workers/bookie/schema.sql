@@ -51,3 +51,26 @@ CREATE TABLE IF NOT EXISTS meta (
   k TEXT PRIMARY KEY,
   v TEXT NOT NULL
 );
+
+-- Peer side bets. Not a house market: equal stakes, no odds, no one else
+-- can join. Proposer's stake is escrowed on offer; opponent's on accept.
+-- Settlement pays the pot only after the other party confirms a winner
+-- or a void. Names are stored so an unclaimed opponent still shows.
+CREATE TABLE IF NOT EXISTS side_bets (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  season          TEXT    NOT NULL,
+  proposer_id     INTEGER NOT NULL,
+  proposer_name   TEXT    NOT NULL,
+  opponent_id     INTEGER NOT NULL,
+  opponent_name   TEXT    NOT NULL,
+  stake           INTEGER NOT NULL,
+  sentence        TEXT    NOT NULL,
+  status          TEXT    NOT NULL DEFAULT 'offered', -- offered | accepted | declined | cancelled | settled | void
+  winner_id       INTEGER,
+  proposed_by     INTEGER,
+  proposed_result TEXT,                               -- 'proposer' | 'opponent' | 'void'
+  created_at      TEXT    NOT NULL,
+  updated_at      TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_side_bets_season ON side_bets (season, id);

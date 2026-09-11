@@ -19,6 +19,7 @@ import {
   fetchCashoutQuotes,
   cashoutBookieBet,
 } from './bookieApi.js'
+import { SideBetsBand } from './SideBets.jsx'
 import { decimalOddsToFraction } from './oddsFormat.js'
 import { historyOpponentMetaForGw, loadLeagueFixtures } from './playerGwHistory.js'
 import { fetchLeagueJsonFile } from './playersBenchShared.js'
@@ -326,6 +327,21 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         />
       ) : null}
 
+      <section className="tile tile--compact" aria-label="Side bets">
+        <SideBetsBand
+          bets={state.sideBets ?? []}
+          roster={[...nameByEntry.entries()].map(([entryId, name]) => ({ entryId, name }))}
+          me={me}
+          token={session?.token ?? null}
+          onChanged={refresh}
+          minStake={state.sideMinStake}
+          maxStake={state.sideMaxStake}
+          sentenceMin={state.sideSentenceMin}
+          sentenceMax={state.sideSentenceMax}
+          tone="bookie"
+        />
+      </section>
+
       <WeeklyMarkets
         gw={openGw}
         markets={weeklyOpen}
@@ -335,6 +351,15 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         onPick={setSlip}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
+        sideBets={state.sideBets ?? []}
+        sideMe={me}
+        sideToken={session?.token ?? null}
+        onSideChanged={refresh}
+        sideMinStake={state.sideMinStake}
+        sideMaxStake={state.sideMaxStake}
+        sideSentenceMin={state.sideSentenceMin}
+        sideSentenceMax={state.sideSentenceMax}
+        roster={[...nameByEntry.entries()].map(([entryId, name]) => ({ entryId, name }))}
       />
 
       {slip && me ? (
@@ -406,8 +431,9 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           (green row) until the next gameweek's markets open, and a{' '}
           {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
           each settled gameweek only if your bankroll has fallen below{' '}
-          {fmtCoins(state.stipendFloor ?? 250)}, so going bust is embarrassing,
-          not terminal. Open tickets carry a
+          {fmtCoins(state.stipendFloor ?? 250)},           so going bust is embarrassing,
+          not terminal. A side bet is just two of you: equal stakes, no odds, and the
+          pot only moves when the other person confirms. Open tickets carry a
           cash-out offer — what your position is worth right now, minus the house's cut.
           Once the gameweek kicks off the offer tracks the live scores, so when your long
           shot is 20 points up the bookie will dangle a tidy guaranteed profit in front of
@@ -623,6 +649,15 @@ function WeeklyMarkets({
   onPick,
   teamLogoMap,
   kitIndexByEntry,
+  sideBets = [],
+  sideMe = null,
+  sideToken = null,
+  onSideChanged = null,
+  sideMinStake = null,
+  sideMaxStake = null,
+  sideSentenceMin = null,
+  sideSentenceMax = null,
+  roster = [],
 }) {
   const [nowMs, setNowMs] = useState(() => Date.now())
   useEffect(() => {
@@ -747,6 +782,24 @@ function WeeklyMarkets({
                     onPick={onPick}
                   />
                 ))}
+                <SideBetsBand
+                  bets={sideBets}
+                  homeId={p.homeEntryId}
+                  awayId={p.awayEntryId}
+                  homeName={p.homeName}
+                  awayName={p.awayName}
+                  roster={roster}
+                  me={sideMe}
+                  token={sideToken}
+                  onChanged={onSideChanged}
+                  minStake={sideMinStake}
+                  maxStake={sideMaxStake}
+                  sentenceMin={sideSentenceMin}
+                  sentenceMax={sideSentenceMax}
+                  tone="fixture"
+                  title="Side bet"
+                  hideWhenEmpty
+                />
               </div>
             </details>
           )

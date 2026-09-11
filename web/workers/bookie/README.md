@@ -114,3 +114,16 @@ production.
 | POST   | `/api/bets`     | `{ marketId, selection, stake }`  | Bearer auth required        |
 | GET    | `/api/cashout`  |                                   | offers for my open bets (auth) |
 | POST   | `/api/cashout`  | `{ betId, quote? }`               | pays ≥ `quote` or 409s with the new offer |
+| POST   | `/api/side-bets` | `{ opponentId, stake, sentence }` | holds the proposer's stake (auth) |
+| POST   | `/api/side-bets/:id/accept` | | holds the opponent's matching stake |
+| POST   | `/api/side-bets/:id/decline` | | refunds the proposer |
+| POST   | `/api/side-bets/:id/cancel` | | proposer only, while still offered |
+| POST   | `/api/side-bets/:id/propose` | `{ result: "me" \| "them" \| "void" }` | live bets only; does not pay |
+| POST   | `/api/side-bets/:id/confirm` | | the other party confirms; then the pot moves |
+| POST   | `/api/side-bets/:id/reject` | | clears a pending result call |
+
+Side bets are not house markets. Two managers, equal stakes, no odds, and
+nobody else can join. `/api/state` includes `sideBets`. A winner is paid both
+stakes only after the other manager confirms. A void returns both stakes the
+same way. Declining or cancelling an unanswered offer returns the proposer's
+coins.

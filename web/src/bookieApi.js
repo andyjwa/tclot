@@ -103,3 +103,17 @@ export function fetchCashoutQuotes(token) {
 export function cashoutBookieBet(token, { betId, quote }) {
   return request('/api/cashout', { method: 'POST', token, body: { betId, quote } })
 }
+
+/** Offer a peer side bet. Holds the proposer's stake until accept, decline, or cancel. */
+export function offerSideBet(token, { opponentId, stake, sentence }) {
+  return request('/api/side-bets', {
+    method: 'POST',
+    token,
+    body: { opponentId, stake, sentence },
+  })
+}
+
+/** accept | decline | cancel | propose | confirm | reject */
+export function actOnSideBet(token, id, action, body = null) {
+  return request(`/api/side-bets/${id}/${action}`, { method: 'POST', token, body })
+}

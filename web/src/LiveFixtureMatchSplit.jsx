@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
+import { SideBetsBand } from './SideBets.jsx';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
@@ -309,6 +310,15 @@ export function LiveFixtureMatchSplit({ fixture, ctx, onOpenPlayer }) {
       <MatchEventsBlock homeSquad={homeSquad} awaySquad={awaySquad} />
       <SplitColumn squad={homeSquad} onOpenPlayer={pick(homeSquad)} />
       <SplitColumn squad={awaySquad} onOpenPlayer={pick(awaySquad)} away />
+      <SideBetsBand
+        homeId={homeId}
+        awayId={awayId}
+        homeName={homeName}
+        awayName={awayName}
+        tone="match"
+        title="Side bet"
+        hideWhenEmpty
+      />
     </div>
   );
 }
