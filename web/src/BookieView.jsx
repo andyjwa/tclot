@@ -378,6 +378,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
           tone="bookie"
+          hideTitle
         />
       </CouponFold>
 
@@ -593,15 +594,16 @@ function OddsButton({ label, odds, active, disabled, onClick, tag = false }) {
 }
 
 /**
- * A tile whose whole body folds behind its title row. Pass `open` for a
- * section that should start expanded (fixtures inside still load collapsed).
+ * A tile whose whole body folds behind its title row. Starts closed.
+ * `aside` stays visible on the summary (deadline) without opening the fold.
  */
-function CouponFold({ title, children }) {
+function CouponFold({ title, aside, children }) {
   return (
     <section className="tile tile--compact bookie-coupon-fold">
       <details className="bookie-fold">
         <summary className="bookie-fold__summary">
           <h3 className="bookie__section-title bookie-fold__title">{title}</h3>
+          {aside ? <span className="bookie-fold__aside tabular">{aside}</span> : null}
         </summary>
         <div className="bookie-fold__body">{children}</div>
       </details>
@@ -678,44 +680,48 @@ function WeeklyMarkets({
 
   const clubCtx = usePlayerClubContext(boardsByMatch.size > 0)
 
+  const deadline = markets[0]?.closesAt
+  const countdown = fmtCountdown(deadline, nowMs)
+  const aside =
+    gw == null || markets.length === 0
+      ? null
+      : countdown
+        ? `Closes in ${countdown}`
+        : `Closes ${fmtDeadline(deadline) ?? 'soon'}`
+
   if (gw == null || markets.length === 0) {
     return (
-      <section className="tile tile--compact" aria-label="Weekly markets">
-        <h3 className="bookie__section-title">This week's matchups</h3>
+      <CouponFold title="Weekly fixtures">
         <p className="bookie__note">
           No open weekly market right now — the next gameweek's board opens when the site
           rebuilds after results are banked.
         </p>
-      </section>
+      </CouponFold>
     )
   }
 
-  const deadline = markets[0]?.closesAt
-  const countdown = fmtCountdown(deadline, nowMs)
-
   return (
-    <div className="bookie-coupons">
-      <p className="bookie-coupons__when tabular">
-        {countdown ? `Closes in ${countdown}` : `Closes ${fmtDeadline(deadline) ?? 'soon'}`}
-      </p>
-      <div className="bookie-coupons__grid">
-        {markets.map((m) => (
-          <FixtureCoupon
-            key={m.id}
-            market={m}
-            gw={gw}
-            boards={boardsByMatch.get(`${m.payload.homeEntryId}-${m.payload.awayEntryId}`) ?? []}
-            me={me}
-            slip={slip}
-            onPick={onPick}
-            clubCtx={clubCtx}
-            teamLogoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        ))}
+    <CouponFold title="Weekly fixtures" aside={aside}>
+      <div className="bookie-coupons">
+        <div className="bookie-coupons__grid">
+          {markets.map((m) => (
+            <FixtureCoupon
+              key={m.id}
+              market={m}
+              gw={gw}
+              boards={boardsByMatch.get(`${m.payload.homeEntryId}-${m.payload.awayEntryId}`) ?? []}
+              me={me}
+              slip={slip}
+              onPick={onPick}
+              clubCtx={clubCtx}
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+          ))}
+        </div>
+        {!me ? <p className="bookie__note bookie__note--small">Log in above to back someone.</p> : null}
       </div>
-      {!me ? <p className="bookie__note bookie__note--small">Log in above to back someone.</p> : null}
-    </div>
+    </CouponFold>
   )
 }
 
@@ -793,27 +799,33 @@ function FixtureCoupon({
           onClick={pickFor('away', `${away} to win`, p.odds.away)}
         />
       </div>
-      {boards.map((board) => {
-        const meta = PLAYER_BOARD_META[board.kind]
-        if (!meta) return null
-        return (
-          <details key={board.id} className="bookie-special">
-            <summary className="bookie-special__summary">{meta.fold}</summary>
-            {board.kind === 'scorer' ? (
-              <p className="bookie-special__note">Several can win.</p>
-            ) : null}
-            <PlayerBoard
-              market={board}
-              matchLabel={matchLabel}
-              clubCtx={clubCtx}
-              me={me}
-              slip={slip}
-              onPick={onPick}
-              hideTitle
-            />
-          </details>
-        )
-      })}
+      {boards.length > 0 ? (
+        <div className="bookie-specials">
+          {boards.map((board) => {
+            const meta = PLAYER_BOARD_META[board.kind]
+            if (!meta) return null
+            return (
+              <details key={board.id} className="bookie-special">
+                <summary className="bookie-special__summary">{meta.fold}</summary>
+                <div className="bookie-special__body">
+                  {board.kind === 'scorer' ? (
+                    <p className="bookie-special__note">Several can win.</p>
+                  ) : null}
+                  <PlayerBoard
+                    market={board}
+                    matchLabel={matchLabel}
+                    clubCtx={clubCtx}
+                    me={me}
+                    slip={slip}
+                    onPick={onPick}
+                    hideTitle
+                  />
+                </div>
+              </details>
+            )
+          })}
+        </div>
+      ) : null}
     </article>
   )
 }

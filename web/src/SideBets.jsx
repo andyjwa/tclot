@@ -525,6 +525,7 @@ export function SideBetsBand({
   kitIndexByEntry = null,
   tone = 'bookie',
   title = 'Side bets',
+  hideTitle = false,
   lockedOpponentId = null,
   lockedOpponentName = null,
   homeName = null,
@@ -589,9 +590,11 @@ export function SideBetsBand({
 
   return (
     <section className={`sidebets sidebets--${tone}`} aria-label={title}>
-      <div className="sidebets__head">
-        <h3 className="sidebets__title">{title}</h3>
-      </div>
+      {hideTitle ? null : (
+        <div className="sidebets__head">
+          <h3 className="sidebets__title">{title}</h3>
+        </div>
+      )}
       {tone === 'bookie' ? (
         <p className="sidebets__lead">
           Challenge a rival with a bet. Your coins are held until they accept or you cancel.
