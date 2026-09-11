@@ -4,6 +4,7 @@ import {
   forbiddenIdSetFromPayload,
   isForbiddenWaiverPickup,
   pickupElementId,
+  pickupIdSetFromLatestWaiver,
   pickupIdSetFromMoves,
   takenForbiddenIdsFromMoves,
 } from './forbiddenWaivers.js'
@@ -61,6 +62,21 @@ test('takenForbiddenIdsFromMoves — only forbidden pickups', () => {
   assert.equal(taken.has(593), true)
   assert.equal(taken.has(415), false)
   assert.equal(taken.size, 2)
+})
+
+test('pickupIdSetFromLatestWaiver — only the newest waiver gameweek', () => {
+  const set = pickupIdSetFromLatestWaiver([
+    { element_in: DEDIC, gameweek: 2 },
+    { element_in: 597, event: 2 },
+    { element_in: 415, gameweek: 3 },
+    { element_in: null, gameweek: 3 },
+  ])
+  assert.equal(set.has(415), true)
+  assert.equal(set.has(DEDIC), false)
+  assert.equal(set.has(597), false)
+  assert.equal(set.size, 1)
+  assert.equal(pickupIdSetFromLatestWaiver([]).size, 0)
+  assert.equal(pickupIdSetFromLatestWaiver(null).size, 0)
 })
 
 test('pickupIdSetFromMoves — all successful pickup ids', () => {

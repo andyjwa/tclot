@@ -19,14 +19,14 @@ const POS_RANK = { GKP: 1, GK: 1, DEF: 2, MID: 3, FWD: 4 }
  * deploy from scripts/build-forbidden-waivers.mjs (fresh bootstrap minus the
  * baseline snapshot), so new signings appear here automatically.
  *
- * `takenPickupIds` is the set of element ids that have actually been claimed
- * (successful waiver / FA). Those rows light up in red.
+ * `takenPickupIds` is the set of element ids claimed in the latest waiver
+ * run only. Those rows light up in red, and the list folds shut again when
+ * that set is empty.
  */
 export function ForbiddenWaivers({ takenPickupIds = null }) {
   const { data, players } = useForbiddenWaivers()
   const isCeefax = useIsCeefax()
   const [foldOpen, setFoldOpen] = useState(false)
-  const [autoOpened, setAutoOpened] = useState(false)
 
   const takenCount = useMemo(() => {
     if (!takenPickupIds || typeof takenPickupIds.has !== 'function') return 0
@@ -38,11 +38,8 @@ export function ForbiddenWaivers({ takenPickupIds = null }) {
   }, [players, takenPickupIds])
 
   useEffect(() => {
-    if (takenCount > 0 && !autoOpened) {
-      setFoldOpen(true)
-      setAutoOpened(true)
-    }
-  }, [takenCount, autoOpened])
+    setFoldOpen(takenCount > 0)
+  }, [takenCount])
 
   if (!data) return null
 

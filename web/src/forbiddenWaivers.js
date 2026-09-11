@@ -69,3 +69,35 @@ export function pickupIdSetFromMoves(moves) {
   }
   return out
 }
+
+/** Gameweek on a drops-gw-live row or a raw draft transaction. */
+export function waiverMoveGameweek(move) {
+  const g = Number(move?.gameweek ?? move?.event)
+  return Number.isFinite(g) && g >= 1 ? g : null
+}
+
+/** Highest processed waiver gameweek in the row set, or null. */
+export function latestWaiverGameweek(moves) {
+  let max = null
+  if (!Array.isArray(moves)) return max
+  for (const m of moves) {
+    const g = waiverMoveGameweek(m)
+    if (g != null && (max == null || g > max)) max = g
+  }
+  return max
+}
+
+/**
+ * Pickup ids from the latest waiver gameweek only. Earlier claims fall off
+ * when the next waiver run lands, so a taken stamp does not stick all season.
+ *
+ * @param {object[] | null | undefined} moves
+ * @returns {Set<number>}
+ */
+export function pickupIdSetFromLatestWaiver(moves) {
+  const gw = latestWaiverGameweek(moves)
+  if (gw == null) return new Set()
+  return pickupIdSetFromMoves(
+    moves.filter((m) => waiverMoveGameweek(m) === gw),
+  )
+}

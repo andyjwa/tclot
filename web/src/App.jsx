@@ -566,7 +566,7 @@ import {
   WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
 import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
-import { pickupIdSetFromMoves } from './forbiddenWaivers.js'
+import { pickupIdSetFromLatestWaiver } from './forbiddenWaivers.js'
 import { reloadStandaloneApp } from './tclotRefresh.js'
 import {
   readTclotViewState,
@@ -3025,9 +3025,9 @@ function App() {
     () => mergeWaiverOutGwRows(staticWaiverOutGwRows, liveWaiver.rows),
     [staticWaiverOutGwRows, liveWaiver.rows],
   )
-  /** Successful pickup ids (static ingest + live FPL overlay) for forbidden-list stamps. */
+  /** Forbidden stamps follow the latest waiver run only, so last week's claims drop off. */
   const takenPickupIds = useMemo(
-    () => pickupIdSetFromMoves(waiverOutGwRows),
+    () => pickupIdSetFromLatestWaiver(waiverOutGwRows),
     [waiverOutGwRows],
   )
   const refreshLeagueAndWaivers = useCallback(async () => {
