@@ -327,23 +327,6 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         />
       ) : null}
 
-      <section className="tile tile--compact" aria-label="Side bets">
-        <SideBetsBand
-          bets={state.sideBets ?? []}
-          roster={[...nameByEntry.entries()].map(([entryId, name]) => ({ entryId, name }))}
-          me={me}
-          token={session?.token ?? null}
-          onChanged={refresh}
-          minStake={state.sideMinStake}
-          maxStake={state.sideMaxStake}
-          sentenceMin={state.sideSentenceMin}
-          sentenceMax={state.sideSentenceMax}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-          tone="bookie"
-        />
-      </section>
-
       <WeeklyMarkets
         gw={openGw}
         markets={weeklyOpen}
@@ -387,6 +370,23 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           kitIndexByEntry={kitIndexByEntry}
         />
       ) : null}
+
+      <section className="tile tile--compact" aria-label="Side bets">
+        <SideBetsBand
+          bets={state.sideBets ?? []}
+          roster={[...nameByEntry.entries()].map(([entryId, name]) => ({ entryId, name }))}
+          me={me}
+          token={session?.token ?? null}
+          onChanged={refresh}
+          minStake={state.sideMinStake}
+          maxStake={state.sideMaxStake}
+          sentenceMin={state.sideSentenceMin}
+          sentenceMax={state.sideSentenceMax}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          tone="bookie"
+        />
+      </section>
 
       {me ? (
         <MyBets
