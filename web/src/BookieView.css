@@ -207,7 +207,31 @@
 
 .bookie-odds-btn--active {
   border-color: var(--fm-pitch);
-  background: color-mix(in srgb, var(--fm-pitch) 14%, transparent);
+  background: var(--fm-pitch);
+  color: #fff;
+}
+
+.bookie-odds-btn--active .bookie-odds-btn__label,
+.bookie-odds-btn--active .bookie-odds-btn__odds {
+  color: inherit;
+}
+
+.bookie-odds-btn--tag {
+  min-width: 0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fm-text);
+}
+
+.bookie-odds-btn--tag.bookie-odds-btn--active {
+  background: transparent;
+  color: var(--fm-text);
+  border-color: var(--fm-pitch);
+}
+
+.bookie-odds-btn--tag.bookie-odds-btn--active .bookie-odds-btn__odds {
+  color: var(--fm-pitch);
 }
 
 .bookie-odds-btn__label {
@@ -921,4 +945,124 @@
   .bookie-odds-btn {
     min-width: 0;
   }
+}
+
+/* --- coupon: every fixture shows winner chips and closed lists --- */
+
+.bookie-coupons__when {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: var(--fm-muted);
+}
+
+.bookie-coupons__grid {
+  display: grid;
+  gap: 10px;
+}
+
+@media (min-width: 900px) {
+  .bookie-coupons__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.bookie-coupon__teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bookie-coupon__side {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.bookie-coupon__side > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookie-market__odds--winner {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.bookie-special {
+  margin-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--fm-muted) 22%, transparent);
+}
+
+.bookie-special__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 2px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.bookie-special__summary::-webkit-details-marker {
+  display: none;
+}
+
+.bookie-special__summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 2px solid var(--fm-muted);
+  border-bottom: 2px solid var(--fm-muted);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.bookie-special[open] > .bookie-special__summary::after {
+  transform: rotate(-135deg);
+}
+
+.bookie-special__note {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  color: var(--fm-muted);
+}
+
+.bookie-fold__body > .tile {
+  border: none;
+  background: transparent;
+  padding: 8px 0 0;
+  box-shadow: none;
+}
+
+.bookie-fold__body > .tile > .bookie__section-title:first-child {
+  display: none;
+}
+
+.bookie-login__hint {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--fm-muted);
+}
+
+.bookie-login__hint summary {
+  cursor: pointer;
+}
+
+.bookie-rules {
+  font-size: 0.82rem;
+}
+
+.bookie-rules summary {
+  cursor: pointer;
+  color: var(--fm-muted);
+}
+
+.bookie-rules .bookie__note {
+  margin-top: 8px;
 }

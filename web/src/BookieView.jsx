@@ -336,15 +336,6 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         onPick={setSlip}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
-        sideBets={state.sideBets ?? []}
-        sideMe={me}
-        sideToken={session?.token ?? null}
-        onSideChanged={refresh}
-        sideMinStake={state.sideMinStake}
-        sideMaxStake={state.sideMaxStake}
-        sideSentenceMin={state.sideSentenceMin}
-        sideSentenceMax={state.sideSentenceMax}
-        roster={[...nameByEntry.entries()].map(([entryId, name]) => ({ entryId, name }))}
       />
 
       {slip && me ? (
@@ -362,16 +353,18 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       ) : null}
 
       {placeMarkets.length > 0 ? (
-        <SeasonPlaceBoard
-          markets={placeMarkets}
-          me={me}
-          onPick={setSlip}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
+        <CouponFold title="Season">
+          <SeasonPlaceBoard
+            markets={placeMarkets}
+            me={me}
+            onPick={setSlip}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+        </CouponFold>
       ) : null}
 
-      <section className="tile tile--compact" aria-label="Side bets">
+      <CouponFold title="Side bets">
         <SideBetsBand
           bets={state.sideBets ?? []}
           roster={[...nameByEntry.entries()].map(([entryId, name]) => ({ entryId, name }))}
@@ -386,38 +379,44 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           kitIndexByEntry={kitIndexByEntry}
           tone="bookie"
         />
-      </section>
+      </CouponFold>
 
       {me ? (
-        <MyBets
+        <CouponFold title="My bets">
+          <MyBets
+            me={me}
+            markets={markets}
+            nameByEntry={nameByEntry}
+            cashoutQuotes={cashoutQuotes}
+            token={session?.token}
+            onCashedOut={refresh}
+          />
+        </CouponFold>
+      ) : null}
+
+      <CouponFold title="Live bets">
+        <LiveBets
+          state={state}
           me={me}
           markets={markets}
           nameByEntry={nameByEntry}
-          cashoutQuotes={cashoutQuotes}
-          token={session?.token}
-          onCashedOut={refresh}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
         />
-      ) : null}
+      </CouponFold>
 
-      <LiveBets
-        state={state}
-        me={me}
-        markets={markets}
-        nameByEntry={nameByEntry}
-        teamLogoMap={teamLogoMap}
-        kitIndexByEntry={kitIndexByEntry}
-      />
+      <CouponFold title="Leaderboard">
+        <BookieLeaderboards
+          state={state}
+          me={me}
+          nameByEntry={nameByEntry}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      </CouponFold>
 
-      <BookieLeaderboards
-        state={state}
-        me={me}
-        nameByEntry={nameByEntry}
-        teamLogoMap={teamLogoMap}
-        kitIndexByEntry={kitIndexByEntry}
-      />
-
-      <section className="tile tile--compact" aria-label="How the bookie works">
-        <h3 className="bookie__method-title">House rules</h3>
+      <details className="bookie-rules">
+        <summary>House rules</summary>
         <p className="bookie__note">
           Every manager starts the season with {fmtCoins(state.startingBalance ?? 1000)}{' '}
           Clotcoins — the official TCLOT currency: completely fake, worthless, and worth
@@ -441,7 +440,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           shot is 20 points up the bookie will dangle a tidy guaranteed profit in front of
           you and quietly hope you take it.
         </p>
-      </section>
+      </details>
     </div>
   )
 }
@@ -559,11 +558,13 @@ function BookieLogin({ roster, teamLogoMap, kitIndexByEntry, onLoggedIn }) {
               First time — claim team
             </button>
           </div>
-          <p className="bookie__note bookie__note--small">
-            First visit: pick your team, choose a PIN, hit “claim team”. The PIN stops your
-            rivals betting your bankroll on last place — it is honor-system security, not
-            banking security.
-          </p>
+          <details className="bookie-login__hint">
+            <summary>First visit</summary>
+            <p className="bookie__note bookie__note--small">
+              Pick your team, choose a PIN, hit “claim team”. The PIN stops a rival betting
+              your bankroll. It is not banking security.
+            </p>
+          </details>
           {error ? <p className="bookie__error" role="alert">{error}</p> : null}
         </>
       )}
@@ -571,17 +572,21 @@ function BookieLogin({ roster, teamLogoMap, kitIndexByEntry, onLoggedIn }) {
   )
 }
 
-function OddsButton({ label, odds, active, disabled, onClick }) {
+function OddsButton({ label, odds, active, disabled, onClick, tag = false }) {
   return (
     <button
       type="button"
-      className={'bookie-odds-btn' + (active ? ' bookie-odds-btn--active' : '')}
+      className={
+        'bookie-odds-btn' +
+        (tag ? ' bookie-odds-btn--tag' : '') +
+        (active ? ' bookie-odds-btn--active' : '')
+      }
       disabled={disabled}
       onClick={onClick}
     >
-      <span className="bookie-odds-btn__label">{label}</span>
+      {tag ? null : <span className="bookie-odds-btn__label">{label}</span>}
       <span className="bookie-odds-btn__odds tabular" title={`decimal ${Number(odds).toFixed(2)}`}>
-        {fmtOdds(odds)}
+        {tag ? fmtOdds(odds) : fmtOdds(odds)}
       </span>
     </button>
   )
@@ -591,15 +596,14 @@ function OddsButton({ label, odds, active, disabled, onClick }) {
  * A tile whose whole body folds behind its title row. Pass `open` for a
  * section that should start expanded (fixtures inside still load collapsed).
  */
-function FoldTile({ ariaLabel, title, meta, open = false, children }) {
+function CouponFold({ title, children }) {
   return (
-    <section className="tile tile--compact" aria-label={ariaLabel}>
-      <details className="bookie-fold" open={open || undefined}>
+    <section className="tile tile--compact bookie-coupon-fold">
+      <details className="bookie-fold">
         <summary className="bookie-fold__summary">
           <h3 className="bookie__section-title bookie-fold__title">{title}</h3>
-          {meta ? <span className="bookie__deadline tabular">{meta}</span> : null}
         </summary>
-        {children}
+        <div className="bookie-fold__body">{children}</div>
       </details>
     </section>
   )
@@ -651,15 +655,6 @@ function WeeklyMarkets({
   onPick,
   teamLogoMap,
   kitIndexByEntry,
-  sideBets = [],
-  sideMe = null,
-  sideToken = null,
-  onSideChanged = null,
-  sideMinStake = null,
-  sideMaxStake = null,
-  sideSentenceMin = null,
-  sideSentenceMax = null,
-  roster = [],
 }) {
   const [nowMs, setNowMs] = useState(() => Date.now())
   useEffect(() => {
@@ -697,136 +692,129 @@ function WeeklyMarkets({
 
   const deadline = markets[0]?.closesAt
   const countdown = fmtCountdown(deadline, nowMs)
-  const anySpecials = boardsByMatch.size > 0
 
   return (
-    <FoldTile
-      ariaLabel="Weekly markets"
-      title={`GW${gw} matchups`}
-      meta={countdown ? `closes in ${countdown}` : `closes ${fmtDeadline(deadline) ?? 'soon'}`}
-      open
-    >
-      <div className="bookie-punters">
-        {markets.map((m) => {
-          const p = m.payload
-          const home = standingsMobileTeamName(p.homeName)
-          const away = standingsMobileTeamName(p.awayName)
-          const matchLabel = `${home} v ${away}`
-          const boards = boardsByMatch.get(`${p.homeEntryId}-${p.awayEntryId}`) ?? []
-          const pickFor = (selection, label, odds) => () =>
-            onPick({
-              marketId: m.id,
-              selection,
-              label,
-              odds,
-              detail: `${matchLabel} · GW${gw}`,
-            })
-          const isActive = (selection) => slip?.marketId === m.id && slip?.selection === selection
-          return (
-            <details key={m.id} className="bookie-punter">
-              <summary className="bookie-punter__summary">
-                <span className="bookie-market__teams bookie-fixture__teams">
-                  <span className="bookie-market__team">
-                    <TeamAvatar
-                      entryId={p.homeEntryId}
-                      name={p.homeName}
-                      size="sm"
-                      logoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                    <span>{home}</span>
-                  </span>
-                  <span className="bookie-market__vs" aria-hidden>v</span>
-                  <span className="bookie-market__team bookie-market__team--away">
-                    <span>{away}</span>
-                    <TeamAvatar
-                      entryId={p.awayEntryId}
-                      name={p.awayName}
-                      size="sm"
-                      logoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                  </span>
-                </span>
-              </summary>
-              <div className="bookie-fixture__body">
-                <div className="bookie-market__odds" role="group" aria-label="Match odds">
-                  <OddsButton
-                    label={home}
-                    odds={p.odds.home}
-                    active={isActive('home')}
-                    disabled={!me || !m.open}
-                    onClick={pickFor('home', `${home} to win`, p.odds.home)}
-                  />
-                  <OddsButton
-                    label="Draw"
-                    odds={p.odds.draw}
-                    active={isActive('draw')}
-                    disabled={!me || !m.open}
-                    onClick={pickFor('draw', 'Draw', p.odds.draw)}
-                  />
-                  <OddsButton
-                    label={away}
-                    odds={p.odds.away}
-                    active={isActive('away')}
-                    disabled={!me || !m.open}
-                    onClick={pickFor('away', `${away} to win`, p.odds.away)}
-                  />
-                </div>
-                {boards.map((b) => (
-                  <PlayerBoard
-                    key={b.id}
-                    market={b}
-                    matchLabel={matchLabel}
-                    clubCtx={clubCtx}
-                    me={me}
-                    slip={slip}
-                    onPick={onPick}
-                  />
-                ))}
-                <SideBetsBand
-                  bets={sideBets}
-                  homeId={p.homeEntryId}
-                  awayId={p.awayEntryId}
-                  homeName={p.homeName}
-                  awayName={p.awayName}
-                  roster={roster}
-                  me={sideMe}
-                  token={sideToken}
-                  onChanged={onSideChanged}
-                  minStake={sideMinStake}
-                  maxStake={sideMaxStake}
-                  sentenceMin={sideSentenceMin}
-                  sentenceMax={sideSentenceMax}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                  tone="fixture"
-                  title="Side bet"
-                  hideWhenEmpty
-                />
-              </div>
-            </details>
-          )
-        })}
+    <div className="bookie-coupons">
+      <p className="bookie-coupons__when tabular">
+        {countdown ? `Closes in ${countdown}` : `Closes ${fmtDeadline(deadline) ?? 'soon'}`}
+      </p>
+      <div className="bookie-coupons__grid">
+        {markets.map((m) => (
+          <FixtureCoupon
+            key={m.id}
+            market={m}
+            gw={gw}
+            boards={boardsByMatch.get(`${m.payload.homeEntryId}-${m.payload.awayEntryId}`) ?? []}
+            me={me}
+            slip={slip}
+            onPick={onPick}
+            clubCtx={clubCtx}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+        ))}
       </div>
-      {anySpecials ? (
-        <p className="bookie__note bookie__note--small">
-          Player specials pool both squads. Anytime goalscorer pays on every player who
-          scores — several tickets can win. Top point scorer pays the most draft points
-          across both squads, dead heats all paying. A pick who never gets on the pitch is
-          void: stake refunded.
-        </p>
-      ) : (
-        <p className="bookie__note bookie__note--small">
-          Player specials (anytime goalscorer and top point scorer) open under each
-          fixture once the bookie has pulled this week's sheet. Refresh if they are
-          missing.
-        </p>
-      )}
-      {!me ? (
-        <p className="bookie__note bookie__note--small">Log in above to back someone.</p>
-      ) : null}
-    </FoldTile>
+      {!me ? <p className="bookie__note bookie__note--small">Log in above to back someone.</p> : null}
+    </div>
+  )
+}
+
+function FixtureCoupon({
+  market,
+  gw,
+  boards,
+  me,
+  slip,
+  onPick,
+  clubCtx,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
+  const p = market.payload
+  const home = standingsMobileTeamName(p.homeName)
+  const away = standingsMobileTeamName(p.awayName)
+  const matchLabel = `${home} v ${away}`
+  const pickFor = (selection, label, odds) => () =>
+    onPick({
+      marketId: market.id,
+      selection,
+      label,
+      odds,
+      detail: `${matchLabel} · GW${gw}`,
+    })
+  const isActive = (selection) => slip?.marketId === market.id && slip?.selection === selection
+  return (
+    <article className="tile tile--compact bookie-coupon">
+      <div className="bookie-coupon__teams">
+        <span className="bookie-coupon__side">
+          <TeamAvatar
+            entryId={p.homeEntryId}
+            name={p.homeName}
+            size="sm"
+            logoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+          <span>{home}</span>
+        </span>
+        <span className="bookie-market__vs" aria-hidden>
+          v
+        </span>
+        <span className="bookie-coupon__side">
+          <TeamAvatar
+            entryId={p.awayEntryId}
+            name={p.awayName}
+            size="sm"
+            logoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+          <span>{away}</span>
+        </span>
+      </div>
+      <div className="bookie-market__odds bookie-market__odds--winner" role="group" aria-label="Winner">
+        <OddsButton
+          label={home}
+          odds={p.odds.home}
+          active={isActive('home')}
+          disabled={!me || !market.open}
+          onClick={pickFor('home', `${home} to win`, p.odds.home)}
+        />
+        <OddsButton
+          label="Draw"
+          odds={p.odds.draw}
+          active={isActive('draw')}
+          disabled={!me || !market.open}
+          onClick={pickFor('draw', 'Draw', p.odds.draw)}
+        />
+        <OddsButton
+          label={away}
+          odds={p.odds.away}
+          active={isActive('away')}
+          disabled={!me || !market.open}
+          onClick={pickFor('away', `${away} to win`, p.odds.away)}
+        />
+      </div>
+      {boards.map((board) => {
+        const meta = PLAYER_BOARD_META[board.kind]
+        if (!meta) return null
+        return (
+          <details key={board.id} className="bookie-special">
+            <summary className="bookie-special__summary">{meta.fold}</summary>
+            {board.kind === 'scorer' ? (
+              <p className="bookie-special__note">Several can win.</p>
+            ) : null}
+            <PlayerBoard
+              market={board}
+              matchLabel={matchLabel}
+              clubCtx={clubCtx}
+              me={me}
+              slip={slip}
+              onPick={onPick}
+              hideTitle
+            />
+          </details>
+        )
+      })}
+    </article>
   )
 }
 
@@ -834,12 +822,14 @@ const PLAYER_BOARD_PREVIEW = 8
 
 const PLAYER_BOARD_META = {
   scorer: {
-    title: 'Anytime goalscorer',
+    title: 'Anytime scorer',
+    fold: 'Anytime scorer',
     button: 'Scores',
     slipLabel: (name) => `${name} to score anytime`,
   },
   toppoints: {
-    title: 'Top point scorer',
+    title: 'Top points',
+    fold: 'Top points',
     button: 'Top',
     slipLabel: (name) => `${name} top point scorer`,
   },
@@ -854,7 +844,7 @@ const PLAYER_BOARD_META = {
  * fixture — "LIV (H)" — instead of spelling out the club, which the badge
  * already carries. Until clubCtx loads the meta falls back to the club code.
  */
-function PlayerBoard({ market, matchLabel, clubCtx, me, slip, onPick }) {
+function PlayerBoard({ market, matchLabel, clubCtx, me, slip, onPick, hideTitle = false }) {
   const [showAll, setShowAll] = useState(false)
   const meta = PLAYER_BOARD_META[market.kind]
   const p = market.payload
@@ -863,7 +853,7 @@ function PlayerBoard({ market, matchLabel, clubCtx, me, slip, onPick }) {
   if (!meta || selections.length === 0) return null
   return (
     <div className="bookie-player-board">
-      <h4 className="bookie-player-board__title">{meta.title}</h4>
+      {hideTitle ? null : <h4 className="bookie-player-board__title">{meta.title}</h4>}
       <ul className="bookie-outright bookie-player-board__list">
         {visible.map((s) => {
           const owner =
@@ -912,6 +902,7 @@ function PlayerBoard({ market, matchLabel, clubCtx, me, slip, onPick }) {
               <OddsButton
                 label={meta.button}
                 odds={s.odds}
+                tag
                 active={active}
                 disabled={!me || !market.open}
                 onClick={() =>
