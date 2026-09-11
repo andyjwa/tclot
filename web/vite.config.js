@@ -23,7 +23,8 @@ function redirectRootToBasePath(base) {
 }
 
 /** Production / static deploy: subpath on GitHub Pages. Local `vite`/`npm run dev:vite` uses `/` so http://localhost:5173/ and #/players work. */
-const productionBase = process.env.VITE_BASE_PATH || '/TCLOT/'
+// GitHub Pages sets VITE_BASE_PATH. Vercel serves the site at /, so do not use the Pages subpath there.
+const productionBase = process.env.VITE_BASE_PATH || (process.env.VERCEL ? '/' : '/TCLOT/')
 
 /** Dev + `vite preview`: Live / ESPN / FotMob / Pulselive same-origin proxies (`fplDraftUrl.js` uses `/__fpl` on localhost). */
 const fplRelatedProxy = {
