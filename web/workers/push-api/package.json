@@ -8,7 +8,7 @@
     "deploy": "wrangler deploy",
     "whoami": "wrangler whoami",
     "generate-vapid": "node scripts/generate-vapid-keys.mjs",
-    "test": "node --test src/cron.test.js src/liveXi.test.js"
+    "test": "node --test src/cron.test.js src/liveXi.test.js src/previewDeploy.test.js"
   },
   "dependencies": {
     "@block65/webcrypto-web-push": "^1.0.2"

@@ -69,7 +69,9 @@ npm run generate-vapid
 
 ## Scheduled alerts
 
-Cron runs every 5 minutes. There are three user-facing alert types (matching the Settings toggles):
+Cron runs every 5 minutes. It also checks whether a gameweek's lineups just locked and the live Preview is still stale. If so, and `GITHUB_DISPATCH_TOKEN` or `VERCEL_DEPLOY_HOOK` is set (`wrangler secret put`), it starts a site rebuild. Without either secret that check no-ops; the **Preview refresh** GitHub workflow is the backup that does not need a Worker secret.
+
+There are three user-facing alert types (matching the Settings toggles):
 
 - **Deadline reminders** (`deadlineReminders`) — 24h and 1h before the GW **waiver deadline** (`waivers_time`); 1h only before the **lineup deadline** (`deadline_time`). Sent at most once per bucket per GW.
 - **Waiver results** (`waiverResults`) — within ~3h after `waivers_time`, once per GW.

@@ -5,6 +5,7 @@ import {
 } from './subscriptions.js'
 import { runInternalNotification, runScheduledNotifications } from './cron.js'
 import { runLiveXiNotifications } from './liveXi.js'
+import { maybeDispatchPreviewDeploy } from './previewDeploy.js'
 
 const DEFAULT_PREFS = {
   deadlineReminders: true,
@@ -142,6 +143,11 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(
       (async () => {
+        try {
+          await maybeDispatchPreviewDeploy(env)
+        } catch (err) {
+          console.error('preview-refresh: ping failed', err?.message ?? err)
+        }
         const subs = await listSubscriptions(env.SUBSCRIPTIONS)
         if (!subs.length) return
         await runScheduledNotifications(env, env.SUBSCRIPTIONS, subs)

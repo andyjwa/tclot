@@ -1,0 +1,39 @@
+# Backup clock for the weekly Preview.
+# The main deploy workflow's */15 and top-of-hour schedules are often delayed
+# or dropped by GitHub, which is how a locked gameweek can sit without a
+# preview. This workflow is separate so it is not stuck in that queue.
+# It only dispatches the full deploy when lineups just locked and the live
+# weekly-recaps.json is still from before that deadline.
+name: Preview refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Offset from :00 and :15. Several shots each hour so one dropped slot
+    # still lands inside the 3h lineup-lock window.
+    - cron: '12,42 * * * *'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: preview-refresh
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Dispatch deploy if the locked preview is missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          RECAPS_URL: https://tclot.vercel.app/league-data/weekly-recaps.json
+        run: node web/scripts/preview-refresh-ping.mjs

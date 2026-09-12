@@ -14,11 +14,15 @@ on:
   #   (see web/scripts/waiver-refresh-gate.mjs). Push / workflow_dispatch always deploy.
   # - */15 * * * * — burst cron: gate deploys inside ~90 min after each waivers_time
   #   and inside 3h after each lineup deadline (Preview / locked XIs); skips otherwise.
+  # - 8,38 * * * * — offset from :00 and :15. GitHub often drops those slots;
+  #   these still fall in the lineup-lock window (deadline → +3h) so the Preview
+  #   can publish if the burst cron never starts. See preview-refresh.yml too.
   schedule:
     - cron: '30 5 * * *'
     - cron: '30 13 * * *'
     - cron: '30 21 * * *'
     - cron: '0 * * * *'
+    - cron: '8,38 * * * *'
     - cron: '*/15 * * * *'
 
 permissions:

@@ -22,6 +22,12 @@ crons = ["*/5 * * * *"]
 #   VAPID_SERVER_PUBLIC_KEY  — from scripts/generate-vapid-keys.mjs
 #   VAPID_SERVER_PRIVATE_KEY — from scripts/generate-vapid-keys.mjs
 #   PUSH_INTERNAL_SECRET     — random string for CI / admin notify calls
+#   GITHUB_DISPATCH_TOKEN    — optional; PAT with Actions: write, so the 5-min
+#                              cron can start Deploy site to Pages when a GW
+#                              locks and the Preview has not been baked yet.
+#                              A classic token needs the `workflow` scope.
+#   VERCEL_DEPLOY_HOOK       — optional alternative to the GitHub token. POST
+#                              this URL instead of dispatching Actions.
 #
 # Optional vars (wrangler.toml [vars] or dashboard):
 # ALLOW_ORIGIN = "https://tclot.vercel.app"
