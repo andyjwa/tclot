@@ -15875,6 +15875,21 @@ button.live-xp__player-name:focus-visible {
   box-shadow: none;
 }
 
+/* Line the first sub-tab up with "FPL Live". The parent label starts 28px
+ * from the page edge (12px track + 16px tab). This strip sits in a padded
+ * card (page gutter 16 + tile border 1 + leftover 4px track + 14px tab),
+ * which leaves "Scores" 7px too far right. The underline matches the parent
+ * bar, which extends 8px past the label. */
+@media (min-width: 1081px) {
+  .tile--team-selection > .section-chrome--sticky .subnav {
+    margin-left: -7px;
+  }
+  .tile--team-selection > .section-chrome--sticky .subnav:not(.li-subnav) .subnav__tab--active::after {
+    left: 6px;
+    right: 6px;
+  }
+}
+
 /* Subtle separation shadow once the bar is pinned (always-on but faint). */
 .fotmob[data-theme='dark'] .standings-subnav-strip,
 .fotmob[data-theme='dark'] .subview-subnav-strip,
