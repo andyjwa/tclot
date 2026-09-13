@@ -6,6 +6,32 @@ import { useMobileNarrowViewport } from './usePortraitMobile'
 import { useNoBonusPoints } from './useNoBonusPoints.js'
 import { archivedSeasonLabel, seasonLabelDisplay } from './seasonArchive.js'
 
+function currentPlaces(tableRows) {
+  const map = new Map()
+  for (const [i, row] of (tableRows || []).entries()) {
+    const id = Number(row?.league_entry ?? row?.leagueEntryId)
+    if (Number.isFinite(id)) map.set(id, i + 1)
+  }
+  return map
+}
+
+function withCurrentPlaces(standings, tableRows) {
+  const places = currentPlaces(tableRows)
+  if (!places.size) return standings
+  return standings.map((row) => {
+    const was = places.get(Number(row.leagueEntryId))
+    if (was == null) return row
+    const rankDelta = was - row.rank
+    const recordMoved = row.w !== row.nowW || row.d !== row.nowD || row.l !== row.nowL
+    return {
+      ...row,
+      nowRank: was,
+      rankDelta,
+      changed: rankDelta !== 0 || row.ptsDelta !== 0 || recordMoved,
+    }
+  })
+}
+
 function scoreText(a, b) {
   return `${a}–${b}`
 }
@@ -50,13 +76,18 @@ function Swing({ n, className = '' }) {
  * @param {object} props
  * @param {Record<string, string>} props.teamLogoMap
  * @param {Record<number, number>} props.kitIndexByEntry
+ * @param {object[]} props.tableRows — current standings, league order
  */
-export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
+export function StandingsNoBonus({
+  teamLogoMap = {},
+  kitIndexByEntry = {},
+  tableRows = [],
+}) {
   const isMobileNarrow = useMobileNarrowViewport()
   const { report, loading } = useNoBonusPoints(true)
   const [expandedId, setExpandedId] = useState(/** @type {number | null} */ (null))
 
-  const standings = report?.standings || []
+  const standings = withCurrentPlaces(report?.standings || [], tableRows)
   const fixtures = report?.fixtures || []
   const teams = report?.teams || []
   const hasData = standings.some((r) => (r.w ?? 0) + (r.d ?? 0) + (r.l ?? 0) > 0)
@@ -176,7 +207,7 @@ export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
                   >
                     For
                   </th>
-                  <th scope="col" className="tabular win-margin-table__n" title="Current official rank">
+                  <th scope="col" className="tabular win-margin-table__n" title="Current place, one number each">
                     Was
                   </th>
                   <th scope="col" className="tabular win-margin-table__n" title="Places gained without bonus">

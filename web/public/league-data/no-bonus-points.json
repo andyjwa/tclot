@@ -53,8 +53,8 @@
       "leagueEntryId": 5220,
       "teamName": "Suffolk Sméagol",
       "rank": 3,
-      "nowRank": 4,
-      "rankDelta": 1,
+      "nowRank": 5,
+      "rankDelta": 2,
       "w": 2,
       "d": 0,
       "l": 1,
@@ -115,9 +115,9 @@
     {
       "leagueEntryId": 4898,
       "teamName": "Toronto Gimli",
-      "rank": 5,
-      "nowRank": 4,
-      "rankDelta": -1,
+      "rank": 6,
+      "nowRank": 6,
+      "rankDelta": 0,
       "w": 1,
       "d": 0,
       "l": 2,
@@ -131,7 +131,7 @@
       "nowPf": 131,
       "ptsDelta": 0,
       "bonusRemoved": 15,
-      "changed": true
+      "changed": false
     },
     {
       "leagueEntryId": 10173,
@@ -264,7 +264,7 @@
     {
       "leagueEntryId": 4898,
       "teamName": "Toronto Gimli",
-      "rank": 5,
+      "rank": 6,
       "ptsDelta": 0,
       "bonusRemoved": 15,
       "flips": []
@@ -286,7 +286,7 @@
       "flips": []
     }
   ],
-  "generatedAt": "2026-09-13T00:11:50.996Z",
+  "generatedAt": "2026-09-13T00:39:55.137Z",
   "season": "2026-27",
   "leagueId": 1577,
   "incomplete": []

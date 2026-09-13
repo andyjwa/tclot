@@ -105,6 +105,7 @@ export function StandingsStatsSubview({
       <StandingsNoBonus
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
+        tableRows={tableRows}
       />
 
       <section

@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  assignCompetitionRanks,
+  assignPositions,
   buildNoBonusReport,
   countedBonus,
   matchOutcome,
@@ -133,14 +133,41 @@ test('points-for tiebreak moves a rank when no result flips', () => {
   assert.equal(report.teams.every((t) => t.flips.length === 0), true)
 })
 
-test('tied points-for share a rank and the next rank skips', () => {
-  const rows = assignCompetitionRanks([
+test('Was uses the current standings order, one place each', () => {
+  const report = buildNoBonusReport({
+    teams: [
+      { leagueEntryId: 1, teamName: 'Alpha' },
+      { leagueEntryId: 2, teamName: 'Beta' },
+    ],
+    fixtures: [
+      {
+        gw: 1,
+        homeId: 1,
+        awayId: 2,
+        homePts: 40,
+        awayPts: 30,
+        homeBonus: 0,
+        awayBonus: 0,
+      },
+    ],
+    currentStandings: [{ leagueEntryId: 2 }, { leagueEntryId: 1 }],
+  })
+  const alpha = report.standings.find((r) => r.leagueEntryId === 1)
+  const beta = report.standings.find((r) => r.leagueEntryId === 2)
+  assert.equal(beta.nowRank, 1)
+  assert.equal(alpha.nowRank, 2)
+  assert.equal(alpha.rank, 1)
+  assert.equal(alpha.rankDelta, 1)
+})
+
+test('a points tie still gets a unique place', () => {
+  const rows = assignPositions([
     { pts: 3, pf: 40 },
     { pts: 3, pf: 40 },
     { pts: 3, pf: 30 },
   ])
   assert.deepEqual(
     rows.map((r) => r.rank),
-    [1, 1, 3],
+    [1, 2, 3],
   )
 })

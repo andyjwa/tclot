@@ -86,22 +86,37 @@ function recordChanged(a, b) {
 }
 
 /**
- * Shared rank when league points and points-for match. Name only orders the
- * row; it does not split a displayed rank (same as the live table).
+ * Unique places after the standings sort (points, then points for, then
+ * name). A tie does not share a number: three teams level on points are
+ * 4th, 5th and 6th, not all 4th.
  *
- * @param {{ pts: number, pf: number, rank?: number }[]} rows already sorted
+ * @param {{ rank?: number }[]} rows already sorted
  */
-export function assignCompetitionRanks(rows) {
+export function assignPositions(rows) {
   rows.forEach((row, i) => {
-    if (i === 0) {
-      row.rank = 1
-      return
-    }
-    const prev = rows[i - 1]
-    row.rank =
-      row.pts === prev.pts && row.pf === prev.pf ? prev.rank : i + 1
+    row.rank = i + 1
   })
   return rows
+}
+
+/**
+ * Unique places from the current standings list, in display order.
+ * Replaces the match-derived "Was" place when that list covers every team,
+ * so Was matches the standings table (one number each, same order).
+ *
+ * @param {{ leagueEntryId: number, rank?: number }[]} nowRows
+ * @param {Array<{ leagueEntryId?: number, league_entry?: number }> | null | undefined} currentStandings
+ */
+export function applyCurrentPlaces(nowRows, currentStandings) {
+  if (!Array.isArray(currentStandings) || !currentStandings.length) return nowRows
+  const place = new Map()
+  currentStandings.forEach((row, i) => {
+    const id = Number(row?.leagueEntryId ?? row?.league_entry)
+    if (Number.isFinite(id)) place.set(id, i + 1)
+  })
+  if (!nowRows.every((row) => place.has(row.leagueEntryId))) return nowRows
+  for (const row of nowRows) row.rank = place.get(row.leagueEntryId)
+  return nowRows
 }
 
 function sortStandings(rows, nameOf) {
@@ -143,6 +158,7 @@ function sideView(fx, entryId) {
  */
 export function buildNoBonusReport(input) {
   const teams = input?.teams || []
+  const currentStandings = input?.currentStandings
   const nameOfId = new Map(
     teams.map((t) => [Number(t.leagueEntryId), t.teamName || `Team ${t.leagueEntryId}`]),
   )
@@ -239,8 +255,9 @@ export function buildNoBonusReport(input) {
   }))
   sortStandings(nowRows, nameOf)
   sortStandings(nextRows, nameOf)
-  assignCompetitionRanks(nowRows)
-  assignCompetitionRanks(nextRows)
+  assignPositions(nowRows)
+  assignPositions(nextRows)
+  applyCurrentPlaces(nowRows, currentStandings)
   const nowById = new Map(nowRows.map((r) => [r.leagueEntryId, r]))
 
   const standings = nextRows.map((row) => {

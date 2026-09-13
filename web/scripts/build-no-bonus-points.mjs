@@ -12,6 +12,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { sortH2hStandingsRows } from '../src/h2hEffectiveFinished.js'
 import { buildNoBonusReport, countedBonus } from '../src/noBonusPoints.js'
 import { resolveSeasonFromBootstrap } from '../src/seasonString.js'
 
@@ -234,7 +235,20 @@ async function main() {
     return
   }
 
-  const report = buildNoBonusReport({ teams, fixtures })
+  const official = (details.standings || []).map((row) => ({ ...row }))
+  if (official.length) {
+    sortH2hStandingsRows(
+      official,
+      (row) => nameById.get(Number(row.league_entry)) || row.entry_name || '',
+    )
+  }
+  const report = buildNoBonusReport({
+    teams,
+    fixtures,
+    currentStandings: official.map((row) => ({
+      leagueEntryId: Number(row.league_entry),
+    })),
+  })
   const out = {
     ...report,
     generatedAt: new Date().toISOString(),
