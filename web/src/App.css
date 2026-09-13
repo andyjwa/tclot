@@ -15875,18 +15875,27 @@ button.live-xp__player-name:focus-visible {
   box-shadow: none;
 }
 
-/* Line the first sub-tab up with "FPL Live". The parent label starts 28px
- * from the page edge (12px track + 16px tab). This strip sits in a padded
- * card (page gutter 16 + tile border 1 + leftover 4px track + 14px tab),
- * which leaves "Scores" 7px too far right. The underline matches the parent
- * bar, which extends 8px past the label. */
+/* Desktop: match Standings. "Table" and the standings card share one left
+ * edge (label at 18px, card at 16px). The FPL Live strip is nested in a
+ * padded tile, so it needs the page gutter (16) + tile padding (16) + border
+ * (1) cancelled to land on that same edge. Content then drops the extra
+ * 16px insets so the cards, heading, and back control start there too. */
 @media (min-width: 1081px) {
-  .tile--team-selection > .section-chrome--sticky .subnav {
-    margin-left: -7px;
+  .tile--team-selection > .section-chrome--sticky {
+    margin-left: -33px;
+    margin-right: -33px;
   }
-  .tile--team-selection > .section-chrome--sticky .subnav:not(.li-subnav) .subnav__tab--active::after {
-    left: 6px;
-    right: 6px;
+  .tile--team-selection > .section-body {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+  .tile--team-selection .live-banner-group-tile {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .tile--team-selection .gw-nav {
+    padding-left: 2px;
+    padding-right: 2px;
   }
 }
 
