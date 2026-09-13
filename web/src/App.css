@@ -15003,11 +15003,18 @@ button.live-xp__player-name:focus-visible {
   white-space: nowrap;
 }
 
-.standings-stats-nobonus-table__sub {
-  display: block;
-  margin-top: 1px;
+.standings-stats-nobonus-table__pts {
+  width: 4.2rem;
+  white-space: nowrap;
+}
+
+.standings-stats-nobonus-table__delta {
+  display: inline-block;
+  min-width: 1.7em;
+  margin-right: 0.28em;
+  text-align: right;
   font-size: 0.72rem;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .standings-stats-nobonus-table__row--up > th,

@@ -168,7 +168,7 @@ export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
                   <th scope="col" className="win-margin-table__team">
                     Team
                   </th>
-                  <th scope="col" className="tabular win-margin-table__n" title="League points without bonus">
+                  <th scope="col" className="tabular win-margin-table__n standings-stats-nobonus-table__pts" title="League points without bonus">
                     Pts
                   </th>
                   <th
@@ -185,8 +185,8 @@ export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
                   >
                     For
                   </th>
-                  <th scope="col" className="tabular win-margin-table__n" title="Current rank">
-                    Now
+                  <th scope="col" className="tabular win-margin-table__n" title="Current official rank">
+                    Was
                   </th>
                   <th scope="col" className="tabular win-margin-table__n" title="Places gained without bonus">
                     Δ
@@ -227,13 +227,11 @@ export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
                           </span>
                         </span>
                       </th>
-                      <td className="tabular win-margin-table__n">
+                      <td className="tabular win-margin-table__n standings-stats-nobonus-table__pts">
+                        <span className="standings-stats-nobonus-table__delta">
+                          {row.ptsDelta !== 0 ? <Swing n={row.ptsDelta} /> : null}
+                        </span>
                         <strong>{row.pts}</strong>
-                        {row.ptsDelta !== 0 ? (
-                          <span className="standings-stats-nobonus-table__sub">
-                            <Swing n={row.ptsDelta} />
-                          </span>
-                        ) : null}
                       </td>
                       <td className="tabular win-margin-table__n standings-stats-nobonus-table__wide">
                         {recordText(row.w, row.d, row.l)}
