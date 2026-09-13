@@ -4,6 +4,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { firstWord } from './teamNameUtils.js'
 import { useMobileNarrowViewport } from './usePortraitMobile'
 import { useNoBonusPoints } from './useNoBonusPoints.js'
+import { archivedSeasonLabel, seasonLabelDisplay } from './seasonArchive.js'
 
 function scoreText(a, b) {
   return `${a}–${b}`
@@ -79,7 +80,11 @@ export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
       {loading ? (
         <p className="muted muted--tight">Loading no-bonus table…</p>
       ) : !hasData ? (
-        <p className="muted muted--tight">No finished gameweeks to score yet.</p>
+        <p className="muted muted--tight">
+          {archivedSeasonLabel()
+            ? `${seasonLabelDisplay(archivedSeasonLabel())} is not scored. FPL no longer has that season's starting XIs, so the bonus that counted cannot be taken off those scores.`
+            : 'No finished gameweeks to score yet.'}
+        </p>
       ) : (
         <>
           <div className="standings-stats-nobonus-flips">
