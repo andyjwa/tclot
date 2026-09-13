@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   applyBonusColumn,
+  penaltiesSavedFromLiveRow,
   bonusForFixtureFromExplain,
   bpsForElementInFixture,
   bpsForFixtureFromExplain,
@@ -439,4 +440,22 @@ test('fixture.stats slate beats a stale BPS ranking (Shaw/Mbeumo still live else
   assert.equal(byId[423].bonusConfirmed, false, 'BPS estimate is not confirmed');
   assert.equal(byId[427].bonus, 2);
   assert.equal(byId[427].bonusConfirmed, false);
+});
+
+test('penaltiesSavedFromLiveRow — stats first, then draft or classic explain', () => {
+  assert.equal(penaltiesSavedFromLiveRow({ stats: { penalties_saved: 1 } }), 1);
+  assert.equal(penaltiesSavedFromLiveRow({ stats: { penalties_saved: 0 } }), 0);
+  assert.equal(
+    penaltiesSavedFromLiveRow({
+      explain: [[[{ stat: 'penalties_saved', value: 1 }], 10]],
+    }),
+    1,
+  );
+  assert.equal(
+    penaltiesSavedFromLiveRow({
+      explain: [{ fixture: 4, stats: [{ identifier: 'penalties_saved', value: 2 }] }],
+    }),
+    2,
+  );
+  assert.equal(penaltiesSavedFromLiveRow(null), 0);
 });

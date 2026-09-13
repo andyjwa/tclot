@@ -5,6 +5,7 @@ import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
   isCleanSheetEligible,
+  svEventTag,
   liveRowHasPlayed,
   minutesTone,
   playerLiveState,
@@ -137,8 +138,8 @@ const EVENT_KINDS = [
  * Collects per-category event entries ({ name, tag }) for a squad's
  * starting XI only. Tags are the muted count suffixes: `×n` for repeat
  * goals/assists/cards, the raw count in brackets `(n)` for DC and
- * saves, where the count is the story rather than a multiplier, and
- * `+n` for bonus points.
+ * saves, where the count is the story rather than a multiplier,
+ * `(pen)` after the keeper on the saves row, and `+n` for bonus points.
  */
 function squadEvents(squad) {
   const ev = { g: [], a: [], dc: [], cs: [], sv: [], y: [], r: [], b: [] };
@@ -150,6 +151,7 @@ function squadEvents(squad) {
     const dc = Number(row.dcCount) || 0;
     const cleanSheets = Number(row.cleanSheets) || 0;
     const saves = Number(row.saves) || 0;
+    const penaltiesSaved = Number(row.penaltiesSaved) || 0;
     const yellows = Number(row.yellowCards) || 0;
     const reds = Number(row.redCards) || 0;
     // Display bonus: official when `bonusConfirmed`; otherwise a live BPS
@@ -165,8 +167,10 @@ function squadEvents(squad) {
     if (played && cleanSheets > 0 && isCleanSheetEligible(row.posSingular)) {
       ev.cs.push({ name, tag: '' });
     }
-    // Save points: 1 pt per 3 saves, so only keepers at 3+ saves appear.
-    if (saves >= 3) ev.sv.push({ name, tag: `(${saves})` });
+    // Save points (3+ saves) and penalty saves share this row. A pen save
+    // is the keeper's name, then (pen), even when they have under 3 saves.
+    const svTag = svEventTag(saves, penaltiesSaved);
+    if (svTag) ev.sv.push({ name, tag: svTag });
     if (yellows > 0) ev.y.push({ name, tag: yellows > 1 ? `×${yellows}` : '' });
     if (reds > 0) ev.r.push({ name, tag: '' });
     if (bonus > 0) {

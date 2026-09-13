@@ -126,6 +126,48 @@ export function defensiveContributionPointThreshold(elementTypeId) {
   return null;
 }
 
+const PENALTIES_SAVED_KEY = 'penalties_saved';
+
+/**
+ * Penalty saves this GW. Prefer `stats.penalties_saved`; else sum explain
+ * lines (draft `[stats, fixtureId]` pairs and classic `{ identifier }` blocks).
+ *
+ * @param {object | null | undefined} raw — full live element row
+ * @returns {number}
+ */
+export function penaltiesSavedFromLiveRow(raw) {
+  const st = raw?.stats;
+  const direct = st?.penalties_saved ?? st?.penaltiesSaved;
+  if (Number.isFinite(Number(direct))) return Math.max(0, Number(direct));
+
+  const ex = raw?.explain;
+  if (!Array.isArray(ex) || ex.length === 0) return 0;
+  let sum = 0;
+  const first = ex[0];
+
+  if (Array.isArray(first) && first.length === 2 && typeof first[1] === 'number') {
+    for (const pair of ex) {
+      for (const s of pair[0] || []) {
+        if (s.stat === PENALTIES_SAVED_KEY && Number.isFinite(Number(s.value))) {
+          sum += Number(s.value);
+        }
+      }
+    }
+    return Math.max(0, sum);
+  }
+
+  if (first && first.fixture != null) {
+    for (const block of ex) {
+      for (const s of block.stats || []) {
+        if (s.identifier === PENALTIES_SAVED_KEY && Number.isFinite(Number(s.value))) {
+          sum += Number(s.value);
+        }
+      }
+    }
+  }
+  return Math.max(0, sum);
+}
+
 /**
  * Live GW count of defensive contribution **actions** (FPL stat), not fantasy points.
  * Prefer `stats.defensive_contribution` from `event/live`; else sum `value` from explain lines.

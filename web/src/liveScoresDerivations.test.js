@@ -18,6 +18,7 @@ import {
   projectedH2HPoints,
   rowsByPointsContributed,
   sortStartingXIByPosition,
+  svEventTag,
   teamInitials,
   teamChipAbbr,
 } from './liveScoresDerivations.js'
@@ -647,4 +648,12 @@ test('countEffectiveXiPlayersRemaining — counts distinct starters with games l
     ),
     11,
   )
+})
+
+test('svEventTag — penalty save sits on the saves row as (pen)', () => {
+  assert.equal(svEventTag(3, 0), '(3)')
+  assert.equal(svEventTag(2, 0), null)
+  assert.equal(svEventTag(0, 1), '(pen)')
+  assert.equal(svEventTag(5, 1), '(5) (pen)')
+  assert.equal(svEventTag(1, 2), '(pen)×2')
 })

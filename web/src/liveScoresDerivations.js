@@ -186,6 +186,25 @@ export function formatKickoffLabel(iso, now = new Date()) {
  *   (`'GK'` / `'GKP'` / `'DEF'` / `'MID'` / `'FWD'`); case-insensitive
  * @returns {boolean}
  */
+/**
+ * Match-events SV tag. Save points stay `(n)` once a keeper hits 3 saves.
+ * A penalty save is the same row, keeper name then `(pen)`, even with
+ * fewer than 3 saves so the SV row still appears.
+ *
+ * @param {number | null | undefined} saves
+ * @param {number | null | undefined} penaltiesSaved
+ * @returns {string | null} tag, or null when this player does not belong on SV
+ */
+export function svEventTag(saves, penaltiesSaved) {
+  const n = Number(saves) || 0;
+  const pen = Number(penaltiesSaved) || 0;
+  if (n < 3 && pen <= 0) return null;
+  const tags = [];
+  if (n >= 3) tags.push(`(${n})`);
+  if (pen > 0) tags.push(pen > 1 ? `(pen)×${pen}` : '(pen)');
+  return tags.join(' ');
+}
+
 export function isCleanSheetEligible(pos) {
   const p = String(pos ?? '').toUpperCase();
   return p === 'GK' || p === 'GKP' || p === 'DEF' || p === 'MID';

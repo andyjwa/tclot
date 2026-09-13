@@ -4,6 +4,7 @@ import {
   computeProvisionalGwBonusByElementId,
   countElementGamesLeftToPlay,
   defensiveContributionCountFromLiveRow,
+  penaltiesSavedFromLiveRow,
   fixturesForTeamInGw,
   isFixtureFullyDone,
   officialGwBonusByElementId,
@@ -251,6 +252,8 @@ export function mapPickRows(
     const cleanSheets = Number(st.clean_sheets) || 0;
     const goalsConceded = Number(st.goals_conceded) || 0;
     const saves = Number(st.saves) || 0;
+    const penaltiesSaved =
+      penaltiesSavedFromLiveRow(liveRow) || Number(st.penalties_saved) || 0;
     const yellowCards = Number(st.yellow_cards) || 0;
     const redCards = Number(st.red_cards) || 0;
     const pts = st.total_points ?? 0;
@@ -382,6 +385,7 @@ export function mapPickRows(
       /** Goals conceded by this player's club so far — Prem event log when FPL is stale. */
       goalsConceded: displayedPoints.goalsConceded,
       saves,
+      penaltiesSaved,
       yellowCards: displayedPoints.yellowCards,
       redCards: displayedPoints.redCards,
       total_points: displayedPoints.total_points,
