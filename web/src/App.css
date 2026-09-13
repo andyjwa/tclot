@@ -14994,15 +14994,6 @@ button.live-xp__player-name:focus-visible {
   white-space: nowrap;
 }
 
-.standings-stats-nobonus-fixtures__off {
-  display: block;
-  margin-top: 2px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--fm-muted);
-  white-space: nowrap;
-}
-
 .standings-stats-nobonus-table__pts {
   width: 4.2rem;
   white-space: nowrap;

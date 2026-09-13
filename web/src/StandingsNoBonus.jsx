@@ -133,15 +133,8 @@ export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
                             </span>
                             <span className="tabular">{scoreText(fx.homeAdj, fx.awayAdj)}</span>
                           </span>
-                          <span
-                            className="standings-stats-nobonus-fixtures__off"
-                            title={`${fx.homeBonus} bonus removed from ${fx.homeName}, ${fx.awayBonus} from ${fx.awayName}`}
-                          >
-                            {fx.homeBonus} / {fx.awayBonus} bonus
-                          </span>
                           <span className="visually-hidden">
-                            becomes {scoreText(fx.homeAdj, fx.awayAdj)} without bonus.
-                            {fx.homeBonus} bonus removed from {fx.homeName}, {fx.awayBonus} from {fx.awayName}.
+                            becomes {scoreText(fx.homeAdj, fx.awayAdj)} without bonus
                           </span>
                         </td>
                       </tr>
