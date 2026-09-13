@@ -72,9 +72,7 @@ export function StandingsNoBonus({ teamLogoMap = {}, kitIndexByEntry = {} }) {
         No bonus points
       </h3>
       <p className="standings-stats-hint">
-        Official scores with bonus taken off the players who counted, after
-        autosubs. The table is the standings that would leave. A shaded row
-        would have a different result. Rank can still move on points for.
+        League standings if bonus points are removed from the game.
       </p>
 
       {loading ? (
