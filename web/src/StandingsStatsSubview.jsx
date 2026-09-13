@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
 import { StandingsBenchPoints } from './StandingsBenchPoints.jsx'
+import { StandingsNoBonus } from './StandingsNoBonus.jsx'
 import { TeamH2HRivals } from './TeamH2HRivals.jsx'
 import { WIN_MARGIN_BUCKET_KEYS } from './useLeagueData'
 import { useMobileNarrowViewport } from './usePortraitMobile'
@@ -97,6 +98,11 @@ export function StandingsStatsSubview({
   return (
     <div className="standings-stats">
       <StandingsBenchPoints
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+
+      <StandingsNoBonus
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
       />

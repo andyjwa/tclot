@@ -14949,6 +14949,257 @@ button.live-xp__player-name:focus-visible {
   font-size: 0.78rem;
 }
 
+/* ─── Stats → no bonus points ─── */
+
+.standings-stats-nobonus-flips {
+  margin: 0 0 14px;
+}
+
+.standings-stats-nobonus-flips__lead {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+.standings-stats-nobonus-fixtures {
+  min-width: 0;
+}
+
+.standings-stats-nobonus-fixtures__gw {
+  width: 2.6rem;
+}
+
+.standings-stats-nobonus-fixtures__match {
+  font-weight: 600;
+  text-align: left;
+}
+
+.standings-stats-nobonus-fixtures__vs {
+  margin: 0 0.35em;
+  color: var(--fm-muted);
+  font-weight: 500;
+  font-size: 0.78em;
+}
+
+.standings-stats-nobonus-fixtures__score {
+  width: 8.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.standings-stats-nobonus-fixtures__line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.standings-stats-nobonus-fixtures__off {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--fm-muted);
+  white-space: nowrap;
+}
+
+.standings-stats-nobonus-table__sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.standings-stats-nobonus-table__row--up > th,
+.standings-stats-nobonus-table__row--up > td {
+  background: color-mix(in srgb, var(--fm-win) 12%, transparent);
+}
+
+.standings-stats-nobonus-table__row--down > th,
+.standings-stats-nobonus-table__row--down > td {
+  background: color-mix(in srgb, var(--fm-loss) 10%, transparent);
+}
+
+.standings-stats-nobonus__swing--up {
+  color: var(--fm-win);
+  font-weight: 700;
+}
+
+.standings-stats-nobonus__swing--down {
+  color: var(--fm-loss);
+  font-weight: 700;
+}
+
+.standings-stats-nobonus-teams__label {
+  margin: 16px 0 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.standings-stats-nobonus-teams__hint {
+  margin-bottom: 8px;
+}
+
+.standings-stats-nobonus-teams__btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.standings-stats-nobonus-teams__btn .win-margin-table__team-inner {
+  flex: 1;
+  min-width: 0;
+}
+
+.standings-stats-nobonus-teams__btn:hover .win-margin-table__name {
+  color: var(--fm-text-strong);
+}
+
+.standings-stats-nobonus-teams__btn:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: 2px;
+}
+
+.standings-stats-nobonus-teams__chevron {
+  display: inline-flex;
+  flex: 0 0 0.7rem;
+  width: 0.7rem;
+  justify-content: center;
+  font-size: 0.52rem;
+  line-height: 1;
+  color: var(--fm-muted);
+  transform: rotate(0deg);
+  transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.standings-stats-nobonus-teams__chevron--open {
+  transform: rotate(90deg);
+  color: var(--tclot-logo-purple);
+}
+
+.standings-stats-nobonus-teams__row--open > th,
+.standings-stats-nobonus-teams__row--open > td {
+  border-bottom-color: transparent;
+}
+
+.standings-stats-nobonus-teams__detail > td {
+  padding-top: 0;
+  background: color-mix(in srgb, var(--fm-muted) 6%, transparent);
+}
+
+.standings-stats-nobonus-detail__list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.standings-stats-nobonus-detail__list li {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1.4fr) minmax(0, 1.6fr) auto;
+  gap: 8px 10px;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.standings-stats-nobonus-detail__gw {
+  color: var(--fm-muted);
+  font-weight: 650;
+}
+
+.standings-stats-nobonus-detail__opp {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.standings-stats-nobonus-detail__scores {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.standings-stats-nobonus-detail__arrow {
+  color: var(--fm-muted);
+  font-size: 0.85em;
+}
+
+.standings-stats-nobonus-detail__bonus {
+  text-align: right;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.standings-stats-nobonus-detail__opp-bonus {
+  display: block;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--fm-muted);
+}
+
+.standings-stats-nobonus-detail__empty {
+  margin: 4px 0 8px;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 767px) {
+  .standings-stats-nobonus-table.win-margin-table,
+  .standings-stats-nobonus-fixtures.win-margin-table,
+  .standings-stats-nobonus-teams.win-margin-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+    font-size: 0.74rem;
+  }
+  .standings-stats-nobonus-table.win-margin-table th,
+  .standings-stats-nobonus-table.win-margin-table td,
+  .standings-stats-nobonus-fixtures.win-margin-table th,
+  .standings-stats-nobonus-fixtures.win-margin-table td,
+  .standings-stats-nobonus-teams.win-margin-table th,
+  .standings-stats-nobonus-teams.win-margin-table td {
+    padding: 6px 4px;
+  }
+  .standings-stats-nobonus-table__wide {
+    display: none;
+  }
+  .standings-stats-nobonus-fixtures__match,
+  .standings-stats-nobonus-table .win-margin-table__name,
+  .standings-stats-nobonus-teams .win-margin-table__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .standings-stats-nobonus-detail__list li {
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: 2px 8px;
+  }
+  .standings-stats-nobonus-detail__scores,
+  .standings-stats-nobonus-detail__bonus {
+    grid-column: 2;
+    text-align: left;
+  }
+}
+
 .standings-bench-gw {
   margin-top: 18px;
   padding-top: 14px;
