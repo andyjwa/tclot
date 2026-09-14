@@ -158,7 +158,7 @@ function ReturnsColumn({ entryId, name, picks, teamLogoMap, kitIndexByEntry }) {
  *   gwFinished: boolean,
  *   teamLogoMap: object,
  *   kitIndexByEntry?: object,
- *   liveRankByEntry?: object,  // entry id → live competition rank
+ *   liveRankByEntry?: object,  // entry id → unique live place (1–8)
  * }} props
  */
 export function LiveOddsSection({

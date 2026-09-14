@@ -250,7 +250,7 @@ export function MatchupHeader({
  * @param {{
  *   fixture: object,            // cardFixtures row from LiveScores
  *   metaRight?: string | null,  // favourite odds label; null → to-play text
- *   liveRankByEntry?: object,   // entry id → live competition rank
+ *   liveRankByEntry?: object,   // entry id → unique live place (1–8)
  *   teamLogoMap: object,
  *   kitIndexByEntry?: object,
  *   homeDisplayName?: string,

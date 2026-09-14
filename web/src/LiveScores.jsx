@@ -865,9 +865,10 @@ export function LiveScores({
   /**
    * Projected For / Faced / GD / PTS from this GW’s live fixtures, then sorted by
    * official H2H order: projected PTS, then For, then team name (no GD / PA
-   * step — same as FPL Draft). `liveRank` = competition rank (ties share a #).
-   * `rankMove` uses ordinal list position (i + 1) vs season rank so movement
-   * still shows inside tied groups.
+   * step — same as FPL Draft). The table shows a unique place (`ordinalLive`,
+   * 1 through 8 in this list order), not a shared competition rank.
+   * `rankMove` uses that place vs season rank so movement still shows
+   * inside tied groups.
    *
    * When this GW is already finished, league `tableRows` totals (PTS, For, Faced) already include
    * it — do not add live H2H points or GW FPL totals again (would double-count e.g. +3).
@@ -1008,8 +1009,8 @@ export function LiveScores({
     const o = {};
     for (const row of liveStandingsRows) {
       const eid = row.league_entry;
-      o[eid] = row.liveRank;
-      o[String(eid)] = row.liveRank;
+      o[eid] = row.ordinalLive;
+      o[String(eid)] = row.ordinalLive;
     }
     return o;
   }, [liveStandingsRows]);

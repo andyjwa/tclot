@@ -32,7 +32,7 @@ function liveStandingsRowClass(row, idx, isCeefax) {
         : 'standings-row--ceefax-even',
     );
   }
-  if (row.liveRank === 8) {
+  if ((row.ordinalLive ?? idx + 1) === 8) {
     parts.push('standings-row--divider-above', 'standings-row--8th');
   }
   return parts.join(' ');
@@ -216,13 +216,7 @@ export function LiveStandingsTable({
                 <Fragment key={row.league_entry}>
                   <tr className={rowClass || undefined}>
                     <td className="col-rank">
-                      {row.liveRank === 8 ? (
-                        <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
-                          L
-                        </span>
-                      ) : (
-                        row.liveRank
-                      )}
+                      {row.ordinalLive ?? idx + 1}
                     </td>
                     <td className="col-team">
                       <LiveTeamCell
@@ -341,13 +335,7 @@ export function LiveStandingsTable({
               <Fragment key={row.league_entry}>
                 <tr className={rowClass || undefined}>
                   <td className="col-rank">
-                    {row.liveRank === 8 ? (
-                      <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
-                        L
-                      </span>
-                    ) : (
-                      row.liveRank
-                    )}
+                    {row.ordinalLive ?? idx + 1}
                   </td>
                   <td className="col-team">
                     <LiveTeamCell
