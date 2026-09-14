@@ -8,7 +8,7 @@ import {
 } from './teamCardStats.js'
 import { TeamCurrentSquad } from './TeamCurrentSquad.jsx'
 import { archivedSeasonLabel } from './seasonArchive.js'
-import { luckEaseLabel, formatLuckDelta } from './scheduleLuck.js'
+import { luckDrawLabel, formatLuckDelta } from './scheduleLuck.js'
 import { TeamSideBets } from './SideBets.jsx'
 import { getSeasonLabel } from './seasonString.js'
 import './TeamDetailView.css'
@@ -243,22 +243,24 @@ export function TeamDetailView({
           <div className="tc-boxes">
             <div
               className="tc-box"
-              title="Wins and losses only. Ranked by how the teams on this fixture list have done against everyone else, compared with every fixture list. 1st drew the teams that have been losing more."
+              title={
+                lkReady
+                  ? `${lk.actual} from this draw, ${lk.avg.toFixed(1)} from the other draws. A plus means this draw paid more. 1st is luckiest.`
+                  : 'Your score each week, against everyone else\'s opponent. A win is 3. 1st is luckiest.'
+              }
             >
-              <div className="tc-box__k">Luck index</div>
+              <div className="tc-box__k">Luck</div>
               {lkReady ? (
                 <>
                   <div className="tc-box__v">{ordinal(luckIdx[id])}</div>
                   <div className={`tc-box__sub ${lkPos ? 'v-pos' : lkNeg ? 'v-neg' : ''}`}>
-                    {luckEaseLabel(lk.delta)}
+                    {luckDrawLabel(lk.delta)}
                   </div>
                 </>
               ) : (
                 <>
                   <div className="tc-box__v">{'\u2013'}</div>
-                  <div className="tc-box__sub">
-                    {played ? 'Not enough results' : 'No games yet'}
-                  </div>
+                  <div className="tc-box__sub">{played ? '\u2013' : 'No games yet'}</div>
                 </>
               )}
             </div>
@@ -330,18 +332,7 @@ export function TeamDetailView({
           </div>
           {lkReady ? (
             <p className="tc-luck-note">
-              Wins and losses only. Your opponents average {lk.own.toFixed(1)} league
-              pts per game against everyone else (3 for a win, 1 for a draw). The
-              average fixture list is {lk.avg.toFixed(1)}. A win counts the same
-              whatever the score. A plus means this draw has been kinder. 1st is
-              the kindest. Standings, then Stats is the same comparison, one
-              fixture list at a time. The luck index is the average of that row.
-            </p>
-          ) : played ? (
-            <p className="tc-luck-note">
-              Wins and losses only. This starts once the teams you played have
-              played someone else, so beating them does not, by itself, count as
-              an easy draw.
+              Your score each week, against everyone else's opponent. A win is 3. 1st is luckiest.
             </p>
           ) : null}
         </div>

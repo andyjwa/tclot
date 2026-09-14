@@ -171,15 +171,19 @@ export function computeTeamCardData(leagueEntries, allMatches) {
   }
 
   /**
-   * Schedule luck from results, not scores. See scheduleLuck.js. The delta is
-   * the average of that team's row in the schedule luck matrix. 1st is the
-   * kindest list (opponents who have been losing more).
+   * Fixture-swap luck. See scheduleLuck.js. Delta is actual league points
+   * minus the average of the other fixture lists. 1st is luckiest.
    */
   const scheduleLuck = buildResultScheduleLuck(matches, ids)
   const luck = {}
   const luckIdx = {}
   for (const id of ids) {
-    luck[id] = scheduleLuck?.byId[id] ?? { own: null, avg: null, delta: null, ready: false }
+    luck[id] = scheduleLuck?.byId[id] ?? {
+      actual: null,
+      avg: null,
+      delta: null,
+      ready: false,
+    }
   }
   const luckRank = ids
     .filter((id) => luck[id].ready)

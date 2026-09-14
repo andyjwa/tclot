@@ -1,33 +1,33 @@
 import { useMemo } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { buildFixtureScheduleMatrix } from './fixtureScheduleMatrix'
-import { formatLuckDelta } from './scheduleLuck'
 
-/** Format the delta cell: blank for diagonal or missing results. */
+/** Format the delta cell: blank for diagonal. League points, so integers. */
 function deltaCellLabel(delta, blank) {
-  if (blank) return '—'
-  return formatLuckDelta(delta) ?? '—'
+  if (blank || delta == null) return '—'
+  if (delta > 0) return `+${delta}`
+  return String(delta)
 }
 
-/** Map abs(delta) to a stepped tone. Unit is opponent result-points per game. */
+/** Map abs(delta) to a stepped tone. Unit is league points (3 for a win). */
 function tonePlus(absDelta) {
-  if (absDelta >= 0.6) return 'better-4'
-  if (absDelta >= 0.4) return 'better-3'
-  if (absDelta >= 0.2) return 'better-2'
+  if (absDelta >= 7) return 'better-4'
+  if (absDelta >= 5) return 'better-3'
+  if (absDelta >= 3) return 'better-2'
   return 'better-1'
 }
 function toneMinus(absDelta) {
-  if (absDelta >= 0.6) return 'worse-4'
-  if (absDelta >= 0.4) return 'worse-3'
-  if (absDelta >= 0.2) return 'worse-2'
+  if (absDelta >= 7) return 'worse-4'
+  if (absDelta >= 5) return 'worse-3'
+  if (absDelta >= 3) return 'worse-2'
   return 'worse-1'
 }
 
 /**
  * Schedule luck matrix — Standings tab → Stats sub-tab.
  *
- * Cell value = that column's opponents' result-points per game, minus this row's.
- * Wins and losses only. Greener = this fixture list has been kinder.
+ * Cell value = what this row got, minus league points those scores would have
+ * got on that column's opponents. A win is 3. Greener = this draw has been kinder.
  *
  * @param {object} props
  * @param {object[]} props.matches
@@ -64,7 +64,7 @@ export function FixtureScheduleMatrix({
             : 'tile-hint muted tile-hint--tight'
         }
       >
-        Each cell is how that column's opponents have done against everyone else, minus how this row's opponents have done. Wins and losses only (3 for a win, 1 for a draw). The score does not count. Greener means this fixture list has been kinder. The luck index on a team card is the average of that row.
+        Your scores, their opponents. Green means this draw has been kinder. A win is 3. The luck number is the average of that row.
       </p>
       <div className="table-scroll table-scroll--win-margin">
         <table className="fixture-schedule-matrix fixture-schedule-matrix--delta">
@@ -125,27 +125,26 @@ export function FixtureScheduleMatrix({
                     const diagonal = i === j
                     const colQ = matrix[i][j]
                     const missing = own == null || colQ == null
-                    const delta = diagonal || missing ? null : colQ - own
-                    const shown = delta == null ? null : formatLuckDelta(delta)
-                    const abs = shown == null || shown === '0' ? 0 : Math.abs(Number(shown))
+                    const delta = diagonal || missing ? null : own - colQ
+                    const abs = delta == null ? 0 : Math.abs(delta)
                     let tone = 'fixture-schedule-matrix__cell--same'
                     if (diagonal) {
                       tone = 'fixture-schedule-matrix__cell--diagonal'
-                    } else if (shown != null && shown.startsWith('+')) {
+                    } else if (delta > 0) {
                       tone = `fixture-schedule-matrix__cell--${tonePlus(abs)}`
-                    } else if (shown != null && shown.startsWith('-')) {
+                    } else if (delta < 0) {
                       tone = `fixture-schedule-matrix__cell--${toneMinus(abs)}`
                     }
                     const colTitle = idToName[colId] ?? String(colId)
                     const cmp = diagonal
-                      ? '(real schedule)'
+                      ? '(this draw)'
                       : missing
-                        ? 'not enough other results'
-                        : shown.startsWith('+')
-                          ? `vs ${colTitle}'s opponents: easier by ${abs} pts/game`
-                          : shown.startsWith('-')
-                            ? `vs ${colTitle}'s opponents: harder by ${abs} pts/game`
-                            : `vs ${colTitle}'s opponents: same`
+                        ? 'no result that week'
+                        : delta > 0
+                          ? `vs ${colTitle}'s fixtures: kinder by ${abs}`
+                          : delta < 0
+                            ? `vs ${colTitle}'s fixtures: unluckier by ${abs}`
+                            : `vs ${colTitle}'s fixtures: same`
                     return (
                       <td
                         key={`${rowId}-${colId}`}

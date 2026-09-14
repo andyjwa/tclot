@@ -1,8 +1,8 @@
 /**
- * Schedule luck grid. Each cell is how strong that column's opponents have
- * been against everyone except the row team (3 for a win, 1 for a draw).
- * The scoreline does not count. `rowAverages` is that row's luck delta:
- * average opponent strength across every fixture list, minus its own.
+ * Fixture-swap grid. `matrix[row][col]` is league points that row's scores
+ * would have got against that column's opponents (the diagonal is the real
+ * draw). `rowAverages` is actual minus the average of the other lists, which
+ * is the average of the displayed row (diagonal left out).
  */
 import { buildResultScheduleLuck } from './scheduleLuck.js'
 
@@ -47,7 +47,7 @@ export function buildFixtureScheduleMatrix(matches, leagueEntries, tableRows) {
     const rowId = orderedIds[i]
     matrix[i] = []
     for (let j = 0; j < n; j++) {
-      matrix[i][j] = luck?.quality[rowId]?.[orderedIds[j]] ?? null
+      matrix[i][j] = luck?.points[rowId]?.[orderedIds[j]] ?? null
     }
     rowAverages[i] = luck?.byId[rowId]?.delta ?? null
   }

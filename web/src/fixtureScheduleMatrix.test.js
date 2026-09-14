@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { buildFixtureScheduleMatrix } from './fixtureScheduleMatrix.js'
 
-test('buildFixtureScheduleMatrix — diagonal vs counterfactual column', () => {
+test('buildFixtureScheduleMatrix — row average is actual minus the other lists', () => {
   const leagueEntries = [
     { id: 1, entry_name: 'A' },
     { id: 2, entry_name: 'B' },
@@ -15,32 +15,16 @@ test('buildFixtureScheduleMatrix — diagonal vs counterfactual column', () => {
       finished: true,
       league_entry_1: 1,
       league_entry_2: 2,
-      league_entry_1_points: 20,
-      league_entry_2_points: 10,
+      league_entry_1_points: 10,
+      league_entry_2_points: 20,
     },
     {
       event: 1,
       finished: true,
       league_entry_1: 3,
       league_entry_2: 4,
-      league_entry_1_points: 15,
-      league_entry_2_points: 15,
-    },
-    {
-      event: 2,
-      finished: true,
-      league_entry_1: 1,
-      league_entry_2: 3,
-      league_entry_1_points: 30,
-      league_entry_2_points: 30,
-    },
-    {
-      event: 2,
-      finished: true,
-      league_entry_1: 2,
-      league_entry_2: 4,
-      league_entry_1_points: 5,
-      league_entry_2_points: 100,
+      league_entry_1_points: 8,
+      league_entry_2_points: 6,
     },
   ]
   const tableRows = leagueEntries.map((e, i) => ({
@@ -51,13 +35,12 @@ test('buildFixtureScheduleMatrix — diagonal vs counterfactual column', () => {
   const model = buildFixtureScheduleMatrix(matches, leagueEntries, tableRows)
   assert.ok(model)
   const { orderedIds, matrix, rowAverages } = model
-  assert.deepEqual(orderedIds, [1, 2, 3, 4])
-
-  const idx = (id) => orderedIds.indexOf(id)
-  const iA = idx(1)
-  const defined = matrix[iA].filter((v) => v != null)
-  const own = matrix[iA][iA]
-  assert.ok(own != null)
-  const rowDelta = defined.reduce((s, v) => s + (v - own), 0) / defined.length
-  assert.equal(rowAverages[iA], rowDelta)
+  const iA = orderedIds.indexOf(1)
+  const actual = matrix[iA][iA]
+  const others = matrix[iA].filter((_, j) => j !== iA)
+  assert.equal(actual, 0, 'A lost')
+  assert.equal(matrix[iA][orderedIds.indexOf(4)], 3, 'A would have beaten D\'s opponent')
+  const avg = others.reduce((s, n) => s + n, 0) / others.length
+  assert.equal(rowAverages[iA], actual - avg)
+  assert.ok(rowAverages[iA] < 0)
 })

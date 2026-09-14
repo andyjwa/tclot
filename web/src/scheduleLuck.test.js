@@ -14,54 +14,40 @@ function match(event, home, away, homePts, awayPts) {
 }
 
 /**
- * GW1: A beats B, C beats D.
- * GW2: A beats C, D beats B.
- * From A's view, games against A are left out:
- * B's only other game is a loss (0), C's only other game is a win (3).
+ * GW1: A 10 loses to B 20. C 8 beats D 6.
+ * A would have drawn B's opponent (A, 10) and beaten C's and D's opponents.
  */
-const RESULTS = [
-  match(1, 1, 2, 50, 10),
-  match(1, 3, 4, 40, 20),
-  match(2, 1, 3, 30, 29),
-  match(2, 4, 2, 15, 14),
+const SWAP = [
+  match(1, 1, 2, 10, 20),
+  match(1, 3, 4, 8, 6),
 ]
 
-test('schedule luck uses results, so the margin does not change it', () => {
-  const blowouts = buildResultScheduleLuck(RESULTS, [1, 2, 3, 4])
-  const narrow = buildResultScheduleLuck(
-    [
-      match(1, 1, 2, 11, 10),
-      match(1, 3, 4, 21, 20),
-      match(2, 1, 3, 12, 11),
-      match(2, 4, 2, 16, 15),
-    ],
-    [1, 2, 3, 4],
-  )
-  assert.deepEqual(narrow.byId, blowouts.byId)
-  assert.deepEqual(narrow.quality, blowouts.quality)
-})
-
-test('schedule luck ranks the kinder draw by opponents other results', () => {
-  const model = buildResultScheduleLuck(RESULTS, [1, 2, 3, 4])
+test('a loss that would have won on another fixture list is unlucky', () => {
+  const model = buildResultScheduleLuck(SWAP, [1, 2, 3, 4])
   assert.ok(model)
   const a = model.byId[1]
-  const b = model.byId[2]
   assert.equal(a.ready, true)
-  assert.equal(a.own, 1.5)
-  assert.equal(a.avg, 1.875)
-  assert.equal(a.delta, 0.375)
-  assert.equal(model.quality[1][1], 1.5)
-  assert.equal(model.quality[1][2], 2.25)
-  assert.ok(a.delta > b.delta)
-  assert.ok(a.delta > 0)
-  assert.ok(b.delta < 0)
+  assert.equal(a.actual, 0)
+  assert.equal(model.points[1][4], 3, 'A 10 beats D opponent C 8')
+  assert.equal(model.points[1][2], 1, 'A 10 draws B opponent A 10')
+  assert.equal(a.avg, (1 + 3 + 3) / 3)
+  assert.equal(a.delta, a.actual - a.avg)
+  assert.ok(a.delta < 0)
+  assert.ok(model.byId[2].delta > a.delta)
 })
 
-test('schedule luck waits until opponents have played someone else', () => {
-  const model = buildResultScheduleLuck(
-    [match(1, 1, 2, 80, 10), match(1, 3, 4, 70, 20)],
+test('the margin does not change a result that is already a win or a loss', () => {
+  const blowouts = buildResultScheduleLuck(
+    [match(1, 1, 2, 10, 80), match(1, 3, 4, 9, 1)],
     [1, 2, 3, 4],
   )
-  assert.equal(model.byId[1].ready, false)
-  assert.equal(model.byId[1].delta, null)
+  const narrow = buildResultScheduleLuck(SWAP, [1, 2, 3, 4])
+  assert.deepEqual(blowouts.byId, narrow.byId)
+  assert.deepEqual(blowouts.points, narrow.points)
+})
+
+test('own fixture list is not in the average', () => {
+  const model = buildResultScheduleLuck(SWAP, [1, 2, 3, 4])
+  const others = [2, 3, 4].map((id) => model.points[1][id])
+  assert.equal(model.byId[1].avg, others.reduce((s, n) => s + n, 0) / others.length)
 })
