@@ -50,18 +50,14 @@ test('buildFixtureScheduleMatrix — diagonal vs counterfactual column', () => {
 
   const model = buildFixtureScheduleMatrix(matches, leagueEntries, tableRows)
   assert.ok(model)
-  const { orderedIds, matrix } = model
+  const { orderedIds, matrix, rowAverages } = model
   assert.deepEqual(orderedIds, [1, 2, 3, 4])
 
   const idx = (id) => orderedIds.indexOf(id)
   const iA = idx(1)
-  const iD = idx(4)
-
-  assert.equal(matrix[iA][iA], 4, 'A: W GW1, D GW2 → 3+1')
-  assert.equal(matrix[iA][iD], 6, 'A with D opponents: both W → 6')
-  assert.ok(matrix[iA][iD] > matrix[iA][iA])
-
-  const n = orderedIds.length
-  const rowAvg = matrix[iA].reduce((s, v) => s + v, 0) / n
-  assert.equal(model.rowAverages[iA], rowAvg)
+  const defined = matrix[iA].filter((v) => v != null)
+  const own = matrix[iA][iA]
+  assert.ok(own != null)
+  const rowDelta = defined.reduce((s, v) => s + (v - own), 0) / defined.length
+  assert.equal(rowAverages[iA], rowDelta)
 })

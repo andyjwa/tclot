@@ -1,3 +1,5 @@
+import { buildResultScheduleLuck } from './scheduleLuck.js'
+
 /**
  * Team-card stat computation — ported verbatim from the approved mockup
  * (`web/public/team-card-options.html`) so the production team card renders
@@ -169,35 +171,19 @@ export function computeTeamCardData(leagueEntries, allMatches) {
   }
 
   /**
-   * Schedule luck, not player form. `lp(sq, ow)` is the league points team
-   * `sq` would have from its real weekly scores against team `ow`'s opponents
-   * (3 for a win, 1 for a draw). The luck index ranks teams by actual points
-   * minus the average of that replay across every fixture list, including
-   * their own. That delta is the average of the team's row in the schedule
-   * luck matrix. 1st is the kindest list.
+   * Schedule luck from results, not scores. See scheduleLuck.js. The delta is
+   * the average of that team's row in the schedule luck matrix. 1st is the
+   * kindest list (opponents who have been losing more).
    */
-  function lp(sq, ow) {
-    let w = 0
-    let d = 0
-    for (const gw of Object.keys(gwOpp[ow])) {
-      const my = gwPts[sq][gw]
-      const op = gwOpp[ow][gw]
-      if (my == null || op == null) continue
-      if (my > op) w++
-      else if (my === op) d++
-    }
-    return w * 3 + d
-  }
-
+  const scheduleLuck = buildResultScheduleLuck(matches, ids)
   const luck = {}
-  for (const id of ids) {
-    let sum = 0
-    for (const ow of ids) sum += lp(id, ow)
-    const avg = sum / ids.length
-    luck[id] = { actual: S[id].w * 3 + S[id].d, avg, delta: S[id].w * 3 + S[id].d - avg }
-  }
-  const luckRank = [...ids].sort((x, y) => luck[y].delta - luck[x].delta)
   const luckIdx = {}
+  for (const id of ids) {
+    luck[id] = scheduleLuck?.byId[id] ?? { own: null, avg: null, delta: null, ready: false }
+  }
+  const luckRank = ids
+    .filter((id) => luck[id].ready)
+    .sort((x, y) => luck[y].delta - luck[x].delta || x - y)
   luckRank.forEach((id, i) => (luckIdx[id] = i + 1))
 
   const table = [...ids].sort((x, y) => {

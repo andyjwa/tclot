@@ -1,55 +1,10 @@
 /**
- * Counterfactual total table points: each row keeps its real weekly scores; each column uses
- * that column team’s opponent fixture list (the GW opponent scores they would have faced).
+ * Schedule luck grid. Each cell is how strong that column's opponents have
+ * been against everyone except the row team (3 for a win, 1 for a draw).
+ * The scoreline does not count. `rowAverages` is that row's luck delta:
+ * average opponent strength across every fixture list, minus its own.
  */
-
-/**
- * @param {Array<{ finished?: boolean, event?: number, league_entry_1: number, league_entry_2: number, league_entry_1_points?: number, league_entry_2_points?: number }>} matches
- * @returns {{ myPts: Record<number, Record<number, number>>, oppPts: Record<number, Record<number, number>> }}
- */
-function buildGwPointMaps(matches) {
-  const myPts = {}
-  const oppPts = {}
-  const finished = (matches || []).filter((m) => m.finished)
-  for (const m of finished) {
-    const gw = Number(m.event)
-    if (!Number.isFinite(gw) || gw < 1) continue
-    const a = m.league_entry_1
-    const b = m.league_entry_2
-    const pa = Number(m.league_entry_1_points) || 0
-    const pb = Number(m.league_entry_2_points) || 0
-    for (const [me, _op, myP, opP] of [
-      [a, b, pa, pb],
-      [b, a, pb, pa],
-    ]) {
-      if (!myPts[me]) myPts[me] = {}
-      if (!oppPts[me]) oppPts[me] = {}
-      myPts[me][gw] = myP
-      oppPts[me][gw] = opP
-    }
-  }
-  return { myPts, oppPts }
-}
-
-/**
- * H2H table points (W×3 + D) for `squadId`'s scores vs opponents implied by `fixtureOwnerId`'s schedule.
- */
-function leaguePointsForSchedule(squadId, fixtureOwnerId, myPts, oppPts) {
-  const gws = Object.keys(oppPts[fixtureOwnerId] || {})
-    .map(Number)
-    .filter((g) => Number.isFinite(g))
-    .sort((a, b) => a - b)
-  let w = 0
-  let d = 0
-  for (const gw of gws) {
-    const my = myPts[squadId]?.[gw]
-    const op = oppPts[fixtureOwnerId]?.[gw]
-    if (my == null || op == null) continue
-    if (my > op) w += 1
-    else if (my === op) d += 1
-  }
-  return w * 3 + d
-}
+import { buildResultScheduleLuck } from './scheduleLuck.js'
 
 /**
  * @param {object[]} leagueEntries `details.json` league_entries
@@ -83,26 +38,19 @@ export function buildFixtureScheduleMatrix(matches, leagueEntries, tableRows) {
     if (!orderedIds.includes(id)) orderedIds.push(id)
   }
 
-  const { myPts, oppPts } = buildGwPointMaps(matches)
+  const luck = buildResultScheduleLuck(matches, orderedIds)
   const n = orderedIds.length
-  /** @type {number[][]} */
+  /** @type {(number|null)[][]} */
   const matrix = []
+  const rowAverages = []
   for (let i = 0; i < n; i++) {
+    const rowId = orderedIds[i]
     matrix[i] = []
     for (let j = 0; j < n; j++) {
-      matrix[i][j] = leaguePointsForSchedule(
-        orderedIds[i],
-        orderedIds[j],
-        myPts,
-        oppPts,
-      )
+      matrix[i][j] = luck?.quality[rowId]?.[orderedIds[j]] ?? null
     }
+    rowAverages[i] = luck?.byId[rowId]?.delta ?? null
   }
-
-  const rowAverages = matrix.map((row) => {
-    const sum = row.reduce((a, v) => a + v, 0)
-    return n > 0 ? sum / n : 0
-  })
 
   return {
     orderedIds,

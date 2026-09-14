@@ -8,6 +8,7 @@ import {
 } from './teamCardStats.js'
 import { TeamCurrentSquad } from './TeamCurrentSquad.jsx'
 import { archivedSeasonLabel } from './seasonArchive.js'
+import { luckEaseLabel, formatLuckDelta } from './scheduleLuck.js'
 import { TeamSideBets } from './SideBets.jsx'
 import { getSeasonLabel } from './seasonString.js'
 import './TeamDetailView.css'
@@ -133,7 +134,13 @@ export function TeamDetailView({
   const s = S[id]
   const rank = rankOf[id]
   const lk = luck[id]
-  const lkPos = lk.delta >= 0
+  /** Pre-season / no finished games: the stat seeds (high -1, GW0, an
+   * all-tied luck rank) are meaningless. Render placeholder tiles instead. */
+  const played = s.seq.length > 0
+  const lkReady = Boolean(played && lk?.ready)
+  const lkSigned = lkReady ? formatLuckDelta(lk.delta) : null
+  const lkPos = lkSigned?.startsWith('+')
+  const lkNeg = lkSigned?.startsWith('-')
   const rivals = rivalsFor(id)
   const last5 = s.seq.slice(-5)
   const mData = marginMode === 'wins' ? s.mw : s.ml
@@ -142,10 +149,6 @@ export function TeamDetailView({
   const st = currentStreak(s.seq)
   const streakCls = st.res === 'W' ? 'v-pos' : st.res === 'L' ? 'v-neg' : 'is-zero'
   const streakVal = st.n ? st.n : '\u2013'
-
-  /** Pre-season / no finished games: the stat seeds (high -1, GW0, an
-   * all-tied luck rank) are meaningless — render placeholder tiles instead. */
-  const played = s.seq.length > 0
 
   const fplEntryId =
     teamsForFormSelect.find((t) => Number(t?.id) === Number(id))?.fplEntryId ??
@@ -240,21 +243,22 @@ export function TeamDetailView({
           <div className="tc-boxes">
             <div
               className="tc-box"
-              title="Same weekly scores, replayed against every team's opponents. Ranked by league points from this fixture list minus the average of all eight."
+              title="Wins and losses only. Ranked by how the teams on this fixture list have done against everyone else, compared with every fixture list. 1st drew the teams that have been losing more."
             >
               <div className="tc-box__k">Luck index</div>
-              {played ? (
+              {lkReady ? (
                 <>
                   <div className="tc-box__v">{ordinal(luckIdx[id])}</div>
-                  <div className={`tc-box__sub ${lkPos ? 'v-pos' : 'v-neg'}`}>
-                    {lkPos ? '+' : ''}
-                    {lk.delta.toFixed(1)} pts vs avg list
+                  <div className={`tc-box__sub ${lkPos ? 'v-pos' : lkNeg ? 'v-neg' : ''}`}>
+                    {luckEaseLabel(lk.delta)}
                   </div>
                 </>
               ) : (
                 <>
                   <div className="tc-box__v">{'\u2013'}</div>
-                  <div className="tc-box__sub">No games yet</div>
+                  <div className="tc-box__sub">
+                    {played ? 'Not enough results' : 'No games yet'}
+                  </div>
                 </>
               )}
             </div>
@@ -324,13 +328,20 @@ export function TeamDetailView({
               </div>
             </div>
           </div>
-          {played ? (
+          {lkReady ? (
             <p className="tc-luck-note">
-              {lk.actual} league pts from this fixture list, {lk.avg.toFixed(1)} from
-              the average of all eight. Scores stay fixed. Only the opponents
-              change (3 for a win, 1 for a draw). Positive means this list has
-              been kinder. 1st is the kindest. The grid is Standings, then Stats:
-              this number is the average of that row.
+              Wins and losses only. Your opponents average {lk.own.toFixed(1)} league
+              pts per game against everyone else (3 for a win, 1 for a draw). The
+              average fixture list is {lk.avg.toFixed(1)}. A win counts the same
+              whatever the score. A plus means this draw has been kinder. 1st is
+              the kindest. Standings, then Stats is the same comparison, one
+              fixture list at a time. The luck index is the average of that row.
+            </p>
+          ) : played ? (
+            <p className="tc-luck-note">
+              Wins and losses only. This starts once the teams you played have
+              played someone else, so beating them does not, by itself, count as
+              an easy draw.
             </p>
           ) : null}
         </div>
