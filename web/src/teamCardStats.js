@@ -168,7 +168,14 @@ export function computeTeamCardData(leagueEntries, allMatches) {
     }
   }
 
-  /** Counterfactual league points if this team had played `ow`'s schedule. */
+  /**
+   * Schedule luck, not player form. `lp(sq, ow)` is the league points team
+   * `sq` would have from its real weekly scores against team `ow`'s opponents
+   * (3 for a win, 1 for a draw). The luck index ranks teams by actual points
+   * minus the average of that replay across every fixture list, including
+   * their own. That delta is the average of the team's row in the schedule
+   * luck matrix. 1st is the kindest list.
+   */
   function lp(sq, ow) {
     let w = 0
     let d = 0

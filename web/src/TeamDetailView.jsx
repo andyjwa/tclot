@@ -238,14 +238,17 @@ export function TeamDetailView({
         <div className="tc-sec">
           <div className="tc-sec__h">Story of the season</div>
           <div className="tc-boxes">
-            <div className="tc-box">
+            <div
+              className="tc-box"
+              title="Same weekly scores, replayed against every team's opponents. Ranked by league points from this fixture list minus the average of all eight."
+            >
               <div className="tc-box__k">Luck index</div>
               {played ? (
                 <>
                   <div className="tc-box__v">{ordinal(luckIdx[id])}</div>
                   <div className={`tc-box__sub ${lkPos ? 'v-pos' : 'v-neg'}`}>
                     {lkPos ? '+' : ''}
-                    {lk.delta.toFixed(1)} vs avg
+                    {lk.delta.toFixed(1)} pts vs avg list
                   </div>
                 </>
               ) : (
@@ -321,6 +324,15 @@ export function TeamDetailView({
               </div>
             </div>
           </div>
+          {played ? (
+            <p className="tc-luck-note">
+              {lk.actual} league pts from this fixture list, {lk.avg.toFixed(1)} from
+              the average of all eight. Scores stay fixed. Only the opponents
+              change (3 for a win, 1 for a draw). Positive means this list has
+              been kinder. 1st is the kindest. The grid is Standings, then Stats:
+              this number is the average of that row.
+            </p>
+          ) : null}
         </div>
 
         <div className="tc-sec">

@@ -281,6 +281,12 @@ body[data-tclot-theme='dark'] .tc-card {
   align-items: center;
   gap: 4px;
 }
+.tc-luck-note {
+  margin: 8px 0 2px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--tc-text-muted);
+}
 .tc-inline-badge {
   display: inline-flex;
 }

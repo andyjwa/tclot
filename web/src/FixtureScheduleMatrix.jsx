@@ -65,7 +65,7 @@ export function FixtureScheduleMatrix({
             : 'tile-hint muted tile-hint--tight'
         }
       >
-        Cell = actual pts – pts if you played that team’s schedule. Greener = luckier draw.
+        Each cell is league points from that row's real scores, minus the points those same scores would have got against that column's opponents. Schedule luck on a team card is the average of that row. Greener means this fixture list has been kinder.
       </p>
       <div className="table-scroll table-scroll--win-margin">
         <table className="fixture-schedule-matrix fixture-schedule-matrix--delta">
