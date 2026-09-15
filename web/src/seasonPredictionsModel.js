@@ -11,6 +11,8 @@
  * show what the model would have said at the time.
  */
 
+import { favoriteFromOriented, orientFreezeRow } from './weeklyPreviewFreeze.js'
+
 /** Deterministic xorshift32 RNG in [0, 1). */
 export function makeRng(seed) {
   let s = seed >>> 0 || 1
@@ -458,22 +460,29 @@ export function strengthWinPct(home, away) {
 }
 
 /**
- * Model favorite + pre-match win percentages for one match. Prefers the
- * archived pre-match engine odds (projections-history gw file `h2h` rows —
- * the same forecast the live win bar starts from); falls back to the
- * strength model when no archive exists. Percentages are oriented to the
- * match's own home/away (league_entry_1 / league_entry_2).
+ * Model favorite + pre-match win percentages for one match.
+ *
+ * Prefers the locked weekly Preview freeze (the board the recap is scored
+ * against), then the archived engine odds, then the strength model.
  *
  * @returns {{
  *   favorite: number|null,
- *   source: 'engine'|'strength',
+ *   source: 'preview'|'engine'|'strength',
  *   homePct: number|null,
  *   awayPct: number|null,
+ *   predHome?: number|null,
+ *   predAway?: number|null,
  * }}
  */
-export function matchFavorite(match, history, strengths) {
+export function matchFavorite(match, history, strengths, previewFreeze = null) {
   const h = Number(match.league_entry_1)
   const a = Number(match.league_entry_2)
+  if (previewFreeze) {
+    const oriented = orientFreezeRow(previewFreeze, h, a)
+    if (oriented && Number.isFinite(oriented.homeWinPct) && Number.isFinite(oriented.awayWinPct)) {
+      return favoriteFromOriented(oriented, h, a)
+    }
+  }
   const row = findArchivedH2hRow(history, h, a)
   if (row) {
     // Archive orientation: home = league_entry_1 of the archived row.

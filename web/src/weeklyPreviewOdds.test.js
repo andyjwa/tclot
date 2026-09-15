@@ -81,6 +81,18 @@ test('resolvePreviewOdds prefers frozen archive over XI forecast', () => {
   assert.deepEqual(out, { hw: 70, dw: 4, aw: 26, source: 'engine', arch: true })
 })
 
+test('resolvePreviewOdds prefers locked Preview freeze over archive', () => {
+  const out = resolvePreviewOdds({
+    previewFreeze: { hw: 41, dw: 5, aw: 54, homeMu: 36, awayMu: 40 },
+    archiveMc: { homeWinPct: 70, drawPct: 4, awayWinPct: 26 },
+    xiOdds: { hw: 51, dw: 6, aw: 43 },
+  })
+  assert.equal(out.source, 'preview')
+  assert.equal(out.frozen, true)
+  assert.equal(out.hw, 41)
+  assert.equal(out.aw, 54)
+})
+
 test('resolvePreviewOdds flips archive when the stored row is swapped', () => {
   const out = resolvePreviewOdds({
     archiveMc: { homeWinPct: 70, drawPct: 4, awayWinPct: 26 },

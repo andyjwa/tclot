@@ -7,7 +7,8 @@
  * than the XI xP on the same card). Upcoming weeks with a locked 11 must use
  * that same forecast so the two surfaces agree.
  *
- * Finished weeks still prefer the frozen archive `xPtsMc` snapshot.
+ * Finished weeks prefer the locked Preview freeze (`preview-odds/gw-NN.json`
+ * / published Upcoming board), then the archive `xPtsMc` snapshot.
  */
 import { h2hWinProbs } from './forecastHelpers.js'
 import { teamProjection } from './liveBlend.js'
@@ -55,10 +56,11 @@ export function xiPredictionOdds(predById, homeIds, awayIds, sigmaScale = 1) {
 }
 
 /**
- * Pick Preview odds: frozen archive, then Live-Odds XI forecast, then bookie,
- * then season strength.
+ * Pick Preview odds: locked Preview freeze, then archive, then Live-Odds XI
+ * forecast, then bookie, then season strength.
  *
  * @param {{
+ *   previewFreeze?: { hw?: number, dw?: number, aw?: number, homeMu?: number, awayMu?: number } | null,
  *   archiveMc?: { homeWinPct?: number, drawPct?: number, awayWinPct?: number } | null,
  *   archiveHomeIsMatchHome?: boolean,
  *   xiOdds?: { hw: number, dw: number, aw: number, source?: string, homeMu?: number, awayMu?: number } | null,
@@ -67,12 +69,27 @@ export function xiPredictionOdds(predById, homeIds, awayIds, sigmaScale = 1) {
  * }} p
  */
 export function resolvePreviewOdds({
+  previewFreeze = null,
   archiveMc = null,
   archiveHomeIsMatchHome = true,
   xiOdds = null,
   bookieProbs = null,
   strength = null,
 } = {}) {
+  const fh = Number(previewFreeze?.hw)
+  const fa = Number(previewFreeze?.aw)
+  if (Number.isFinite(fh) && Number.isFinite(fa)) {
+    const dw = Number.isFinite(Number(previewFreeze?.dw)) ? Number(previewFreeze.dw) : 0
+    return {
+      hw: fh,
+      dw,
+      aw: fa,
+      source: 'preview',
+      frozen: true,
+      homeMu: previewFreeze?.homeMu,
+      awayMu: previewFreeze?.awayMu,
+    }
+  }
   const mcHw = Number(archiveMc?.homeWinPct)
   const mcAw = Number(archiveMc?.awayWinPct)
   if (Number.isFinite(mcHw) && Number.isFinite(mcAw)) {

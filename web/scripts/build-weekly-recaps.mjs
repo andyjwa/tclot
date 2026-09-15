@@ -9,17 +9,19 @@
  *  - `wrap`: short week headline (named derbies, occasional personality)
  *  - `derby` on each matchup when the pairing has a nickname
  *
- * Preview entries (`previews`) — one per finished GW (frozen from the archive)
+ * Preview entries (`previews`) — one per finished GW (locked Preview odds)
  * and the next unfinished GW only after that GW's lineup deadline:
- *  - win/draw/win percents from the same XI + predictions.json forecast as
- *    Live Odds (not the season-strength / bookie board); projected XI points;
+ *  - win/draw/win percents from the locked XI + predictions.json forecast as
+ *    Live Odds; those percents are frozen at first publish so the recap is a
+ *    score of that Preview, not a post-GW reconstruction; projected XI points;
  *    watch-list from the locked 11
  *  - bookie fractions, recent waivers, last-week form
  *  - injuries / bench-vs-XI questions when they actually change the week
  *  - template look-forward paragraph (bookie lean / stakes / XI / lore)
  *
- * Fully regenerated each build from details.json + season-predictions.json —
- * historical recaps stay deterministic once a GW is done.
+ * Recap winner-calls reuse the locked Preview freeze (`preview-odds/gw-NN.json`
+ * plus the live site's published upcoming board). Post-GW engine archives are
+ * only a fallback when no Preview freeze exists.
  *
  * Run AFTER build-upcoming-lineups.mjs + build-season-predictions.mjs
  * (and bookie-markets when present):
@@ -54,6 +56,15 @@ import {
   starterElementIds,
   xiPredictionOdds,
 } from '../src/weeklyPreviewOdds.js'
+import {
+  applyFreezeToRecapOdds,
+  findFreezeRow,
+  freezeRowsFromPreview,
+  freezeToResolveInput,
+  loadPreviewFreezeMap,
+  mergeFreezeRow,
+  persistFreezeGw,
+} from '../src/weeklyPreviewFreeze.js'
 import {
   playerAvailability,
   lineupFromPriorXi,
@@ -219,6 +230,10 @@ const snapshotByGw = new Map(predictions.snapshots.map((s) => [s.asOfGw, s]))
 const recordByGw = new Map(
   (predictions.modelRecord?.gameweeks ?? []).map((g) => [g.gw, g]),
 )
+const freezeByGw = await loadPreviewFreezeMap(dataDir)
+for (const [gw, pairs] of freezeByGw) {
+  persistFreezeGw(dataDir, gw, [...pairs.values()])
+}
 
 function loadHistory(gw) {
   const p = join(dataDir, 'projections-history', `gw-${String(gw).padStart(2, '0')}.json`)
@@ -302,8 +317,13 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
         }
       : null
     const rec = recordRows.get(`${row.home}-${row.away}`)
-    const odds =
-      rec && Number.isFinite(rec.homeWinPct) && rec.favorite != null
+    const freezeRow = findFreezeRow(freezeByGw.get(gw), row.home, row.away)
+    const frozen = freezeRow
+      ? applyFreezeToRecapOdds(freezeRow, row.home, row.away, home.points, away.points)
+      : null
+    const odds = frozen
+      ? frozen.odds
+      : rec && Number.isFinite(rec.homeWinPct) && rec.favorite != null
         ? {
             favoriteSide: rec.favorite === row.home ? 'home' : 'away',
             favoritePct: rec.favorite === row.home ? rec.homeWinPct : rec.awayWinPct,
@@ -311,8 +331,9 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
             outcome: rec.outcome,
           }
         : null
-    const predicted =
-      rec && Number.isFinite(rec.predHome) && Number.isFinite(rec.predAway)
+    const predicted = frozen?.predicted
+      ? frozen.predicted
+      : rec && Number.isFinite(rec.predHome) && Number.isFinite(rec.predAway)
         ? { home: rec.predHome, away: rec.predAway }
         : null
     return {
@@ -374,13 +395,34 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
     }
   }
 
+  let hits = 0
+  let misses = 0
+  let draws = 0
+  let errSum = 0
+  let errCount = 0
+  for (const m of matchups) {
+    if (m.odds?.outcome === 'hit') hits++
+    else if (m.odds?.outcome === 'miss') misses++
+    else if (m.odds?.outcome === 'draw') draws++
+    if (m.predicted) {
+      if (Number.isFinite(m.predicted.home) && Number.isFinite(m.home.points)) {
+        errSum += Math.abs(m.predicted.home - m.home.points)
+        errCount++
+      }
+      if (Number.isFinite(m.predicted.away) && Number.isFinite(m.away.points)) {
+        errSum += Math.abs(m.predicted.away - m.away.points)
+        errCount++
+      }
+    }
+  }
+
   gameweeks.push({
     gw,
     model: {
-      hits: gwRecord?.hits ?? 0,
-      misses: gwRecord?.misses ?? 0,
-      draws: gwRecord?.draws ?? 0,
-      avgAbsErr: gwRecord?.avgAbsErr ?? null,
+      hits,
+      misses,
+      draws,
+      avgAbsErr: errCount > 0 ? +(errSum / errCount).toFixed(1) : (gwRecord?.avgAbsErr ?? null),
       upset,
       calls,
     },
@@ -750,12 +792,13 @@ function previewTeam(entryId, asOfGw) {
   }
 }
 
-function previewOddsFor(match, history, bookieRow, homeLu, awayLu) {
+function previewOddsFor(match, history, bookieRow, homeLu, awayLu, freezeRow) {
   const h = Number(match.league_entry_1)
   const a = Number(match.league_entry_2)
   const arch = findArchivedH2hRow(history, h, a)
-  const fav = matchFavorite(match, history, strengthById)
+  const fav = matchFavorite(match, history, strengthById, freezeRow)
   const priced = resolvePreviewOdds({
+    previewFreeze: freezeToResolveInput(freezeRow, h, a),
     archiveMc: arch?.xPtsMc,
     archiveHomeIsMatchHome: arch ? Number(arch.league_entry_1) === h : true,
     xiOdds: xiPredictionOdds(
@@ -796,7 +839,8 @@ function buildPreviewForGw(gw) {
       : null
     const homeLu = lineupByLeague.get(homeId) ?? null
     const awayLu = lineupByLeague.get(awayId) ?? null
-    const priced = previewOddsFor(match, history, bookieRow, homeLu, awayLu)
+    const freezeRow = findFreezeRow(freezeByGw.get(gw), homeId, awayId)
+    const priced = previewOddsFor(match, history, bookieRow, homeLu, awayLu, freezeRow)
     const pcts = priced
       ? oddsPercents({ home: priced.hw, draw: priced.dw, away: priced.aw })
       : { home: 50, draw: 0, away: 50 }
@@ -844,7 +888,16 @@ function buildPreviewForGw(gw) {
     }
 
     let predicted = null
-    if (arch && Number.isFinite(Number(arch.xPtsXi1)) && Number.isFinite(Number(arch.xPtsXi2))) {
+    if (
+      priced?.frozen &&
+      Number.isFinite(Number(priced.homeMu)) &&
+      Number.isFinite(Number(priced.awayMu))
+    ) {
+      predicted = {
+        home: Math.round(Number(priced.homeMu) * 10) / 10,
+        away: Math.round(Number(priced.awayMu) * 10) / 10,
+      }
+    } else if (arch && Number.isFinite(Number(arch.xPtsXi1)) && Number.isFinite(Number(arch.xPtsXi2))) {
       const homeIsE1 = Number(arch.league_entry_1) === homeId
       predicted = {
         home: homeIsE1 ? Number(arch.xPtsXi1) : Number(arch.xPtsXi2),
@@ -913,12 +966,14 @@ function buildPreviewForGw(gw) {
 
   const fun = playerFunStats(gw, { history, prevHistory, useActual: false })
 
+  const usedFreeze = Boolean(freezeByGw.get(gw)?.size)
   let source = 'live'
-  if (history) source = 'archive'
+  if (usedFreeze) source = 'preview'
+  else if (history) source = 'archive'
   else if (lineupDoc?.source === 'draft-api' || lineupDoc?.source === 'mixed') source = 'xi'
   else if (lineupDoc?.source === 'prior-xi' || lineupByLeague.size) source = 'xi'
 
-  return {
+  const preview = {
     gw,
     source,
     superlatives: {
@@ -948,6 +1003,12 @@ function buildPreviewForGw(gw) {
     matchups,
     wrap: recapWeekWrapSentences({ gw, matchups }),
   }
+  const freezeRows = freezeRowsFromPreview(preview)
+  if (freezeRows.length) {
+    persistFreezeGw(dataDir, gw, freezeRows)
+    for (const row of freezeRows) mergeFreezeRow(freezeByGw, gw, row)
+  }
+  return preview
 }
 
 const previewGws = new Set()
