@@ -7,9 +7,9 @@
  *
  *  - Priors: season-preview.json (draft-based weekly mu/sigma per team).
  *  - Results: details.json matches (every finished GW's actual scores).
- *  - Weekly engine forecasts: projections-history/gw-NN.json archives
- *    (rebuilt by build-projections-history.mjs), used for the model record's
- *    matchup favorites + score errors so they match the live win bars.
+ *  - Locked weekly Preview freeze (`preview-odds/gw-NN.json` + the live
+ *    site's published upcoming board) for the model record's matchup
+ *    favourites, so recap scores the Preview rather than a post-GW rebuild.
  *
  * For each asOfGw 0..lastFinished: strengths are the draft prior updated by
  * the weekly observations seen so far (prior worth ~12 games; each week is an
@@ -35,6 +35,11 @@ import {
   findArchivedH2hRow,
   archivedScoreError,
 } from '../src/seasonPredictionsModel.js'
+import {
+  findFreezeRow,
+  loadPreviewFreezeMap,
+  persistFreezeGw,
+} from '../src/weeklyPreviewFreeze.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -181,6 +186,11 @@ for (let asOf = 1; asOf <= lastFinishedGw; asOf++) {
   })
 }
 
+const freezeByGw = await loadPreviewFreezeMap(dataDir)
+for (const [gw, pairs] of freezeByGw) {
+  persistFreezeGw(dataDir, gw, [...pairs.values()])
+}
+
 /* ---- model record: favorites + score error per finished GW ---- */
 const record = { gameweeks: [], hits: 0, misses: 0, draws: 0 }
 let errSum = 0
@@ -204,7 +214,13 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
     const a = Number(m.league_entry_2)
     const hp = Number(m.league_entry_1_points) || 0
     const ap = Number(m.league_entry_2_points) || 0
-    const { favorite, source, homePct, awayPct } = matchFavorite(m, history, preStrengths)
+    const freezeRow = findFreezeRow(freezeByGw.get(gw), h, a)
+    const { favorite, source, homePct, awayPct, predHome, predAway } = matchFavorite(
+      m,
+      history,
+      preStrengths,
+      freezeRow,
+    )
     const actual = hp > ap ? h : ap > hp ? a : null
     let outcome
     if (actual == null) {
@@ -220,8 +236,14 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
       misses++
     }
     const archRow = findArchivedH2hRow(history, h, a)
-    const errHome = archivedScoreError(archRow, h)
-    const errAway = archivedScoreError(archRow, a)
+    const errHome =
+      Number.isFinite(predHome)
+        ? { predicted: predHome, actual: hp, absErr: +Math.abs(predHome - hp).toFixed(2) }
+        : archivedScoreError(archRow, h)
+    const errAway =
+      Number.isFinite(predAway)
+        ? { predicted: predAway, actual: ap, absErr: +Math.abs(predAway - ap).toFixed(2) }
+        : archivedScoreError(archRow, a)
     for (const [id, e] of [[h, errHome], [a, errAway]]) {
       if (!e) continue
       errSum += e.absErr
@@ -271,7 +293,8 @@ const output = {
     update:
       'strength re-weighted toward weekly observations as games accumulate; each week is an xP-blend (0.7 engine xP for the fielded XI, re-centered to the week, + 0.3 actual) so one lucky/unlucky result cannot crater a team',
     simulations: 5000,
-    favorites: 'weekly engine archive when available, strength model otherwise',
+    favorites:
+      'locked weekly Preview when available, then weekly engine archive, else strength model',
   },
   current: snapshots[snapshots.length - 1],
   snapshots,

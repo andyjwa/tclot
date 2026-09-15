@@ -227,6 +227,34 @@ test('recapFactsForGw computes results, ranks, streaks and superlatives', () => 
   assert.equal(recapFactsForGw(matches, IDS, names, 4), null, 'unfinished GW → null')
 })
 
+test('matchFavorite prefers locked Preview freeze over archive', () => {
+  const match = { league_entry_1: 6849, league_entry_2: 4898 }
+  const history = {
+    h2h: [
+      {
+        league_entry_1: 6849,
+        league_entry_2: 4898,
+        xPtsMc: { homeWinPct: 54, drawPct: 4, awayWinPct: 42 },
+      },
+    ],
+  }
+  const freeze = {
+    home: 6849,
+    away: 4898,
+    homeWinPct: 41,
+    drawPct: 5,
+    awayWinPct: 54,
+    predHome: 36,
+    predAway: 40,
+  }
+  const out = matchFavorite(match, history, null, freeze)
+  assert.equal(out.favorite, 4898)
+  assert.equal(out.source, 'preview')
+  assert.equal(out.homePct, 41)
+  assert.equal(out.awayPct, 54)
+  assert.equal(out.predHome, 36)
+})
+
 test('matchFavorite prefers the archived engine odds over strengths', () => {
   const match = { league_entry_1: 1, league_entry_2: 2 }
   const history = {
