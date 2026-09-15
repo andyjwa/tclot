@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "gw": 4,
+  "source": "preview",
+  "generatedAt": "2026-09-14T20:02:19.009Z",
+  "capturedFrom": "github-pages artifact run 34890374383 (source=xi, lastFinishedGw=3)",
+  "matches": [
+    {
+      "home": 4259,
+      "away": 5220,
+      "homeWinPct": 45,
+      "drawPct": 3,
+      "awayWinPct": 52,
+      "predHome": 27.3,
+      "predAway": 28.6
+    },
+    {
+      "home": 6849,
+      "away": 4898,
+      "homeWinPct": 45,
+      "drawPct": 3,
+      "awayWinPct": 52,
+      "predHome": 25.2,
+      "predAway": 26.4
+    },
+    {
+      "home": 10173,
+      "away": 44904,
+      "homeWinPct": 43,
+      "drawPct": 3,
+      "awayWinPct": 54,
+      "predHome": 22,
+      "predAway": 23.6
+    },
+    {
+      "home": 18279,
+      "away": 30728,
+      "homeWinPct": 38,
+      "drawPct": 3,
+      "awayWinPct": 59,
+      "predHome": 25.9,
+      "predAway": 30.2
+    }
+  ]
+}

@@ -1,5 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   isLockQualitySource,
   unorderedPairKey,
@@ -223,4 +226,23 @@ test('freezeRowsFromPreview skips archive look-forwards', () => {
     }),
     [],
   )
+})
+
+test('recovered GW4 freeze scores the locked XI Preview, not the archive rebuild', () => {
+  const doc = JSON.parse(
+    readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), '../public/league-data/preview-odds/gw-04.json'),
+      'utf8',
+    ),
+  )
+  const byPair = new Map(doc.matches.map((row) => [unorderedPairKey(row.home, row.away), row]))
+  const score = (home, away, homePts, awayPts) =>
+    scoreOrientedCall(orientFreezeRow(byPair.get(unorderedPairKey(home, away)), home, away), home, away, homePts, awayPts)
+  const gimli = findFreezeRow(byPair, 6849, 4898)
+  assert.equal(gimli.awayWinPct, 52)
+  assert.equal(favoriteFromOriented(orientFreezeRow(gimli, 6849, 4898), 6849, 4898).favorite, 4898)
+  assert.equal(score(4259, 5220, 38, 32), 'miss')
+  assert.equal(score(6849, 4898, 37, 53), 'hit')
+  assert.equal(score(10173, 44904, 50, 62), 'hit')
+  assert.equal(score(18279, 30728, 70, 49), 'miss')
 })
