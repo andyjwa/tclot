@@ -85,7 +85,13 @@ const players = (boot.elements ?? [])
     teamCode: teamCode.get(Number(e.team)) ?? null,
     position: POS[Number(e.element_type)] ?? 'MID',
   }))
-  .sort((a, b) => a.id - b.id)
+  .sort(
+    (a, b) =>
+      (a.team || '').localeCompare(b.team || '', undefined, { sensitivity: 'base' }) ||
+      (a.fullName || a.webName || '').localeCompare(b.fullName || b.webName || '', undefined, {
+        sensitivity: 'base',
+      }),
+  )
 
 const output = {
   generatedAt: new Date().toISOString(),
