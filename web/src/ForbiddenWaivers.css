@@ -59,9 +59,47 @@
   margin: 6px 0 0;
 }
 
+.forbidden-waivers__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  margin: 8px 0;
+  padding: 0 10px;
+  border: 1px solid var(--line, rgba(139, 147, 167, 0.2));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--text, #e8ecf4) 4%, transparent);
+}
+
+.forbidden-waivers__search:focus-within {
+  border-color: color-mix(in srgb, var(--brand, #7c5cfc) 55%, var(--line, rgba(139, 147, 167, 0.2)));
+}
+
+.forbidden-waivers__search-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-dim, #8b93a7);
+  flex-shrink: 0;
+}
+
+.forbidden-waivers__search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text, #e8ecf4);
+}
+
+.forbidden-waivers__search-input::placeholder {
+  color: var(--text-dim, #8b93a7);
+}
+
 .forbidden-waivers__list {
   list-style: none;
-  margin: 8px 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
   gap: 4px;
