@@ -4,7 +4,11 @@ import {
   postDeadlineIngestEvent,
   preWaiverRefreshEvent,
 } from './waiver-refresh-gate.mjs'
-import { burstWaiverRefreshEvent, postLineupLockRefreshEvent } from '../src/waiverRefreshSchedule.js'
+import {
+  burstWaiverRefreshEvent,
+  postLineupLockRefreshEvent,
+  previewCatchupEvent,
+} from '../src/waiverRefreshSchedule.js'
 
 test('postDeadlineIngestEvent — allows ingest after GW deadline (finished not required)', () => {
   const dl = '2026-05-01T17:30:00Z'
@@ -118,4 +122,17 @@ test('postLineupLockRefreshEvent — allows from deadline until +3h', () => {
   assert.equal(postLineupLockRefreshEvent(events, dl + 30 * 60_000)?.id, 2)
   assert.equal(postLineupLockRefreshEvent(events, dl + 3 * 60 * 60_000), null)
   assert.equal(postLineupLockRefreshEvent(null, dl), null)
+})
+
+test('previewCatchupEvent — still open 4h after lock, closed at +12h', () => {
+  const dl = Date.parse(GW2_DL)
+  const events = [
+    { id: 1, finished: true, deadline_time: '2026-08-21T17:30:00Z' },
+    { id: 2, finished: false, deadline_time: GW2_DL },
+  ]
+  assert.equal(previewCatchupEvent(events, dl - 1), null)
+  assert.equal(previewCatchupEvent(events, dl)?.id, 2)
+  assert.equal(previewCatchupEvent(events, dl + 4 * 60 * 60_000)?.id, 2)
+  assert.equal(previewCatchupEvent(events, dl + 12 * 60 * 60_000), null)
+  assert.equal(previewCatchupEvent(null, dl), null)
 })

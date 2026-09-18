@@ -16,6 +16,36 @@ test('skips outside the lineup-lock window', async () => {
   assert.equal(result.reason, 'outside-window')
 })
 
+test('still dispatches 4h after lock when the published preview is stale', async () => {
+  const late = Date.parse('2026-09-12T16:30:00Z')
+  const calls = []
+  const result = await maybeDispatchPreviewDeploy(
+    { GITHUB_DISPATCH_TOKEN: 'tok' },
+    {
+      now: late,
+      events,
+      recaps: { generatedAt: '2026-09-12T09:47:00Z', previews: [{ gw: 3 }] },
+      lastDispatchMs: null,
+      fetch: async (url) => {
+        calls.push(String(url))
+        return { status: 204, ok: true }
+      },
+    },
+  )
+  assert.equal(result.action, 'dispatched')
+  assert.equal(result.gw, 4)
+  assert.match(calls[0], /deploy-github-pages.yml\/dispatches$/)
+})
+
+test('skips once the 12h preview catch-up window has closed', async () => {
+  const result = await maybeDispatchPreviewDeploy(
+    { GITHUB_DISPATCH_TOKEN: 'tok' },
+    { now: Date.parse('2026-09-13T01:00:00Z'), events },
+  )
+  assert.equal(result.action, 'skip')
+  assert.equal(result.reason, 'outside-window')
+})
+
 test('skips a locked week when no dispatch credentials are set', async () => {
   const result = await maybeDispatchPreviewDeploy({}, { now, events })
   assert.deepEqual(result, { action: 'skip', reason: 'no-credentials', gw: 4 })

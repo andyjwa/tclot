@@ -69,7 +69,7 @@ npm run generate-vapid
 
 ## Scheduled alerts
 
-Cron runs every 5 minutes. It also checks whether a gameweek's lineups just locked and the live Preview is still stale. If so, and `GITHUB_DISPATCH_TOKEN` or `VERCEL_DEPLOY_HOOK` is set (`wrangler secret put`), it starts a site rebuild. Without either secret that check no-ops; the **Preview refresh** GitHub workflow is the backup that does not need a Worker secret.
+Cron runs every 5 minutes. It also checks whether a gameweek's lineups locked in the last 12 hours and the live Preview is still stale. If so, and `GITHUB_DISPATCH_TOKEN` or `VERCEL_DEPLOY_HOOK` is set (`wrangler secret put`), it starts a site rebuild. Without either secret that check no-ops; the **Preview refresh** GitHub workflow is the backup that does not need a Worker secret.
 
 There are three user-facing alert types (matching the Settings toggles):
 

@@ -2,15 +2,16 @@
 # The main deploy workflow's */15 and top-of-hour schedules are often delayed
 # or dropped by GitHub, which is how a locked gameweek can sit without a
 # preview. This workflow is separate so it is not stuck in that queue.
-# It only dispatches the full deploy when lineups just locked and the live
-# weekly-recaps.json is still from before that deadline.
+# It only dispatches the full deploy when lineups locked in the last 12 hours
+# and the live weekly-recaps.json is still from before that deadline.
 name: Preview refresh
 
 on:
   workflow_dispatch:
   schedule:
     # Offset from :00 and :15. Several shots each hour so one dropped slot
-    # still lands inside the 3h lineup-lock window.
+    # still lands after lock. The ping itself retries for 12h, because GitHub
+    # often skips this workflow for hours at a time.
     - cron: '12,42 * * * *'
 
 permissions:
