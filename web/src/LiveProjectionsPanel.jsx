@@ -346,7 +346,7 @@ export function LiveProjectionsPanel({
     );
 
     const liveByEl = ctx.liveFullByElementId || {};
-    const blendCtxH2h = { gwFixtures: allFx };
+    const blendCtxH2h = { gwFixtures: allFx, gamesSampled: ctx.gamesSampled };
     /** Win % from live Proj MC only after at least one PL fixture is final this GW; until then, xPts MC. */
     const plGwHasFinishedFixture = allFx.some(
       (f) => f?.finished === true || f?.finished_provisional === true,

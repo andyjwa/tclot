@@ -24,6 +24,7 @@ import {
   retickRowPoints,
 } from './livePlayerPoints.js';
 import { shouldPollLiveGw } from './liveGwPollGate.js';
+import { seasonGamesSampled } from './livePredictionMappers.js';
 import {
   FPL_DIRECT,
   draftEntryEventUrl,
@@ -807,6 +808,8 @@ export function useLiveScores({
         gwTeamIds: [...gwTeamIdSet],
         /** Draft `settings.scoring` — points per goal/assist/cards etc. */
         draftScoring,
+        /** Finished GWs for start-rate (not a fake /19). */
+        gamesSampled: seasonGamesSampled(boot),
       });
       setLastUpdated(new Date().toISOString());
     } catch (e) {

@@ -30,6 +30,7 @@ import {
   bootstrapElementToPlayer,
   classicFixtureToPredictionFixture,
   projectionRng,
+  seasonGamesSampled,
 } from '../src/livePredictionMappers.js';
 import { canonicalTeamKey } from '../src/understat.js';
 import {
@@ -270,6 +271,7 @@ function main() {
   // collapsing to flat zeros. ---
   const prior = loadPriorSeasonBootstrap(season.label);
   const historical = prior ? buildHistoricalRates(prior.bootstrap) : null;
+  const gamesSampled = seasonGamesSampled(classicBoot) ?? seasonGamesSampled(draftBoot);
   let coldStartApplied = 0;
   let coldStartHistory = 0;
   let coldStartBaseline = 0;
@@ -281,7 +283,7 @@ function main() {
   for (const el of draftBoot.elements) {
     if (el?.removed) continue;
     const teamId = Number(el.team);
-    let player = bootstrapElementToPlayer(el);
+    let player = bootstrapElementToPlayer(el, { gamesSampled });
     if (uPlayerIdx) {
       const uPlayer = matchUnderstatPlayer(
         {

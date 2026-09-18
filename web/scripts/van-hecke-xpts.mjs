@@ -14,6 +14,7 @@ import {
   bootstrapTeamToPredictionTeam,
   classicFixtureToPredictionFixture,
   pickGwFixtureForTeam,
+  seasonGamesSampled,
 } from '../src/livePredictionMappers.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -54,7 +55,7 @@ const gwFixtures = fixtures.filter((f) => Number(f.event) === GW);
 const el = bootstrap.elements.find((e) => Number(e.id) === ELEMENT_ID);
 if (!el) throw new Error(`Element ${ELEMENT_ID} not found`);
 
-const player = bootstrapElementToPlayer(el);
+const player = bootstrapElementToPlayer(el, { gamesSampled: seasonGamesSampled(bootstrap) });
 const rawFx = pickGwFixtureForTeam(player.teamId, gwFixtures, GW);
 if (!rawFx) throw new Error(`No fixture for team ${player.teamId} in GW ${GW}`);
 

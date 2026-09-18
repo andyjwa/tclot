@@ -3,7 +3,9 @@
  *
  * The engine derives every player's scoring rates from *season-to-date* stats
  * (see bootstrapElementToPlayer). At the start of a new season those stats are
- * all zero, so GW1–GW5 forecasts would be flat and undifferentiated.
+ * all zero, so GW1 forecasts would be flat without a prior. Start rate uses
+ * finished gameweeks (not a hardcoded 19) so a 4-for-4 regular is treated as
+ * nailed, not as a 21% starter.
  *
  * This module fixes that by blending each player's *current-season* per-90
  * rates with a prior:
@@ -20,7 +22,7 @@
  * Pure module: no fs/network. The build script supplies the prior-season
  * bootstrap; the app never imports this.
  */
-import { bootstrapElementToPlayer } from './livePredictionMappers.js';
+import { bootstrapElementToPlayer, seasonGamesSampled } from './livePredictionMappers.js';
 
 /** Current-season match-equivalents (minutes/90) at which the prior fully fades to zero. */
 export const FADE_MATCHES = 6;
@@ -157,11 +159,12 @@ function median(nums) {
 export function buildHistoricalRates(priorBootstrapDraft) {
   const byCode = new Map();
   const samplesByPos = { GK: [], DEF: [], MID: [], FWD: [] };
+  const gamesSampled = seasonGamesSampled(priorBootstrapDraft) ?? 38;
 
   for (const el of priorBootstrapDraft?.elements ?? []) {
     if (!el || el.removed) continue;
     if (el.code == null) continue;
-    const player = bootstrapElementToPlayer(el);
+    const player = bootstrapElementToPlayer(el, { gamesSampled });
     byCode.set(Number(el.code), player);
     if ((Number(el.minutes) || 0) >= BASELINE_MIN_MINUTES && samplesByPos[player.position]) {
       samplesByPos[player.position].push(player);

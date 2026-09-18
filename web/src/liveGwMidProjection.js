@@ -3,10 +3,7 @@
  * club fixtures (full prior before kickoff; scaled incremental MC in-play).
  */
 import { buildRateBundle, predictForPlayerFromMap } from 'fpl-predictions';
-import {
-  bootstrapElementToPlayer,
-  classicFixtureToPredictionFixture,
-} from './livePredictionMappers.js';
+import { enginePlayerFromElement, classicFixtureToPredictionFixture } from './livePredictionMappers.js';
 import {
   explainBlocksFromLiveElement,
   fixturesForTeamInGw,
@@ -214,7 +211,7 @@ export function projectedGwTotalLiveBlendForElement(
   incrementalIters = 320,
   fplMultiplier = 1,
 ) {
-  const player = bootstrapElementToPlayer(element);
+  const player = enginePlayerFromElement(element, ctx);
   return projectedGwTotalLiveBlend({
     player,
     teamsById,
