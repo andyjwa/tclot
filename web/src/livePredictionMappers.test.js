@@ -7,6 +7,8 @@ import {
   pickLikelyClassicXiElements,
   bootstrapTeamToPredictionTeam,
   predictedStatsForPickRow,
+  seasonGamesSampled,
+  startRateFromSeasonTotals,
 } from './livePredictionMappers.js';
 
 /** Minimal bootstrap row for mapper smoke tests */
@@ -189,14 +191,59 @@ test('predictedStatsForPickRow returns null when the pick has no GW fixture', ()
 
 test('enginePlayerFromElement prefers ctx.playerById over raw bootstrap mapping', () => {
   const el = stubElement({ id: 42, starts: 1, minutes: 90 });
-  const raw = bootstrapElementToPlayer(el);
-  // Early-season starts/19 crush — the cold-started stand-in has a nailed rate.
+  const raw = bootstrapElementToPlayer(el, { gamesSampled: 4 });
   const enriched = { ...raw, id: 42, recentStartRate: 0.95, startsLast6: 5, minutesLast6: 450 };
   const fromMap = enginePlayerFromElement(el, { playerById: new Map([[42, enriched]]) });
   assert.equal(fromMap.recentStartRate, 0.95);
   assert.equal(fromMap.startsLast6, 5);
   const fromObj = enginePlayerFromElement(el, { playerById: { 42: enriched } });
   assert.equal(fromObj.minutesLast6, 450);
-  const fallback = enginePlayerFromElement(el, {});
-  assert.ok(fallback.recentStartRate < 0.1, 'raw early-season start rate stays low');
+  const fallback = enginePlayerFromElement(el, { gamesSampled: 4 });
+  assert.ok(fallback.recentStartRate > 0.2 && fallback.recentStartRate < 0.3, '1 start in 4 GWs is ~25%');
+});
+
+test('seasonGamesSampled uses finished GWs, not the unplayed current event', () => {
+  assert.equal(seasonGamesSampled(null), null);
+  assert.equal(
+    seasonGamesSampled({
+      events: {
+        data: [
+          { id: 4, is_current: false, finished: true },
+          { id: 5, is_current: true, finished: false, data_checked: false },
+        ],
+      },
+    }),
+    4,
+  );
+  assert.equal(
+    seasonGamesSampled({
+      events: [
+        { id: 5, is_current: true, finished: true },
+        { id: 6, is_next: true, finished: false },
+      ],
+    }),
+    5,
+  );
+  assert.equal(seasonGamesSampled({ events: { data: [{ id: 1, is_next: true, finished: false }] } }), 0);
+});
+
+test('startRateFromSeasonTotals: 4-for-4 nineties are a nailed starter, not 4/19', () => {
+  const nailed = startRateFromSeasonTotals(4, 360, 4);
+  assert.equal(nailed.recentStartRate, 0.98);
+  assert.equal(nailed.startsLast6, 6);
+  assert.equal(nailed.minutesLast6, 540);
+
+  const rotated = startRateFromSeasonTotals(2, 180, 4);
+  assert.ok(Math.abs(rotated.recentStartRate - 0.5) < 1e-9);
+  assert.equal(rotated.startsLast6, 3);
+  assert.equal(rotated.minutesLast6, 270);
+
+  const fullSeasonHalf = startRateFromSeasonTotals(19, 1710, 38);
+  assert.ok(Math.abs(fullSeasonHalf.recentStartRate - 0.5) < 1e-9);
+});
+
+test('bootstrapElementToPlayer uses finished GWs so early-season regulars stay nailed', () => {
+  const p = bootstrapElementToPlayer(stubElement({ starts: 4, minutes: 360 }), { gamesSampled: 4 });
+  assert.equal(p.recentStartRate, 0.98);
+  assert.equal(p.minutesLast6, 540);
 });

@@ -11,7 +11,8 @@ export interface MinutesEstimate {
 
 /**
  * P(start): blend recent start rate with minutes share; down-weight injury doubt.
- * expected_minutes = P_start * E[min|start] + (1-P_start) * E[min|bench]
+ * `recentStartRate` / `minutesLast6` are a 6-game run-rate from finished GWs
+ * (not starts/19). expected_minutes = P_start * E[min|start] + (1-P_start) * E[min|bench]
  * P(60+): conditional on play, rough logistic from E[min].
  */
 export function estimateMinutes(

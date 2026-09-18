@@ -11,10 +11,9 @@
  * Fetches draft event/live + classic fixtures + per-entry picks from FPL APIs (same as
  * build-waiver-gw-analytics). Skips quietly when OFFLINE=1 or SKIP_PROJECTIONS_HISTORY=1.
  *
- * Early-season note: without cold-start priors, `bootstrapElementToPlayer` scales
- * start rate as starts/19, so after GW1 every regular reads ~5% nailed and XI xPts
- * collapse to ~7 (ruining archived odds + weekly recap). Same prior blend as
- * build-predictions.mjs keeps the archive aligned with pre-match Odds.
+ * Early-season note: start rate uses finished GWs (not a fake /19), then the
+ * same cold-start prior blend as build-predictions.mjs so archived odds match
+ * pre-match Odds.
  *
  * Quick test: PROJECTIONS_HISTORY_LAST_N_GWS=3 only processes the last 3 finished GWs.
  */
@@ -26,6 +25,7 @@ import { buildEffectiveLineup } from '../src/fplAutosubProjection.js';
 import {
   bootstrapElementToPlayer,
   bootstrapTeamToPredictionTeam,
+  seasonGamesSampled,
   simulateFantasyH2hPercents,
   simulateFantasyH2hPercentsFromProjBlends,
   sumPredictedXpForPickRows,
@@ -318,13 +318,14 @@ function loadPriorSeasonBootstrap(currentLabel) {
 function buildColdStartedPlayerById(boot, seasonLabel) {
   const prior = loadPriorSeasonBootstrap(seasonLabel);
   const historical = prior ? buildHistoricalRates(prior.bootstrap) : null;
+  const gamesSampled = seasonGamesSampled(boot);
   const playerById = new Map();
   let applied = 0;
   let fromHistory = 0;
   let fromBaseline = 0;
   for (const el of boot?.elements ?? []) {
     if (!el || el.removed) continue;
-    let player = bootstrapElementToPlayer(el);
+    let player = bootstrapElementToPlayer(el, { gamesSampled });
     const cold = applyColdStartPriors(player, {
       code: el.code,
       currentMinutes: Number(el.minutes) || 0,
@@ -409,6 +410,7 @@ async function main() {
     elementById,
     teamById: teamByIdObj,
     playerById: cold.playerById,
+    gamesSampled: seasonGamesSampled(boot),
   };
 
   mkdirSync(historyDir, { recursive: true });

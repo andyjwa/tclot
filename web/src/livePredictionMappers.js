@@ -85,13 +85,54 @@ export function pickLikelyClassicXiElements(teamId, elementById) {
 }
 
 /**
+ * How many GWs of this season should count as the start-rate sample.
+ *
+ * Used instead of a hardcoded 19: after four games a 4-start regular is a
+ * 100% starter, not 4/19 ≈ 21%. Prefers `is_current` / `is_next`; an
+ * unfinished current GW is excluded so we do not mix this week's unplayed
+ * fixture into last week's start rate.
+ *
+ * @param {{ events?: { data?: object[] } | object[] } | null | undefined} bootstrap
+ * @param {number} [nowMs]
+ * @returns {number | null}
+ */
+export function seasonGamesSampled(bootstrap, nowMs = Date.now()) {
+  const raw = bootstrap?.events;
+  const events = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : null;
+  if (!Array.isArray(events) || !events.length) return null;
+
+  const current = events.find((e) => e?.is_current);
+  if (current) {
+    const id = Number(current.id);
+    if (!Number.isFinite(id) || id < 1) return null;
+    if (current.finished === true || current.data_checked === true) return id;
+    return Math.max(0, id - 1);
+  }
+  const next = events.find((e) => e?.is_next);
+  if (next) {
+    const id = Number(next.id);
+    if (Number.isFinite(id) && id >= 1) return Math.max(0, id - 1);
+  }
+
+  let best = 0;
+  const now = Number(nowMs);
+  for (const e of events) {
+    const id = Number(e?.id);
+    const t = Date.parse(String(e?.deadline_time ?? ''));
+    if (!Number.isFinite(id) || id < 1 || !Number.isFinite(t)) continue;
+    if (Number.isFinite(now) && t <= now && id > best) best = id;
+  }
+  return best > 0 ? best : null;
+}
+
+/**
  * Resolve an engine Player for a bootstrap element. Prefer `ctx.playerById`
  * when the caller has pre-enriched players (cold-start priors, Understat
  * blend, availability overrides) so early-season archives and live sims
- * match `predictions.json` instead of collapsing on `starts/19 ≈ 0`.
+ * match `predictions.json` instead of collapsing on starts / 19.
  *
  * @param {object} el bootstrap element
- * @param {{ playerById?: Map<number, object> | Record<number, object> } | null | undefined} ctx
+ * @param {{ playerById?: Map<number, object> | Record<number, object>, gamesSampled?: number } | null | undefined} ctx
  */
 export function enginePlayerFromElement(el, ctx) {
   const id = Number(el?.id);
@@ -101,7 +142,7 @@ export function enginePlayerFromElement(el, ctx) {
       typeof fromCtx.get === 'function' ? fromCtx.get(id) : fromCtx[id];
     if (hit) return hit;
   }
-  return bootstrapElementToPlayer(el);
+  return bootstrapElementToPlayer(el, { gamesSampled: ctx?.gamesSampled });
 }
 
 /**
@@ -397,8 +438,37 @@ export function injuryDoubtScoreFromClassicElement(el) {
   return 0;
 }
 
+/** Window `estimateMinutes` divides minutesLast6 by (`START_RATE_WINDOW` × 90). */
+export const START_RATE_WINDOW = 6;
+
+/**
+ * Map season-to-date starts/minutes onto the 6-game run-rate the minutes
+ * model expects. `gamesSampled` is finished GWs (see `seasonGamesSampled`).
+ * Without it, fall back to the player's own appearances — never a fake 19.
+ *
+ * @param {number} starts
+ * @param {number} mins
+ * @param {number | null | undefined} gamesSampled
+ */
+export function startRateFromSeasonTotals(starts, mins, gamesSampled) {
+  const st = Math.max(0, Number(starts) || 0);
+  const minutes = Math.max(0, Number(mins) || 0);
+  const sampled = Number(gamesSampled);
+  const n =
+    Number.isFinite(sampled) && sampled > 0
+      ? sampled
+      : Math.max(st, Math.round(minutes / 90), 1);
+  const recentStartRate = clamp(st / n, 0.05, 0.98);
+  const scale = START_RATE_WINDOW / n;
+  return {
+    recentStartRate,
+    startsLast6: Math.round(clamp(st * scale, 0, START_RATE_WINDOW)),
+    minutesLast6: Math.round(clamp(minutes * scale, 0, START_RATE_WINDOW * 90)),
+  };
+}
+
 /** @param {object} el — draft bootstrap element */
-export function bootstrapElementToPlayer(el) {
+export function bootstrapElementToPlayer(el, opts = {}) {
   const mins = Math.max(1, Number(el.minutes) || 1);
   const ninety = mins / 90;
   const starts = Number(el.starts) || 0;
@@ -413,7 +483,11 @@ export function bootstrapElementToPlayer(el) {
   const yellows = Number(el.yellow_cards) || 0;
   const reds = Number(el.red_cards) || 0;
   const saves = Number(el.saves) || 0;
-  const matchesPlayed = clamp(starts / 19, 0.05, 1);
+  const { recentStartRate, startsLast6, minutesLast6 } = startRateFromSeasonTotals(
+    starts,
+    Number(el.minutes) || 0,
+    opts.gamesSampled,
+  );
 
   return {
     id: Number(el.id),
@@ -422,9 +496,9 @@ export function bootstrapElementToPlayer(el) {
     position,
     price: 50,
     selectedByPercent: 0,
-    recentStartRate: clamp(matchesPlayed, 0.05, 0.98),
-    startsLast6: Math.round(starts * (6 / 19)),
-    minutesLast6: Math.round(mins * (6 / 19)),
+    recentStartRate,
+    startsLast6,
+    minutesLast6,
     xGPer90: parseNum(el.expected_goals) / ninety,
     xAPer90: parseNum(el.expected_assists) / ninety,
     shotsPer90: clamp((threat / 10 + creativity / 15) / ninety, 0, 8),
