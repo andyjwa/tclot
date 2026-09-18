@@ -1,10 +1,11 @@
 /**
  * Cloudflare's 5-minute cron is a clock GitHub's scheduler does not control.
- * When a gameweek's lineups lock, ping a deploy if the live Preview is still
- * from before that deadline. Needs GITHUB_DISPATCH_TOKEN (workflow dispatch)
- * or VERCEL_DEPLOY_HOOK. Without either, this no-ops.
+ * When a gameweek's lineups lock (and for 12h after, in case GitHub dropped
+ * every burst slot), ping a deploy if the live Preview is still from before
+ * that deadline. Needs GITHUB_DISPATCH_TOKEN (workflow dispatch) or
+ * VERCEL_DEPLOY_HOOK. Without either, this no-ops.
  */
-import { postLineupLockRefreshEvent } from '../../../src/waiverRefreshSchedule.js'
+import { previewCatchupEvent } from '../../../src/waiverRefreshSchedule.js'
 import {
   previewAlreadyPublished,
   shouldDispatchPreview,
@@ -84,7 +85,7 @@ export async function maybeDispatchPreviewDeploy(env, deps = {}) {
     }
   }
 
-  const lock = postLineupLockRefreshEvent(events, now)
+  const lock = previewCatchupEvent(events, now)
   if (!lock) return { action: 'skip', reason: 'outside-window' }
 
   const token = String(env?.GITHUB_DISPATCH_TOKEN ?? '').trim()

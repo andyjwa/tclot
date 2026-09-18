@@ -34,6 +34,12 @@ export const POST_DEADLINE_STOP_BEFORE_NEXT_DEADLINE_MS = 3 * 60 * 60 * 1000
  */
 export const LINEUP_LOCK_WINDOW_MS = 3 * 60 * 60 * 1000
 /**
+ * Dedicated Preview backup clocks (GitHub ping + Worker) keep retrying this
+ * long after lock. GitHub often drops every slot inside the 3h burst window,
+ * and the ping workflow itself may not start again for 4–5 hours.
+ */
+export const PREVIEW_CATCHUP_WINDOW_MS = 12 * 60 * 60 * 1000
+/**
  * Daily catch-all crons (`30 5/13/21 * * *`, ~05:30/13:30/21:30 UTC) always allow full refresh.
  * Accept a few minutes' drift around each slot.
  */
@@ -106,17 +112,18 @@ export function postDeadlineIngestEvent(eventList, nowMs) {
 
 /**
  * GW whose lineup-lock refresh window is active: from `deadline_time` until
- * deadline + 3h. Used so weekly Preview (and upcoming XI snapshots) deploy as
- * soon as FPL XIs lock, instead of waiting for the 2h post-deadline ingest.
+ * deadline + windowMs. Used so weekly Preview (and upcoming XI snapshots) deploy
+ * as soon as FPL XIs lock, instead of waiting for the 2h post-deadline ingest.
  *
  * @param {object[]} eventList — bootstrap `events.data`
  * @param {number} nowMs
+ * @param {number} windowMs
  * @returns {{ id: number, deadline: string } | null}
  */
-export function postLineupLockRefreshEvent(eventList, nowMs) {
+function lockWindowEvent(eventList, nowMs, windowMs) {
   if (!Array.isArray(eventList)) return null
   const now = Number(nowMs)
-  if (!Number.isFinite(now)) return null
+  if (!Number.isFinite(now) || !Number.isFinite(windowMs)) return null
 
   let best = null
   for (const e of eventList) {
@@ -126,10 +133,20 @@ export function postLineupLockRefreshEvent(eventList, nowMs) {
     const dl = Date.parse(deadline)
     if (!Number.isFinite(dl)) continue
     if (now < dl) continue
-    if (now >= dl + LINEUP_LOCK_WINDOW_MS) continue
+    if (now >= dl + windowMs) continue
     if (!best || id > best.id) best = { id, deadline }
   }
   return best
+}
+
+/** Burst / hourly gate: deadline until +3h. */
+export function postLineupLockRefreshEvent(eventList, nowMs) {
+  return lockWindowEvent(eventList, nowMs, LINEUP_LOCK_WINDOW_MS)
+}
+
+/** Preview backup clocks: deadline until +12h, so a dropped 3h burst can still land. */
+export function previewCatchupEvent(eventList, nowMs) {
+  return lockWindowEvent(eventList, nowMs, PREVIEW_CATCHUP_WINDOW_MS)
 }
 
 /**
