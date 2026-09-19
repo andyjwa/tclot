@@ -100,9 +100,11 @@ export function PremFixtureMoments({
   typeById,
   teamLogoMap,
   kitIndexByEntry,
+  claimedElementIds,
 }) {
   const homeTeamId = Number(fx?.fplFixture?.team_h);
   const awayTeamId = Number(fx?.fplFixture?.team_a);
+  const fixtureId = Number(fx?.fplFixture?.id);
   const homeRows = useMemo(
     () =>
       premFixturePlayerRows({
@@ -112,6 +114,9 @@ export function PremFixtureMoments({
         liveFullByElementId,
         ownerByEl,
         typeById,
+        sideLineup: fx?.lineups?.home,
+        claimedElementIds,
+        fixtureId,
       }),
     [
       homeTeamId,
@@ -120,6 +125,9 @@ export function PremFixtureMoments({
       liveFullByElementId,
       ownerByEl,
       typeById,
+      fx?.lineups?.home,
+      claimedElementIds,
+      fixtureId,
     ],
   );
   const awayRows = useMemo(
@@ -131,6 +139,9 @@ export function PremFixtureMoments({
         liveFullByElementId,
         ownerByEl,
         typeById,
+        sideLineup: fx?.lineups?.away,
+        claimedElementIds,
+        fixtureId,
       }),
     [
       awayTeamId,
@@ -139,6 +150,9 @@ export function PremFixtureMoments({
       liveFullByElementId,
       ownerByEl,
       typeById,
+      fx?.lineups?.away,
+      claimedElementIds,
+      fixtureId,
     ],
   );
   const home = useMemo(

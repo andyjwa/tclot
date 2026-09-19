@@ -110,12 +110,98 @@ function liveStatsMapGet(map, id) {
   return map[id] ?? map[String(id)] ?? null;
 }
 
+function elementFromById(elementById, id) {
+  if (!elementById) return null;
+  return elementById[id] ?? elementById[String(id)] ?? null;
+}
+
+const EXPLAIN_STAT_TO_FIELD = {
+  goals_scored: 'goalsScored',
+  assists: 'assists',
+  clean_sheets: 'cleanSheets',
+  saves: 'saves',
+  penalties_saved: 'penaltiesSaved',
+  yellow_cards: 'yellowCards',
+  red_cards: 'redCards',
+  bonus: 'bonus',
+  minutes: 'minutes',
+  defensive_contribution: 'dcCount',
+};
+
 /**
- * FPL live stats for one element. GW totals — fine for SGW; DGW still
- * shows the player's GW line on every club fixture they play.
+ * Per-fixture live `explain` values for one element.
+ * `null` — no explain blocks at all (use GW totals).
+ * `{ otherFixture: true }` — explain exists but not for this fixture (do not leak).
+ * otherwise a sparse map of known stat fields.
  */
-export function liveRowToMatchPlayer(el, liveByElementId, liveFullByElementId) {
-  const id = Number(el?.id);
+export function explainStatValuesForFixture(liveRow, fixtureId) {
+  const fid = Number(fixtureId);
+  const ex = liveRow?.explain;
+  if (!Number.isFinite(fid) || !Array.isArray(ex) || ex.length === 0) return null;
+  const first = ex[0];
+  let statList = null;
+  let sawBlock = false;
+
+  if (Array.isArray(first) && first.length === 2 && typeof first[1] === 'number') {
+    sawBlock = true;
+    for (const pair of ex) {
+      if (Number(pair[1]) === fid) {
+        statList = pair[0];
+        break;
+      }
+    }
+  } else if (first && first.fixture != null) {
+    sawBlock = true;
+    for (const block of ex) {
+      if (Number(block.fixture) === fid) {
+        statList = block.stats;
+        break;
+      }
+    }
+  }
+
+  if (!sawBlock) return null;
+  if (!statList) return { otherFixture: true };
+
+  const out = {};
+  for (const s of statList || []) {
+    const key = s?.stat ?? s?.identifier;
+    const dest = EXPLAIN_STAT_TO_FIELD[key];
+    if (!dest) continue;
+    out[dest] = (Number(out[dest]) || 0) + (Number(s.value) || 0);
+  }
+  return out;
+}
+
+function emptyMatchPlayerStats(id) {
+  return {
+    element: id,
+    goalsScored: 0,
+    assists: 0,
+    dcCount: 0,
+    cleanSheets: 0,
+    saves: 0,
+    penaltiesSaved: 0,
+    yellowCards: 0,
+    redCards: 0,
+    bonus: 0,
+    bonusConfirmed: false,
+    minutes: 0,
+  };
+}
+
+/**
+ * FPL live stats for one element. Prefers the `explain` block for
+ * `fixtureId` so DGW / loan / club-id mismatches do not leak another
+ * match's G/A/cards onto this fixture. GW totals when explain is empty.
+ */
+export function liveRowToMatchPlayer(
+  el,
+  liveByElementId,
+  liveFullByElementId,
+  opts = {},
+) {
+  const id = Number(el?.id ?? el?.element);
   if (!Number.isFinite(id)) return null;
   const st =
     liveStatsMapGet(liveByElementId, id) ||
@@ -124,6 +210,25 @@ export function liveRowToMatchPlayer(el, liveByElementId, liveFullByElementId) {
   const liveRow =
     liveStatsMapGet(liveFullByElementId, id) ||
     (st && Object.keys(st).length ? { stats: st } : null);
+  const explained = explainStatValuesForFixture(liveRow, opts.fixtureId);
+  if (explained?.otherFixture) return emptyMatchPlayerStats(id);
+  if (explained) {
+    const bonus = Number(explained.bonus) || 0;
+    return {
+      element: id,
+      goalsScored: Number(explained.goalsScored) || 0,
+      assists: Number(explained.assists) || 0,
+      dcCount: Number(explained.dcCount) || 0,
+      cleanSheets: Number(explained.cleanSheets) || 0,
+      saves: Number(explained.saves) || 0,
+      penaltiesSaved: Number(explained.penaltiesSaved) || 0,
+      yellowCards: Number(explained.yellowCards) || 0,
+      redCards: Number(explained.redCards) || 0,
+      bonus,
+      bonusConfirmed: bonus > 0,
+      minutes: Number(explained.minutes) || 0,
+    };
+  }
   const bonus = Number(st.bonus) || 0;
   return {
     element: id,
@@ -142,8 +247,56 @@ export function liveRowToMatchPlayer(el, liveByElementId, liveFullByElementId) {
   };
 }
 
+/** Announced XI + bench FPL element ids for one PremWindow side. */
+export function lineupElementIds(sideLineup) {
+  const ids = [];
+  for (const p of [...(sideLineup?.xi || []), ...(sideLineup?.bench || [])]) {
+    const id = Number(p?.elementId);
+    if (Number.isFinite(id) && id > 0) ids.push(id);
+  }
+  return ids;
+}
+
+/** Every announced lineup element id across a PremWindow row list. */
+export function claimedLineupElementIds(premWindowRows) {
+  const s = new Set();
+  for (const row of premWindowRows || []) {
+    for (const id of lineupElementIds(row?.lineups?.home)) s.add(id);
+    for (const id of lineupElementIds(row?.lineups?.away)) s.add(id);
+  }
+  return s;
+}
+
 /**
- * Every draft element on a PL club, with live stats + fantasy owner.
+ * Players on this fixture side: announced lineup first, then the rest of
+ * the PL club who are not listed in any announced lineup this GW.
+ */
+export function sideElementIds({
+  plTeamId,
+  elementById,
+  sideLineup,
+  claimedElementIds,
+}) {
+  const ids = new Set(lineupElementIds(sideLineup));
+  const claimed =
+    claimedElementIds instanceof Set
+      ? claimedElementIds
+      : new Set(claimedElementIds || []);
+  const tid = Number(plTeamId);
+  if (Number.isFinite(tid) && elementById) {
+    for (const el of Object.values(elementById)) {
+      const id = Number(el?.id);
+      if (!Number.isFinite(id)) continue;
+      if (Number(el.team) !== tid) continue;
+      if (claimed.has(id) && !ids.has(id)) continue;
+      ids.add(id);
+    }
+  }
+  return [...ids];
+}
+
+/**
+ * Every draft element on a fixture side, with live stats + fantasy owner.
  * @returns {object[]}
  */
 export function premFixturePlayerRows({
@@ -153,23 +306,40 @@ export function premFixturePlayerRows({
   liveFullByElementId,
   ownerByEl,
   typeById,
+  sideLineup,
+  claimedElementIds,
+  fixtureId,
 }) {
-  const tid = Number(plTeamId);
-  if (!Number.isFinite(tid) || !elementById) return [];
+  const ids = sideElementIds({
+    plTeamId,
+    elementById,
+    sideLineup,
+    claimedElementIds,
+  });
   const out = [];
-  for (const el of Object.values(elementById)) {
-    if (Number(el?.team) !== tid) continue;
-    const stats = liveRowToMatchPlayer(el, liveByElementId, liveFullByElementId);
+  for (const id of ids) {
+    const el = elementFromById(elementById, id);
+    const stats = liveRowToMatchPlayer(
+      el || { id },
+      liveByElementId,
+      liveFullByElementId,
+      { fixtureId },
+    );
     if (!stats) continue;
-    const type = typeById?.[Number(el.element_type)];
+    const type = typeById?.[Number(el?.element_type)];
     const posSingular =
-      type?.singular_name_short || POS_BY_TYPE[Number(el.element_type)] || '—';
-    const ownerId = Number(stats.element);
-    const owner = ownerByEl?.get(ownerId) ?? ownerByEl?.get(String(ownerId)) ?? null;
+      type?.singular_name_short || POS_BY_TYPE[Number(el?.element_type)] || '—';
+    const owner = ownerByEl?.get(id) ?? ownerByEl?.get(String(id)) ?? null;
+    const lineupName = [...(sideLineup?.xi || []), ...(sideLineup?.bench || [])]
+      .find((p) => Number(p?.elementId) === id);
     out.push({
       ...stats,
-      displayName: fplElementWebName(el, stats.element),
-      web_name: el.web_name,
+      displayName:
+        (el ? fplElementWebName(el, id) : null) ||
+        lineupName?.fplWebName ||
+        lineupName?.name ||
+        `#${id}`,
+      web_name: el?.web_name,
       posSingular,
       owner,
     });

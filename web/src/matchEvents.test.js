@@ -2,7 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   WAIVER_MATCH_EVENT_IDS,
+  claimedLineupElementIds,
   collectSideEvents,
+  explainStatValuesForFixture,
+  liveRowToMatchPlayer,
   playerMatchEventEntries,
   premFixturePlayerRows,
 } from './matchEvents.js';
@@ -141,4 +144,120 @@ test('premFixturePlayerRows — splits owners and live stats by club', () => {
   assert.equal(watkins.owner, null);
   assert.equal(watkins.goalsScored, 1);
   assert.equal(watkins.bonus, 2);
+});
+
+test('premFixturePlayerRows — announced lineup wins over bootstrap club', () => {
+  const elementById = {
+    166: { id: 166, web_name: 'N.Jackson', team: 6, element_type: 4 },
+    28: { id: 28, web_name: 'Martinez', team: 2, element_type: 1 },
+    200: { id: 200, web_name: 'Lacroix', team: 6, element_type: 2 },
+  };
+  const liveByElementId = {
+    166: { minutes: 48, yellow_cards: 1 },
+    28: { minutes: 90, saves: 3 },
+    200: { minutes: 90, defensive_contribution: 12 },
+  };
+  const ownerByEl = new Map([
+    [166, { leagueEntryId: 4259, teamName: 'Atlético Bilbo' }],
+    [28, { leagueEntryId: 4259, teamName: 'Atlético Bilbo' }],
+  ]);
+  const villaLineup = { xi: [{ elementId: 166 }, { elementId: 28 }], bench: [] };
+  const claimed = new Set([166, 28]);
+  const villaRows = premFixturePlayerRows({
+    plTeamId: 2,
+    elementById,
+    liveByElementId,
+    liveFullByElementId: {},
+    ownerByEl,
+    sideLineup: villaLineup,
+    claimedElementIds: claimed,
+    fixtureId: 501,
+  });
+  assert.ok(villaRows.find((r) => r.element === 166));
+  assert.equal(villaRows.find((r) => r.element === 166).yellowCards, 1);
+  assert.equal(villaRows.find((r) => r.element === 28).saves, 3);
+  const cheRows = premFixturePlayerRows({
+    plTeamId: 6,
+    elementById,
+    liveByElementId,
+    liveFullByElementId: {},
+    ownerByEl,
+    sideLineup: { xi: [], bench: [] },
+    claimedElementIds: claimed,
+    fixtureId: 502,
+  });
+  assert.equal(cheRows.find((r) => r.element === 166), undefined);
+  assert.ok(cheRows.find((r) => r.element === 200));
+});
+
+test('explainStatValuesForFixture — other fixture does not leak', () => {
+  const liveRow = {
+    stats: { minutes: 90, yellow_cards: 1, saves: 3 },
+    explain: [
+      [[{ stat: 'minutes', value: 90 }, { stat: 'yellow_cards', value: 1 }], 502],
+    ],
+  };
+  assert.deepEqual(explainStatValuesForFixture(liveRow, 501), { otherFixture: true });
+  const mine = explainStatValuesForFixture(liveRow, 502);
+  assert.equal(mine.yellowCards, 1);
+  assert.equal(mine.minutes, 90);
+});
+
+test('liveRowToMatchPlayer — explain for another fixture zeros events', () => {
+  const el = { id: 166 };
+  const liveFull = {
+    166: {
+      stats: { minutes: 90, yellow_cards: 1 },
+      explain: [
+        [[{ stat: 'minutes', value: 90 }, { stat: 'yellow_cards', value: 1 }], 502],
+      ],
+    },
+  };
+  const leaked = liveRowToMatchPlayer(el, {}, liveFull, { fixtureId: 501 });
+  assert.equal(leaked.yellowCards, 0);
+  assert.equal(leaked.minutes, 0);
+  const home = liveRowToMatchPlayer(el, {}, liveFull, { fixtureId: 502 });
+  assert.equal(home.yellowCards, 1);
+});
+
+test('collectSideEvents — owned keeper save points stay; waiver cards drop', () => {
+  const ev = collectSideEvents(
+    [
+      row({
+        element: 28,
+        displayName: 'Martinez',
+        posSingular: 'GKP',
+        saves: 3,
+        owner: { leagueEntryId: 4259, teamName: 'Atlético Bilbo' },
+      }),
+      row({
+        element: 53,
+        displayName: 'Manzambi',
+        posSingular: 'MID',
+        goalsScored: 1,
+        yellowCards: 1,
+        bonus: 3,
+        owner: null,
+      }),
+    ],
+    { waiverKindIds: WAIVER_MATCH_EVENT_IDS },
+  );
+  assert.equal(ev.sv[0].name, 'Martinez');
+  assert.equal(ev.sv[0].tag, '(3)');
+  assert.deepEqual(ev.g.map((e) => e.name), ['Manzambi']);
+  assert.equal(ev.g[0].onWaiver, true);
+  assert.equal(ev.y.length, 0);
+  assert.equal(ev.b[0].name, 'Manzambi');
+});
+
+test('claimedLineupElementIds — both sides of every row', () => {
+  const s = claimedLineupElementIds([
+    {
+      lineups: {
+        home: { xi: [{ elementId: 1 }], bench: [{ elementId: 2 }] },
+        away: { xi: [{ elementId: 3 }], bench: [] },
+      },
+    },
+  ]);
+  assert.deepEqual([...s].sort((a, b) => a - b), [1, 2, 3]);
 });
