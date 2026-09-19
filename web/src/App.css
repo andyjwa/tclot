@@ -2032,7 +2032,17 @@
 }
 
 .prem-owner-tag__avatar {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   flex-shrink: 0;
+}
+
+.prem-owner-bench {
+  flex-shrink: 0;
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
 }
 
 /* Draft board (full snake + filters) */
@@ -19319,7 +19329,8 @@ button.live-xp__player-name:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
+  gap: 2px;
+  width: auto;
   height: 18px;
   flex-shrink: 0;
 }

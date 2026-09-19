@@ -179,8 +179,8 @@ function includePremWindowEvent(ev, ownerByEl) {
 }
 
 /**
- * `{ element → { leagueEntryId, teamName, fplEntryId } }` — enriched version of
- * `buildOwnerByElementId` that also keeps `fplEntryId` (same shape we'd use for logos).
+ * `{ element → { leagueEntryId, teamName, fplEntryId, onFantasyBench } }` —
+ * `buildOwnerByElementId` plus `fplEntryId` for logos.
  */
 function buildOwnerMap(squads) {
   const base = buildOwnerByElementId(squads);
@@ -206,11 +206,28 @@ function fantasyTeamFirstWord(fullName) {
   return t.split(/\s+/)[0] || t;
 }
 
+/** Chair sits immediately right of the fantasy badge for bench selections. */
+function FantasyBenchChair({ show }) {
+  if (!show) return null;
+  return (
+    <span
+      className="prem-owner-bench"
+      title="On fantasy bench"
+      aria-label="On fantasy bench"
+    >
+      🪑
+    </span>
+  );
+}
+
 function OwnerTag({ owner, teamLogoMap, kitIndexByEntry }) {
   if (!owner) return null;
   const label = fantasyTeamFirstWord(owner.teamName) || owner.teamName;
+  const title = owner.onFantasyBench
+    ? `${owner.teamName} · bench`
+    : owner.teamName;
   return (
-    <span className="prem-owner-tag" title={owner.teamName}>
+    <span className="prem-owner-tag" title={title}>
       <span className="prem-owner-tag__name">{label}</span>
       <span className="prem-owner-tag__avatar">
         <TeamAvatar
@@ -220,6 +237,7 @@ function OwnerTag({ owner, teamLogoMap, kitIndexByEntry }) {
           logoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
         />
+        <FantasyBenchChair show={owner.onFantasyBench} />
       </span>
     </span>
   );
@@ -229,8 +247,11 @@ function OwnerTag({ owner, teamLogoMap, kitIndexByEntry }) {
  *  where a full OwnerTag is too wide to fit multiple items on one row. */
 function OwnerCrest({ owner, teamLogoMap, kitIndexByEntry }) {
   if (!owner) return null;
+  const title = owner.onFantasyBench
+    ? `${owner.teamName} · bench`
+    : owner.teamName;
   return (
-    <span className="prem-owner-crest" title={owner.teamName}>
+    <span className="prem-owner-crest" title={title}>
       <TeamAvatar
         entryId={owner.leagueEntryId}
         name={owner.teamName}
@@ -238,6 +259,7 @@ function OwnerCrest({ owner, teamLogoMap, kitIndexByEntry }) {
         logoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
       />
+      <FantasyBenchChair show={owner.onFantasyBench} />
     </span>
   );
 }
