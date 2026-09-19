@@ -21,6 +21,9 @@
  *                    the contextual centre slot in the mobile bottom tab bar
  *   - search       : Magnifying glass — floating search button next to the
  *                    mobile Liquid Glass dock (FotMob-style)
+ *   - newspaper    : Recap / Preview in the More sheet
+ *   - dices        : Bookies in the More sheet
+ *   - sparkle      : Season Predictions (Bookies sub-item)
  *
  * Stroke color is `currentColor` so the icon inherits CSS color from its
  * surrounding button (active vs. idle). pulsing-dot is the lone exception:
@@ -29,7 +32,7 @@
 
 /**
  * @param {{
- *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close' | 'film' | 'search',
+ *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close' | 'film' | 'search' | 'newspaper' | 'dices' | 'sparkle',
  *   className?: string,
  *   size?: number,
  * }} props
@@ -178,6 +181,32 @@ export function NavIcon({ name, className, size = 20 }) {
         <svg {...common}>
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
+        </svg>
+      )
+    case 'newspaper':
+      return (
+        <svg {...common}>
+          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+          <path d="M18 14h-8" />
+          <path d="M15 18h-5" />
+          <path d="M10 6h8v4h-8V6Z" />
+        </svg>
+      )
+    case 'dices':
+      return (
+        <svg {...common}>
+          <rect width="12" height="12" x="2" y="10" rx="2" ry="2" />
+          <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" />
+          <circle cx="6" cy="18" r="1" fill="currentColor" stroke="none" />
+          <circle cx="10" cy="14" r="1" fill="currentColor" stroke="none" />
+          <circle cx="15" cy="6" r="1" fill="currentColor" stroke="none" />
+          <circle cx="18" cy="9" r="1" fill="currentColor" stroke="none" />
+        </svg>
+      )
+    case 'sparkle':
+      return (
+        <svg {...common}>
+          <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
         </svg>
       )
     default:
