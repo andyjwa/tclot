@@ -19041,6 +19041,45 @@ button.live-xp__player-name:focus-visible {
   margin: 0;
 }
 
+/* Match events under each Lineups fixture header (G/A/DC/CS/SV/cards/B). */
+.prem-moments.lfc-events {
+  position: relative;
+  grid-column: auto;
+  border-bottom: none;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.prem-moments .lfc-events__nm {
+  display: inline;
+  white-space: nowrap;
+}
+.prem-moments__owner {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  vertical-align: -2px;
+}
+.prem-moments__owner .team-avatar-frame {
+  width: 14px;
+  height: 14px;
+}
+.prem-moments__w {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  margin-left: 4px;
+  padding: 0 3px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  vertical-align: 1px;
+  background: color-mix(in srgb, var(--fm-muted) 16%, transparent);
+  color: var(--fm-muted);
+}
+
 /* Narrow (< 560 px) compressed row layout */
 @media (max-width: 560px) {
   .prem-fxrow {

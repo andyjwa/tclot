@@ -23,6 +23,8 @@ import {
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { subscribeTclotRefresh } from './tclotRefresh.js';
+import { PremFixtureMoments } from './PremFixtureMoments.jsx';
+import { claimedLineupElementIds } from './matchEvents.js';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
 function plBadgeUrl(code) {
@@ -609,7 +611,9 @@ function MobileLineupRow({
   teamById,
   bench = false,
 }) {
-  const owner = player.elementId != null ? ownerByEl.get(player.elementId) : null;
+  const ownerElId = Number(player.elementId);
+  const owner =
+    Number.isFinite(ownerElId) && ownerByEl ? ownerByEl.get(ownerElId) : null;
   const el = player.elementId != null && elementById ? elementById[player.elementId] : null;
   const displayName = el
     ? fplElementDisplayName(el, player.elementId)
@@ -898,6 +902,10 @@ function FixtureRow({
   teamLogoMap,
   kitIndexByEntry,
   elementById,
+  liveByElementId,
+  liveFullByElementId,
+  typeById,
+  claimedElementIds,
   narrow,
   expanded,
   onToggle,
@@ -1011,6 +1019,18 @@ function FixtureRow({
           {expanded ? '▾' : '▸'}
         </span>
       </button>
+
+      <PremFixtureMoments
+        fx={fx}
+        ownerByEl={ownerByEl}
+        elementById={elementById}
+        liveByElementId={liveByElementId}
+        liveFullByElementId={liveFullByElementId}
+        typeById={typeById}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+        claimedElementIds={claimedElementIds}
+      />
 
       {expanded ? (
         <div className="prem-fxbody">
@@ -1346,6 +1366,10 @@ export function PremWindow({
   }, [premWindowRows]);
 
   const ownerByEl = useMemo(() => buildOwnerMap(squads), [squads]);
+  const claimedElementIds = useMemo(
+    () => claimedLineupElementIds(premWindowRows),
+    [premWindowRows],
+  );
 
   const awaitingFplContext =
     !liveError &&
@@ -1391,6 +1415,10 @@ export function PremWindow({
     teamLogoMap,
     kitIndexByEntry,
     elementById,
+    liveByElementId: contributionLiveContext?.liveByElementId,
+    liveFullByElementId: contributionLiveContext?.liveFullByElementId,
+    typeById: contributionLiveContext?.typeById,
+    claimedElementIds,
     narrow,
   };
 

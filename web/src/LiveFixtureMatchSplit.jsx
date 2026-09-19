@@ -3,9 +3,6 @@ import { TeamAvatar } from './TeamAvatar';
 import { SideBetsBand } from './SideBets.jsx';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
-  dcThresholdReached,
-  isCleanSheetEligible,
-  svEventTag,
   liveRowHasPlayed,
   minutesTone,
   playerLiveState,
@@ -13,6 +10,7 @@ import {
   sortStartingXIByPosition,
 } from './liveScoresDerivations.js';
 import { effectiveBench, effectiveStarters } from './liveSquadEffective.js';
+import { MATCH_EVENT_KINDS, collectSideEvents } from './matchEvents.js';
 
 /**
  * Minutes dot tone → CSS suffix: full/good → green, partial/low → yellow.
@@ -119,72 +117,9 @@ function SplitColumn({ squad, onOpenPlayer, away }) {
   );
 }
 
-/**
- * Event categories for the "Match events" block, in display order. `glyph`
- * kinds render a letter chip; `card` kinds render a coloured card swatch.
- */
-const EVENT_KINDS = [
-  { id: 'g', glyph: 'G', title: 'Goals' },
-  { id: 'a', glyph: 'A', title: 'Assists' },
-  { id: 'dc', glyph: 'DC', title: 'Defensive contribution' },
-  { id: 'cs', glyph: 'CS', title: 'Clean sheets' },
-  { id: 'sv', glyph: 'SV', title: 'Save points' },
-  { id: 'y', card: 'y', title: 'Yellow cards' },
-  { id: 'r', card: 'r', title: 'Red cards' },
-  { id: 'b', glyph: 'B', title: 'Bonus points' },
-];
-
-/**
- * Collects per-category event entries ({ name, tag }) for a squad's
- * starting XI only. Tags are the muted count suffixes: `×n` for repeat
- * goals/assists/cards, the raw count in brackets `(n)` for DC and
- * saves, where the count is the story rather than a multiplier,
- * `(pen)` after the keeper on the saves row, and `+n` for bonus points.
- */
+/** Starting-XI events for one fantasy squad (Scores match card). */
 function squadEvents(squad) {
-  const ev = { g: [], a: [], dc: [], cs: [], sv: [], y: [], r: [], b: [] };
-  for (const row of sortStartingXIByPosition(effectiveStarters(squad))) {
-    const name = row.displayName ?? row.web_name ?? `#${row.element}`;
-    const played = (Number(row.minutes) || 0) > 0;
-    const goals = Number(row.goalsScored) || 0;
-    const assists = Number(row.assists) || 0;
-    const dc = Number(row.dcCount) || 0;
-    const cleanSheets = Number(row.cleanSheets) || 0;
-    const saves = Number(row.saves) || 0;
-    const penaltiesSaved = Number(row.penaltiesSaved) || 0;
-    const yellows = Number(row.yellowCards) || 0;
-    const reds = Number(row.redCards) || 0;
-    // Display bonus: official when `bonusConfirmed`; otherwise a live BPS
-    // estimate (`applyBonusColumn` resolved which to trust onto `row.bonus`).
-    const bonus = Number(row.bonus) || 0;
-    const bonusConfirmed = row.bonusConfirmed === true;
-    if (goals > 0) ev.g.push({ name, tag: goals > 1 ? `×${goals}` : '' });
-    if (assists > 0) ev.a.push({ name, tag: assists > 1 ? `×${assists}` : '' });
-    if (played && dcThresholdReached(row.posSingular, dc)) {
-      ev.dc.push({ name, tag: `(${dc})` });
-    }
-    // Clean sheets: only positions that score CS points (GK/DEF/MID).
-    if (played && cleanSheets > 0 && isCleanSheetEligible(row.posSingular)) {
-      ev.cs.push({ name, tag: '' });
-    }
-    // Save points (3+ saves) and penalty saves share this row. A pen save
-    // is the keeper's name, then (pen), even when they have under 3 saves.
-    const svTag = svEventTag(saves, penaltiesSaved);
-    if (svTag) ev.sv.push({ name, tag: svTag });
-    if (yellows > 0) ev.y.push({ name, tag: yellows > 1 ? `×${yellows}` : '' });
-    if (reds > 0) ev.r.push({ name, tag: '' });
-    if (bonus > 0) {
-      ev.b.push({
-        name,
-        tag: bonusConfirmed ? `+${bonus}` : `~+${bonus}`,
-        bonus,
-        bonusConfirmed,
-      });
-    }
-  }
-  // Biggest bonus first — the medal order is the story, not XI position.
-  ev.b.sort((x, y) => y.bonus - x.bonus);
-  return ev;
+  return collectSideEvents(sortStartingXIByPosition(effectiveStarters(squad)));
 }
 
 function EventNames({ entries }) {
@@ -246,7 +181,7 @@ export function MatchEventsBlock({ homeSquad, awaySquad }) {
   const [open, setOpen] = useState(true);
   const home = useMemo(() => squadEvents(homeSquad), [homeSquad]);
   const away = useMemo(() => squadEvents(awaySquad), [awaySquad]);
-  const kinds = EVENT_KINDS.filter(
+  const kinds = MATCH_EVENT_KINDS.filter(
     (k) => home[k.id].length || away[k.id].length,
   );
   if (!kinds.length) return null;
