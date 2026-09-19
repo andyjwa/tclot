@@ -19278,7 +19278,7 @@ button.live-xp__player-name:focus-visible {
   padding: 8px 8px;
   border: 0;
   border-radius: 0;
-  background: color-mix(in srgb, var(--fm-muted) 8%, transparent);
+  background: color-mix(in srgb, var(--fm-muted) 14%, var(--surface));
   color: var(--text-muted);
   font: inherit;
   font-size: 13px;
