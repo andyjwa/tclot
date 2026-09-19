@@ -23,6 +23,7 @@ import {
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { subscribeTclotRefresh } from './tclotRefresh.js';
+import { PremFixtureMoments } from './PremFixtureMoments.jsx';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
 function plBadgeUrl(code) {
@@ -900,6 +901,9 @@ function FixtureRow({
   teamLogoMap,
   kitIndexByEntry,
   elementById,
+  liveByElementId,
+  liveFullByElementId,
+  typeById,
   narrow,
   expanded,
   onToggle,
@@ -1013,6 +1017,17 @@ function FixtureRow({
           {expanded ? '▾' : '▸'}
         </span>
       </button>
+
+      <PremFixtureMoments
+        fx={fx}
+        ownerByEl={ownerByEl}
+        elementById={elementById}
+        liveByElementId={liveByElementId}
+        liveFullByElementId={liveFullByElementId}
+        typeById={typeById}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
 
       {expanded ? (
         <div className="prem-fxbody">
@@ -1393,6 +1408,9 @@ export function PremWindow({
     teamLogoMap,
     kitIndexByEntry,
     elementById,
+    liveByElementId: contributionLiveContext?.liveByElementId,
+    liveFullByElementId: contributionLiveContext?.liveFullByElementId,
+    typeById: contributionLiveContext?.typeById,
     narrow,
   };
 
