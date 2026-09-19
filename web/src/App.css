@@ -19031,7 +19031,7 @@ button.live-xp__player-name:focus-visible {
   100% { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0);    }
 }
 
-/* Expanded body */
+/* Expanded body — pending / error only. Confirmed lineups use `.prem-lu`. */
 .prem-fxbody {
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   background: var(--surface);
@@ -19197,40 +19197,101 @@ button.live-xp__player-name:focus-visible {
   .prem-fxbody {
     padding: 10px 0;
   }
+  .prem-lu__toggle {
+    padding: 6px 10px;
+  }
 }
 
-/* =================================================================== */
-/* Mobile lineup body — used when narrow (< 560 px) is true.            */
-/* Replaces the cramped paired XI tiles with a home/away toggle +       */
-/* single-side row list. Toggle pill carries crest + name + formation   */
-/* + owned-count, so the formation/confirmed/owned sub-bar is dropped.  */
-/* =================================================================== */
-
-.prem-mlu-toggle {
+/* Lineups dropdown — sits flush under match events. Closed: LINEUPS
+   row. Open (narrow): two square team halves, no gap, then the XI. */
+.prem-lu {
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.prem-lu__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 14px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.prem-lu__title {
+  flex: none;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+.prem-lu__chev {
+  margin-left: auto;
+  color: var(--fm-muted);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 160ms ease;
+}
+.prem-lu__chev.is-open {
+  transform: rotate(-90deg);
+}
+.prem-lu__empty {
+  padding: 8px 14px;
+}
+.prem-lu__body .prem-lineup-paired {
+  margin: 8px 14px 12px;
+}
+.prem-lu__split {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 8px 0;
+  grid-template-columns: 1fr 1fr 28px;
+  align-items: stretch;
+  min-height: 40px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.prem-lu__chev-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.prem-lu__chev-btn .prem-lu__chev {
+  margin-left: 0;
 }
 .prem-mlu-toggle__pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 9px 6px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  min-width: 0;
+  padding: 8px 8px;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--fm-muted) 14%, var(--surface));
   color: var(--text-muted);
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.prem-mlu-toggle__pill + .prem-mlu-toggle__pill {
+  border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 .prem-mlu-toggle__pill.is-active {
   color: #fff;
   background: var(--brand);
-  border-color: var(--brand);
 }
 .fotmob[data-theme='light'] .prem-mlu-toggle__pill.is-active { color: #fff; }
 .prem-mlu-toggle__crest { width: 18px; height: 18px; flex-shrink: 0; object-fit: contain; }
@@ -19244,14 +19305,14 @@ button.live-xp__player-name:focus-visible {
   font-size: 10.5px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
   color: var(--brand);
   flex-shrink: 0;
 }
 .prem-mlu-toggle__pill.is-active .prem-mlu-toggle__count {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
   color: #fff;
 }
 
