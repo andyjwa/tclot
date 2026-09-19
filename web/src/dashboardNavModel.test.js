@@ -31,24 +31,28 @@ test('More Recap item is Recap or Preview from the gameweek', () => {
   assert.equal(moreMenuItemLabel(recap, 'pre-season'), 'Recap')
 })
 
-test('More popup lists Recap, Bookies, Predictions under Bookies, Heritage', () => {
+test('More popup lists Recap, Bookies, Predictions, Heritage, Settings as peers', () => {
   assert.deepEqual(
     MORE_MENU_ITEMS.map((i) => ({
       id: i.id,
-      parent: i.parent ?? null,
       icon: i.icon,
     })),
     [
-      { id: 'recap', parent: null, icon: 'newspaper' },
-      { id: 'bookies', parent: null, icon: 'dices' },
-      { id: 'predictions', parent: 'bookies', icon: 'sparkle' },
-      { id: 'hall', parent: null, icon: 'column' },
+      { id: 'recap', icon: 'newspaper' },
+      { id: 'bookies', icon: 'dices' },
+      { id: 'predictions', icon: 'sparkle' },
+      { id: 'hall', icon: 'column' },
+      { id: 'settings', icon: 'settings' },
     ],
   )
+  for (const item of MORE_MENU_ITEMS) {
+    assert.equal('parent' in item, false)
+  }
 })
 
 test('More owns Heritage, Bookies, and Predictions; Recap only when not the centre', () => {
   assert.equal(isMoreMenuDestination('hall', null, 'recap'), true)
+  assert.equal(isMoreMenuDestination('settings', null, 'live'), true)
   assert.equal(isMoreMenuDestination('fplLive', 'bookie', 'live'), true)
   assert.equal(isMoreMenuDestination('fplLive', 'predictions', 'live'), true)
   assert.equal(isMoreMenuDestination('fplLive', 'recap', 'recap'), false)
@@ -59,11 +63,13 @@ test('More owns Heritage, Bookies, and Predictions; Recap only when not the cent
 
 test('More item active state matches the open destination', () => {
   assert.equal(isMoreMenuItemActive('hall', null, 'hall'), true)
+  assert.equal(isMoreMenuItemActive('settings', null, 'settings'), true)
   assert.equal(isMoreMenuItemActive('fplLive', 'bookie', 'bookies'), true)
   assert.equal(isMoreMenuItemActive('fplLive', 'predictions', 'predictions'), true)
   assert.equal(isMoreMenuItemActive('fplLive', 'recap', 'recap'), true)
   assert.equal(isMoreMenuItemActive('fplLive', 'recap', 'predictions'), false)
   assert.equal(isMoreMenuItemActive('fplLive', 'live', 'recap'), false)
+  assert.equal(isMoreMenuItemActive('hall', null, 'settings'), false)
 })
 
 test('More destinations keep Recap and Predictions on their own tabs', () => {
@@ -76,4 +82,6 @@ test('More destinations keep Recap and Predictions on their own tabs', () => {
   })
   const bookies = MORE_MENU_ITEMS.find((i) => i.id === 'bookies')
   assert.deepEqual(moreMenuDestination(bookies), { view: 'fplLive', tab: 'bookie' })
+  const settings = MORE_MENU_ITEMS.find((i) => i.id === 'settings')
+  assert.deepEqual(moreMenuDestination(settings), { view: 'settings', tab: null })
 })
