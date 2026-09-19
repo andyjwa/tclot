@@ -11,7 +11,7 @@
  * show what the model would have said at the time.
  */
 
-import { favoriteFromOriented, orientFreezeRow } from './weeklyPreviewFreeze.js'
+import { favoriteFromOriented, orientFreezeRow } from './weeklyPreviewFreezeOrient.js'
 
 /** Deterministic xorshift32 RNG in [0, 1). */
 export function makeRng(seed) {
