@@ -24,6 +24,7 @@ import {
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { subscribeTclotRefresh } from './tclotRefresh.js';
 import { PremFixtureMoments } from './PremFixtureMoments.jsx';
+import { claimedLineupElementIds } from './matchEvents.js';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
 function plBadgeUrl(code) {
@@ -904,6 +905,7 @@ function FixtureRow({
   liveByElementId,
   liveFullByElementId,
   typeById,
+  claimedElementIds,
   narrow,
   expanded,
   onToggle,
@@ -1027,6 +1029,7 @@ function FixtureRow({
         typeById={typeById}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
+        claimedElementIds={claimedElementIds}
       />
 
       {expanded ? (
@@ -1363,6 +1366,10 @@ export function PremWindow({
   }, [premWindowRows]);
 
   const ownerByEl = useMemo(() => buildOwnerMap(squads), [squads]);
+  const claimedElementIds = useMemo(
+    () => claimedLineupElementIds(premWindowRows),
+    [premWindowRows],
+  );
 
   const awaitingFplContext =
     !liveError &&
@@ -1411,6 +1418,7 @@ export function PremWindow({
     liveByElementId: contributionLiveContext?.liveByElementId,
     liveFullByElementId: contributionLiveContext?.liveFullByElementId,
     typeById: contributionLiveContext?.typeById,
+    claimedElementIds,
     narrow,
   };
 
