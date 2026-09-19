@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import {
@@ -57,8 +57,7 @@ function EventNames({ entries, teamLogoMap, kitIndexByEntry }) {
     return <span className="lfc-events__none">—</span>;
   }
   return entries.map((e, i) => (
-    <span key={`${e.element ?? e.name}-${i}`} className="lfc-events__nm">
-      {i > 0 ? <span className="lfc-events__sep">, </span> : null}
+    <span key={`${e.element ?? e.name}-${i}`} className="prem-moments__chip">
       <ClickablePlayerName
         element={e.element}
         displayName={e.name}
@@ -73,7 +72,6 @@ function EventNames({ entries, teamLogoMap, kitIndexByEntry }) {
             (e.bonusConfirmed === false ? ' lfc-events__x--prov' : '')
           }
         >
-          {' '}
           {e.tag}
         </span>
       ) : null}
@@ -88,8 +86,8 @@ function EventNames({ entries, teamLogoMap, kitIndexByEntry }) {
 
 /**
  * Goals / assists / fantasy moments under a Lineups fixture header.
- * Owned players get a fantasy badge; waiver players get a W and only
- * appear on G / A / B.
+ * Starts collapsed. Owned players get a fantasy badge; waiver players
+ * get a W and only appear on G / A / B.
  */
 export function PremFixtureMoments({
   fx,
@@ -102,6 +100,7 @@ export function PremFixtureMoments({
   kitIndexByEntry,
   claimedElementIds,
 }) {
+  const [open, setOpen] = useState(false);
   const homeTeamId = Number(fx?.fplFixture?.team_h);
   const awayTeamId = Number(fx?.fplFixture?.team_a);
   const fixtureId = Number(fx?.fplFixture?.id);
@@ -166,30 +165,62 @@ export function PremFixtureMoments({
   const kinds = MATCH_EVENT_KINDS.filter((k) => matchEventKindActive(k, home, away));
   if (!kinds.length) return null;
   return (
-    <section className="prem-moments lfc-events lfc-events--open" aria-label="Match events">
-      <div className="lfc-events__body">
-        {kinds.map((k) => (
-          <div key={k.id} className="lfc-events__row" title={k.title}>
-            <span className="lfc-events__side lfc-events__side--home">
-              <EventNames
-                entries={home[k.id]}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            </span>
-            <span className="lfc-events__mid">
-              <EventKindIcon kind={k} />
-            </span>
-            <span className="lfc-events__side lfc-events__side--away">
-              <EventNames
-                entries={away[k.id]}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            </span>
-          </div>
-        ))}
-      </div>
+    <section
+      className={'prem-moments lfc-events' + (open ? ' lfc-events--open' : '')}
+      aria-label="Match events"
+    >
+      <button
+        type="button"
+        className="prem-moments__toggle"
+        aria-expanded={open}
+        aria-label="Match events"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((o) => !o);
+        }}
+      >
+        <span className="prem-moments__title">Match events</span>
+        {open ? null : (
+          <span className="prem-moments__kinds" aria-hidden="true">
+            {kinds.map((k) => (
+              <EventKindIcon key={k.id} kind={k} />
+            ))}
+          </span>
+        )}
+        <span
+          className={
+            'prem-moments__chev' + (open ? ' prem-moments__chev--open' : '')
+          }
+          aria-hidden="true"
+        >
+          ›
+        </span>
+      </button>
+      {open ? (
+        <div className="prem-moments__body lfc-events__body">
+          {kinds.map((k) => (
+            <div key={k.id} className="lfc-events__row" title={k.title}>
+              <span className="lfc-events__side lfc-events__side--home prem-moments__side">
+                <EventNames
+                  entries={home[k.id]}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              </span>
+              <span className="lfc-events__mid">
+                <EventKindIcon kind={k} />
+              </span>
+              <span className="lfc-events__side lfc-events__side--away prem-moments__side">
+                <EventNames
+                  entries={away[k.id]}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
