@@ -19041,22 +19041,100 @@ button.live-xp__player-name:focus-visible {
   margin: 0;
 }
 
-/* Match events under each Lineups fixture header (G/A/DC/CS/SV/cards/B). */
+/* Match events under each Lineups fixture header (G/A/DC/CS/SV/cards/B).
+   Own toggle + chip wrap so this does not inherit the Scores card's
+   floating-chevron / leading-comma wrap. Starts collapsed. */
 .prem-moments.lfc-events {
   position: relative;
   grid-column: auto;
+  background: transparent;
   border-bottom: none;
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
-.prem-moments .lfc-events__nm {
-  display: inline;
+.prem-moments__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 14px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.prem-moments__title {
+  flex: none;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+.prem-moments__kinds {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+.prem-moments__chev {
+  margin-left: auto;
+  color: var(--fm-muted);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 160ms ease;
+}
+.prem-moments__chev--open {
+  transform: rotate(-90deg);
+}
+.prem-moments__body {
+  padding: 0 12px 8px;
+}
+.prem-moments .lfc-events__row {
+  padding: 6px 0;
+  align-items: start;
+}
+.prem-moments.lfc-events--open .lfc-events__row:first-child .lfc-events__side--away {
+  padding-right: 0;
+}
+.prem-moments .lfc-events__mid {
+  padding-top: 2px;
+}
+.prem-moments__side {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  align-items: center;
+}
+.prem-moments .lfc-events__side--home.prem-moments__side {
+  justify-content: flex-end;
+}
+.prem-moments .lfc-events__side--away.prem-moments__side {
+  justify-content: flex-start;
+}
+.prem-moments__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
   white-space: nowrap;
+  color: var(--fm-text-strong);
+  font-weight: 500;
+}
+.prem-moments__chip .player-history-name-btn {
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
 }
 .prem-moments__owner {
   display: inline-flex;
   align-items: center;
-  margin-left: 4px;
-  vertical-align: -2px;
+  flex: none;
 }
 .prem-moments__owner .team-avatar-frame {
   width: 14px;
@@ -19068,20 +19146,24 @@ button.live-xp__player-name:focus-visible {
   justify-content: center;
   min-width: 14px;
   height: 14px;
-  margin-left: 4px;
   padding: 0 3px;
   border-radius: 3px;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1;
-  vertical-align: 1px;
   background: color-mix(in srgb, var(--fm-muted) 16%, transparent);
   color: var(--fm-muted);
 }
 
 /* Narrow (< 560 px) compressed row layout */
 @media (max-width: 560px) {
+  .prem-moments__toggle {
+    padding: 6px 10px;
+  }
+  .prem-moments__body {
+    padding: 0 8px 8px;
+  }
   .prem-fxrow {
     grid-template-columns: 84px 1fr 50px 14px;
     gap: 8px;
