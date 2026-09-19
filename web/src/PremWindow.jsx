@@ -609,7 +609,9 @@ function MobileLineupRow({
   teamById,
   bench = false,
 }) {
-  const owner = player.elementId != null ? ownerByEl.get(player.elementId) : null;
+  const ownerElId = Number(player.elementId);
+  const owner =
+    Number.isFinite(ownerElId) && ownerByEl ? ownerByEl.get(ownerElId) : null;
   const el = player.elementId != null && elementById ? elementById[player.elementId] : null;
   const displayName = el
     ? fplElementDisplayName(el, player.elementId)

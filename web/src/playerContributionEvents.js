@@ -510,6 +510,23 @@ export function buildTrackedElementIdSetWithFixtures(
   return s;
 }
 
+function ownerRowElementId(r) {
+  const e = r?.element;
+  if (e == null || !Number.isFinite(Number(e))) return null;
+  return Number(e);
+}
+
+/**
+ * True when this pick is a fantasy-bench slot. `pickPosition` wins when
+ * present (1–11 = XI); otherwise the caller says whether the row came from
+ * a bench list.
+ */
+function rowOnFantasyBench(r, fromBenchList) {
+  const pickPos = Number(r?.pickPosition);
+  if (Number.isFinite(pickPos) && pickPos > 0) return pickPos > 11;
+  return fromBenchList === true;
+}
+
 /**
  * @param {object[]} squads
  * @returns {Map<number, { leagueEntryId: number, teamName: string, onFantasyBench: boolean }>}
@@ -520,21 +537,38 @@ export function buildOwnerByElementId(squads) {
     if (q?.error) continue;
     const lid = Number(q.leagueEntryId);
     const name = String(q.teamName ?? '').trim() || `Team ${lid}`;
-    /** Starters first so a same-squad XI+bench duplicate stays a starter. */
-    for (const r of q.starters || []) {
-      const e = r?.element;
-      if (e == null || !Number.isFinite(Number(e))) continue;
-      const id = Number(e);
-      if (!m.has(id)) {
-        m.set(id, { leagueEntryId: lid, teamName: name, onFantasyBench: false });
+    const mark = (rows, fromBenchList) => {
+      for (const r of rows || []) {
+        const id = ownerRowElementId(r);
+        if (id == null) continue;
+        const onFantasyBench = rowOnFantasyBench(r, fromBenchList);
+        const existing = m.get(id);
+        if (!existing) {
+          m.set(id, { leagueEntryId: lid, teamName: name, onFantasyBench });
+          continue;
+        }
+        /** A fantasy XI appearance always wins — never chair a starter. */
+        if (!onFantasyBench) existing.onFantasyBench = false;
       }
+    };
+    /**
+     * Prefer the effective XI (after autosubs) so a starter like Buendía
+     * never gets a chair just because they began the GW on the bench list.
+     */
+    const useEffective = Boolean(
+      q.displayStarters?.length || q.displayBench?.length,
+    );
+    if (useEffective) {
+      mark(q.displayStarters, false);
+      mark(q.displayBench, true);
+    } else {
+      mark(q.starters, false);
+      mark(q.bench, true);
     }
-    for (const r of q.bench || []) {
-      const e = r?.element;
-      if (e == null || !Number.isFinite(Number(e))) continue;
-      const id = Number(e);
-      if (!m.has(id)) {
-        m.set(id, { leagueEntryId: lid, teamName: name, onFantasyBench: true });
+    for (const r of [...(q.starters || []), ...(q.bench || [])]) {
+      const id = ownerRowElementId(r);
+      if (id != null && !m.has(id)) {
+        m.set(id, { leagueEntryId: lid, teamName: name, onFantasyBench: false });
       }
     }
   }

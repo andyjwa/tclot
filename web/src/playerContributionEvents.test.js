@@ -180,6 +180,44 @@ test('buildOwnerByElementId — starter wins over same-squad bench duplicate', (
   assert.equal(m.get(7).onFantasyBench, false);
 });
 
+test('buildOwnerByElementId — Buendía XI has no chair; Jackson bench does', () => {
+  const squads = [
+    {
+      leagueEntryId: 5220,
+      teamName: 'Suffolk Sméagol',
+      starters: [{ element: 41, pickPosition: 10 }],
+      bench: [{ element: 385, pickPosition: 12 }],
+    },
+    {
+      leagueEntryId: 4259,
+      teamName: 'Atlético Bilbo',
+      starters: [{ element: 379, pickPosition: 11 }],
+      bench: [{ element: 166, pickPosition: 14 }],
+    },
+  ];
+  const m = buildOwnerByElementId(squads);
+  assert.equal(m.get(41).onFantasyBench, false);
+  assert.equal(m.get(41).teamName, 'Suffolk Sméagol');
+  assert.equal(m.get(166).onFantasyBench, true);
+  assert.equal(m.get(166).teamName, 'Atlético Bilbo');
+});
+
+test('buildOwnerByElementId — displayStarters wins over original bench', () => {
+  const squads = [
+    {
+      leagueEntryId: 1,
+      teamName: 'Suffolk',
+      starters: [{ element: 1, pickPosition: 1 }],
+      bench: [{ element: 41, pickPosition: 12 }],
+      displayStarters: [{ element: 41, pickPosition: 10 }],
+      displayBench: [{ element: 1, pickPosition: 12 }],
+    },
+  ];
+  const m = buildOwnerByElementId(squads);
+  assert.equal(m.get(41).onFantasyBench, false);
+  assert.equal(m.get(1).onFantasyBench, true);
+});
+
 test('buildLatestDropByElementOut — highest GW wins', () => {
   const rows = [
     {
