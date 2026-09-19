@@ -23,8 +23,8 @@
  *     Predictions.
  *
  * Players lives under Moves (left of Waivers). More opens a popup above
- * the dock with Predictions, Bookies, and Heritage. Settings stays in the
- * league-info modal (wordmark).
+ * the dock with Recap or Preview (by gameweek), Bookies, Predictions as a
+ * Bookies sub-item, and Heritage. Settings stays in the league-info modal.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
  * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses
@@ -41,6 +41,7 @@ import {
   isMoreMenuItemActive,
   isMovesDashboardView,
   moreMenuDestination,
+  moreMenuItemLabel,
 } from './dashboardNavModel.js'
 import './MobileBottomNav.css'
 
@@ -272,19 +273,22 @@ function MoreTab({ active, dashboardView, fplLiveTab, liveStatus, onNavigate }) 
       {open ? (
         <div className="mobile-tab-bar__more-menu" role="menu" aria-label="More">
           {MORE_MENU_ITEMS.map((item) => {
-            const dest = moreMenuDestination(item, liveStatus?.status)
+            const dest = moreMenuDestination(item)
             const itemActive = isMoreMenuItemActive(
               dashboardView,
               fplLiveTab,
               item.id,
             )
+            const nested = Boolean(item.parent)
             return (
               <button
                 key={item.id}
                 type="button"
                 role="menuitem"
                 className={
-                  'mobile-tab-bar__more-item' + (itemActive ? ' is-active' : '')
+                  'mobile-tab-bar__more-item' +
+                  (nested ? ' mobile-tab-bar__more-item--nested' : '') +
+                  (itemActive ? ' is-active' : '')
                 }
                 onClick={() => {
                   setOpen(false)
@@ -292,13 +296,15 @@ function MoreTab({ active, dashboardView, fplLiveTab, liveStatus, onNavigate }) 
                 }}
               >
                 <span className="mobile-tab-bar__more-ico" aria-hidden>
-                  {item.id === 'predictions'
-                    ? '🔮'
+                  {item.id === 'recap'
+                    ? '🗞️'
                     : item.id === 'bookies'
                       ? '🎲'
-                      : '🏛️'}
+                      : item.id === 'predictions'
+                        ? '🔮'
+                        : '🏛️'}
                 </span>
-                <span>{item.label}</span>
+                <span>{moreMenuItemLabel(item, liveStatus?.status)}</span>
               </button>
             )
           })}

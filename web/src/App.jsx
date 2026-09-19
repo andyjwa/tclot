@@ -518,9 +518,8 @@ import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
 import {
+  isBookieHubTab,
   isMovesDashboardView,
-  isPredictionsLiveTab,
-  predictionsTabForStatus,
 } from './dashboardNavModel.js'
 import { SettingsPage } from './SettingsPage'
 import { usePushNotifications } from './usePushNotifications.js'
@@ -4243,8 +4242,9 @@ function App() {
               aria-label="FPL Live"
             >
               <div className="section-chrome section-chrome--sticky">
-              {/* FPL Live sub-nav. Recap now lives under Predictions
-                  (Weekly / Season panes). Bookie stays the betting hub. */}
+              {/* FPL Live sub-nav. Recap/Preview is its own tab (label
+                  follows the gameweek). Season Predictions sits under
+                  Bookie as a betting-hub sub-tab. */}
               <div
                 className="subnav"
                 role="tablist"
@@ -4279,52 +4279,50 @@ function App() {
                 <button
                   type="button"
                   role="tab"
-                  id="tab-fpl-live-predictions"
-                  aria-selected={isPredictionsLiveTab(fplLiveTab)}
+                  id="tab-fpl-live-recap"
+                  aria-selected={fplLiveTab === 'recap'}
                   className={
                     'subnav__tab' +
-                    (isPredictionsLiveTab(fplLiveTab) ? ' subnav__tab--active' : '')
+                    (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
                   }
-                  onClick={() => {
-                    if (!isPredictionsLiveTab(fplLiveTab)) {
-                      setFplLiveTab(predictionsTabForStatus(brandHeaderStatus?.status))
-                    }
-                  }}
+                  onClick={() => setFplLiveTab('recap')}
                 >
-                  Predictions
+                  {recapMenuLabel}
                 </button>
                 <button
                   type="button"
                   role="tab"
                   id="tab-fpl-live-bookie"
-                  aria-selected={fplLiveTab === 'bookie'}
+                  aria-selected={isBookieHubTab(fplLiveTab)}
                   className={
                     'subnav__tab' +
-                    (fplLiveTab === 'bookie' ? ' subnav__tab--active' : '')
+                    (isBookieHubTab(fplLiveTab) ? ' subnav__tab--active' : '')
                   }
-                  onClick={() => setFplLiveTab('bookie')}
+                  onClick={() => {
+                    if (!isBookieHubTab(fplLiveTab)) setFplLiveTab('bookie')
+                  }}
                 >
                   Bookie
                 </button>
               </div>
-              {isPredictionsLiveTab(fplLiveTab) ? (
+              {isBookieHubTab(fplLiveTab) ? (
                 <div
                   className="subnav subnav--predictions"
                   role="tablist"
-                  aria-label="Predictions views"
+                  aria-label="Bookie views"
                 >
                   <button
                     type="button"
                     role="tab"
-                    id="tab-fpl-live-recap"
-                    aria-selected={fplLiveTab === 'recap'}
+                    id="tab-fpl-live-bookie-hub"
+                    aria-selected={fplLiveTab === 'bookie'}
                     className={
                       'subnav__tab' +
-                      (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
+                      (fplLiveTab === 'bookie' ? ' subnav__tab--active' : '')
                     }
-                    onClick={() => setFplLiveTab('recap')}
+                    onClick={() => setFplLiveTab('bookie')}
                   >
-                    {recapMenuLabel}
+                    Bookie
                   </button>
                   <button
                     type="button"
@@ -4337,7 +4335,7 @@ function App() {
                     }
                     onClick={() => setFplLiveTab('predictions')}
                   >
-                    Season
+                    Predictions
                   </button>
                 </div>
               ) : null}

@@ -76,7 +76,8 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
   // FPL Live · Standings · Moves · TCLOT Heritage. Players now lives
   // under Moves (left of Waivers). The mobile dock (MobileBottomNav.jsx)
   // is Table · Moves · contextual centre · More, with More opening a
-  // popup for Predictions, Bookies, and Heritage. `More` stays
+  // popup for Recap/Preview, Bookies (Predictions nested), and Heritage.
+  // `More` stays
   // `bottomOnly` so it never renders here; desktop gets a Settings gear
   // (rendered below the .map() loop). Heritage stays a top-level item.
   const primaryItems = [
@@ -176,7 +177,7 @@ export function DashboardMorePanel({
   kitIndexByEntry = {},
 }) {
   // Fallback More page (session restore / desktop). Mobile More is a
-  // popup on the bottom dock: Predictions, Bookies, Heritage. This panel
+  // popup on the bottom dock: Recap/Preview, Bookies, Heritage. This panel
   // still lists Heritage + Settings for the rare `dashboardView === 'more'`
   // landing. Bookies is the FPL Live betting hub.
   const rows = [

@@ -4,7 +4,8 @@
 /* A frosted pill + separate circular Search button that float above   */
 /* the home indicator on mobile (≤1080px). Four inline slots:          */
 /* Table · Moves · [centre] · More. Search opens GlobalSearch.         */
-/* More opens a popup above the dock: Predictions, Bookies, Heritage.  */
+/* More opens a popup above the dock: Recap/Preview, Bookies           */
+/* (Predictions nested under Bookies), and Heritage.                   */
 /* Players now lives under Moves (left of Waivers).                    */
 /* The centre chip follows the season phase via `data-gwstate`:        */
 /*   pre  → "26/27" / GW{n} chip, no accent                            */
@@ -142,6 +143,16 @@
   .mobile-tab-bar__more-item:hover {
     color: var(--tclot-logo-purple);
     background: var(--tab-glass-active);
+  }
+
+  .mobile-tab-bar__more-item--nested {
+    margin-left: 14px;
+    width: calc(100% - 14px);
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
   }
 
   .mobile-tab-bar__more-ico {
