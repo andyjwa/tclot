@@ -815,7 +815,42 @@ function MobileLineupSide({
   );
 }
 
-function MobileLineupBody({
+function TeamHalf({ t, team, home, away, homeOwned, awayOwned, onPick }) {
+  const isActive = team === t;
+  const c = t === 'home' ? home : away;
+  const owned = t === 'home' ? homeOwned : awayOwned;
+  return (
+    <button
+      role="tab"
+      type="button"
+      aria-selected={isActive}
+      className={'prem-mlu-toggle__pill' + (isActive ? ' is-active' : '')}
+      onClick={() => onPick(t)}
+    >
+      {c?.code != null && plBadgeUrl(c.code) ? (
+        <img
+          className="prem-mlu-toggle__crest"
+          src={plBadgeUrl(c.code)}
+          alt={c?.name || ''}
+          loading="lazy"
+        />
+      ) : null}
+      <span className="prem-mlu-toggle__name">
+        {c?.name || (t === 'home' ? 'Home' : 'Away')}
+      </span>
+      <span className="prem-mlu-toggle__count">{owned}</span>
+    </button>
+  );
+}
+
+/**
+ * Lineups dropdown under match events. Closed: a LINEUPS row.
+ * Open (narrow): two square team halves flush to that row, then the XI.
+ */
+function FixtureLineupsPanel({
+  open,
+  onToggle,
+  narrow,
   home,
   away,
   homeSide,
@@ -837,57 +872,115 @@ function MobileLineupBody({
 
   if (!homeSide && !awaySide) {
     return (
-      <p className="muted muted--tight">No lineup yet</p>
+      <p className="muted muted--tight prem-lu__empty">No lineup yet</p>
     );
   }
 
   return (
-    <>
-      <div className="prem-mlu-toggle" role="tablist" aria-label="Choose team">
-        {['home', 'away'].map((t) => {
-          const isActive = team === t;
-          const c = t === 'home' ? home : away;
-          const owned = t === 'home' ? homeOwned : awayOwned;
-          return (
-            <button
-              key={t}
-              role="tab"
-              type="button"
-              aria-selected={isActive}
-              className={'prem-mlu-toggle__pill' + (isActive ? ' is-active' : '')}
-              onClick={() => setTeam(t)}
-            >
-              {c?.code != null && plBadgeUrl(c.code) ? (
-                <img
-                  className="prem-mlu-toggle__crest"
-                  src={plBadgeUrl(c.code)}
-                  alt={c?.name || ''}
-                  loading="lazy"
-                />
-              ) : null}
-              <span className="prem-mlu-toggle__name">
-                {c?.name || (t === 'home' ? 'Home' : 'Away')}
-              </span>
-              <span className="prem-mlu-toggle__count">{owned}</span>
-            </button>
-          );
-        })}
-      </div>
-      {side ? (
-        <MobileLineupSide
-          side={side}
-          club={club}
-          ownerByEl={ownerByEl}
-          elementById={elementById}
-          teamById={teamById}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-          notInSquad={notInSquad}
-        />
+    <section className={'prem-lu' + (open ? ' is-open' : '')} aria-label="Lineups">
+      {open && narrow ? (
+        <div className="prem-lu__split" role="tablist" aria-label="Choose team">
+          <TeamHalf
+            t="home"
+            team={team}
+            home={home}
+            away={away}
+            homeOwned={homeOwned}
+            awayOwned={awayOwned}
+            onPick={setTeam}
+          />
+          <TeamHalf
+            t="away"
+            team={team}
+            home={home}
+            away={away}
+            homeOwned={homeOwned}
+            awayOwned={awayOwned}
+            onPick={setTeam}
+          />
+          <button
+            type="button"
+            className="prem-lu__chev-btn"
+            aria-expanded={open}
+            aria-label="Lineups"
+            onClick={onToggle}
+          >
+            <span className="prem-lu__chev is-open" aria-hidden>
+              ›
+            </span>
+          </button>
+        </div>
       ) : (
-        <p className="muted muted--tight prem-mlu-empty">No lineup yet for this team.</p>
+        <button
+          type="button"
+          className="prem-lu__toggle"
+          aria-expanded={open}
+          aria-label="Lineups"
+          onClick={onToggle}
+        >
+          <span className="prem-lu__title">Lineups</span>
+          <span className={'prem-lu__chev' + (open ? ' is-open' : '')} aria-hidden>
+            ›
+          </span>
+        </button>
       )}
-    </>
+      {open ? (
+        <div className="prem-lu__body">
+          {narrow ? (
+            side ? (
+              <MobileLineupSide
+                side={side}
+                club={club}
+                ownerByEl={ownerByEl}
+                elementById={elementById}
+                teamById={teamById}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+                notInSquad={notInSquad}
+              />
+            ) : (
+              <p className="muted muted--tight prem-mlu-empty">
+                No lineup yet for this team.
+              </p>
+            )
+          ) : (
+            <>
+              <LineupPaired
+                home={home}
+                away={away}
+                homeSide={homeSide}
+                awaySide={awaySide}
+                ownerByEl={ownerByEl}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+                elementById={elementById}
+                teamById={teamById}
+              />
+              {notInSquadHome.length > 0 || notInSquadAway.length > 0 ? (
+                <div className="prem-nis-pair">
+                  <div className="prem-nis-pair__cell prem-nis-pair__cell--home">
+                    <NotInSquadRow
+                      players={notInSquadHome}
+                      variant="desktop"
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  </div>
+                  <div className="prem-nis-pair__cell prem-nis-pair__cell--away">
+                    <NotInSquadRow
+                      players={notInSquadAway}
+                      variant="desktop"
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -958,19 +1051,26 @@ function FixtureRow({
   const kickIso =
     fx.fplFixture?.kickoff_time || fx.score?.kickoffIso || null;
 
+  const [lineupsOpen, setLineupsOpen] = useState(false);
+  const headerOpen = canShowLineups ? lineupsOpen : expanded;
+  const toggleHeader = () => {
+    if (canShowLineups) setLineupsOpen((o) => !o);
+    else onToggle();
+  };
+
   return (
     <div
       className={
         'prem-fxitem' +
-        (expanded ? ' is-expanded' : '') +
+        (headerOpen ? ' is-expanded' : '') +
         (state === 'live' ? ' is-live' : '')
       }
     >
       <button
         type="button"
         className="prem-fxrow"
-        aria-expanded={expanded}
-        onClick={onToggle}
+        aria-expanded={headerOpen}
+        onClick={toggleHeader}
         title={kickIso ? formatKickoff(String(kickIso)) : undefined}
       >
         <span className="prem-fxrow__chip">
@@ -1016,7 +1116,7 @@ function FixtureRow({
           <KickoffPill fx={fx} />
         </span>
         <span className="prem-fxrow__chev" aria-hidden>
-          {expanded ? '▾' : '▸'}
+          {headerOpen ? '▾' : '▸'}
         </span>
       </button>
 
@@ -1032,7 +1132,24 @@ function FixtureRow({
         claimedElementIds={claimedElementIds}
       />
 
-      {expanded ? (
+      {canShowLineups ? (
+        <FixtureLineupsPanel
+          open={lineupsOpen}
+          onToggle={() => setLineupsOpen((o) => !o)}
+          narrow={narrow}
+          home={home}
+          away={away}
+          homeSide={fx.lineups.home}
+          awaySide={fx.lineups.away}
+          ownerByEl={ownerByEl}
+          elementById={elementById}
+          teamById={teamById}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          notInSquadHome={notInHome}
+          notInSquadAway={notInAway}
+        />
+      ) : expanded ? (
         <div className="prem-fxbody">
           {fx.fetchError ? (
             <div className="data-banner data-banner--error" role="alert">
@@ -1049,66 +1166,7 @@ function FixtureRow({
               {fx.detailsBlockedReason}
             </p>
           ) : null}
-
-          {/* Events list temporarily hidden — data is still fetched via
-              `visibleEvents` so we can re-enable the section without
-              re-wiring props/hooks. */}
-
-          {canShowLineups ? (
-            <div className="prem-lineups">
-              {narrow ? (
-                <MobileLineupBody
-                  home={home}
-                  away={away}
-                  homeSide={fx.lineups.home}
-                  awaySide={fx.lineups.away}
-                  ownerByEl={ownerByEl}
-                  elementById={elementById}
-                  teamById={teamById}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                  notInSquadHome={notInHome}
-                  notInSquadAway={notInAway}
-                />
-              ) : (
-                <>
-                  <LineupPaired
-                    home={home}
-                    away={away}
-                    homeSide={fx.lineups.home}
-                    awaySide={fx.lineups.away}
-                    ownerByEl={ownerByEl}
-                    teamLogoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                    elementById={elementById}
-                    teamById={teamById}
-                  />
-                  {notInHome.length > 0 || notInAway.length > 0 ? (
-                    <div className="prem-nis-pair">
-                      <div className="prem-nis-pair__cell prem-nis-pair__cell--home">
-                        <NotInSquadRow
-                          players={notInHome}
-                          variant="desktop"
-                          teamLogoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                      </div>
-                      <div className="prem-nis-pair__cell prem-nis-pair__cell--away">
-                        <NotInSquadRow
-                          players={notInAway}
-                          variant="desktop"
-                          teamLogoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              )}
-            </div>
-          ) : (
-            <LineupPending fx={fx} />
-          )}
+          <LineupPending fx={fx} />
         </div>
       ) : null}
     </div>
