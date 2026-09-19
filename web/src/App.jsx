@@ -367,22 +367,6 @@ function SeasonSwitcher({ currentSeasonLabel, archivedSeasons = [] }) {
  *   teamsForFormSelect?: object[],
  * }} props
  */
-function BrandHeaderMore({ active = false, onSelect }) {
-  if (typeof onSelect !== 'function') return null
-  return (
-    <button
-      type="button"
-      className={'brand-header__more' + (active ? ' is-active' : '')}
-      aria-label="More"
-      title="More"
-      aria-current={active ? 'page' : undefined}
-      onClick={() => onSelect('more')}
-    >
-      <NavIcon name="more" size={18} />
-    </button>
-  )
-}
-
 function BrandHeader({
   tableRows,
   leagueEntries,
@@ -395,8 +379,6 @@ function BrandHeader({
   archivedSeasons = [],
   hideStatusStrip = false,
   teamsForFormSelect = [],
-  onMore,
-  moreActive = false,
 }) {
   const entryById = useMemo(() => {
     const m = new Map()
@@ -486,9 +468,6 @@ function BrandHeader({
             />
           ) : null}
         </span>
-        {!showStatusStrip ? (
-          <BrandHeaderMore active={moreActive} onSelect={onMore} />
-        ) : null}
       </div>
       {showStatusStrip ? (
         <div
@@ -508,7 +487,6 @@ function BrandHeader({
               import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
             ).trim()}
           />
-          <BrandHeaderMore active={moreActive} onSelect={onMore} />
         </div>
       ) : null}
     </section>
@@ -539,6 +517,11 @@ import { pickDeadlinePassedLiveEvent, pickDeadlinePassedLiveGw } from './fplLive
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
+import {
+  isMovesDashboardView,
+  isPredictionsLiveTab,
+  predictionsTabForStatus,
+} from './dashboardNavModel.js'
 import { SettingsPage } from './SettingsPage'
 import { usePushNotifications } from './usePushNotifications.js'
 import { BrandHeaderWordmark } from './BrandHeaderWordmark'
@@ -2737,6 +2720,20 @@ function App() {
     [selectDashboardView, setFplLiveTab],
   )
 
+  /** Moves sub-tabs. Players is a first-class dashboard view (hash / default
+   * tab) but it now renders inside the Moves chrome, left of Waivers. */
+  const selectMovesTab = useCallback(
+    (tab) => {
+      if (tab === 'players') {
+        selectDashboardView('players')
+        return
+      }
+      setTeamSelectionTab(tab)
+      selectDashboardView('teamSelection')
+    },
+    [selectDashboardView],
+  )
+
   useEffect(() => {
     if (!draftGate.navLocked) return
     if (!isPreDraftAllowedView(dashboardView)) {
@@ -3495,12 +3492,6 @@ function App() {
               archivedSeasons={seasonCatalog.archived}
               hideStatusStrip={hideMobileStatusStrip}
               teamsForFormSelect={teamsForFormSelect}
-              onMore={selectDashboardView}
-              moreActive={
-                dashboardView === 'more' ||
-                dashboardView === 'hall' ||
-                dashboardView === 'settings'
-              }
             />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
@@ -3965,21 +3956,7 @@ function App() {
             <HallOfChampions tableRows={tableRows} />
           ) : null}
 
-          {dashboardView === 'players' ? (
-            <div className="dashboard-stack">
-              <PlayersWorkbench
-                leagueEntries={leagueEntries}
-                teamsForFormSelect={teamsForFormSelect}
-                leagueDataRevision={String(
-                  import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
-                ).trim()}
-                logoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            </div>
-          ) : null}
-
-          {dashboardView === 'teamSelection' && (
+          {isMovesDashboardView(dashboardView) && (
             <>
               <div className="subview-subnav-strip">
                 <div
@@ -3990,13 +3967,28 @@ function App() {
                   <button
                     type="button"
                     role="tab"
-                    id="tab-team-selection-waivers"
-                    aria-selected={teamSelectionTab === 'waivers'}
+                    id="tab-team-selection-players"
+                    aria-selected={dashboardView === 'players'}
                     className={
                       'subnav__tab' +
-                      (teamSelectionTab === 'waivers' ? ' subnav__tab--active' : '')
+                      (dashboardView === 'players' ? ' subnav__tab--active' : '')
                     }
-                    onClick={() => setTeamSelectionTab('waivers')}
+                    onClick={() => selectMovesTab('players')}
+                  >
+                    Players
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-team-selection-waivers"
+                    aria-selected={dashboardView === 'teamSelection' && teamSelectionTab === 'waivers'}
+                    className={
+                      'subnav__tab' +
+                      (dashboardView === 'teamSelection' && teamSelectionTab === 'waivers'
+                        ? ' subnav__tab--active'
+                        : '')
+                    }
+                    onClick={() => selectMovesTab('waivers')}
                   >
                     Waivers
                   </button>
@@ -4004,12 +3996,14 @@ function App() {
                     type="button"
                     role="tab"
                     id="tab-team-selection-trades"
-                    aria-selected={teamSelectionTab === 'trades'}
+                    aria-selected={dashboardView === 'teamSelection' && teamSelectionTab === 'trades'}
                     className={
                       'subnav__tab' +
-                      (teamSelectionTab === 'trades' ? ' subnav__tab--active' : '')
+                      (dashboardView === 'teamSelection' && teamSelectionTab === 'trades'
+                        ? ' subnav__tab--active'
+                        : '')
                     }
-                    onClick={() => setTeamSelectionTab('trades')}
+                    onClick={() => selectMovesTab('trades')}
                   >
                     Trades
                   </button>
@@ -4017,12 +4011,14 @@ function App() {
                     type="button"
                     role="tab"
                     id="tab-team-selection-trade-tool"
-                    aria-selected={teamSelectionTab === 'tradeTool'}
+                    aria-selected={dashboardView === 'teamSelection' && teamSelectionTab === 'tradeTool'}
                     className={
                       'subnav__tab' +
-                      (teamSelectionTab === 'tradeTool' ? ' subnav__tab--active' : '')
+                      (dashboardView === 'teamSelection' && teamSelectionTab === 'tradeTool'
+                        ? ' subnav__tab--active'
+                        : '')
                     }
-                    onClick={() => setTeamSelectionTab('tradeTool')}
+                    onClick={() => selectMovesTab('tradeTool')}
                   >
                     Trade Tool
                   </button>
@@ -4030,19 +4026,34 @@ function App() {
                     type="button"
                     role="tab"
                     id="tab-team-selection-draft"
-                    aria-selected={teamSelectionTab === 'draft'}
+                    aria-selected={dashboardView === 'teamSelection' && teamSelectionTab === 'draft'}
                     className={
                       'subnav__tab' +
-                      (teamSelectionTab === 'draft' ? ' subnav__tab--active' : '')
+                      (dashboardView === 'teamSelection' && teamSelectionTab === 'draft'
+                        ? ' subnav__tab--active'
+                        : '')
                     }
-                    onClick={() => setTeamSelectionTab('draft')}
+                    onClick={() => selectMovesTab('draft')}
                   >
                     Draft
                   </button>
                 </div>
               </div>
               <div className="subview-panel">
-              {teamSelectionTab === 'waivers' && (
+              {dashboardView === 'players' && (
+                <div className="dashboard-stack">
+                  <PlayersWorkbench
+                    leagueEntries={leagueEntries}
+                    teamsForFormSelect={teamsForFormSelect}
+                    leagueDataRevision={String(
+                      import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
+                    ).trim()}
+                    logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </div>
+              )}
+              {dashboardView === 'teamSelection' && teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
               <ForbiddenWaivers takenPickupIds={takenPickupIds} />
 
@@ -4147,7 +4158,7 @@ function App() {
             </div>
               )}
 
-              {teamSelectionTab === 'trades' && (
+              {dashboardView === 'teamSelection' && teamSelectionTab === 'trades' && (
             <div className="dashboard-stack">
               <section className="tile tile--compact" aria-labelledby="trades-heading">
                 <h2 id="trades-heading" className="tile-title tile-title--sm">
@@ -4178,7 +4189,7 @@ function App() {
             </div>
               )}
 
-              {teamSelectionTab === 'tradeTool' && (
+              {dashboardView === 'teamSelection' && teamSelectionTab === 'tradeTool' && (
               <TradeTool
                 leagueEntries={leagueEntries}
                 teamLogoMap={teamLogoMap}
@@ -4191,7 +4202,7 @@ function App() {
               />
               )}
 
-              {teamSelectionTab === 'draft' && (
+              {dashboardView === 'teamSelection' && teamSelectionTab === 'draft' && (
             <div className="dashboard-stack">
               <DraftBoard
                 league={data?.league}
@@ -4232,10 +4243,8 @@ function App() {
               aria-label="FPL Live"
             >
               <div className="section-chrome section-chrome--sticky">
-              {/* FPL Live sub-nav — variant A (text-only segmented control) from the
-                  SUB-NAV · FPL LIVE mockup showcase. "Live GW" carries a pulsing-dot
-                  prefix (same icon family as the main nav's FPL Live tab, scaled to
-                  ~12px). See `.subnav*` rules in App.css. */}
+              {/* FPL Live sub-nav. Recap now lives under Predictions
+                  (Weekly / Season panes). Bookie stays the betting hub. */}
               <div
                 className="subnav"
                 role="tablist"
@@ -4270,26 +4279,17 @@ function App() {
                 <button
                   type="button"
                   role="tab"
-                  id="tab-fpl-live-recap"
-                  aria-selected={fplLiveTab === 'recap'}
-                  className={
-                    'subnav__tab' +
-                    (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => setFplLiveTab('recap')}
-                >
-                  {recapMenuLabel}
-                </button>
-                <button
-                  type="button"
-                  role="tab"
                   id="tab-fpl-live-predictions"
-                  aria-selected={fplLiveTab === 'predictions'}
+                  aria-selected={isPredictionsLiveTab(fplLiveTab)}
                   className={
                     'subnav__tab' +
-                    (fplLiveTab === 'predictions' ? ' subnav__tab--active' : '')
+                    (isPredictionsLiveTab(fplLiveTab) ? ' subnav__tab--active' : '')
                   }
-                  onClick={() => setFplLiveTab('predictions')}
+                  onClick={() => {
+                    if (!isPredictionsLiveTab(fplLiveTab)) {
+                      setFplLiveTab(predictionsTabForStatus(brandHeaderStatus?.status))
+                    }
+                  }}
                 >
                   Predictions
                 </button>
@@ -4307,6 +4307,40 @@ function App() {
                   Bookie
                 </button>
               </div>
+              {isPredictionsLiveTab(fplLiveTab) ? (
+                <div
+                  className="subnav subnav--predictions"
+                  role="tablist"
+                  aria-label="Predictions views"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-fpl-live-recap"
+                    aria-selected={fplLiveTab === 'recap'}
+                    className={
+                      'subnav__tab' +
+                      (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setFplLiveTab('recap')}
+                  >
+                    {recapMenuLabel}
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-fpl-live-season"
+                    aria-selected={fplLiveTab === 'predictions'}
+                    className={
+                      'subnav__tab' +
+                      (fplLiveTab === 'predictions' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setFplLiveTab('predictions')}
+                  >
+                    Season
+                  </button>
+                </div>
+              ) : null}
               </div>
               <div className="section-body">
               {fplLiveTab === 'squads' ? (
@@ -4370,6 +4404,7 @@ function App() {
       </main>
       <MobileBottomNav
         dashboardView={dashboardView}
+        fplLiveTab={fplLiveTab}
         onSelect={selectDashboardView}
         onCenterSelect={selectLiveHub}
         liveStatus={brandHeaderStatus}

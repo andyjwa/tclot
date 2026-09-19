@@ -1,5 +1,6 @@
 import { TeamAvatar } from './TeamAvatar'
 import { NavIcon } from './NavIcon'
+import { isMovesDashboardView } from './dashboardNavModel.js'
 
 /** @typedef {'preseason' | 'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
 
@@ -71,16 +72,13 @@ function NavButton({ item, active, onSelect, variant }) {
 export function DashboardNav({ variant, dashboardView, onSelect, navLocked = false }) {
   const isBottom = variant === 'bottom'
 
-  // Single source of truth for nav order (left → right on desktop, also the
-  // bottom-pill order on legacy mobile callers): FPL Live · Standings ·
-  // Moves · Players · TCLOT Heritage · More. The cinematic 26/27 hub is
-  // retired; Live stays available before GW1 so fixtures and squads are
-  // ready. The new mobile bottom tab bar (MobileBottomNav.jsx) supplies its
-  // own slot list (Table · Moves · contextual centre · Players) plus a
-  // separate Search circle; More sits in the brand-header top-right on
-  // mobile. The items defined here drive only the desktop top nav now.
-  // `More` is `bottomOnly` so it never renders on desktop; desktop gets a
-  // separate Settings gear button (rendered below the .map() loop).
+  // Single source of truth for desktop top-nav order (left → right):
+  // FPL Live · Standings · Moves · TCLOT Heritage. Players now lives
+  // under Moves (left of Waivers). The mobile dock (MobileBottomNav.jsx)
+  // is Table · Moves · contextual centre · More, with More opening a
+  // popup for Predictions, Bookies, and Heritage. `More` stays
+  // `bottomOnly` so it never renders here; desktop gets a Settings gear
+  // (rendered below the .map() loop). Heritage stays a top-level item.
   const primaryItems = [
     {
       id: /** @type {const} */ ('fplLive'),
@@ -100,12 +98,6 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
       label: 'Moves',
       shortLabel: 'Moves',
       icon: /** @type {const} */ ('users'),
-    },
-    {
-      id: /** @type {const} */ ('players'),
-      label: 'Players',
-      shortLabel: 'Wire',
-      icon: /** @type {const} */ ('shuffle'),
     },
     {
       id: /** @type {const} */ ('hall'),
@@ -131,6 +123,7 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
   const items = navLocked ? preDraftItems : unlockedItems
 
   const isActive = (id) => {
+    if (id === 'teamSelection') return isMovesDashboardView(dashboardView)
     if (id === 'more') {
       return dashboardView === 'more' || dashboardView === 'settings'
     }
@@ -182,13 +175,10 @@ export function DashboardMorePanel({
   teamLogoMap = {},
   kitIndexByEntry = {},
 }) {
-  // The persistent mobile bottom tab bar (MobileBottomNav.jsx) now surfaces
-  // Table (Standings), Moves, Players, and a contextual centre (FPL Live)
-  // at the top level, with Search in the floating circle. That leaves
-  // Heritage and Settings to reach through More (header top-right on
-  // mobile), so this panel lists exactly those two. (The Bookie lives
-  // inside FPL Live next to Predictions — no nav slot needed.)
-  // ('more' is effectively mobile-only — the desktop top nav filters it out.)
+  // Fallback More page (session restore / desktop). Mobile More is a
+  // popup on the bottom dock: Predictions, Bookies, Heritage. This panel
+  // still lists Heritage + Settings for the rare `dashboardView === 'more'`
+  // landing. Bookies is the FPL Live betting hub.
   const rows = [
     { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },
     { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },

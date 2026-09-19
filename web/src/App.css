@@ -1295,6 +1295,16 @@
 }
 
 /* Narrow viewports: let the sub-nav scroll horizontally rather than wrap. */
+.section-chrome--sticky .subnav--predictions {
+  border-top: 1px solid var(--border, var(--fm-border));
+}
+
+.section-chrome--sticky .subnav--predictions .subnav__tab {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 12px;
+}
+
 @media (max-width: 1080px) {
   .section-chrome--sticky .subnav {
     flex-wrap: nowrap;
