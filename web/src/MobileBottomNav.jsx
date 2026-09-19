@@ -91,6 +91,22 @@ export function MobileBottomNav({
   liveStatus,
   navLocked = false,
 }) {
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreBtnRef = useRef(null)
+  const moreMenuRef = useRef(null)
+  const closeMore = useCallback(() => setMoreOpen(false), [])
+  useDismissOnOutsidePointer(moreMenuRef, moreOpen, closeMore, (target) =>
+    Boolean(moreBtnRef.current?.contains(target)),
+  )
+  useEffect(() => {
+    if (!moreOpen) return undefined
+    const onKey = (ev) => {
+      if (ev.key === 'Escape') setMoreOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [moreOpen])
+
   const gwState = gwStateFromStatus(liveStatus?.status)
   const center = CENTER_BY_STATE[gwState]
   const centerActive =
@@ -156,6 +172,19 @@ export function MobileBottomNav({
     <nav className="mobile-tab-bar" aria-label="App navigation" data-gwstate={gwState}>
       <div className="mobile-tab-bar__dock">
         <div className="mobile-tab-bar__pill">
+          {moreOpen ? (
+            <MoreMenu
+              menuRef={moreMenuRef}
+              dashboardView={dashboardView}
+              fplLiveTab={fplLiveTab}
+              liveStatus={liveStatus}
+              onNavigate={(view, tab) => {
+                setMoreOpen(false)
+                if (tab && onCenterSelect) onCenterSelect(view, tab)
+                else onSelect(view)
+              }}
+            />
+          ) : null}
           {TABS.map((tab) => (
             <TabButton
               key={tab.id}
@@ -213,15 +242,11 @@ export function MobileBottomNav({
             <span className="mobile-tab-bar__label">{center.label}</span>
           </div>
 
-          <MoreTab
+          <MoreButton
+            buttonRef={moreBtnRef}
             active={moreActive}
-            dashboardView={dashboardView}
-            fplLiveTab={fplLiveTab}
-            liveStatus={liveStatus}
-            onNavigate={(view, tab) => {
-              if (tab && onCenterSelect) onCenterSelect(view, tab)
-              else onSelect(view)
-            }}
+            open={moreOpen}
+            onToggle={() => setMoreOpen((v) => !v)}
           />
         </div>
         <SearchButton />
@@ -232,37 +257,25 @@ export function MobileBottomNav({
 
 /**
  * @param {{
+ *   buttonRef: import('react').RefObject<HTMLButtonElement | null>,
  *   active: boolean,
- *   dashboardView: string,
- *   fplLiveTab?: string | null,
- *   liveStatus?: { status?: string } | null,
- *   onNavigate: (view: string, tab: string | null) => void,
+ *   open: boolean,
+ *   onToggle: () => void,
  * }} props
  */
-function MoreTab({ active, dashboardView, fplLiveTab, liveStatus, onNavigate }) {
-  const [open, setOpen] = useState(false)
-  const wrapRef = useRef(null)
-  const close = useCallback(() => setOpen(false), [])
-  useDismissOnOutsidePointer(wrapRef, open, close)
-  useEffect(() => {
-    if (!open) return undefined
-    const onKey = (ev) => {
-      if (ev.key === 'Escape') setOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
-
+function MoreButton({ buttonRef, active, open, onToggle }) {
   return (
-    <div className="mobile-tab-bar__more" ref={wrapRef}>
+    <div className="mobile-tab-bar__more">
       <button
+        ref={buttonRef}
         type="button"
         className={
           'mobile-tab-bar__btn' + (active || open ? ' is-active' : '')
         }
-        onClick={() => setOpen((v) => !v)}
+        onClick={onToggle}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls="mobile-more-menu"
         aria-label="More"
       >
         <span className="mobile-tab-bar__ico" aria-hidden>
@@ -270,46 +283,60 @@ function MoreTab({ active, dashboardView, fplLiveTab, liveStatus, onNavigate }) 
         </span>
         <span className="mobile-tab-bar__label">More</span>
       </button>
-      {open ? (
-        <div className="mobile-tab-bar__more-menu" role="menu" aria-label="More">
-          {MORE_MENU_ITEMS.map((item) => {
-            const dest = moreMenuDestination(item)
-            const itemActive = isMoreMenuItemActive(
-              dashboardView,
-              fplLiveTab,
-              item.id,
-            )
-            const nested = Boolean(item.parent)
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="menuitem"
-                className={
-                  'mobile-tab-bar__more-item' +
-                  (nested ? ' mobile-tab-bar__more-item--nested' : '') +
-                  (itemActive ? ' is-active' : '')
-                }
-                onClick={() => {
-                  setOpen(false)
-                  onNavigate(dest.view, dest.tab)
-                }}
-              >
-                <span className="mobile-tab-bar__more-ico" aria-hidden>
-                  {item.id === 'recap'
-                    ? '🗞️'
-                    : item.id === 'bookies'
-                      ? '🎲'
-                      : item.id === 'predictions'
-                        ? '🔮'
-                        : '🏛️'}
-                </span>
-                <span>{moreMenuItemLabel(item, liveStatus?.status)}</span>
-              </button>
-            )
-          })}
-        </div>
-      ) : null}
+    </div>
+  )
+}
+
+/**
+ * Solid sheet above the dock — same tokens as site popovers (`--surface`,
+ * `--border`, line icons). Full pill width so it lines up with the bar.
+ *
+ * @param {{
+ *   menuRef: import('react').RefObject<HTMLDivElement | null>,
+ *   dashboardView: string,
+ *   fplLiveTab?: string | null,
+ *   liveStatus?: { status?: string } | null,
+ *   onNavigate: (view: string, tab: string | null) => void,
+ * }} props
+ */
+function MoreMenu({ menuRef, dashboardView, fplLiveTab, liveStatus, onNavigate }) {
+  return (
+    <div
+      id="mobile-more-menu"
+      ref={menuRef}
+      className="mobile-tab-bar__more-menu"
+      role="menu"
+      aria-label="More"
+    >
+      {MORE_MENU_ITEMS.map((item) => {
+        const dest = moreMenuDestination(item)
+        const itemActive = isMoreMenuItemActive(
+          dashboardView,
+          fplLiveTab,
+          item.id,
+        )
+        return (
+          <button
+            key={item.id}
+            type="button"
+            role="menuitem"
+            className={
+              'mobile-tab-bar__more-item' +
+              (item.dividerBefore ? ' mobile-tab-bar__more-item--divider' : '') +
+              (item.parent ? ' mobile-tab-bar__more-item--sub' : '') +
+              (itemActive ? ' is-active' : '')
+            }
+            onClick={() => onNavigate(dest.view, dest.tab)}
+          >
+            <span className="mobile-tab-bar__more-ico" aria-hidden>
+              <NavIcon name={item.icon} size={20} />
+            </span>
+            <span className="mobile-tab-bar__more-label">
+              {moreMenuItemLabel(item, liveStatus?.status)}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }

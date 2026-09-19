@@ -14,16 +14,17 @@ import { recapMenuLabelForStatus } from './weeklyRecapView.js'
 /** @typedef {'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} FplLiveTabId */
 
 export const MORE_MENU_ITEMS = /** @type {const} */ ([
-  { id: 'recap', label: 'Recap', view: 'fplLive', tab: 'recap' },
-  { id: 'bookies', label: 'Bookies', view: 'fplLive', tab: 'bookie' },
+  { id: 'recap', label: 'Recap', view: 'fplLive', tab: 'recap', icon: 'newspaper' },
+  { id: 'bookies', label: 'Bookies', view: 'fplLive', tab: 'bookie', icon: 'dices', dividerBefore: true },
   {
     id: 'predictions',
     label: 'Predictions',
     view: 'fplLive',
     tab: 'predictions',
     parent: 'bookies',
+    icon: 'sparkle',
   },
-  { id: 'hall', label: 'Heritage', view: 'hall', tab: null },
+  { id: 'hall', label: 'Heritage', view: 'hall', tab: null, icon: 'column', dividerBefore: true },
 ])
 
 /** @param {string | null | undefined} view */

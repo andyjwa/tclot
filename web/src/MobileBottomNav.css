@@ -76,6 +76,8 @@
   }
 
   .mobile-tab-bar__pill {
+    position: relative;
+    overflow: visible;
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
@@ -86,7 +88,9 @@
     box-sizing: border-box;
   }
 
-  /* ---- More popup (above the dock) -------------------------------- */
+  /* ---- More sheet (above the dock) -------------------------------- */
+  /* Solid card, full pill width, site tokens — not glass. Content
+   * behind must not show through, and rows share one icon/label grid. */
   .mobile-tab-bar__more {
     position: relative;
     flex: 1;
@@ -101,31 +105,32 @@
 
   .mobile-tab-bar__more-menu {
     position: absolute;
+    left: 0;
     right: 0;
-    bottom: calc(100% + 10px);
-    z-index: 4;
+    bottom: calc(100% + 8px);
+    z-index: 5;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-width: 176px;
     padding: 6px;
     border-radius: 16px;
-    background: var(--tab-glass-bg);
-    border: 1px solid var(--tab-glass-border);
-    box-shadow:
-      var(--tab-glass-shadow),
-      inset 0 1px 0 var(--tab-glass-inset);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 32px rgba(20, 16, 12, 0.2);
+  }
+
+  .fotmob[data-theme='dark'] .mobile-tab-bar__more-menu {
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
   }
 
   .mobile-tab-bar__more-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 22px 1fr;
     align-items: center;
-    gap: 10px;
+    column-gap: 12px;
     width: 100%;
     margin: 0;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border: 0;
     border-radius: 12px;
     background: none;
@@ -142,16 +147,21 @@
   .mobile-tab-bar__more-item.is-active,
   .mobile-tab-bar__more-item:hover {
     color: var(--tclot-logo-purple);
-    background: var(--tab-glass-active);
+    background: color-mix(in srgb, var(--tclot-logo-purple) 12%, var(--surface));
   }
 
-  .mobile-tab-bar__more-item--nested {
-    margin-left: 14px;
-    width: calc(100% - 14px);
-    padding-top: 8px;
-    padding-bottom: 8px;
-    font-size: 12px;
-    font-weight: 600;
+  .mobile-tab-bar__more-item--divider {
+    margin-top: 4px;
+    box-shadow: inset 0 1px 0 var(--border);
+    border-radius: 0 0 12px 12px;
+  }
+
+  .mobile-tab-bar__more-item--divider.is-active,
+  .mobile-tab-bar__more-item--divider:hover {
+    border-radius: 12px;
+  }
+
+  .mobile-tab-bar__more-item--sub {
     color: var(--text-muted);
   }
 
@@ -159,8 +169,16 @@
     display: grid;
     place-items: center;
     width: 22px;
-    font-size: 15px;
-    line-height: 1;
+    height: 22px;
+    color: inherit;
+  }
+
+  .mobile-tab-bar__more-ico svg {
+    display: block;
+  }
+
+  .mobile-tab-bar__more-label {
+    min-width: 0;
   }
 
   /* ---- Flanking tabs ---------------------------------------------- */

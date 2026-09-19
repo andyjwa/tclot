@@ -4241,10 +4241,14 @@ function App() {
               className="tile tile--compact tile--team-selection"
               aria-label="FPL Live"
             >
+              {!(
+                mobileLayout &&
+                (fplLiveTab === 'recap' || isBookieHubTab(fplLiveTab))
+              ) ? (
               <div className="section-chrome section-chrome--sticky">
-              {/* FPL Live sub-nav. Recap/Preview is its own tab (label
-                  follows the gameweek). Season Predictions sits under
-                  Bookie as a betting-hub sub-tab. */}
+              {/* Mobile: Recap/Preview + Bookie live only in the More sheet,
+                  so that chrome is hidden on those destinations. Desktop
+                  keeps the tabs — there is no More dock. */}
               <div
                 className="subnav"
                 role="tablist"
@@ -4276,36 +4280,40 @@ function App() {
                 >
                   Lineups
                 </button>
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-fpl-live-recap"
-                  aria-selected={fplLiveTab === 'recap'}
-                  className={
-                    'subnav__tab' +
-                    (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => setFplLiveTab('recap')}
-                >
-                  {recapMenuLabel}
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-fpl-live-bookie"
-                  aria-selected={isBookieHubTab(fplLiveTab)}
-                  className={
-                    'subnav__tab' +
-                    (isBookieHubTab(fplLiveTab) ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => {
-                    if (!isBookieHubTab(fplLiveTab)) setFplLiveTab('bookie')
-                  }}
-                >
-                  Bookie
-                </button>
+                {!mobileLayout ? (
+                  <>
+                    <button
+                      type="button"
+                      role="tab"
+                      id="tab-fpl-live-recap"
+                      aria-selected={fplLiveTab === 'recap'}
+                      className={
+                        'subnav__tab' +
+                        (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
+                      }
+                      onClick={() => setFplLiveTab('recap')}
+                    >
+                      {recapMenuLabel}
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      id="tab-fpl-live-bookie"
+                      aria-selected={isBookieHubTab(fplLiveTab)}
+                      className={
+                        'subnav__tab' +
+                        (isBookieHubTab(fplLiveTab) ? ' subnav__tab--active' : '')
+                      }
+                      onClick={() => {
+                        if (!isBookieHubTab(fplLiveTab)) setFplLiveTab('bookie')
+                      }}
+                    >
+                      Bookie
+                    </button>
+                  </>
+                ) : null}
               </div>
-              {isBookieHubTab(fplLiveTab) ? (
+              {!mobileLayout && isBookieHubTab(fplLiveTab) ? (
                 <div
                   className="subnav subnav--predictions"
                   role="tablist"
@@ -4340,6 +4348,7 @@ function App() {
                 </div>
               ) : null}
               </div>
+              ) : null}
               <div className="section-body">
               {fplLiveTab === 'squads' ? (
                 <PremWindow
