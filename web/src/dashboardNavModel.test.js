@@ -33,12 +33,16 @@ test('More Recap item is Recap or Preview from the gameweek', () => {
 
 test('More popup lists Recap, Bookies, Predictions under Bookies, Heritage', () => {
   assert.deepEqual(
-    MORE_MENU_ITEMS.map((i) => ({ id: i.id, parent: i.parent ?? null })),
+    MORE_MENU_ITEMS.map((i) => ({
+      id: i.id,
+      parent: i.parent ?? null,
+      icon: i.icon,
+    })),
     [
-      { id: 'recap', parent: null },
-      { id: 'bookies', parent: null },
-      { id: 'predictions', parent: 'bookies' },
-      { id: 'hall', parent: null },
+      { id: 'recap', parent: null, icon: 'newspaper' },
+      { id: 'bookies', parent: null, icon: 'dices' },
+      { id: 'predictions', parent: 'bookies', icon: 'sparkle' },
+      { id: 'hall', parent: null, icon: 'column' },
     ],
   )
 })
