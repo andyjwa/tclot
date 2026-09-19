@@ -512,7 +512,7 @@ export function buildTrackedElementIdSetWithFixtures(
 
 /**
  * @param {object[]} squads
- * @returns {Map<number, { leagueEntryId: number, teamName: string }>}
+ * @returns {Map<number, { leagueEntryId: number, teamName: string, onFantasyBench: boolean }>}
  */
 export function buildOwnerByElementId(squads) {
   const m = new Map();
@@ -520,11 +520,22 @@ export function buildOwnerByElementId(squads) {
     if (q?.error) continue;
     const lid = Number(q.leagueEntryId);
     const name = String(q.teamName ?? '').trim() || `Team ${lid}`;
-    for (const r of [...(q.starters || []), ...(q.bench || [])]) {
+    /** Starters first so a same-squad XI+bench duplicate stays a starter. */
+    for (const r of q.starters || []) {
       const e = r?.element;
       if (e == null || !Number.isFinite(Number(e))) continue;
       const id = Number(e);
-      if (!m.has(id)) m.set(id, { leagueEntryId: lid, teamName: name });
+      if (!m.has(id)) {
+        m.set(id, { leagueEntryId: lid, teamName: name, onFantasyBench: false });
+      }
+    }
+    for (const r of q.bench || []) {
+      const e = r?.element;
+      if (e == null || !Number.isFinite(Number(e))) continue;
+      const id = Number(e);
+      if (!m.has(id)) {
+        m.set(id, { leagueEntryId: lid, teamName: name, onFantasyBench: true });
+      }
     }
   }
   return m;

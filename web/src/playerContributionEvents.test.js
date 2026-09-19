@@ -149,6 +149,35 @@ test('buildOwnerByElementId — first squad wins on duplicate', () => {
   ];
   const m = buildOwnerByElementId(squads);
   assert.equal(m.get(5).teamName, 'First');
+  assert.equal(m.get(5).onFantasyBench, false);
+});
+
+test('buildOwnerByElementId — marks fantasy-bench players', () => {
+  const squads = [
+    {
+      leagueEntryId: 1,
+      teamName: 'Atlético',
+      starters: [{ element: 10 }],
+      bench: [{ element: 20 }],
+    },
+  ];
+  const m = buildOwnerByElementId(squads);
+  assert.equal(m.get(10).onFantasyBench, false);
+  assert.equal(m.get(20).onFantasyBench, true);
+  assert.equal(m.get(20).teamName, 'Atlético');
+});
+
+test('buildOwnerByElementId — starter wins over same-squad bench duplicate', () => {
+  const squads = [
+    {
+      leagueEntryId: 1,
+      teamName: 'Suffolk',
+      starters: [{ element: 7 }],
+      bench: [{ element: 7 }],
+    },
+  ];
+  const m = buildOwnerByElementId(squads);
+  assert.equal(m.get(7).onFantasyBench, false);
 });
 
 test('buildLatestDropByElementOut — highest GW wins', () => {
