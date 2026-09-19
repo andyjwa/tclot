@@ -3,7 +3,7 @@
  *
  * Four tabs in a frosted pill, plus a separate circular Search button:
  *
- *   Table (standings) · Moves (teamSelection) · [CENTER] · Players   |  Search
+ *   Table (standings) · Moves (teamSelection) · [CENTER] · More   |  Search
  *
  * The CENTER slot is contextual on the season phase, derived from the
  * shared brand-header status (`deriveBrandHeaderStatus`, passed in as
@@ -19,21 +19,30 @@
  *     mono "FT GW{n}" chip, where {n} is `liveStatus.lastFinishedGw` — the
  *     same field the brand header's "GW {n} complete" strip uses. Falls
  *     back to a bare "FT" when the GW number is unavailable. No pulse;
- *     label "Recap". Routes to FPL Live on the weekly Recap tab.
+ *     label "Recap". Routes to FPL Live on the weekly Recap pane inside
+ *     Predictions.
  *
- * Heritage ('hall') and Settings ('settings') live behind More, which sits
- * in the brand-header top-right on mobile (replacing the old header search
- * glyph). Search opens the existing GlobalSearch palette via
- * `requestOpenGlobalSearch`. The Bookie is an FPL Live sub-tab next to
- * Predictions, not a nav destination.
+ * Players lives under Moves (left of Waivers). More opens a popup above
+ * the dock with Recap or Preview (by gameweek), Bookies, Predictions as a
+ * Bookies sub-item, and Heritage. Settings stays in the league-info modal.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
  * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses
  * the top `<DashboardNav variant="top" />`.
  */
 
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { NavIcon } from './NavIcon'
 import { requestOpenGlobalSearch } from './GlobalSearch.jsx'
+import { useDismissOnOutsidePointer } from './useDismissOnOutsidePointer.js'
+import {
+  MORE_MENU_ITEMS,
+  isMoreMenuDestination,
+  isMoreMenuItemActive,
+  isMovesDashboardView,
+  moreMenuDestination,
+  moreMenuItemLabel,
+} from './dashboardNavModel.js'
 import './MobileBottomNav.css'
 
 /**
@@ -51,9 +60,8 @@ function gwStateFromStatus(status) {
 }
 
 const TABS = [
-  { id: /** @type {const} */ ('standings'),     label: 'Table',   icon: /** @type {const} */ ('bar-chart-3') },
-  { id: /** @type {const} */ ('teamSelection'), label: 'Moves',   icon: /** @type {const} */ ('users') },
-  { id: /** @type {const} */ ('players'),       label: 'Players', icon: /** @type {const} */ ('shuffle') },
+  { id: /** @type {const} */ ('standings'),     label: 'Table', icon: /** @type {const} */ ('bar-chart-3') },
+  { id: /** @type {const} */ ('teamSelection'), label: 'Moves', icon: /** @type {const} */ ('users') },
 ]
 
 /** Per-phase copy + routing for the contextual centre slot. `tab` is the
@@ -68,6 +76,7 @@ const CENTER_BY_STATE = {
 /**
  * @param {{
  *   dashboardView: string,
+ *   fplLiveTab?: string | null,
  *   onSelect: (id: string) => void,
  *   onCenterSelect?: (view: string, tab: string) => void,
  *   liveStatus?: { status?: 'live' | 'idle' | 'pre-season' | 'unknown' } | null,
@@ -76,6 +85,7 @@ const CENTER_BY_STATE = {
  */
 export function MobileBottomNav({
   dashboardView,
+  fplLiveTab = null,
   onSelect,
   onCenterSelect,
   liveStatus,
@@ -83,7 +93,13 @@ export function MobileBottomNav({
 }) {
   const gwState = gwStateFromStatus(liveStatus?.status)
   const center = CENTER_BY_STATE[gwState]
-  const centerActive = dashboardView === center.view
+  const centerActive =
+    dashboardView === center.view &&
+    (fplLiveTab == null ||
+      fplLiveTab === center.tab ||
+      (center.tab === 'live' && fplLiveTab === 'squads'))
+  const moreActive =
+    isMoreMenuDestination(dashboardView, fplLiveTab, center.tab)
 
   /** Completed-GW number for the FT chip. Sourced from the same
    * `deriveBrandHeaderStatus` result that renders "GW {n} complete" in the
@@ -140,11 +156,15 @@ export function MobileBottomNav({
     <nav className="mobile-tab-bar" aria-label="App navigation" data-gwstate={gwState}>
       <div className="mobile-tab-bar__dock">
         <div className="mobile-tab-bar__pill">
-          {TABS.slice(0, 2).map((tab) => (
+          {TABS.map((tab) => (
             <TabButton
               key={tab.id}
               tab={tab}
-              active={dashboardView === tab.id}
+              active={
+                tab.id === 'teamSelection'
+                  ? isMovesDashboardView(dashboardView)
+                  : dashboardView === tab.id
+              }
               onSelect={onSelect}
             />
           ))}
@@ -193,15 +213,104 @@ export function MobileBottomNav({
             <span className="mobile-tab-bar__label">{center.label}</span>
           </div>
 
-          <TabButton
-            tab={TABS[2]}
-            active={dashboardView === TABS[2].id}
-            onSelect={onSelect}
+          <MoreTab
+            active={moreActive}
+            dashboardView={dashboardView}
+            fplLiveTab={fplLiveTab}
+            liveStatus={liveStatus}
+            onNavigate={(view, tab) => {
+              if (tab && onCenterSelect) onCenterSelect(view, tab)
+              else onSelect(view)
+            }}
           />
         </div>
         <SearchButton />
       </div>
     </nav>
+  )
+}
+
+/**
+ * @param {{
+ *   active: boolean,
+ *   dashboardView: string,
+ *   fplLiveTab?: string | null,
+ *   liveStatus?: { status?: string } | null,
+ *   onNavigate: (view: string, tab: string | null) => void,
+ * }} props
+ */
+function MoreTab({ active, dashboardView, fplLiveTab, liveStatus, onNavigate }) {
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef(null)
+  const close = useCallback(() => setOpen(false), [])
+  useDismissOnOutsidePointer(wrapRef, open, close)
+  useEffect(() => {
+    if (!open) return undefined
+    const onKey = (ev) => {
+      if (ev.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  return (
+    <div className="mobile-tab-bar__more" ref={wrapRef}>
+      <button
+        type="button"
+        className={
+          'mobile-tab-bar__btn' + (active || open ? ' is-active' : '')
+        }
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="More"
+      >
+        <span className="mobile-tab-bar__ico" aria-hidden>
+          <NavIcon name="more" size={22} />
+        </span>
+        <span className="mobile-tab-bar__label">More</span>
+      </button>
+      {open ? (
+        <div className="mobile-tab-bar__more-menu" role="menu" aria-label="More">
+          {MORE_MENU_ITEMS.map((item) => {
+            const dest = moreMenuDestination(item)
+            const itemActive = isMoreMenuItemActive(
+              dashboardView,
+              fplLiveTab,
+              item.id,
+            )
+            const nested = Boolean(item.parent)
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="menuitem"
+                className={
+                  'mobile-tab-bar__more-item' +
+                  (nested ? ' mobile-tab-bar__more-item--nested' : '') +
+                  (itemActive ? ' is-active' : '')
+                }
+                onClick={() => {
+                  setOpen(false)
+                  onNavigate(dest.view, dest.tab)
+                }}
+              >
+                <span className="mobile-tab-bar__more-ico" aria-hidden>
+                  {item.id === 'recap'
+                    ? '🗞️'
+                    : item.id === 'bookies'
+                      ? '🎲'
+                      : item.id === 'predictions'
+                        ? '🔮'
+                        : '🏛️'}
+                </span>
+                <span>{moreMenuItemLabel(item, liveStatus?.status)}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -224,7 +333,7 @@ function SearchButton() {
 
 /**
  * @param {{
- *   tab: { id: string, label: string, icon: 'bar-chart-3' | 'users' | 'shuffle' },
+ *   tab: { id: string, label: string, icon: 'bar-chart-3' | 'users' },
  *   active: boolean,
  *   onSelect: (id: string) => void,
  * }} props
