@@ -19243,6 +19243,9 @@ button.live-xp__player-name:focus-visible {
 .prem-lu__empty {
   padding: 8px 14px;
 }
+.prem-lu__body .prem-lineup-paired {
+  margin: 8px 14px 12px;
+}
 .prem-lu__split {
   display: grid;
   grid-template-columns: 1fr 1fr 28px;
