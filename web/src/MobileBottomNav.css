@@ -111,7 +111,7 @@
     z-index: 5;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
     padding: 6px;
     border-radius: 16px;
     background: var(--surface);
@@ -150,19 +150,8 @@
     background: color-mix(in srgb, var(--tclot-logo-purple) 12%, var(--surface));
   }
 
-  .mobile-tab-bar__more-item--divider {
-    margin-top: 4px;
+  .mobile-tab-bar__more-item + .mobile-tab-bar__more-item {
     box-shadow: inset 0 1px 0 var(--border);
-    border-radius: 0 0 12px 12px;
-  }
-
-  .mobile-tab-bar__more-item--divider.is-active,
-  .mobile-tab-bar__more-item--divider:hover {
-    border-radius: 12px;
-  }
-
-  .mobile-tab-bar__more-item--sub {
-    color: var(--text-muted);
   }
 
   .mobile-tab-bar__more-ico {

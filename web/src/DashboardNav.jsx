@@ -177,9 +177,9 @@ export function DashboardMorePanel({
   kitIndexByEntry = {},
 }) {
   // Fallback More page (session restore / desktop). Mobile More is a
-  // popup on the bottom dock: Recap/Preview, Bookies, Heritage. This panel
-  // still lists Heritage + Settings for the rare `dashboardView === 'more'`
-  // landing. Bookies is the FPL Live betting hub.
+  // popup on the bottom dock: Recap/Preview, Bookies, Predictions,
+  // Heritage, Settings. This panel still lists Heritage + Settings for
+  // the rare `dashboardView === 'more'` landing.
   const rows = [
     { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },
     { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },

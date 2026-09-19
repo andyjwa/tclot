@@ -23,8 +23,8 @@
  *     Predictions.
  *
  * Players lives under Moves (left of Waivers). More opens a popup above
- * the dock with Recap or Preview (by gameweek), Bookies, Predictions as a
- * Bookies sub-item, and Heritage. Settings stays in the league-info modal.
+ * the dock with Recap or Preview (by gameweek), Bookies, Predictions,
+ * Heritage, and Settings.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
  * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses
@@ -322,8 +322,6 @@ function MoreMenu({ menuRef, dashboardView, fplLiveTab, liveStatus, onNavigate }
             role="menuitem"
             className={
               'mobile-tab-bar__more-item' +
-              (item.dividerBefore ? ' mobile-tab-bar__more-item--divider' : '') +
-              (item.parent ? ' mobile-tab-bar__more-item--sub' : '') +
               (itemActive ? ' is-active' : '')
             }
             onClick={() => onNavigate(dest.view, dest.tab)}

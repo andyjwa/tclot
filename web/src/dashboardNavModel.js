@@ -2,9 +2,9 @@
  * Shared dashboard IA helpers for the main nav + Moves / More grouping.
  *
  * Players lives under Moves (left of Waivers). The mobile More slot opens a
- * popup above the dock: Recap or Preview (by gameweek), Bookies (with
- * Predictions nested under it), and Heritage. Bookie remains the betting hub;
- * season Predictions sits next to it as a Bookies sub-item.
+ * popup above the dock: Recap or Preview (by gameweek), Bookies,
+ * Predictions, Heritage, and Settings. Bookie remains the betting hub;
+ * season Predictions is a sibling row, not a nested Bookies child.
  */
 
 import { recapMenuLabelForStatus } from './weeklyRecapView.js'
@@ -15,16 +15,10 @@ import { recapMenuLabelForStatus } from './weeklyRecapView.js'
 
 export const MORE_MENU_ITEMS = /** @type {const} */ ([
   { id: 'recap', label: 'Recap', view: 'fplLive', tab: 'recap', icon: 'newspaper' },
-  { id: 'bookies', label: 'Bookies', view: 'fplLive', tab: 'bookie', icon: 'dices', dividerBefore: true },
-  {
-    id: 'predictions',
-    label: 'Predictions',
-    view: 'fplLive',
-    tab: 'predictions',
-    parent: 'bookies',
-    icon: 'sparkle',
-  },
-  { id: 'hall', label: 'Heritage', view: 'hall', tab: null, icon: 'column', dividerBefore: true },
+  { id: 'bookies', label: 'Bookies', view: 'fplLive', tab: 'bookie', icon: 'dices' },
+  { id: 'predictions', label: 'Predictions', view: 'fplLive', tab: 'predictions', icon: 'sparkle' },
+  { id: 'hall', label: 'Heritage', view: 'hall', tab: null, icon: 'column' },
+  { id: 'settings', label: 'Settings', view: 'settings', tab: null, icon: 'settings' },
 ])
 
 /** @param {string | null | undefined} view */
@@ -51,8 +45,8 @@ export function moreMenuItemLabel(item, status) {
 
 /**
  * More is selected for Heritage / Settings / the More page, Bookies, and
- * Predictions (the Bookies sub-item). Recap/Preview is the contextual
- * centre's job when that is the centre destination.
+ * Predictions. Recap/Preview is the contextual centre's job when that is
+ * the centre destination.
  *
  * @param {string | null | undefined} view
  * @param {string | null | undefined} tab
@@ -72,6 +66,7 @@ export function isMoreMenuDestination(view, tab, centerTab) {
  */
 export function isMoreMenuItemActive(view, tab, itemId) {
   if (itemId === 'hall') return view === 'hall'
+  if (itemId === 'settings') return view === 'settings'
   if (itemId === 'bookies') return view === 'fplLive' && tab === 'bookie'
   if (itemId === 'predictions') return view === 'fplLive' && tab === 'predictions'
   if (itemId === 'recap') return view === 'fplLive' && tab === 'recap'
