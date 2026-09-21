@@ -60,14 +60,14 @@ test('GW2 deadline passed while current still on finished GW1 → Scores', () =>
   )
 })
 
-test('GW complete, before next waiver deadline → Recap', () => {
+test('GW complete, before next waiver deadline → Table', () => {
   // current still points at the finished GW, next is upcoming
   assert.equal(
     seasonPhaseLanding(
       { currentEvent: gw1Finished, nextEvent: gw2, lastFinishedEvent: gw1Finished },
       new Date('2026-08-25T12:00:00Z'),
     ),
-    'recap',
+    'table',
   )
 })
 
@@ -101,13 +101,13 @@ test('pre-season / no calendar → null (keep Moves landing)', () => {
   assert.equal(seasonPhaseLanding({}, new Date('2026-08-20T12:00:00Z')), null)
 })
 
-test('season complete (nothing upcoming) → Recap', () => {
+test('season complete (nothing upcoming) → Table', () => {
   assert.equal(
     seasonPhaseLanding(
       { currentEvent: { id: 38, finished: true }, lastFinishedEvent: { id: 38, finished: true } },
       new Date('2027-06-01T12:00:00Z'),
     ),
-    'recap',
+    'table',
   )
 })
 

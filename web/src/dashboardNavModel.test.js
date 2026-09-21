@@ -50,13 +50,13 @@ test('More popup lists Recap, Bookies, Predictions, Heritage, Settings as peers'
   }
 })
 
-test('More owns Heritage, Bookies, and Predictions; Recap only when not the centre', () => {
-  assert.equal(isMoreMenuDestination('hall', null, 'recap'), true)
+test('More owns Heritage, Bookies, Predictions, and Recap; Scores is the centre', () => {
+  assert.equal(isMoreMenuDestination('hall', null, 'live'), true)
   assert.equal(isMoreMenuDestination('settings', null, 'live'), true)
   assert.equal(isMoreMenuDestination('fplLive', 'bookie', 'live'), true)
   assert.equal(isMoreMenuDestination('fplLive', 'predictions', 'live'), true)
-  assert.equal(isMoreMenuDestination('fplLive', 'recap', 'recap'), false)
   assert.equal(isMoreMenuDestination('fplLive', 'recap', 'live'), true)
+  assert.equal(isMoreMenuDestination('fplLive', 'recap', 'predictions'), true)
   assert.equal(isMoreMenuDestination('fplLive', 'live', 'live'), false)
   assert.equal(isMoreMenuDestination('standings', null, 'live'), false)
 })

@@ -19,8 +19,7 @@
  *     mono "FT GW{n}" chip, where {n} is `liveStatus.lastFinishedGw` — the
  *     same field the brand header's "GW {n} complete" strip uses. Falls
  *     back to a bare "FT" when the GW number is unavailable. No pulse;
- *     label "Recap". Routes to FPL Live on the weekly Recap pane inside
- *     Predictions.
+ *     label "Scores". Routes to FPL Live on Scores. Recap lives in More.
  *
  * Players lives under Moves (left of Waivers). More opens a popup above
  * the dock with Recap or Preview (by gameweek), Bookies, Predictions,
@@ -65,12 +64,13 @@ const TABS = [
 ]
 
 /** Per-phase copy + routing for the contextual centre slot. `tab` is the
- * FPL Live sub-tab the button lands on: Scores mid-GW, the weekly Recap
- * between GWs, and Season Predictions before the campaign starts. */
+ * FPL Live sub-tab the button lands on: Scores while a GW is live or
+ * finished, Season Predictions before the campaign starts. Recap is a
+ * More destination, not the centre. */
 const CENTER_BY_STATE = {
   pre:  { label: 'Preview', view: /** @type {const} */ ('fplLive'), tab: 'predictions', aria: 'Season predictions' },
   live: { label: 'Live',    view: /** @type {const} */ ('fplLive'), tab: 'live',        aria: 'FPL Live scores' },
-  over: { label: 'Recap',   view: /** @type {const} */ ('fplLive'), tab: 'recap',     aria: 'Weekly recap' },
+  over: { label: 'Scores',  view: /** @type {const} */ ('fplLive'), tab: 'live',        aria: 'FPL Live scores' },
 }
 
 /**

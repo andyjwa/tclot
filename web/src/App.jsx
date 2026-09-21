@@ -2452,8 +2452,8 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
 /** Resolve initial dashboard view: players hash > archive > Moves/Draft.
  * Once the FPL calendar loads, the one-shot landing prime (see the
  * `movesTabPrimed` effect) refines this by season phase: Scores while a
- * GW is live, Recap after a GW completes, Waivers after the waiver
- * deadline. Stored Settings prefs do not override that landing. */
+ * GW is live, Table after a GW completes (before waivers), Waivers after
+ * the waiver deadline. Stored Settings prefs do not override that landing. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'teamSelection'
   const hasPlayersHash = Boolean(parsePlayersHash())
@@ -2710,7 +2710,8 @@ function App() {
   }, [draftGate.navLocked])
 
   /** Contextual centre button: routes to FPL Live AND lands on the sub-tab
-   * matching the season phase (Scores when live, Recap/Predictions otherwise). */
+   * matching the season phase (Scores when live or after FT, Predictions
+   * in pre-season). Recap is a More destination. */
   const selectLiveHub = useCallback(
     (view, tab) => {
       if (tab) setFplLiveTab(tab)
@@ -2842,11 +2843,11 @@ function App() {
 
   /** One-shot landing prime once the FPL calendar loads. Moves sub-tab:
    * Draft until GW1 waivers_time, then Waivers. Dashboard view follows the
-   * gameweek cycle — Scores while a GW is live, Recap after a GW completes,
-   * Waivers after the waiver deadline (stays on Moves). Skipped when a deep
-   * link (players hash / archive), the pre-draft nav lock, or an earlier
-   * user navigation already picked a view. Only applied once so later
-   * clicks stick.
+   * gameweek cycle — Scores while a GW is live, Table after a GW completes
+   * (before the next waiver deadline), Waivers after that deadline (stays
+   * on Moves). Skipped when a deep link (players hash / archive), the
+   * pre-draft nav lock, or an earlier user navigation already picked a
+   * view. Only applied once so later clicks stick.
    *
    * Waits for league data too: `draftGate.navLocked` is true while
    * `details.json` is still in flight (league == null reads as draft "not
@@ -2870,11 +2871,12 @@ function App() {
       },
       statusNow,
     )
-    /* 'scores' / 'recap' land on FPL Live; the sub-tab is left unset so the
-     * phase-derived default (`fplLiveTab` below) picks Scores when live and
-     * Recap when idle. 'waivers' and null stay on Moves. */
-    if (landing === 'scores' || landing === 'recap') {
+    /* 'scores' lands on FPL Live Scores. 'table' lands on Standings.
+     * 'waivers' and null stay on Moves. */
+    if (landing === 'scores') {
       setDashboardView('fplLive')
+    } else if (landing === 'table') {
+      setDashboardView('standings')
     }
   }, [
     draftBootstrapEvents.events,
@@ -2941,16 +2943,12 @@ function App() {
   )
 
   /* Effective FPL Live sub-tab. Until the user picks one, the default follows
-   * the season phase: live GW → Scores; between GWs → Recap; pre-season (and
-   * unknown) → Predictions before GW1 else Scores. Any explicit choice —
-   * sub-tab tap or the contextual centre button — wins from then on. */
+   * the season phase: live or post-FT → Scores; pre-season → Predictions
+   * before GW1 else Scores. Recap is reached from More. Any explicit choice
+   * — sub-tab tap or the contextual centre button — wins from then on. */
   const fplLiveTab =
     fplLiveTabRaw ??
-    (brandHeaderStatus?.status === 'idle'
-      ? 'recap'
-      : brandHeaderStatus?.status === 'pre-season'
-        ? 'predictions'
-        : 'live')
+    (brandHeaderStatus?.status === 'pre-season' ? 'predictions' : 'live')
 
   useEffect(() => {
     if (fplLiveTab === 'recap') return
