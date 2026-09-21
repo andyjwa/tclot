@@ -6,6 +6,7 @@ import {
   lastWordTeamName,
   standingsMobileTeamName,
   threeLetterTeamName,
+  villainVictoryLine,
 } from './teamNameUtils.js';
 
 test('firstWord — multi-word names collapse to leading token', () => {
@@ -131,4 +132,13 @@ test('standingsMobileTeamName — full names, MSFG renders as Mordor SFG', () =>
   assert.equal(standingsMobileTeamName('MSFG'), 'Mordor SFG');
   assert.equal(standingsMobileTeamName(null), '');
   assert.equal(standingsMobileTeamName('  '), '');
+});
+
+test('villainVictoryLine — curated short name, never a mid-word clip', () => {
+  assert.equal(villainVictoryLine('Rokesly Regorasu'), 'Regorasu is a villain!');
+  assert.equal(villainVictoryLine('Hackney Rohirrim'), 'Rohirrim is a villain!');
+  assert.equal(villainVictoryLine('Toronto Gimli'), 'To. Gimli is a villain!');
+  assert.equal(villainVictoryLine('Mordor SFG'), 'MSFG is a villain!');
+  assert.equal(villainVictoryLine(null), 'Villain victory');
+  assert.equal(villainVictoryLine('  '), 'Villain victory');
 });

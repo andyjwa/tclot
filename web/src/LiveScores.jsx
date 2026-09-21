@@ -1128,6 +1128,7 @@ export function LiveScores({
       liveStandingsRows,
       gwStandingsFrozen,
       onOpenPlayer: openPlayerFromFixture,
+      villainEntryIds: villainVictoryEntryIds,
     }),
     [
       matches,
@@ -1139,6 +1140,7 @@ export function LiveScores({
       liveStandingsRows,
       gwStandingsFrozen,
       openPlayerFromFixture,
+      villainVictoryEntryIds,
     ],
   );
 
@@ -1606,6 +1608,7 @@ export function LiveScores({
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
             mobile={mobileNarrowViewport}
+            villainEntryIds={villainVictoryEntryIds}
           />
         )}
       </section>

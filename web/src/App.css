@@ -115,9 +115,9 @@
   --live-hero-color: #d97706;
   --live-hero-strong: #b45309;
   --live-hero-tint: color-mix(in srgb, #d97706 14%, transparent);
-  --live-villain-color: #7c3aed;
-  --live-villain-strong: #5b21b6;
-  --live-villain-tint: color-mix(in srgb, #7c3aed 12%, transparent);
+  --live-villain-color: #8f7fc0;
+  --live-villain-strong: #6f5fa8;
+  --live-villain-tint: color-mix(in srgb, #8f7fc0 13%, transparent);
 
   /* Surface stack — DARK defaults */
   --bg: #0a0a0d;
@@ -10282,6 +10282,35 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   flex-wrap: wrap;
 }
 
+/* Nested so mobile `.team-name--sidebar` line-clamp still wraps the name;
+ * `inline` + box-decoration-break keeps the pill on each line. */
+.live-standings-name--villain {
+  display: inline;
+  padding: 1px 8px 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--live-villain-color) 22%, var(--fm-card));
+  color: var(--live-villain-strong);
+  font-weight: 700;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.live-standings-villain-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--live-villain-color) 20%, transparent);
+  color: var(--live-villain-strong);
+  line-height: 1.2;
+}
+
 .live-standings-move {
   display: inline-block;
   font-size: 0.95em;
@@ -14378,6 +14407,27 @@ button.live-xp__player-name:focus-visible {
   display: inline;
 }
 
+.standings-schedule__fixture-name--villain {
+  padding: 2px 8px 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--live-villain-color) 22%, var(--fm-card));
+  color: var(--live-villain-strong);
+  font-weight: 700;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.standings-schedule__villain-banner {
+  margin: 0;
+  padding: 6px 12px 0;
+  text-align: center;
+  font-family: var(--tclot-font-ui, inherit);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--live-villain-strong);
+}
+
 .standings-schedule__fixture-name--winner {
   color: var(--fm-text-strong);
 }
@@ -14619,6 +14669,24 @@ button.live-xp__player-name:focus-visible {
 .standings-schedule-team__chip--upcoming {
   background: transparent;
   border: 1px dashed var(--fm-border);
+}
+
+.standings-schedule-team__result {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.standings-schedule-team__chip--villain {
+  width: auto;
+  padding: 0 7px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--live-villain-color) 20%, transparent);
+  color: var(--live-villain-strong);
 }
 
 /* Each Complete GW card spans the full width on every breakpoint — when

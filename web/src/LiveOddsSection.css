@@ -92,6 +92,27 @@
   text-overflow: ellipsis;
   min-width: 0;
 }
+.lo-meta__text--end {
+  text-align: right;
+}
+/* Option A: villain copy sits in the empty centre; seed + odds stay ghosts. */
+.lo-meta--villain {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 6px;
+}
+.lo-meta__villain {
+  font-family: var(--tclot-font-ui, inherit);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-transform: none;
+  color: var(--live-villain-strong, #6f5fa8);
+  white-space: nowrap;
+  text-align: center;
+  min-width: 0;
+}
 
 /* ---- C2 edge-aligned face-off header ---- */
 .lo-hdr {
@@ -122,6 +143,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.lo-hdr__name--villain {
+  flex: 0 1 auto;
+  padding: 2px 9px 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--live-villain-color, #8f7fc0) 22%, var(--fm-card));
+  color: var(--live-villain-strong, #6f5fa8);
+  font-weight: 700;
 }
 .lo-hdr__score {
   display: grid;

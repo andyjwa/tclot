@@ -3,6 +3,7 @@ import { TeamAvatar } from './TeamAvatar';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { liveFixtureLead } from './liveScoresDerivations.js';
 import { englishOrdinal } from './playerContributionEvents.js';
+import { villainVictoryLine } from './teamNameUtils.js';
 import './LiveOddsSection.css';
 
 /**
@@ -24,12 +25,19 @@ import './LiveOddsSection.css';
  * faded ghost text on the left, and — in the SAME ghost treatment on the
  * right — either the caller's `rightText` (the Live Scores scorecard passes
  * the favourite's odds, e.g. `Mordor SFG 92%`) or the default to-play counts
- * ("10 v 11 to play", flipping to "FT" once both sides are done). Either
- * side renders independently — a missing rank (off-season standings) or
- * missing squad payload never blanks the whole strip. Renders nothing when
- * neither label is available.
+ * ("10 v 11 to play", flipping to "FT" once both sides are done). A villain
+ * victory parks sentence-case copy (`Regorasu is a villain!`) in the empty
+ * centre, in Scorebook lilac. Either side renders independently — a missing
+ * rank (off-season standings) or missing squad payload never blanks the
+ * whole strip. Renders nothing when neither label nor a villain line is
+ * available.
  */
-export function MatchupMeta({ fixture: f, liveRankByEntry, rightText }) {
+export function MatchupMeta({
+  fixture: f,
+  liveRankByEntry,
+  rightText,
+  villainLine = null,
+}) {
   const homeRank = Number(liveRankByEntry?.[f.homeId]);
   const awayRank = Number(liveRankByEntry?.[f.awayId]);
   const seedLabel =
@@ -47,11 +55,18 @@ export function MatchupMeta({ fixture: f, liveRankByEntry, rightText }) {
       : `${f.homeRemaining} v ${f.awayRemaining} to play`
     : null;
   const right = rightText ?? toPlayLabel;
-  if (!seedLabel && !right) return null;
+  if (!seedLabel && !right && !villainLine) return null;
   return (
-    <div className="lo-meta">
+    <div className={'lo-meta' + (villainLine ? ' lo-meta--villain' : '')}>
       <span className="lo-meta__text">{seedLabel}</span>
-      {right ? <span className="lo-meta__text">{right}</span> : null}
+      {villainLine ? (
+        <span className="lo-meta__villain">{villainLine}</span>
+      ) : null}
+      {right ? (
+        <span className="lo-meta__text lo-meta__text--end">{right}</span>
+      ) : villainLine ? (
+        <span className="lo-meta__text lo-meta__text--end" />
+      ) : null}
     </div>
   );
 }
@@ -188,7 +203,9 @@ export function MatchupHeader({
           kitIndexByEntry={kitIndexByEntry}
         />
         <FittedTeamName
-          className="lo-hdr__name"
+          className={
+            'lo-hdr__name' + (homeStatus === 'villain' ? ' lo-hdr__name--villain' : '')
+          }
           fullName={f.homeName}
           displayName={homeDisplayName}
           title={f.homeName}
@@ -221,7 +238,9 @@ export function MatchupHeader({
       </div>
       <div className="lo-hdr__side lo-hdr__side--away">
         <FittedTeamName
-          className="lo-hdr__name"
+          className={
+            'lo-hdr__name' + (awayStatus === 'villain' ? ' lo-hdr__name--villain' : '')
+          }
           fullName={f.awayName}
           displayName={awayDisplayName}
           title={f.awayName}
@@ -275,6 +294,13 @@ export function MatchupScorecard({
   className,
 }) {
   const Head = onClick ? 'button' : 'div';
+  const villainFullName =
+    homeStatus === 'villain'
+      ? fixture.homeName
+      : awayStatus === 'villain'
+        ? fixture.awayName
+        : null;
+  const villainLine = villainFullName ? villainVictoryLine(villainFullName) : null;
   return (
     <div
       className={
@@ -291,6 +317,7 @@ export function MatchupScorecard({
           fixture={fixture}
           liveRankByEntry={liveRankByEntry}
           rightText={metaRight}
+          villainLine={villainLine}
         />
         <MatchupHeader
           fixture={fixture}

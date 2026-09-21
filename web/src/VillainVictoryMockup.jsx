@@ -381,9 +381,11 @@ export function VillainVictoryMockup() {
       </div>
 
       <p className="vvm-note">
-        Local preview only — open via <code>?villain=1</code>. Nothing here
-        is wired into production. Sample: Regorasu (3rd in the league) beats
-        Rohirrim 42–38 while 7th in that GW’s raw FPL table.
+        Option A is production: Live Scores centre line + name pill, Live
+        Table pill + Villain chip, Schedule banner + name pill. This gallery
+        stays as the comparison — open via <code>?villain=1</code>. Sample:
+        Regorasu (3rd in the league) beats Rohirrim 42–38 while 7th in that
+        GW’s raw FPL table.
       </p>
     </div>
   )

@@ -6,6 +6,7 @@ import {
   fplGwScoreOrdinalFromPointsMap,
   heroDefeatEntryIds,
   villainVictoryEntryIds,
+  villainVictoryEntryIdsFromGwFixtures,
 } from './gwRawPointsRankSeason.js';
 
 test('fplGwScoreOrdinalFromPointsMap — tie breaks by entry id', () => {
@@ -36,6 +37,19 @@ test('villainVictoryEntryIds — win H2H at 7th in league raw GW', () => {
   const v = villainVictoryEntryIds(pts, gwMatches);
   assert.equal(v.size, 1);
   assert.ok(v.has(7));
+});
+
+test('villainVictoryEntryIdsFromGwFixtures — schedule-shaped rows, needs 8 scores', () => {
+  const fixtures = [
+    { homeId: 1, awayId: 2, homePts: 80, awayPts: 70 },
+    { homeId: 3, awayId: 4, homePts: 60, awayPts: 50 },
+    { homeId: 5, awayId: 6, homePts: 40, awayPts: 30 },
+    { homeId: 7, awayId: 8, homePts: 25, awayPts: 20 },
+  ];
+  const v = villainVictoryEntryIdsFromGwFixtures(fixtures);
+  assert.equal(v.size, 1);
+  assert.ok(v.has(7));
+  assert.equal(villainVictoryEntryIdsFromGwFixtures(fixtures.slice(0, 3)).size, 0);
 });
 
 test('heroDefeatEntryIds — lose H2H at 2nd in league raw GW', () => {

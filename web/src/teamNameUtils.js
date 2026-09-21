@@ -110,3 +110,17 @@ export function standingsMobileTeamName(name) {
   if (isMsfgTeamName(trimmed)) return MSFG_STANDINGS_LABEL
   return trimmed
 }
+
+/**
+ * Scorecard / schedule banner copy for a villain victory. Always pass the
+ * full club name — {@link firstWord} applies the curated short label
+ * (`Rokesly Regorasu` → `Regorasu is a villain!`).
+ *
+ * @param {string | null | undefined} fullName
+ * @returns {string}
+ */
+export function villainVictoryLine(fullName) {
+  const short = firstWord(fullName)
+  if (!short) return 'Villain victory'
+  return `${short} is a villain!`
+}
