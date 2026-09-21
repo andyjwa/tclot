@@ -1,8 +1,8 @@
 /* Mobile live fixture screen — FotMob-style full-screen push from the right.
    Horizontal swipes page between the card's tabs; an edge swipe-right on the
    first tab drags the screen out to dismiss. Themed via the shared .fotmob
-   tokens (light/dark aware); the header keeps a restrained brand-violet wash
-   (Style D · Brand accent). */
+   tokens (light/dark aware); the header is a solid brand fill so it meets
+   the status bar without a gradient wash (Style D · Brand accent). */
 
 .lfc-root {
   position: fixed;
@@ -16,24 +16,28 @@
 
      The root carries the `.fotmob` class for theme tokens, but `.fotmob`
      also paints a solid page background — which used to show up as a blank
-     grey "second page" in the gap when the sheet was dragged right. Keep
-     the root transparent so Scores peeks through (dimmed by the scrim). */
+     grey "second page" in the gap when the sheet was dragged right. The
+     root now uses the solid header colour instead, so the status bar stays
+     opaque and the dismiss gap matches the banner. */
   min-height: 100vh;
   min-height: 100dvh;
   z-index: 10000; /* below PlayerDetailOverlay (10050) */
-  --lfc-header: var(
-    --tclot-header-grad,
-    linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%)
-  );
+  /* Solid fill, not the diagonal wash — a gradient leaves `background-color`
+     transparent, so iOS 26 Liquid Glass frosts the status bar (the "green
+     blur") instead of painting the header colour all the way up. */
+  --lfc-header: var(--tclot-header-solid, #795bfb);
 }
 /* Beat `.fotmob` page backgrounds (`App.css` paints `background: var(--fm-bg)`
-   on every `.fotmob`). Without this, edge-swipe dismiss reveals a solid grey
-   slab in the gap instead of the Scores list. `!important` wins over any
-   later theme rule that reasserts the page fill. */
+   on every `.fotmob`). A transparent fixed overlay at the viewport top lets
+   iOS 26 Liquid Glass sample through and frost the status bar. Paint the
+   same solid header colour so the bar is opaque all the way up; the
+   edge-swipe gap then matches the header instead of flashing a grey slab.
+   `!important` wins over any later theme rule that reasserts the page fill. */
 .fotmob.lfc-root,
 .fotmob.lfc-root[data-theme='light'],
 .fotmob.lfc-root[data-theme='dark'] {
-  background: transparent !important;
+  background-color: var(--lfc-header) !important;
+  background-image: none !important;
 }
 
 .lfc-scrim {
@@ -100,8 +104,8 @@
   box-shadow: none;
 }
 
-/* ---- Top bar: back chevron over the violet header ----
-   Lives inside .lfc-card__top (which paints the violet wash), so no own
+/* ---- Top bar: back chevron over the solid header ----
+   Lives inside .lfc-card__top (which paints the brand fill), so no own
    background — just the safe-area top padding that the old grip carried. */
 .lfc-topbar {
   flex: none;
@@ -131,7 +135,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  background: var(--lfc-header);
+  background-color: var(--lfc-header);
+  background-image: none;
   color: #fff;
   padding: calc(env(safe-area-inset-top, 8px) + 2px) 8px 0 4px;
 }
@@ -230,10 +235,11 @@
   min-height: 0;
 }
 
-/* ---- Header (violet wash) ---- */
+/* ---- Header (solid brand band) ---- */
 .lfc-card__top {
   flex: none;
-  background: var(--lfc-header);
+  background-color: var(--lfc-header);
+  background-image: none;
   color: #fff;
   padding-bottom: 6px;
 }
@@ -1463,13 +1469,11 @@
   .lfxp-mini__state.is-live {
     color: var(--fm-loss-dot, #ef4444);
   }
-  /* Hero + tab strip share one gradient band so the `.lfc-tab` pills (styled
+  /* Hero + tab strip share one solid band so the `.lfc-tab` pills (styled
      white-on-dark for the phone card header) read the same here. */
   .lfxp-head {
-    background: var(
-      --tclot-header-grad,
-      linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%)
-    );
+    background-color: var(--tclot-header-solid, #795bfb);
+    background-image: none;
     color: #fff;
     padding-bottom: 8px;
   }
@@ -1553,7 +1557,7 @@
     color: #ffd76a;
     opacity: 1;
   }
-  /* Tab strip on the gradient band — reuses the phone card's `.lfc-tab`
+  /* Tab strip on the solid header band — reuses the phone card's `.lfc-tab`
      pills, centred for the wider page. */
   .lfxp-tabs {
     justify-content: center;

@@ -6,12 +6,14 @@
   --text-h: #ffffff;
   --bg: #121212;
   --border: #2f2f2f;
-  /* Matte violet header band shared by the live fixture card, the player
-     detail hero (pop-up + slide-across), and the team detail hero. Defined
-     on :root so overlays portalled to <body> (outside .fotmob) resolve it. */
+  /* Header band shared by the live fixture card, the player detail hero
+     (pop-up + slide-across), and the team detail hero. Defined on :root so
+     overlays portalled to <body> (outside .fotmob) resolve it. The live
+     fixture card uses the solid token — a gradient wash reads as a blur
+     at the status bar. */
   --tclot-header-grad: linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%);
-  /* Solid variant for the short player/team hero bands, where the gradient's
-     light end reads as a fade-to-white. */
+  /* Solid fill for short hero bands and the live fixture header, where the
+     gradient's light end reads as a fade. */
   --tclot-header-solid: #795bfb;
 }
 
