@@ -191,8 +191,8 @@ jobs:
           if grep -q '"isSample".*true' web/dist/league-data/details.json 2>/dev/null; then
             echo "::warning::Site is still DEMO sample data. Set FPL_LEAGUE_ID (secret or variable) or run publish-real-league and commit league-data."
           fi
-          PNGS=$(find web/dist/team-logos -maxdepth 1 -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
-          echo "Team logo PNGs in build: $PNGS (commit web/public/team-logos/*.png to ship logos)"
+          PNGS=$(find web/dist/team-logos-web -maxdepth 1 -iname '*.png' 2>/dev/null | wc -l | tr -d ' ')
+          echo "Team logo web PNGs in build: $PNGS (source uploads are pruned from dist; commit web/public/team-logos/*.png to generate these)"
           if [ -f web/dist/league-data/pickups-tenure.json ]; then
             N=$(node -e "const j=require('./web/dist/league-data/pickups-tenure.json');console.log((j.teamWaiverInTotals||[]).length)" 2>/dev/null || echo 0)
             echo "pickups-tenure.json team rows: $N"
@@ -242,14 +242,23 @@ jobs:
 
       # Live site is on Vercel (tclot.vercel.app); Pages alone does not refresh it.
       # Optional repo/environment secret VERCEL_DEPLOY_HOOK = Deploy Hook URL from
-      # Vercel → Project → Settings → Git → Deploy Hooks. When set, every successful
-      # scheduled/push Pages deploy also kicks a Vercel rebuild (which re-runs ingest).
+      # Vercel → Project → Settings → Git → Deploy Hooks.
+      # Hobby teams cap Deployment Storage at 10 GB (every deploy is stored). Do
+      # not POST the hook on git push (Vercel Git already deploys) or on hourly /
+      # burst crons (Pages still updates). Daily catch-alls + workflow_dispatch
+      # still rebuild tclot.vercel.app. See web/scripts/should-trigger-vercel-hook.mjs.
       - name: Trigger Vercel redeploy (optional)
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
         run: |
           if [ -z "${VERCEL_DEPLOY_HOOK:-}" ]; then
             echo "No VERCEL_DEPLOY_HOOK secret — skipping Vercel trigger (Pages deploy still live)."
+            exit 0
+          fi
+          if ! node web/scripts/should-trigger-vercel-hook.mjs; then
+            echo "Skipping Vercel hook for this event (Hobby 10GB deployment storage)."
             exit 0
           fi
           code=$(curl -sS -o /tmp/vercel-hook.out -w '%{http_code}' -X POST "$VERCEL_DEPLOY_HOOK") || true

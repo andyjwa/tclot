@@ -67,7 +67,7 @@ const out = {
     : null,
   hint: isDemo
     ? 'Set GitHub Actions secret FPL_LEAGUE_ID or commit real web/public/league-data/'
-    : logoPngs === 0
+    : webLogos === 0 && logoPngs === 0
       ? 'Commit PNGs under web/public/team-logos/{entryId}.png then push'
       : !liveProxyConfigured
         ? 'Live tab: set VITE_FPL_PROXY_URL at build time (see DEPLOY.md) — deploy-check liveProxyConfigured is false'

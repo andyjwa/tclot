@@ -8,6 +8,7 @@ import {
 import { TEAM_KITS, TEAM_KIT_COUNT } from './teamKitStyles'
 import { teamChipAbbr } from './liveScoresDerivations.js'
 import { useIsCeefax } from './useIsCeefax.js'
+import { teamLogoSrcList } from './teamLogoSrcList.js'
 
 /**
  * Teletext replacement for a team crest: the 3-letter abbreviation as text.
@@ -24,10 +25,6 @@ function CeefaxTeamCode({ name, size }) {
   )
 }
 
-const RAW_BASE = `${import.meta.env.BASE_URL}team-logos/`
-const WEB_BASE = `${import.meta.env.BASE_URL}team-logos-web/`
-const LOGO_EXTS = ['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'webp', 'WEBP']
-
 /**
  * FPL draft `id` (passed as `entryId` to TeamAvatar) — logos that are a small circle on a
  * square canvas get `team-avatar-frame--logo-zoom`; everyone else stays 1:1 in the clip.
@@ -40,47 +37,7 @@ const SHIRT_TEXT = {
   lg: { fontSize: 33 },
 }
 
-/**
- * @param {boolean} [customLogoOnly] If true, skip auto-generated team-logos-web assets; only
- *   `logoMap` entries and raw files under team-logos/ (custom uploads).
- */
-function buildSrcList(entryId, logoMap, customLogoOnly) {
-  const key = String(entryId)
-  const mapped = logoMap[key]
-  if (mapped) {
-    const mappedRaw = `${RAW_BASE}${mapped}`
-    // Named LOTR sources may live only under team-logos-web/ (preseason drop).
-    const mappedWeb = `${WEB_BASE}${mapped}`
-    if (customLogoOnly) return [mappedRaw, mappedWeb]
-    // Prefer 192×192 pipeline output keyed by entry id (avoids huge JPG decode).
-    return [`${WEB_BASE}${entryId}.png`, mappedWeb, mappedRaw]
-  }
-
-  const rawList = []
-  for (const ext of LOGO_EXTS) {
-    rawList.push(`${RAW_BASE}${entryId}.${ext}`)
-  }
-
-  if (customLogoOnly) {
-    return rawList
-  }
-  // Prefer uploads in team-logos/ before pipeline output in team-logos-web/
-  return [...rawList, `${WEB_BASE}${entryId}.png`]
-}
-
-/**
- * Same URL list as {@link TeamAvatar} (for favicon / preload).
- * @param {number | string | null | undefined} entryId
- * @param {Record<string, string>} logoMap
- * @param {boolean} [customLogoOnly]
- * @returns {string[]}
- */
-export function teamLogoSrcList(entryId, logoMap, customLogoOnly = false) {
-  if (entryId == null || entryId === '') return []
-  const n = Number(entryId)
-  if (!Number.isFinite(n)) return []
-  return buildSrcList(n, logoMap || {}, customLogoOnly)
-}
+export { teamLogoSrcList } from './teamLogoSrcList.js'
 
 function fnv1a32(str) {
   let h = 0x811c9dc5
@@ -243,7 +200,7 @@ export function TeamAvatar({
     [entryId, kitIndexByEntry, name],
   )
   const srcList = useMemo(
-    () => buildSrcList(entryId, logoMap, customLogoOnly),
+    () => teamLogoSrcList(entryId, logoMap, customLogoOnly),
     [entryId, logoMap, customLogoOnly],
   )
   const [idx, setIdx] = useState(0)
