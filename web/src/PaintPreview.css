@@ -22,9 +22,12 @@
 
 body[data-tclot-paint='1'] {
   --tclot-font-ui: 'Schibsted Grotesk';
-  /* Hero/header bands: racing green replaces the violet gradient. */
-  --tclot-header-grad: linear-gradient(160deg, #17402f 0%, #1f4a38 55%, #2a5c46 100%);
-  --tclot-header-solid: #1f4a38;
+  /* Hero/header bands: solid racing green. A diagonal wash here reads as a
+     blur at the top of the live fixture card, and iOS 26 Liquid Glass
+     samples `background-color` — a gradient leaves that transparent so the
+     status bar frosts instead of matching the banner. */
+  --tclot-header-grad: #17402f;
+  --tclot-header-solid: #17402f;
 }
 
 /* Dark body shell — Variant D (darkmode-options mockup): brighter body
