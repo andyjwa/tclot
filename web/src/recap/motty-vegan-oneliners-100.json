@@ -1,0 +1,975 @@
+{
+  "managerId": "nick_mottershead",
+  "aliases": [
+    "Motty",
+    "Nick M",
+    "Mottershead",
+    "Nick Mottershead"
+  ],
+  "theme": "vegan",
+  "policy": {
+    "whenMottyInFixture": "Always attach exactly one vegan one-liner as sentence 2 (or award footnote).",
+    "selection": [
+      "Build eventTags from fixture data (win/loss/draw, blowout, squeaker, bench, waiver, model_hit/miss, upset, titanic, vs_andrew, high_score, low_score, etc.).",
+      "Score each line: +3 per matching specific tag, +1 for 'any', 0 if conflicting outcome (e.g. win line on loss \u2192 skip).",
+      "Hard exclude: outcome mismatch (win tags on a loss fixture and vice versa) unless tags only contain any/swagger/theme.",
+      "Among eligible, drop lines used in last cooldownGws (default 8) or already used this season if alternatives remain.",
+      "Pick highest score; tie-break random among top tier.",
+      "Never reuse same id twice in a season until bank exhausted."
+    ],
+    "conflictRules": {
+      "win": [
+        "loss",
+        "low_score",
+        "upset_victim"
+      ],
+      "loss": [
+        "win",
+        "high_score",
+        "underdog"
+      ],
+      "draw": [
+        "win",
+        "loss"
+      ]
+    },
+    "tone": "mates taking the piss \u2014 affectionate, never cruel"
+  },
+  "eventTaggers": {
+    "win": "managerPts > opponentPts",
+    "loss": "managerPts < opponentPts",
+    "draw": "managerPts == opponentPts",
+    "blowout": "abs(margin) >= 15",
+    "squeaker": "0 < abs(margin) <= 3",
+    "bench": "benchPts >= 8 || bestXiRegret >= 8",
+    "waiver": "waiverPtsThisGw >= 6 || isRecentClaimTopScorer",
+    "trade": "tradesInLast7d >= 2",
+    "model_hit": "modelPick == winner",
+    "model_miss": "modelPick != winner",
+    "upset": "won && preMatchWinProb <= 0.40",
+    "upset_victim": "lost && preMatchWinProb >= 0.60",
+    "engine": "topPlayerShare >= 0.28",
+    "engine_against": "opponent topPlayerShare >= 0.28 && loss",
+    "title_quake": "abs(deltaTitlePct) >= 3",
+    "tape": "h2hTapeUpdated",
+    "high_score": "isGwTopScorer || pts == maxGwPts",
+    "low_score": "isGwLowestScorer || pts == minGwPts",
+    "heartbreak": "lost && abs(margin) <= 3",
+    "heartbreak_dealt": "won && abs(margin) <= 3",
+    "titanic": "fixture or weekly context involves Andrew Ward partnership narrative",
+    "vs_andrew": "opponent is Andrew Ward",
+    "dud": "hasStarterWithPts <= 2 && xP >= 4",
+    "active": "transfersOrWaiversThisGw >= 1",
+    "comeback": "won && wasBottomHalf",
+    "slide": "lost && deltaRank <= -2",
+    "heritage": "award or heritage surface",
+    "arts_school": "rare flavour tag \u2014 optional manual/random low weight",
+    "swagger": "always available soft tag for Motty",
+    "odds": "preMatch odds available",
+    "underdog": "won && preMatchWinProb <= 0.40",
+    "best_xi": "bestXiRegret computed"
+  },
+  "lines": [
+    {
+      "id": "vg_001",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Moral high ground secured; the XI finally joined the party.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_002",
+      "tags": [
+        "win",
+        "blowout"
+      ],
+      "text": "Plant-based demolition job. The planet and the opponent both felt that.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_003",
+      "tags": [
+        "win",
+        "squeaker"
+      ],
+      "text": "Won by a chickpea. Still counts. Still vegan.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_004",
+      "tags": [
+        "win",
+        "upset"
+      ],
+      "text": "The book said no; the lentils said yes.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_005",
+      "tags": [
+        "win",
+        "waiver"
+      ],
+      "text": "Wire haul, oat-milk swagger \u2014 Motty milks the free agent market ethically.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_006",
+      "tags": [
+        "win",
+        "model_hit"
+      ],
+      "text": "Model agreed, conscience clear, points banked.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_007",
+      "tags": [
+        "win",
+        "model_miss"
+      ],
+      "text": "Model blinked; Motty\u2019s tempeh-fuelled XI did not.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_008",
+      "tags": [
+        "win",
+        "engine"
+      ],
+      "text": "One haul, zero dairy, maximum smug.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_009",
+      "tags": [
+        "win",
+        "title_quake"
+      ],
+      "text": "Title odds up, carbon footprint still down. Annoying.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_010",
+      "tags": [
+        "win",
+        "tape"
+      ],
+      "text": "Season tape updated. Vegan empire expands one H2H at a time.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_011",
+      "tags": [
+        "win",
+        "trade"
+      ],
+      "text": "Another flurry of trades, somehow not a crime against points this week.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_012",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Cruelty-free living, cruelty retained exclusively for the opposition.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_013",
+      "tags": [
+        "win",
+        "blowout"
+      ],
+      "text": "They didn\u2019t lose \u2014 they got composted.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_014",
+      "tags": [
+        "win",
+        "squeaker"
+      ],
+      "text": "Thin margins, thick hummus energy.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_015",
+      "tags": [
+        "win",
+        "underdog"
+      ],
+      "text": "Underdog win served with nutritional yeast and spite.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_016",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "Moral high ground secured; the XI less so.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_017",
+      "tags": [
+        "loss",
+        "blowout"
+      ],
+      "text": "Got pasted. Even the oat milk looked embarrassed.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_018",
+      "tags": [
+        "loss",
+        "squeaker"
+      ],
+      "text": "Lost by a bean. The lecture on cheese will still arrive on time.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_019",
+      "tags": [
+        "loss",
+        "upset_victim"
+      ],
+      "text": "Favourite on the board, salad on the scoreboard.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_020",
+      "tags": [
+        "loss",
+        "bench"
+      ],
+      "text": "Left the haul on the pine \u2014 peak plant-based tragedy.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_021",
+      "tags": [
+        "loss",
+        "waiver"
+      ],
+      "text": "Recent claim blanked harder than a rice cake.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_022",
+      "tags": [
+        "loss",
+        "model_miss"
+      ],
+      "text": "Model and Motty both wrong. At least one of them is vegan.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_023",
+      "tags": [
+        "loss",
+        "model_hit"
+      ],
+      "text": "Model called it; Motty still inventing veganism as a coping strategy.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_024",
+      "tags": [
+        "loss",
+        "engine_against"
+      ],
+      "text": "Their engine ran on meat and spite. Motty\u2019s ran on vibes.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_025",
+      "tags": [
+        "loss",
+        "title_quake"
+      ],
+      "text": "Odds tumble. Conscience remains stubbornly pristine.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_026",
+      "tags": [
+        "loss",
+        "trade"
+      ],
+      "text": "Active on the wire, inactive on the points feed.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_027",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "Greens everywhere except the scoreboard.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_028",
+      "tags": [
+        "loss",
+        "blowout"
+      ],
+      "text": "A clean conscience and a messy thrashing.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_029",
+      "tags": [
+        "loss",
+        "squeaker"
+      ],
+      "text": "One starter short of dignity. Still dairy-free.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_030",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "He\u2019ll save the planet and still finish on that total.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_031",
+      "tags": [
+        "bench",
+        "loss"
+      ],
+      "text": "Seitan for dinner, chaos for the bench.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_032",
+      "tags": [
+        "bench",
+        "loss"
+      ],
+      "text": "Bench warmer of the week, ethically sourced.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_033",
+      "tags": [
+        "bench",
+        "win"
+      ],
+      "text": "Won anyway \u2014 the benched haul can write a strongly worded blog.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_034",
+      "tags": [
+        "bench",
+        "any"
+      ],
+      "text": "Carbon footprint down. Bench footprint up.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_035",
+      "tags": [
+        "bench",
+        "any"
+      ],
+      "text": "Optimal XI was vegan too. He just didn\u2019t pick it.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_036",
+      "tags": [
+        "bench",
+        "loss"
+      ],
+      "text": "12 on the pine. The tofu is judging him.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_037",
+      "tags": [
+        "best_xi",
+        "loss"
+      ],
+      "text": "Best XI regret, plant-based edition.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_038",
+      "tags": [
+        "best_xi",
+        "win"
+      ],
+      "text": "Not optimal, still winning \u2014 swagger remains undefeated.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_039",
+      "tags": [
+        "waiver",
+        "win"
+      ],
+      "text": "Wire pays off \u2014 no animals harmed, several rivals annoyed.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_040",
+      "tags": [
+        "waiver",
+        "loss"
+      ],
+      "text": "Waiver wizardry that wouldn\u2019t convince a chickpea.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_041",
+      "tags": [
+        "waiver",
+        "any"
+      ],
+      "text": "Hummus in the fridge, hole where the claim should\u2019ve scored.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_042",
+      "tags": [
+        "trade",
+        "win"
+      ],
+      "text": "Trade spam finally looks like strategy, not a lifestyle brand.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_043",
+      "tags": [
+        "trade",
+        "loss"
+      ],
+      "text": "Moved more players than furniture. Results unchanged.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_044",
+      "tags": [
+        "trade",
+        "any"
+      ],
+      "text": "Founding father of veganism, still inventing ways to overtrade.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_045",
+      "tags": [
+        "waiver",
+        "win"
+      ],
+      "text": "Free-agent protein when the draft board wouldn\u2019t provide.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_046",
+      "tags": [
+        "waiver",
+        "loss"
+      ],
+      "text": "That claim had more marketing than minutes.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_047",
+      "tags": [
+        "model_miss",
+        "win"
+      ],
+      "text": "Blindfolded the model with tempeh and vibes.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_048",
+      "tags": [
+        "model_miss",
+        "loss"
+      ],
+      "text": "Model missed; Motty missed harder. Shared salad of shame.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_049",
+      "tags": [
+        "model_hit",
+        "win"
+      ],
+      "text": "Spreadsheet and smoothie aligned. Rare.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_050",
+      "tags": [
+        "model_hit",
+        "loss"
+      ],
+      "text": "Model hit the opponent. Motty hit the kale chips early.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_051",
+      "tags": [
+        "odds",
+        "upset"
+      ],
+      "text": "Bookie odds ignored in favour of nutritional dogma. Worked.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_052",
+      "tags": [
+        "odds",
+        "upset_victim"
+      ],
+      "text": "He was the favourite. Dairy farmers everywhere felt nothing.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_053",
+      "tags": [
+        "draw",
+        "any"
+      ],
+      "text": "Stalemate. Points split like a shared falafel wrap.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_054",
+      "tags": [
+        "draw",
+        "any"
+      ],
+      "text": "Nobody won. The hummus remains undefeated.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_055",
+      "tags": [
+        "draw",
+        "any"
+      ],
+      "text": "A draw so mid it could be almond milk.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_056",
+      "tags": [
+        "titanic",
+        "win"
+      ],
+      "text": "Titanic Duo\u2019s vegan wing actually clears an iceberg.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_057",
+      "tags": [
+        "titanic",
+        "loss"
+      ],
+      "text": "Titanic Duo\u2019s vegan wing hits another iceberg.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_058",
+      "tags": [
+        "titanic",
+        "any"
+      ],
+      "text": "Former great power, current oat-milk press release.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_059",
+      "tags": [
+        "vs_andrew",
+        "win"
+      ],
+      "text": "Beat his Titanic partner. Intra-empire protein dispute settled.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_060",
+      "tags": [
+        "vs_andrew",
+        "loss"
+      ],
+      "text": "Lost to Andrew \u2014 empire politics, plant-based civil war.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_061",
+      "tags": [
+        "win",
+        "swagger"
+      ],
+      "text": "Ethically sourced swagger, finally matching the evidence.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_062",
+      "tags": [
+        "loss",
+        "swagger"
+      ],
+      "text": "Ethically sourced swagger, questionably sourced results.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_063",
+      "tags": [
+        "any",
+        "swagger"
+      ],
+      "text": "Still hasn\u2019t invented veganism \u2014 still acting like the patent holder.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_064",
+      "tags": [
+        "any",
+        "swagger"
+      ],
+      "text": "Presents as the world\u2019s first vegan. Plays like the world\u2019s busiest trader.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_065",
+      "tags": [
+        "loss",
+        "swagger"
+      ],
+      "text": "Confidence remains high; evidence files a dissenting note in soy ink.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_066",
+      "tags": [
+        "win",
+        "swagger"
+      ],
+      "text": "Told you the lifestyle would win. Nobody asked about the margins.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_067",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Another week sponsored by oat milk and legitimate points.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_068",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "Another week sponsored by oat milk and overconfidence.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_069",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "The tofu-powered engine room coughed again.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_070",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Tofu-powered engine room actually fired on all cylinders.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_071",
+      "tags": [
+        "any",
+        "bench"
+      ],
+      "text": "Aquafaba vibes: light, foamy, structurally suspect.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_072",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "Smoothie packed. Lineup juiced. Result pulped.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_073",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Smoothie packed. Lineup juiced. Rivals pulped.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_074",
+      "tags": [
+        "any",
+        "trade"
+      ],
+      "text": "Nutritional yeast for flavour; waiver yeast for chaos.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_075",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "Meat-free Monday lasted all week; so did the excuses.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_076",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Meat-free Monday, points-full Sunday.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_077",
+      "tags": [
+        "any",
+        "dud"
+      ],
+      "text": "He\u2019ll lecture you on cheese then blank on a 4%.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_078",
+      "tags": [
+        "engine",
+        "win"
+      ],
+      "text": "Beyond Meat, beyond reason, beyond the other guy\u2019s total.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_079",
+      "tags": [
+        "engine",
+        "loss"
+      ],
+      "text": "Beyond Meat, beyond reason, beyond the optimal XI.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_080",
+      "tags": [
+        "any",
+        "arts_school"
+      ],
+      "text": "Reporting in from the improbable postcode with improbable selections.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_081",
+      "tags": [
+        "loss",
+        "squeaker"
+      ],
+      "text": "Heartbreak served without butter.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_082",
+      "tags": [
+        "win",
+        "squeaker"
+      ],
+      "text": "Escaped by the skin of a\u2026 wait, no skin. Escaped anyway.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_083",
+      "tags": [
+        "loss",
+        "heartbreak"
+      ],
+      "text": "Closest loss. Furthest from dairy. Still furious.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_084",
+      "tags": [
+        "win",
+        "heartbreak_dealt"
+      ],
+      "text": "Dealt the heartbreak. Remained spiritually oat-based.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_085",
+      "tags": [
+        "win",
+        "high_score"
+      ],
+      "text": "Warlord energy, vegan branding. The league hates that combo.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_086",
+      "tags": [
+        "win",
+        "high_score"
+      ],
+      "text": "Top of the GW scorer board and still talking about seitan.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_087",
+      "tags": [
+        "loss",
+        "low_score"
+      ],
+      "text": "Stumble of the week, cruelty-free edition.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_088",
+      "tags": [
+        "loss",
+        "low_score"
+      ],
+      "text": "Lowest total, highest horse on dietary superiority.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_089",
+      "tags": [
+        "any",
+        "active"
+      ],
+      "text": "Moved heaven, earth, and three midfielders. Diet unchanged.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_090",
+      "tags": [
+        "win",
+        "active"
+      ],
+      "text": "Hyperactive squad management finally looks enlightened.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_091",
+      "tags": [
+        "loss",
+        "active"
+      ],
+      "text": "Busy week on the app; quiet week on the pitch.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_092",
+      "tags": [
+        "win",
+        "comeback"
+      ],
+      "text": "Fallen-empire narrative pauses for a plant-based plot twist.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_093",
+      "tags": [
+        "loss",
+        "slide"
+      ],
+      "text": "Historic titan energy meets current vegetable form.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_094",
+      "tags": [
+        "any",
+        "heritage"
+      ],
+      "text": "Root vegetables and deep roots in former glory.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_095",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Vegan empire expanding; title odds slightly more cooperative.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_096",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "Vegan empire expanding; title odds less cooperative.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_097",
+      "tags": [
+        "win",
+        "any"
+      ],
+      "text": "Plant protein loaded; matchup protein delivered.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_098",
+      "tags": [
+        "loss",
+        "any"
+      ],
+      "text": "Plant protein loaded; matchup protein missing.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_099",
+      "tags": [
+        "any",
+        "any"
+      ],
+      "text": "Free-range opinions; caged upside \u2014 until the data says otherwise.",
+      "cooldownGws": 8
+    },
+    {
+      "id": "vg_100",
+      "tags": [
+        "any",
+        "any"
+      ],
+      "text": "Lifestyle brand intact. Fantasy brand under review.",
+      "cooldownGws": 8
+    }
+  ],
+  "count": 100
+}

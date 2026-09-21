@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "surface": "preview",
+  "shape": {
+    "maxSentences": 2,
+    "sentence1": "fact_line",
+    "sentence2": "voice_line_optional"
+  },
+  "angles": [
+    {
+      "id": "odds_fav",
+      "pickWhen": "favoritePct >= 55",
+      "priority": 72,
+      "interestingness": "favoritePct"
+    },
+    {
+      "id": "odds_dog",
+      "pickWhen": "favoritePct >= 58",
+      "priority": 55,
+      "interestingness": "favoritePct"
+    },
+    {
+      "id": "coin_flip",
+      "pickWhen": "favoritePct > 0 && favoritePct < 55",
+      "priority": 74,
+      "interestingness": "55 - abs(favoritePct - 50)"
+    },
+    {
+      "id": "projected_margin",
+      "pickWhen": "predictedMargin != null && (predictedMargin >= 12 || predictedMargin <= 4)",
+      "priority": 70,
+      "interestingness": "abs(predictedMargin - 8)"
+    },
+    {
+      "id": "model_pick",
+      "pickWhen": "modelPick != null",
+      "priority": 48,
+      "interestingness": 40
+    },
+    {
+      "id": "waiver_claim",
+      "pickWhen": "hasRecentClaim",
+      "priority": 78,
+      "interestingness": 70
+    },
+    {
+      "id": "tape",
+      "pickWhen": "h2hSeasonRecord exists && games >= 1",
+      "priority": 60,
+      "interestingness": 50
+    },
+    {
+      "id": "rivalry",
+      "pickWhen": "namedRivalry != null",
+      "priority": 99,
+      "interestingness": 85,
+      "notes": "Overlay — brand required; still attach one statistical claim."
+    },
+    {
+      "id": "fallback_preview",
+      "pickWhen": "true",
+      "priority": 1,
+      "interestingness": 10
+    }
+  ],
+  "templatePacks": {
+    "odds_fav": [
+      {
+        "id": "pv_of_01",
+        "required": ["favTeam", "favPrice", "dogTeam", "dogPrice"],
+        "text": "The book has {favTeam} at {favPrice} and {dogTeam} at {dogPrice}."
+      },
+      {
+        "id": "pv_of_02",
+        "required": ["favTeam", "favPct", "dogTeam", "dogPct"],
+        "text": "{favTeam} sit at {favPct}% — {dogTeam} the long shots at {dogPct}%."
+      },
+      {
+        "id": "pv_of_03",
+        "required": ["favTeam", "favPrice", "dogTeam"],
+        "text": "Clear favourite: {favTeam} at {favPrice}, with {dogTeam} the longer price."
+      },
+      {
+        "id": "pv_of_04",
+        "required": ["favMgr", "favPrice", "dogTeam", "dogPrice"],
+        "text": "The book fancies {favMgr} at {favPrice}; {dogTeam} sit {dogPrice}."
+      },
+      {
+        "id": "pv_of_05",
+        "required": ["favTeam", "favPrice", "dogTeam", "dogPrice"],
+        "text": "Short price is {favTeam} ({favPrice}), {dogTeam} out at {dogPrice}."
+      },
+      {
+        "id": "pv_of_06",
+        "required": ["favTeam", "dogTeam", "favPct"],
+        "text": "{favTeam} are the lean over {dogTeam} at {favPct}%."
+      }
+    ],
+    "odds_dog": [
+      {
+        "id": "pv_od_01",
+        "required": ["dogTeam", "dogPrice", "favTeam", "favPrice"],
+        "text": "{dogTeam} are the longer price at {dogPrice} against {favTeam} ({favPrice})."
+      },
+      {
+        "id": "pv_od_02",
+        "required": ["dogTeam", "dogPct", "favTeam"],
+        "text": "{dogTeam} sit at {dogPct}% — the long shots against {favTeam}."
+      },
+      {
+        "id": "pv_od_03",
+        "required": ["dogMgr", "dogPrice", "favTeam"],
+        "text": "{dogMgr} is the dog at {dogPrice} versus {favTeam}."
+      },
+      {
+        "id": "pv_od_04",
+        "required": ["dogTeam", "dogPrice", "favTeam", "favPrice"],
+        "text": "The upset price: {dogTeam} {dogPrice}, {favTeam} the chalk at {favPrice}."
+      }
+    ],
+    "coin_flip": [
+      {
+        "id": "pv_cf_01",
+        "required": ["homeTeam", "homePrice", "awayTeam", "awayPrice"],
+        "text": "The book has it as a coin-flip, {homeTeam} {homePrice} and {awayTeam} {awayPrice}."
+      },
+      {
+        "id": "pv_cf_02",
+        "required": ["homeTeam", "awayTeam", "favTeam", "favPrice"],
+        "text": "Tight on the board: {homeTeam} vs {awayTeam}, {favTeam} just in at {favPrice}."
+      },
+      {
+        "id": "pv_cf_03",
+        "required": ["homeTeam", "homePct", "awayTeam", "awayPct"],
+        "text": "Coin-flip territory — {homeTeam} {homePct}%, {awayTeam} {awayPct}%."
+      },
+      {
+        "id": "pv_cf_04",
+        "required": ["favTeam", "favPrice", "dogTeam", "dogPrice"],
+        "text": "It is tight on the board, {favTeam} {favPrice} and {dogTeam} {dogPrice}."
+      },
+      {
+        "id": "pv_cf_05",
+        "required": ["homeTeam", "awayTeam"],
+        "text": "This one is a toss-up between {homeTeam} and {awayTeam}."
+      },
+      {
+        "id": "pv_cf_06",
+        "required": ["favMgr", "dogMgr"],
+        "text": "Coin-flip H2H: {favMgr} shades it, {dogMgr} is live."
+      }
+    ],
+    "projected_margin": [
+      {
+        "id": "pv_pm_01",
+        "required": ["favTeam", "projMargin", "dogTeam"],
+        "text": "Projected mismatch: {favTeam} by {projMargin} over {dogTeam}."
+      },
+      {
+        "id": "pv_pm_02",
+        "required": ["homeTeam", "homePred", "awayTeam", "awayPred"],
+        "text": "Projected squeaker — {homeTeam} {homePred}, {awayTeam} {awayPred}."
+      },
+      {
+        "id": "pv_pm_03",
+        "required": ["favTeam", "dogTeam", "homePred", "awayPred"],
+        "text": "The model stacks {favTeam} over {dogTeam}: {homePred}–{awayPred}."
+      },
+      {
+        "id": "pv_pm_04",
+        "required": ["favTeam", "projMargin", "dogTeam"],
+        "text": "{favTeam} are projected {projMargin} clear of {dogTeam}."
+      },
+      {
+        "id": "pv_pm_05",
+        "required": ["homeTeam", "awayTeam", "projMargin"],
+        "text": "{homeTeam} vs {awayTeam} is a {projMargin}-point projection."
+      },
+      {
+        "id": "pv_pm_06",
+        "required": ["favTeam", "dogTeam"],
+        "text": "Projected cruise for {favTeam}; {dogTeam} need a haul from nowhere."
+      }
+    ],
+    "model_pick": [
+      {
+        "id": "pv_mp_01",
+        "required": ["modelPick", "dogTeam"],
+        "text": "The model backs {modelPick} against {dogTeam}."
+      },
+      {
+        "id": "pv_mp_02",
+        "required": ["modelPick", "favPrice"],
+        "text": "Spreadsheet pick: {modelPick} at {favPrice}."
+      },
+      {
+        "id": "pv_mp_03",
+        "required": ["modelPick", "homeTeam", "awayTeam"],
+        "text": "Model call is {modelPick} in {homeTeam} vs {awayTeam}."
+      },
+      {
+        "id": "pv_mp_04",
+        "required": ["favMgr", "dogTeam"],
+        "text": "The model likes {favMgr}; {dogTeam} are the fade."
+      }
+    ],
+    "waiver_claim": [
+      {
+        "id": "pv_wa_01",
+        "required": ["waiverPlayer", "waiverTeam", "oppTeam"],
+        "text": "{waiverPlayer} is live off the wire for {waiverTeam} against {oppTeam}."
+      },
+      {
+        "id": "pv_wa_02",
+        "required": ["waiverMgr", "waiverPlayer", "oppTeam"],
+        "text": "{waiverMgr} brought in {waiverPlayer} — {oppTeam} get the first look."
+      },
+      {
+        "id": "pv_wa_03",
+        "required": ["waiverMgr", "waiverPlayer", "oppTeam"],
+        "text": "{waiverMgr} just added {waiverPlayer}, with {oppTeam} next up."
+      },
+      {
+        "id": "pv_wa_04",
+        "required": ["waiverPlayer", "waiverTeam", "oppTeam"],
+        "text": "Wire story: {waiverPlayer} into the {waiverTeam} XI versus {oppTeam}."
+      },
+      {
+        "id": "pv_wa_05",
+        "required": ["waiverMgr", "waiverPlayer", "oppTeam"],
+        "text": "{waiverPlayer} is the new waiver piece for {waiverMgr} against {oppTeam}."
+      },
+      {
+        "id": "pv_wa_06",
+        "required": ["waiverTeam", "waiverPlayer", "oppTeam"],
+        "text": "{waiverTeam} claimed {waiverPlayer}; {oppTeam} did not."
+      }
+    ],
+    "tape": [
+      {
+        "id": "pv_tp_01",
+        "required": ["h2hTape", "homeTeam", "awayTeam"],
+        "text": "The H2H tape reads {h2hTape} for {homeTeam} vs {awayTeam}."
+      },
+      {
+        "id": "pv_tp_02",
+        "required": ["seriesLeader", "seriesTrail", "h2hTape"],
+        "text": "{seriesLeader} lead the season series {h2hTape} heading into {seriesTrail}."
+      },
+      {
+        "id": "pv_tp_03",
+        "required": ["homeTeam", "awayTeam"],
+        "text": "Round two: {homeTeam} and {awayTeam} meet again."
+      },
+      {
+        "id": "pv_tp_04",
+        "required": ["lastMeeting", "homeTeam", "awayTeam"],
+        "text": "{lastMeeting}, so {homeTeam} vs {awayTeam} is the sequel."
+      }
+    ],
+    "rivalry": [
+      {
+        "id": "pv_rv_01",
+        "required": ["rivalryName", "favMgr", "dogMgr"],
+        "text": "{rivalryName}: {favMgr} the safer price; {dogMgr} the louder build-up."
+      },
+      {
+        "id": "pv_rv_02",
+        "required": ["rivalryName", "favTeam", "favPrice", "dogTeam"],
+        "text": "{rivalryName}: the book has {favTeam} at {favPrice} over {dogTeam}."
+      },
+      {
+        "id": "pv_rv_03",
+        "required": ["rivalryName", "homeTeam", "awayTeam", "favPrice"],
+        "text": "{rivalryName} — {homeTeam} vs {awayTeam}, chalk at {favPrice}."
+      },
+      {
+        "id": "pv_rv_04",
+        "required": ["rivalryName", "favTeam", "dogTeam", "favPct"],
+        "text": "{rivalryName}: {favTeam} sit {favPct}%, {dogTeam} hunting an upset."
+      },
+      {
+        "id": "pv_rv_05",
+        "required": ["rivalryName", "waiverPlayer", "favTeam", "dogTeam"],
+        "text": "{rivalryName}: {waiverPlayer} is live, {favTeam} vs {dogTeam}."
+      },
+      {
+        "id": "pv_rv_06",
+        "required": ["rivalryName", "scorelessNote", "homeTeam", "awayTeam"],
+        "text": "{rivalryName}: {homeTeam} host {awayTeam}."
+      }
+    ],
+    "fallback_preview": [
+      {
+        "id": "pv_fb_01",
+        "required": ["homeTeam", "awayTeam"],
+        "text": "{homeTeam} host {awayTeam}."
+      },
+      {
+        "id": "pv_fb_02",
+        "required": ["homeTeam", "awayTeam"],
+        "text": "H2H preview: {homeTeam} against {awayTeam}."
+      },
+      {
+        "id": "pv_fb_03",
+        "required": ["homeMgr", "awayMgr"],
+        "text": "{homeMgr} vs {awayMgr} this week."
+      },
+      {
+        "id": "pv_fb_04",
+        "required": ["homeTeam", "awayTeam"],
+        "text": "{homeTeam} and {awayTeam} share a gameweek."
+      }
+    ]
+  }
+}

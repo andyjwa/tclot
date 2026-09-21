@@ -1,6 +1,6 @@
 {
  "schemaVersion": 7,
- "generatedAt": "2026-08-28T15:46:52.746Z",
+ "generatedAt": "2026-09-21T11:33:26.343Z",
  "season": "2026-27",
  "lastFinishedGw": 1,
  "upcomingGw": 2,
@@ -80,6 +80,7 @@
    },
    "matchups": [
     {
+     "gw": 1,
      "home": {
       "entryId": 18279,
       "name": "Mordor S.F.G",
@@ -179,16 +180,20 @@
       "draws": 0
      },
      "derby": null,
+     "leagueAvg": 42.125,
      "sentences": [
-      "Mordor S.F.G steamrolled Atlético Bilbo 51–24 — the kind of scoreline that gets screenshotted.",
-      "As expected: the model gave Mordor S.F.G 74% pre-match, and that's how it went.",
-      "That leaves Mordor S.F.G 3rd (1-0-0); Atlético Bilbo are 8th at 0-0-1.",
-      "Plant-based and extremely sure: Mottershead is still talking like he invented veganism.",
-      "Atlético Bilbo will point at Shaw: projected for 5.1, he returned 1.",
-      "Both sides finished within touching distance of their season averages — a matchup that went to form."
-     ]
+      "Mordor S.F.G put Atlético Bilbo away by 27.",
+      "Ethically sourced swagger, finally matching the evidence."
+     ],
+     "blurb": {
+      "angleId": "margin_blowout",
+      "templateId": "blow_01",
+      "loreLineId": null,
+      "mottyLineId": "vg_061"
+     }
     },
     {
+     "gw": 1,
      "home": {
       "entryId": 30728,
       "name": "Seoul Shire",
@@ -287,16 +292,19 @@
       "draws": 0
      },
      "derby": null,
+     "leagueAvg": 42.125,
      "sentences": [
-      "Seoul Shire took care of Hackney Rohirrim, 47–31.",
-      "The model had Hackney Rohirrim at 77% and Seoul Shire tore up the script.",
-      "That leaves Seoul Shire 4th (1-0-0); Hackney Rohirrim are 7th at 0-0-1.",
-      "Mike did all this on whatever sleep the twins were prepared to grant him.",
-      "Hackney Rohirrim will point at Maguire: projected for 5.6, he returned 1.",
-      "Both sides finished within touching distance of their season averages — a matchup that went to form."
-     ]
+      "Seoul Shire had 23% on the board and still took it 47–31 — Seoul Shire vs Hackney Rohirrim."
+     ],
+     "blurb": {
+      "angleId": "upset",
+      "templateId": "up_01",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
     },
     {
+     "gw": 1,
      "home": {
       "entryId": 44904,
       "name": "Brampton Balrogs",
@@ -391,15 +399,19 @@
       "draws": 0
      },
      "derby": null,
+     "leagueAvg": 42.125,
      "sentences": [
-      "A solid week's work from Rokesly Regorasu: 55–38 over Brampton Balrogs.",
-      "The people's champion, cheerfully refusing to sit with the consensus.",
-      "The model called it a near coin flip (50–50) and Rokesly Regorasu shaded it.",
-      "That keeps Rokesly Regorasu top of the pile (1-0-0); Brampton Balrogs are 6th at 0-0-1.",
-      "Nobody in the league scored more than Rokesly Regorasu's 55 this week."
-     ]
+      "Brampton Balrogs were out by 17 before the punchlines started — Brampton Balrogs vs Rokesly Regorasu."
+     ],
+     "blurb": {
+      "angleId": "margin_blowout",
+      "templateId": "blow_04",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
     },
     {
+     "gw": 1,
      "home": {
       "entryId": 4898,
       "name": "Toronto Gimli",
@@ -503,19 +515,20 @@
       "draws": 0
      },
      "derby": "the Battle of Warderloo",
+     "leagueAvg": 42.125,
      "sentences": [
-      "Round 1 of the Battle of Warderloo.",
-      "Suffolk Sméagol took care of Toronto Gimli, 52–39.",
-      "Pre-match the model fancied Suffolk Sméagol (58%) — right call.",
-      "That leaves Suffolk Sméagol 2nd (1-0-0); Toronto Gimli are 5th at 0-0-1.",
-      "Palmer hauled 13 for Suffolk Sméagol while Toronto Gimli's Lammens — pegged for 5.7 — managed just 1.",
-      "Jon will have a take on this claim. It will not be complimentary.",
-      "Both sides finished within touching distance of their season averages — a matchup that went to form."
-     ]
+      "The Battle of Warderloo: title odds swing hard — Suffolk Sméagol +1.4% — Toronto Gimli vs Suffolk Sméagol."
+     ],
+     "blurb": {
+      "angleId": "title_quake",
+      "templateId": "tq_01",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
     }
    ],
    "wrap": [
-    "This week features the Battle of Warderloo."
+    "Headline fixture was the Battle of Warderloo, which is to say the group chat had a title before kick-off."
    ]
   }
  ],
@@ -527,6 +540,10 @@
     "favourite": {
      "name": "Hackney Rohirrim",
      "pct": 77
+    },
+    "underdog": {
+     "name": "Seoul Shire",
+     "pct": 21
     },
     "closest": {
      "homeName": "Brampton Balrogs",
@@ -551,6 +568,7 @@
    },
    "matchups": [
     {
+     "gw": 1,
      "home": {
       "entryId": 18279,
       "name": "Mordor S.F.G",
@@ -641,14 +659,18 @@
      "h2h": null,
      "derby": null,
      "sentences": [
-      "Clear favourite on the board: Mordor S.F.G 4/11, Atlético Bilbo 3/1.",
-      "Mordor S.F.G are the title favourite at 9/4.",
-      "Plant-based and extremely sure: Mottershead is still talking like he invented veganism.",
-      "Players to watch: Roefs for Mordor S.F.G, Shaw for Atlético Bilbo.",
-      "For Atlético Bilbo to win, they need Shaw to haul and Cunha to blank."
-     ]
+      "The book has Mordor S.F.G at 4/11 and Atlético Bilbo at 3/1.",
+      "No new toys, short odds, same old patent-holder energy."
+     ],
+     "blurb": {
+      "angleId": "odds_fav",
+      "templateId": "pv_of_01",
+      "loreLineId": null,
+      "mottyLineId": "pv_035"
+     }
     },
     {
+     "gw": 1,
      "home": {
       "entryId": 30728,
       "name": "Seoul Shire",
@@ -751,14 +773,17 @@
      "h2h": null,
      "derby": null,
      "sentences": [
-      "The book has Hackney Rohirrim as a short 3/10; Seoul Shire are the long shot at 4/1.",
-      "Luke claimed Tel; Mike added Dorgu.",
-      "The hinge is Saka against Gabriel.",
-      "Mike has claimed someone nobody else had on a list. That is the whole method.",
-      "Luke's path is ugly: Gabriel to blank, plus Saka to haul."
-     ]
+      "Luke brought in Tel — Hackney Rohirrim get the first look — Seoul Shire vs Hackney Rohirrim."
+     ],
+     "blurb": {
+      "angleId": "waiver_claim",
+      "templateId": "pv_wa_02",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
     },
     {
+     "gw": 1,
      "home": {
       "entryId": 44904,
       "name": "Brampton Balrogs",
@@ -860,14 +885,17 @@
      "h2h": null,
      "derby": null,
      "sentences": [
-      "Tight on the board: Rokesly Regorasu Evs, Brampton Balrogs 11/10.",
-      "Title board still has Rokesly Regorasu out in front at 15/8; Brampton Balrogs are chasing.",
-      "N.Jackson is the new waiver piece for Brampton Balrogs.",
-      "The people's champion, cheerfully refusing to sit with the consensus.",
-      "The hinge is Thiago against Calafiori."
-     ]
+      "N.Jackson is live off the wire for Brampton Balrogs against Rokesly Regorasu."
+     ],
+     "blurb": {
+      "angleId": "waiver_claim",
+      "templateId": "pv_wa_01",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
     },
     {
+     "gw": 1,
      "home": {
       "entryId": 4898,
       "name": "Toronto Gimli",
@@ -970,16 +998,689 @@
      "h2h": null,
      "derby": "the Battle of Warderloo",
      "sentences": [
-      "The Battle of Warderloo returns.",
-      "The book fancies Suffolk Sméagol at 8/11; Toronto Gimli are 13/8.",
-      "Andy claimed Schade; Jon added Mykolenko.",
-      "Jon will have a take on this claim. It will not be complimentary.",
-      "The hinge is Lammens against Dalot."
-     ]
+      "The Battle of Warderloo: Schade is live, Suffolk Sméagol vs Toronto Gimli."
+     ],
+     "blurb": {
+      "angleId": "waiver_claim",
+      "templateId": "pv_rv_05",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
     }
    ],
    "wrap": [
-    "This week features the Battle of Warderloo."
+    "Headline fixture was the Battle of Warderloo, which is to say the group chat had a title before kick-off."
+   ]
+  },
+  {
+   "gw": 2,
+   "source": "preview",
+   "superlatives": {
+    "favourite": {
+     "name": "Toronto Gimli",
+     "pct": 77
+    },
+    "underdog": {
+     "name": "Atlético Bilbo",
+     "pct": 21
+    },
+    "closest": {
+     "homeName": "Suffolk Sméagol",
+     "awayName": "Brampton Balrogs",
+     "favoritePct": 49
+    },
+    "topScorer": {
+     "name": "Stach",
+     "pts": 13,
+     "teamName": "Hackney Rohirrim"
+    },
+    "bestWaiver": {
+     "name": "Schade",
+     "kind": "w",
+     "xp": 5.5,
+     "pts": null,
+     "teamName": "Toronto Gimli"
+    },
+    "dud": {
+     "name": "Isak",
+     "overallPick": 3,
+     "xp": 1.7,
+     "pts": null,
+     "teamName": "Atlético Bilbo"
+    }
+   },
+   "matchups": [
+    {
+     "gw": 2,
+     "home": {
+      "entryId": 4259,
+      "name": "Atlético Bilbo",
+      "manager": "Nick Goodacre",
+      "rank": 8,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "titlePct": 0.8,
+      "lastPct": 41.6,
+      "titlePrice": "100/1",
+      "lastPrice": "6/5",
+      "strength": 38.3,
+      "keys": [
+       {
+        "id": 155,
+        "name": "Enzo",
+        "pos": "MID",
+        "xp": 5.8
+       },
+       {
+        "id": 427,
+        "name": "Mbeumo",
+        "pos": "MID",
+        "xp": 5.7
+       }
+      ],
+      "recentPickups": [],
+      "form": {
+       "over": {
+        "name": "Branthwaite",
+        "pts": 6,
+        "xp": 1.2
+       },
+       "under": {
+        "name": "Shaw",
+        "pts": 1,
+        "xp": 5.1
+       }
+      },
+      "injuries": [],
+      "benchCall": {
+       "bench": {
+        "id": 31,
+        "name": "Konsa",
+        "pos": "DEF",
+        "xp": 5.5,
+        "flag": "ok"
+       },
+       "starter": {
+        "id": 149,
+        "name": "Colwill",
+        "pos": "DEF",
+        "xp": 0.6,
+        "flag": "ok"
+       },
+       "gap": 4.9
+      }
+     },
+     "away": {
+      "entryId": 4898,
+      "name": "Toronto Gimli",
+      "manager": "Andy Ward",
+      "rank": 5,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "titlePct": 7.1,
+      "lastPct": 10.6,
+      "titlePrice": "12/1",
+      "lastPrice": "15/2",
+      "strength": 42.3,
+      "keys": [
+       {
+        "id": 411,
+        "name": "Haaland",
+        "pos": "FWD",
+        "xp": 6.6
+       },
+       {
+        "id": 366,
+        "name": "Wirtz",
+        "pos": "MID",
+        "xp": 5.5
+       }
+      ],
+      "recentPickups": [
+       {
+        "name": "Schade",
+        "kind": "w",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "White",
+        "pts": 11,
+        "xp": 2.3
+       },
+       "under": {
+        "name": "Lammens",
+        "pts": 1,
+        "xp": 5.7
+       }
+      },
+      "injuries": [],
+      "benchCall": null
+     },
+     "odds": {
+      "home": 21,
+      "draw": 2,
+      "away": 77,
+      "favoriteSide": "away",
+      "favoritePct": 77,
+      "source": "preview"
+     },
+     "bookie": {
+      "home": "6/4",
+      "draw": "40/1",
+      "away": "8/13"
+     },
+     "predicted": {
+      "home": 30.2,
+      "away": 41.7
+     },
+     "h2h": null,
+     "derby": "the Bad Blood Derby",
+     "sentences": [
+      "The Bad Blood Derby: Andy the safer price; Nick the louder build-up — Atlético Bilbo vs Toronto Gimli."
+     ],
+     "blurb": {
+      "angleId": "odds_dog",
+      "templateId": "pv_rv_01",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
+    },
+    {
+     "gw": 2,
+     "home": {
+      "entryId": 5220,
+      "name": "Suffolk Sméagol",
+      "manager": "Jon Ward",
+      "rank": 2,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "titlePct": 11.6,
+      "lastPct": 5.8,
+      "titlePrice": "7/1",
+      "lastPrice": "14/1",
+      "strength": 42.6,
+      "keys": [
+       {
+        "id": 154,
+        "name": "Palmer",
+        "pos": "MID",
+        "xp": 6.5
+       },
+       {
+        "id": 223,
+        "name": "Mateta",
+        "pos": "FWD",
+        "xp": 6.5
+       }
+      ],
+      "recentPickups": [
+       {
+        "name": "Mykolenko",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Palmer",
+        "pts": 13,
+        "xp": 4.5
+       },
+       "under": {
+        "name": "Dalot",
+        "pts": 1,
+        "xp": 5.4
+       }
+      },
+      "injuries": [],
+      "benchCall": {
+       "bench": {
+        "id": 25,
+        "name": "Gyökeres",
+        "pos": "FWD",
+        "xp": 5.2,
+        "flag": "ok"
+       },
+       "starter": {
+        "id": 259,
+        "name": "Diop",
+        "pos": "DEF",
+        "xp": 1.5,
+        "flag": "ok"
+       },
+       "gap": 3.7
+      }
+     },
+     "away": {
+      "entryId": 44904,
+      "name": "Brampton Balrogs",
+      "manager": "Eddy Webster",
+      "rank": 6,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "titlePct": 3.6,
+      "lastPct": 18.5,
+      "titlePrice": "25/1",
+      "lastPrice": "4/1",
+      "strength": 40.7,
+      "keys": [
+       {
+        "id": 106,
+        "name": "Thiago",
+        "pos": "FWD",
+        "xp": 5.6
+       },
+       {
+        "id": 368,
+        "name": "Szoboszlai",
+        "pos": "MID",
+        "xp": 4.9
+       }
+      ],
+      "recentPickups": [
+       {
+        "name": "N.Jackson",
+        "kind": "w",
+        "gw": 1
+       },
+       {
+        "name": "Barry",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Gvardiol",
+        "pts": 9,
+        "xp": 3.2
+       },
+       "under": {
+        "name": "Thiago",
+        "pts": 0,
+        "xp": 4.3
+       }
+      },
+      "injuries": [],
+      "benchCall": null
+     },
+     "odds": {
+      "home": 48,
+      "draw": 3,
+      "away": 49,
+      "favoriteSide": "away",
+      "favoritePct": 49,
+      "source": "preview"
+     },
+     "bookie": {
+      "home": "4/5",
+      "draw": "40/1",
+      "away": "11/10"
+     },
+     "predicted": {
+      "home": 43.9,
+      "away": 44.1
+     },
+     "h2h": null,
+     "derby": null,
+     "sentences": [
+      "Coin-flip territory — Suffolk Sméagol 48%, Brampton Balrogs 49%."
+     ],
+     "blurb": {
+      "angleId": "coin_flip",
+      "templateId": "pv_cf_03",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
+    },
+    {
+     "gw": 2,
+     "home": {
+      "entryId": 6849,
+      "name": "Rokesly Regorasu",
+      "manager": "David Higman",
+      "rank": 1,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "titlePct": 31.9,
+      "lastPct": 1.5,
+      "titlePrice": "15/8",
+      "lastPrice": "66/1",
+      "strength": 45.6,
+      "keys": [
+       {
+        "id": 388,
+        "name": "Guéhi",
+        "pos": "DEF",
+        "xp": 6.9
+       },
+       {
+        "id": 95,
+        "name": "O.Dango",
+        "pos": "MID",
+        "xp": 5.7
+       }
+      ],
+      "recentPickups": [],
+      "form": {
+       "over": {
+        "name": "Gakpo",
+        "pts": 12,
+        "xp": 3.5
+       },
+       "under": {
+        "name": "B.Fernandes",
+        "pts": 2,
+        "xp": 5.2
+       }
+      },
+      "injuries": [
+       {
+        "id": 6,
+        "name": "Saliba",
+        "pos": "DEF",
+        "xp": 4.2,
+        "flag": "out",
+        "status": "i",
+        "chance": 0,
+        "news": "Back injury - Unknown return date",
+        "kind": "missing",
+        "inXi": false,
+        "injury": "back injury"
+       }
+      ],
+      "benchCall": null
+     },
+     "away": {
+      "entryId": 30728,
+      "name": "Seoul Shire",
+      "manager": "Luke Butcher",
+      "rank": 4,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "titlePct": 5.1,
+      "lastPct": 13.9,
+      "titlePrice": "16/1",
+      "lastPrice": "11/2",
+      "strength": 40.6,
+      "keys": [
+       {
+        "id": 399,
+        "name": "Cherki",
+        "pos": "MID",
+        "xp": 7.7
+       },
+       {
+        "id": 387,
+        "name": "O'Reilly",
+        "pos": "DEF",
+        "xp": 6.7
+       }
+      ],
+      "recentPickups": [
+       {
+        "name": "Tel",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Tzolis",
+        "pts": 6,
+        "xp": 0.5
+       },
+       "under": {
+        "name": "James",
+        "pts": 0,
+        "xp": 4
+       }
+      },
+      "injuries": [
+       {
+        "id": 5,
+        "name": "J.Timber",
+        "pos": "DEF",
+        "xp": 4.8,
+        "flag": "out",
+        "status": "i",
+        "chance": 0,
+        "news": "Groin injury - Unknown return date",
+        "kind": "missing",
+        "inXi": false,
+        "injury": "groin injury"
+       }
+      ],
+      "benchCall": null
+     },
+     "odds": {
+      "home": 59,
+      "draw": 2,
+      "away": 39,
+      "favoriteSide": "home",
+      "favoritePct": 59,
+      "source": "preview"
+     },
+     "bookie": {
+      "home": "4/7",
+      "draw": "40/1",
+      "away": "13/8"
+     },
+     "predicted": {
+      "home": 46.4,
+      "away": 41.7
+     },
+     "h2h": null,
+     "derby": "the East Asian Derby",
+     "sentences": [
+      "The East Asian Derby: Rokesly Regorasu sit 59%, Seoul Shire hunting an upset."
+     ],
+     "blurb": {
+      "angleId": "odds_fav",
+      "templateId": "pv_rv_04",
+      "loreLineId": null,
+      "mottyLineId": null
+     }
+    },
+    {
+     "gw": 2,
+     "home": {
+      "entryId": 10173,
+      "name": "Hackney Rohirrim",
+      "manager": "Mike Sutton",
+      "rank": 7,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "titlePct": 11.4,
+      "lastPct": 6.2,
+      "titlePrice": "7/1",
+      "lastPrice": "14/1",
+      "strength": 43.5,
+      "keys": [
+       {
+        "id": 4,
+        "name": "Gabriel",
+        "pos": "DEF",
+        "xp": 5.5
+       },
+       {
+        "id": 418,
+        "name": "Maguire",
+        "pos": "DEF",
+        "xp": 4.9
+       }
+      ],
+      "recentPickups": [
+       {
+        "name": "Dorgu",
+        "kind": "w",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Stach",
+        "pts": 13,
+        "xp": 3.4
+       },
+       "under": {
+        "name": "Bruno G.",
+        "pts": 0,
+        "xp": 4.8
+       }
+      },
+      "injuries": [],
+      "benchCall": null
+     },
+     "away": {
+      "entryId": 18279,
+      "name": "Mordor S.F.G",
+      "manager": "Nick Mottershead",
+      "rank": 3,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "titlePct": 28.5,
+      "lastPct": 1.8,
+      "titlePrice": "9/4",
+      "lastPrice": "50/1",
+      "strength": 45.5,
+      "keys": [
+       {
+        "id": 165,
+        "name": "João Pedro",
+        "pos": "FWD",
+        "xp": 5.2
+       },
+       {
+        "id": 529,
+        "name": "Roefs",
+        "pos": "GK",
+        "xp": 5.1
+       }
+      ],
+      "recentPickups": [],
+      "form": {
+       "over": {
+        "name": "Emersonn",
+        "pts": 9,
+        "xp": 0.5
+       },
+       "under": {
+        "name": "Roefs",
+        "pts": 1,
+        "xp": 5.4
+       }
+      },
+      "injuries": [],
+      "benchCall": {
+       "bench": {
+        "id": 463,
+        "name": "Woltemade",
+        "pos": "FWD",
+        "xp": 3.9,
+        "flag": "ok"
+       },
+       "starter": {
+        "id": 316,
+        "name": "Emersonn",
+        "pos": "FWD",
+        "xp": 0.5,
+        "flag": "ok"
+       },
+       "gap": 3.4
+      }
+     },
+     "odds": {
+      "home": 55,
+      "draw": 3,
+      "away": 42,
+      "favoriteSide": "home",
+      "favoritePct": 55,
+      "source": "preview"
+     },
+     "bookie": {
+      "home": "6/5",
+      "draw": "33/1",
+      "away": "8/11"
+     },
+     "predicted": {
+      "home": 42.4,
+      "away": 39.9
+     },
+     "h2h": null,
+     "derby": null,
+     "sentences": [
+      "Hackney Rohirrim are projected 2.5 clear of Mordor S.F.G.",
+      "Pre-match patent holder of plant-based fantasy superiority."
+     ],
+     "blurb": {
+      "angleId": "projected_margin",
+      "templateId": "pv_pm_04",
+      "loreLineId": null,
+      "mottyLineId": "pv_050"
+     }
+    }
+   ],
+   "wrap": [
+    "Named derbies all week: The Bad Blood Derby and the East Asian Derby."
    ]
   }
  ]

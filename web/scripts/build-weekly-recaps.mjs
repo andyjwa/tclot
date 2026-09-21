@@ -27,7 +27,7 @@
  * (and bookie-markets when present):
  *   node scripts/build-weekly-recaps.mjs
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
@@ -42,14 +42,19 @@ import {
   streakAsOf,
   matchFavorite,
 } from '../src/seasonPredictionsModel.js'
-import { matchupRecapSentences, recapWeekWrapSentences } from '../src/weeklyRecapText.js'
+import { recapWeekWrapSentences } from '../src/weeklyRecapText.js'
 import { namedFixtureFor } from '../src/leagueLore.js'
 import {
-  matchupPreviewSentences,
   oddsPercents,
   watchPlayersFromXi,
   formFromXi,
 } from '../src/weeklyPreviewText.js'
+import {
+  emptyBlurbState,
+  generateGwBlurbs,
+  serializeBlurbState,
+  stateSlices,
+} from '../src/blurbEngine.js'
 import {
   calibrationSigmaScale,
   resolvePreviewOdds,
@@ -282,6 +287,8 @@ const lastFinishedGw = matches.reduce(
   0,
 )
 
+const blurbState = emptyBlurbState()
+
 const gameweeks = []
 for (let gw = 1; gw <= lastFinishedGw; gw++) {
   const facts = recapFactsForGw(matches, entryIds, nameById, gw)
@@ -337,6 +344,7 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
         ? { home: rec.predHome, away: rec.predAway }
         : null
     return {
+      gw,
       home,
       away,
       winner:
@@ -350,7 +358,22 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
       predicted,
       h2h,
       derby: namedFixtureFor(home.manager, away.manager),
-      sentences: matchupRecapSentences({ gw, home, away, odds, leagueAvg, h2h }),
+      leagueAvg,
+    }
+  })
+  const recapBlurbs = generateGwBlurbs(matchups, {
+    surface: 'recap',
+    gw,
+    state: blurbState,
+  })
+  matchups.forEach((m, i) => {
+    const b = recapBlurbs[i]
+    m.sentences = b.sentences
+    m.blurb = {
+      angleId: b.angleId,
+      templateId: b.templateId,
+      loreLineId: b.loreLineId,
+      mottyLineId: b.mottyLineId,
     }
   })
 
@@ -927,6 +950,7 @@ function buildPreviewForGw(gw) {
     const bookiePrices = bookieFractionsFor(bookieRow, homeId, pcts)
 
     return {
+      gw,
       home,
       away,
       odds,
@@ -934,15 +958,21 @@ function buildPreviewForGw(gw) {
       predicted,
       h2h,
       derby: namedFixtureFor(home.manager, away.manager),
-      sentences: matchupPreviewSentences({
-        gw,
-        home,
-        away,
-        odds,
-        bookie: bookiePrices,
-        predicted,
-        h2h,
-      }),
+    }
+  })
+  const previewBlurbs = generateGwBlurbs(matchups, {
+    surface: 'preview',
+    gw,
+    state: blurbState,
+  })
+  matchups.forEach((m, i) => {
+    const b = previewBlurbs[i]
+    m.sentences = b.sentences
+    m.blurb = {
+      angleId: b.angleId,
+      templateId: b.templateId,
+      loreLineId: b.loreLineId,
+      mottyLineId: b.mottyLineId,
     }
   })
 
@@ -1043,6 +1073,16 @@ const output = {
 }
 
 writeFileSync(join(dataDir, 'weekly-recaps.json'), JSON.stringify(output, null, 1))
+
+const recapStateDir = join(dataDir, 'recap-state')
+mkdirSync(recapStateDir, { recursive: true })
+const slices = stateSlices(blurbState)
+writeFileSync(join(recapStateDir, 'template-cooldowns.json'), JSON.stringify(slices.templateCooldowns, null, 1))
+writeFileSync(join(recapStateDir, 'lore-cooldowns.json'), JSON.stringify(slices.loreCooldowns, null, 1))
+writeFileSync(join(recapStateDir, 'opener-patterns.json'), JSON.stringify(slices.openerPatterns, null, 1))
+writeFileSync(join(recapStateDir, 'pct-cap.json'), JSON.stringify(slices.usedPercentOfTeamByGw, null, 1))
+writeFileSync(join(recapStateDir, 'events.json'), JSON.stringify(serializeBlurbState(blurbState), null, 1))
+
 console.log(
   `weekly-recaps.json written: ${gameweeks.length} recap(s), ${previews.length} preview(s)`,
 )
