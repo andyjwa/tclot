@@ -30,6 +30,14 @@ body[data-tclot-paint='1'] {
   --tclot-header-solid: #17402f;
 }
 
+/* Canvas behind the banner: iOS 26 Liquid Glass samples html/body, not the
+ * in-flow header tile. Cream/paper here frosts the status bar white; match
+ * the racing-green band so the top stays solid. `.fotmob` still paints the
+ * page fill below the header. */
+html:has(body[data-tclot-paint='1']) {
+  background-color: #17402f;
+}
+
 /* Dark body shell — Variant D (darkmode-options mockup): brighter body
  * text and a lifted border so hairlines survive on the dark green. */
 body[data-tclot-paint='1']:not([data-tclot-theme='light']) {
@@ -37,7 +45,7 @@ body[data-tclot-paint='1']:not([data-tclot-theme='light']) {
   --text-h: #f8faf4;
   --bg: #121814;
   --border: #38463b;
-  background: #121814;
+  background-color: #17402f;
 }
 
 /* Light body shell — Scorebook paper */
@@ -46,7 +54,7 @@ body[data-tclot-paint='1'][data-tclot-theme='light'] {
   --text-h: #1a231a;
   --bg: #f6f1e2;
   --border: #ddd5b8;
-  background: #f6f1e2;
+  background-color: #17402f;
 }
 
 /* ---------------- .fotmob dark defaults ---------------- */
@@ -397,7 +405,8 @@ body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--neg 
  * sitting on a darker wash). Geometry stays in App.css. */
 body[data-tclot-paint='1'] .tile.tile--brand-header,
 body[data-tclot-paint='1'] .fotmob[data-theme='light'] .tile.tile--brand-header {
-  background: #17402f;
+  background-color: #17402f;
+  background-image: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   color: #f4f6f0;

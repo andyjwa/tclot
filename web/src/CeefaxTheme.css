@@ -38,6 +38,10 @@
 /* The compound `[data-tclot-paint='1']` twin keeps specificity level with
  * the always-on paint layer; this file imports after PaintPreview.css, so at
  * equal specificity these win. */
+html:has(body[data-tclot-theme='ceefax']) {
+  background-color: #000;
+}
+
 body[data-tclot-theme='ceefax'],
 body[data-tclot-paint='1'][data-tclot-theme='ceefax'] {
   /* Teletext 8-colour set (text-legible eases of the pure RGB values) */

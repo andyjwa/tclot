@@ -212,7 +212,12 @@
 /* theme only — dark theme keeps its solid `--fm-bg` page bg.          */
 /* ------------------------------------------------------------------ */
 .fotmob[data-theme='light'] {
-  background: linear-gradient(
+  /* Keep a solid header colour as `background-color` so iOS 26 Liquid Glass
+   * samples the racing-green banner instead of frosting through a gradient
+   * (gradients leave background-color transparent). The cream wash is the
+   * image layer only and still fades into the page below the header. */
+  background-color: var(--tclot-header-solid, #795bfb);
+  background-image: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--brand) 9%, var(--fm-bg)) 0,
     color-mix(in srgb, var(--brand) 5%, var(--fm-bg)) 64px,
@@ -8599,7 +8604,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   margin: -20px -16px 0;
   padding: 0;
   padding-top: env(safe-area-inset-top, 0px);
-  background: var(--brand-grad);
+  /* Solid fill, not `--brand-grad`: a gradient leaves `background-color`
+   * transparent, so iOS 26 Liquid Glass frosts the status bar instead of
+   * painting the banner all the way up. Matches the live fixture header. */
+  background-color: var(--tclot-header-solid, #795bfb);
+  background-image: none;
   border: 0;
   border-radius: 0;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
@@ -8850,7 +8859,12 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 
 @media (max-width: 720px) {
   /* Phone-only tightening — the green band, glass pill, and status
-   * wash now live in the base rules so desktop / iPad match the app. */
+   * wash now live in the base rules so desktop / iPad match the app.
+   * Extra safe-area padding drops the TCLOT pill below the Dynamic
+   * Island so it isn't sitting in the status-bar frost zone. */
+  .tile.tile--brand-header {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
+  }
   .brand-header__row {
     padding: 0 var(--space-3);
     grid-template-columns: auto auto;
