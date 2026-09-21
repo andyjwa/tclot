@@ -11,6 +11,7 @@ import { SeedLabelMockup } from './SeedLabelMockup.jsx'
 import { TradePillsMockup } from './TradePillsMockup.jsx'
 import { ScorecardRemainingMockup } from './ScorecardRemainingMockup.jsx'
 import { TopOfLeagueMockup } from './TopOfLeagueMockup.jsx'
+import { VillainVictoryMockup } from './VillainVictoryMockup.jsx'
 
 import { stripReloadQuery } from './tclotRefresh.js'
 
@@ -38,6 +39,9 @@ const isScorecardMockup =
 const isTopOfLeagueMockup =
   typeof window !== 'undefined' &&
   new URLSearchParams(window.location.search).get('leader') === '1'
+const isVillainVictoryMockup =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('villain') === '1'
 
 // "Scorebook" theme (PaintPreview.css) — token-level coat of paint on the
 // real app. Now the DEFAULT for everyone. `?paint=0` is a kill switch that
@@ -81,6 +85,8 @@ createRoot(document.getElementById('root')).render(
       ? <RebrandGallery />
       : isTopOfLeagueMockup
         ? <TopOfLeagueMockup />
+      : isVillainVictoryMockup
+        ? <VillainVictoryMockup />
       : isScorecardMockup
         ? <ScorecardRemainingMockup />
         : isTradePillsMockup

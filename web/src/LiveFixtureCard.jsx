@@ -333,6 +333,7 @@ export function LiveFixtureCard({
               teamLogoMap={ctx.teamLogoMap}
               kitIndexByEntry={ctx.kitIndexByEntry}
               mobile
+              villainEntryIds={ctx.villainEntryIds}
             />
           </div>
         </div>

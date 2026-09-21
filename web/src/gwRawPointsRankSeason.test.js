@@ -6,6 +6,7 @@ import {
   fplGwScoreOrdinalFromPointsMap,
   heroDefeatEntryIds,
   villainVictoryEntryIds,
+  villainVictoryEntryIdsFromGwFixtures,
 } from './gwRawPointsRankSeason.js';
 
 test('fplGwScoreOrdinalFromPointsMap — tie breaks by entry id', () => {
@@ -36,6 +37,67 @@ test('villainVictoryEntryIds — win H2H at 7th in league raw GW', () => {
   const v = villainVictoryEntryIds(pts, gwMatches);
   assert.equal(v.size, 1);
   assert.ok(v.has(7));
+});
+
+test('villainVictoryEntryIds — draw at the lowest GW score marks both', () => {
+  const pts = new Map([
+    [1, 80],
+    [2, 70],
+    [3, 60],
+    [4, 50],
+    [5, 40],
+    [6, 30],
+    [7, 22],
+    [8, 22],
+  ]);
+  const gwMatches = [{ league_entry_1: 7, league_entry_2: 8 }];
+  const v = villainVictoryEntryIds(pts, gwMatches);
+  assert.equal(v.size, 2);
+  assert.ok(v.has(7));
+  assert.ok(v.has(8));
+});
+
+test('villainVictoryEntryIds — draw that is not the lowest score is not a villain', () => {
+  const pts = new Map([
+    [1, 80],
+    [2, 70],
+    [3, 60],
+    [4, 50],
+    [5, 40],
+    [6, 30],
+    [7, 30],
+    [8, 20],
+  ]);
+  const gwMatches = [{ league_entry_1: 6, league_entry_2: 7 }];
+  const v = villainVictoryEntryIds(pts, gwMatches);
+  assert.equal(v.size, 0);
+});
+
+test('villainVictoryEntryIdsFromGwFixtures — schedule-shaped rows, needs 8 scores', () => {
+  const fixtures = [
+    { homeId: 1, awayId: 2, homePts: 80, awayPts: 70 },
+    { homeId: 3, awayId: 4, homePts: 60, awayPts: 50 },
+    { homeId: 5, awayId: 6, homePts: 40, awayPts: 30 },
+    { homeId: 7, awayId: 8, homePts: 25, awayPts: 20 },
+  ];
+  const v = villainVictoryEntryIdsFromGwFixtures(fixtures);
+  assert.equal(v.size, 1);
+  assert.ok(v.has(7));
+  assert.equal(villainVictoryEntryIdsFromGwFixtures(fixtures.slice(0, 3)).size, 0);
+});
+
+test('villainVictoryEntryIdsFromGwFixtures — bottom-table draw needs 8 scores', () => {
+  const fixtures = [
+    { homeId: 1, awayId: 2, homePts: 80, awayPts: 70 },
+    { homeId: 3, awayId: 4, homePts: 60, awayPts: 50 },
+    { homeId: 5, awayId: 6, homePts: 40, awayPts: 30 },
+    { homeId: 7, awayId: 8, homePts: 22, awayPts: 22 },
+  ];
+  const v = villainVictoryEntryIdsFromGwFixtures(fixtures);
+  assert.equal(v.size, 2);
+  assert.ok(v.has(7));
+  assert.ok(v.has(8));
+  assert.equal(villainVictoryEntryIdsFromGwFixtures(fixtures.slice(0, 3)).size, 0);
 });
 
 test('heroDefeatEntryIds — lose H2H at 2nd in league raw GW', () => {

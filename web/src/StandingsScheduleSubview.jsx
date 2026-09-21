@@ -11,8 +11,9 @@ import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx'
 import { useHistoricGwFixtureSquads } from './useHistoricGwFixtureSquads.js'
 import { useNarrowViewport } from './usePortraitMobile.js'
-import { firstWord } from './teamNameUtils.js'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
+import { villainVictoryEntryIdsFromGwFixtures } from './gwRawPointsRankSeason.js'
+import { matchupVillainVictoryLine } from './teamNameUtils.js'
 
 function pad2(n) {
   const num = Number(n)
@@ -113,6 +114,14 @@ export function StandingsScheduleSubview({
     (t) => Number(t?.id) === Number(teamFilter),
   )
 
+  const villainsByGw = useMemo(() => {
+    const map = new Map()
+    for (const g of allGwGroups) {
+      map.set(g.event, villainVictoryEntryIdsFromGwFixtures(g.fixtures))
+    }
+    return map
+  }, [allGwGroups])
+
   return (
     <section className="standings-schedule" aria-labelledby="standings-schedule-heading">
       <h2 id="standings-schedule-heading" className="visually-hidden">
@@ -179,6 +188,7 @@ export function StandingsScheduleSubview({
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
           teamsForFormSelect={teamsForFormSelect}
+          villainsByGw={villainsByGw}
         />
       ) : (
         <TeamScheduleCompact
@@ -187,6 +197,8 @@ export function StandingsScheduleSubview({
           activeTeamName={filteredTeam?.teamName ?? ''}
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
+          teamId={Number(teamFilter)}
+          villainsByGw={villainsByGw}
         />
       )}
     </section>
@@ -198,6 +210,7 @@ function AllTeamsScheduleList({
   teamLogoMap,
   kitIndexByEntry,
   teamsForFormSelect = [],
+  villainsByGw = null,
 }) {
   /** Lookup league_entry → fplEntryId so finished rows can expand into FPL picks. */
   const fplEntryByLeagueId = useMemo(() => {
@@ -256,6 +269,7 @@ function AllTeamsScheduleList({
                 expandedKey={`${fx.event}-${fx.homeId}-${fx.awayId}`}
                 expanded={expandedFixtures.has(`${fx.event}-${fx.homeId}-${fx.awayId}`)}
                 onToggle={toggleExpanded}
+                villainEntryIds={villainsByGw?.get(g.event) ?? null}
               />
             ))}
           </ul>
@@ -287,11 +301,20 @@ function ScheduleFixtureItem({
   expandedKey,
   expanded,
   onToggle,
+  villainEntryIds = null,
 }) {
   const homeWin =
     fx.finished && fx.homePts != null && fx.awayPts != null && fx.homePts > fx.awayPts
   const awayWin =
     fx.finished && fx.homePts != null && fx.awayPts != null && fx.awayPts > fx.homePts
+  const homeVillain = Boolean(villainEntryIds?.has(Number(fx.homeId)))
+  const awayVillain = Boolean(villainEntryIds?.has(Number(fx.awayId)))
+  const villainLine = matchupVillainVictoryLine({
+    homeName: fx.homeName,
+    awayName: fx.awayName,
+    homeVillain,
+    awayVillain,
+  })
 
   const expandable = fx.finished
   const bodyId = `standings-fixture-${expandedKey}`
@@ -315,7 +338,12 @@ function ScheduleFixtureItem({
         }
         title={fx.homeName}
       >
-        <span className="standings-schedule__fixture-name-full">
+        <span
+          className={
+            'standings-schedule__fixture-name-full' +
+            (homeVillain ? ' standings-schedule__fixture-name--villain' : '')
+          }
+        >
           {fx.homeName}
         </span>
       </span>
@@ -354,7 +382,12 @@ function ScheduleFixtureItem({
         }
         title={fx.awayName}
       >
-        <span className="standings-schedule__fixture-name-full">
+        <span
+          className={
+            'standings-schedule__fixture-name-full' +
+            (awayVillain ? ' standings-schedule__fixture-name--villain' : '')
+          }
+        >
           {fx.awayName}
         </span>
       </span>
@@ -382,7 +415,15 @@ function ScheduleFixtureItem({
   )
 
   return (
-    <li className="standings-schedule__fixture-item">
+    <li
+      className={
+        'standings-schedule__fixture-item' +
+        (villainLine ? ' standings-schedule__fixture-item--villain' : '')
+      }
+    >
+      {villainLine ? (
+        <p className="standings-schedule__villain-banner">{villainLine}</p>
+      ) : null}
       {expandable ? (
         <button
           type="button"
@@ -459,6 +500,8 @@ function TeamScheduleCompact({
   activeTeamName,
   teamLogoMap,
   kitIndexByEntry,
+  teamId = null,
+  villainsByGw = null,
 }) {
   return (
     <>
@@ -515,6 +558,9 @@ function TeamScheduleCompact({
                   : r.result === 'D'
                     ? 'draw'
                     : null
+            const isVillain = Boolean(
+              teamId != null && villainsByGw?.get(r.event)?.has(Number(teamId)),
+            )
             return (
               <li
                 key={`${r.event}-${r.opponentId}`}
@@ -591,6 +637,11 @@ function TeamScheduleCompact({
                   )}
                 </span>
                 <span className="standings-schedule-team__result">
+                  {isVillain ? (
+                    <span className="standings-schedule-team__chip standings-schedule-team__chip--villain">
+                      Villain
+                    </span>
+                  ) : null}
                   {tone ? (
                     <span
                       className={`standings-schedule-team__chip standings-schedule-team__chip--${tone}`}

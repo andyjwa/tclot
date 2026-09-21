@@ -22,7 +22,7 @@ function teamNameForEntry(teams, leagueEntryId) {
  * 8th-place band is kept. `standings-row--ceefax-leader-cut` is a
  * no-op outside the Ceefax skin (red rule under the top row).
  */
-function liveStandingsRowClass(row, idx, isCeefax) {
+function liveStandingsRowClass(row, idx, isCeefax, isVillain) {
   const parts = [];
   if (!isCeefax && idx === 0) parts.push('standings-row--ceefax-leader-cut');
   if (isCeefax) {
@@ -35,6 +35,7 @@ function liveStandingsRowClass(row, idx, isCeefax) {
   if ((row.ordinalLive ?? idx + 1) === 8) {
     parts.push('standings-row--divider-above', 'standings-row--8th');
   }
+  if (isVillain) parts.push('standings-row--villain-victory');
   return parts.join(' ');
 }
 
@@ -62,7 +63,7 @@ function SectionLabelRow({ label, colSpan, top }) {
  * indicator). On mobile Standings / Live Table we show the full club
  * name (MSFG stays `MSFG`) now that the manager subtitle is gone.
  */
-function LiveTeamCell({ row, teamLogoMap, kitIndexByEntry, mobile }) {
+function LiveTeamCell({ row, teamLogoMap, kitIndexByEntry, mobile, villain = false }) {
   const isCeefax = useIsCeefax();
   /* Ceefax bumps the name type well past what full club names can fit
    * at 390px — use the curated short labels so rows stay single-line. */
@@ -83,9 +84,18 @@ function LiveTeamCell({ row, teamLogoMap, kitIndexByEntry, mobile }) {
         kitIndexByEntry={kitIndexByEntry}
       />
       <span className="team-name team-name--sidebar live-standings-team-name">
-        <ClickableTeamName leagueEntryId={row.league_entry} title={row.teamName}>
-          {displayName}
-        </ClickableTeamName>
+        <span
+          className={
+            'live-standings-name' + (villain ? ' live-standings-name--villain' : '')
+          }
+        >
+          <ClickableTeamName leagueEntryId={row.league_entry} title={row.teamName}>
+            {displayName}
+          </ClickableTeamName>
+        </span>
+        {villain ? (
+          <span className="live-standings-villain-chip">Villain</span>
+        ) : null}
         {moveUp ? (
           <span
             className="live-standings-move live-standings-move--up"
@@ -183,6 +193,7 @@ export function LiveStandingsTable({
   teamLogoMap,
   kitIndexByEntry,
   mobile,
+  villainEntryIds = null,
 }) {
   const isCeefax = useIsCeefax();
   const lastTitle = gwStandingsFrozen
@@ -211,7 +222,10 @@ export function LiveStandingsTable({
           <tbody>
             {!isCeefax ? <SectionLabelRow label="Titans" colSpan={5} top /> : null}
             {liveStandingsRows.map((row, idx) => {
-              const rowClass = liveStandingsRowClass(row, idx, isCeefax);
+              const isVillain = Boolean(
+                villainEntryIds?.has(Number(row.league_entry)),
+              );
+              const rowClass = liveStandingsRowClass(row, idx, isCeefax, isVillain);
               return (
                 <Fragment key={row.league_entry}>
                   <tr className={rowClass || undefined}>
@@ -224,6 +238,7 @@ export function LiveStandingsTable({
                         teamLogoMap={teamLogoMap}
                         kitIndexByEntry={kitIndexByEntry}
                         mobile
+                        villain={isVillain}
                       />
                     </td>
                     <td
@@ -330,7 +345,10 @@ export function LiveStandingsTable({
         <tbody>
           {!isCeefax ? <SectionLabelRow label="Titans" colSpan={11} top /> : null}
           {liveStandingsRows.map((row, idx) => {
-            const rowClass = liveStandingsRowClass(row, idx, isCeefax);
+            const isVillain = Boolean(
+              villainEntryIds?.has(Number(row.league_entry)),
+            );
+            const rowClass = liveStandingsRowClass(row, idx, isCeefax, isVillain);
             return (
               <Fragment key={row.league_entry}>
                 <tr className={rowClass || undefined}>
@@ -343,6 +361,7 @@ export function LiveStandingsTable({
                       teamLogoMap={teamLogoMap}
                       kitIndexByEntry={kitIndexByEntry}
                       mobile={false}
+                      villain={isVillain}
                     />
                   </td>
                   <td className="col-num col-pl tabular">

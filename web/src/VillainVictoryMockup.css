@@ -1,0 +1,609 @@
+/*
+ * Villain-victory treatment gallery (`?villain=1`) — Scorebook paper,
+ * local preview only. Round 1: name the villain in the empty centre of
+ * the scorecard meta strip, and put a lilac pill behind their name on
+ * Live Scores / Live Table / Schedule.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@500;600;700&display=swap');
+
+.vvm {
+  --v-bg: #f6f1e2;
+  --v-surface: #fdfaf0;
+  --v-surface-2: #ece5cf;
+  --v-band: #f3edda;
+  --v-border: #ddd5b8;
+  --v-ink: #1a231a;
+  --v-text: rgba(31, 42, 31, 0.92);
+  --v-muted: #77775f;
+  --v-ghost: rgba(105, 100, 82, 0.62);
+  --v-deep: #17402f;
+  --v-green: #1d5c40;
+  --v-villain: #8f7fc0;
+  --v-villain-strong: #6f5fa8;
+  --v-villain-ink: #4e3f86;
+  --v-villain-tint: color-mix(in srgb, #8f7fc0 16%, transparent);
+  --v-win: #12844e;
+  --v-loss: #b04f26;
+  min-height: 100vh;
+  padding: 36px clamp(16px, 3vw, 48px) 72px;
+  background: var(--v-bg);
+  color: var(--v-text);
+  font-family: 'Schibsted Grotesk', Inter, system-ui, sans-serif;
+}
+.vvm * {
+  box-sizing: border-box;
+}
+
+/* ----- Page chrome -------------------------------------------------- */
+
+.vvm-top {
+  max-width: 760px;
+  margin: 0 auto 32px;
+}
+.vvm-kicker {
+  display: block;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v-villain-strong);
+  margin-bottom: 8px;
+}
+.vvm-top h1 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--v-ink);
+}
+.vvm-top p {
+  margin: 0 0 10px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #55523f;
+}
+.vvm-top a {
+  font-size: 13px;
+  color: var(--v-green);
+}
+
+.vvm-options {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.vvm-option {
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.vvm-option__head {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--v-border);
+}
+.vvm-option__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 10px;
+  margin-bottom: 6px;
+}
+.vvm-option__id {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v-villain-strong);
+}
+.vvm-option__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--v-ink);
+  letter-spacing: -0.015em;
+}
+.vvm-option__tag {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.vvm-option__tag--muted {
+  background: var(--v-surface-2);
+  color: var(--v-muted);
+}
+.vvm-option__tag--pick {
+  background: color-mix(in srgb, var(--v-villain) 22%, var(--v-surface));
+  color: var(--v-villain-ink);
+}
+.vvm-option__tag--ok {
+  background: var(--v-band);
+  color: var(--v-muted);
+}
+.vvm-option__tag--loud {
+  background: var(--v-villain-strong);
+  color: #f7f4ff;
+}
+.vvm-option__desc {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #55523f;
+}
+
+.vvm-option__surfaces {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px 16px 20px;
+  background: color-mix(in srgb, var(--v-bg) 55%, var(--v-surface));
+}
+@media (max-width: 1100px) {
+  .vvm-option__surfaces {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vvm-surface {
+  margin: 0;
+  min-width: 0;
+}
+.vvm-surface figcaption {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--v-muted);
+  margin-bottom: 8px;
+}
+
+.vvm-phone {
+  max-width: 390px;
+}
+.vvm-phone__screen {
+  background: var(--v-bg);
+  border: 1px solid var(--v-border);
+  border-radius: 16px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.vvm-note {
+  max-width: 760px;
+  margin: 28px auto 0;
+  font-size: 12.5px;
+  color: var(--v-muted);
+  line-height: 1.5;
+}
+.vvm-note code {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+}
+
+/* ----- Shared bits -------------------------------------------------- */
+
+.vvm-crest {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  background: hsl(var(--crest-hue, 152) 42% 32%);
+  letter-spacing: 0.02em;
+}
+.vvm-crest--villain {
+  box-shadow: 0 0 0 2px var(--v-villain);
+}
+
+.vvm-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--v-ink);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  line-height: 1.2;
+}
+.vvm-name--right {
+  text-align: right;
+}
+.vvm-name--pill {
+  flex: none;
+  padding: 3px 10px 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--v-villain) 22%, var(--v-surface));
+  color: var(--v-villain-ink);
+  font-weight: 700;
+  overflow: visible;
+}
+
+.vvm-line {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-align: center;
+}
+.vvm-line--purple {
+  color: var(--v-villain-ink);
+}
+.vvm-line--cream {
+  color: #f7f4ff;
+}
+.vvm-line--ink {
+  color: var(--v-ink);
+}
+
+.vvm-chip {
+  flex: none;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--v-villain) 20%, transparent);
+  color: var(--v-villain-ink);
+}
+.vvm-chip--loud {
+  background: #f7f4ff;
+  color: var(--v-villain-ink);
+}
+
+/* ----- Scorecard ---------------------------------------------------- */
+
+.vvm-card {
+  position: relative;
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.vvm-card--now {
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--v-villain) 10%, transparent),
+    transparent 42%
+  );
+}
+.vvm-card--loud {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--v-villain) 28%, transparent);
+}
+
+.vvm-meta {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: 6px;
+  padding: 7px 12px 8px;
+  background: var(--v-band);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+.vvm-meta--loud {
+  background: var(--v-villain-strong);
+}
+.vvm-meta__ghost {
+  color: var(--v-ghost);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vvm-meta__ghost:last-child {
+  text-align: right;
+}
+.vvm-meta--loud .vvm-meta__ghost {
+  color: rgba(247, 244, 255, 0.7);
+}
+.vvm-meta .vvm-line {
+  font-family: 'Schibsted Grotesk', Inter, sans-serif;
+  text-transform: none;
+  letter-spacing: -0.015em;
+  font-size: 12px;
+}
+
+.vvm-hdr {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 11px 6px;
+}
+.vvm-hdr__side {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.vvm-hdr__side--away {
+  justify-content: flex-end;
+}
+.vvm-hdr__score {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.vvm-hdr__half {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--v-ink);
+  line-height: 1;
+}
+.vvm-hdr__half--winner {
+  background: color-mix(in srgb, var(--v-deep) 10%, transparent);
+  border-radius: 8px;
+  padding: 2px 7px 3px;
+}
+.vvm-hdr__sep {
+  color: var(--v-muted);
+  font-weight: 600;
+}
+
+.vvm-gauge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px 10px;
+}
+.vvm-gauge__ft {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--v-green);
+}
+.vvm-gauge__track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 6px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--v-surface-2);
+}
+.vvm-gauge__fill {
+  height: 100%;
+  background: var(--v-green);
+}
+.vvm-gauge__fill--home,
+.vvm-gauge__fill--away {
+  flex: 1;
+}
+.vvm-gauge__notch {
+  flex: none;
+  width: 2px;
+  height: 9px;
+  background: var(--v-muted);
+  border-radius: 1px;
+}
+
+/* ----- Live Table --------------------------------------------------- */
+
+.vvm-tablewrap {
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.vvm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.vvm-table th {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--v-muted);
+  text-align: left;
+  padding: 7px 8px;
+  background: var(--v-band);
+  border-bottom: 1px solid var(--v-border);
+}
+.vvm-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--v-border) 70%, transparent);
+  color: var(--v-ink);
+}
+.vvm-table tr:last-child td {
+  border-bottom: 0;
+}
+.vvm-col-rank {
+  width: 28px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--v-muted);
+}
+.vvm-col-num {
+  width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.vvm-col-pts {
+  font-weight: 700;
+}
+.vvm-col-last {
+  width: 44px;
+  text-align: center;
+}
+.vvm-divider td {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--v-muted);
+  background: var(--v-band);
+  padding: 4px 8px;
+}
+.vvm-teamcell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.vvm-row--now td {
+  background: color-mix(in srgb, var(--v-villain) 8%, transparent);
+}
+.vvm-row--soft td {
+  background: color-mix(in srgb, var(--v-villain) 6%, transparent);
+}
+.vvm-row--loud td {
+  background: var(--v-villain-strong);
+  color: #f7f4ff;
+}
+.vvm-row--loud .vvm-col-rank,
+.vvm-row--loud .vvm-name {
+  color: #f7f4ff;
+}
+.vvm-row--loud .vvm-name--pill {
+  background: #f7f4ff;
+  color: var(--v-villain-ink);
+}
+.vvm-row--8th td {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--v-loss) 35%, transparent);
+}
+
+.vvm-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.vvm-dot--win {
+  background: var(--v-win);
+}
+.vvm-dot--loss {
+  background: var(--v-loss);
+}
+
+/* ----- Schedule ----------------------------------------------------- */
+
+.vvm-sched {
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.vvm-sched__band {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 12px;
+  background: var(--v-band);
+  border-bottom: 1px solid var(--v-border);
+}
+.vvm-sched__gw {
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--v-ink);
+  letter-spacing: 0.04em;
+}
+.vvm-sched__status {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--v-muted);
+}
+.vvm-sched__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.vvm-sched__item {
+  border-top: 1px solid color-mix(in srgb, var(--v-border) 70%, transparent);
+}
+.vvm-sched__item:first-child {
+  border-top: 0;
+}
+.vvm-sched__item--now {
+  background: color-mix(in srgb, var(--v-villain) 8%, transparent);
+}
+.vvm-sched__item--loud {
+  background: var(--v-villain-strong);
+}
+.vvm-sched__item--loud .vvm-name,
+.vvm-sched__item--loud .vvm-sched__score,
+.vvm-sched__item--loud .vvm-sched__dash {
+  color: #f7f4ff;
+}
+.vvm-sched__item--loud .vvm-name--pill {
+  background: #f7f4ff;
+  color: var(--v-villain-ink);
+}
+.vvm-sched__item--loud .vvm-sched__score--lose {
+  color: rgba(247, 244, 255, 0.55);
+}
+.vvm-sched__banner {
+  text-align: center;
+  padding: 5px 10px 0;
+}
+.vvm-sched__banner .vvm-line {
+  font-size: 12px;
+}
+.vvm-sched__banner--loud {
+  padding-top: 7px;
+}
+.vvm-sched__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 6px;
+  padding: 8px 10px;
+}
+.vvm-sched__mid {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.vvm-sched__score {
+  min-width: 1.4em;
+  text-align: center;
+  font-size: 13.5px;
+}
+.vvm-sched__score--win {
+  color: var(--v-ink);
+}
+.vvm-sched__score--lose {
+  color: var(--v-muted);
+  font-weight: 500;
+}
+.vvm-sched__dash {
+  color: var(--v-muted);
+}
+.vvm-sched__row .vvm-name--right {
+  justify-self: end;
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
