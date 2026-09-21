@@ -451,9 +451,13 @@ function squadsToGwPointsMap(squads) {
   return pointsByEntryId;
 }
 
-/** @param {object[]} squads @param {object[]} gwMatches */
-function villainVictoryLeagueEntryIds(squads, gwMatches) {
-  return villainVictoryEntryIds(squadsToGwPointsMap(squads), gwMatches);
+/** @param {object[] | Map<number, number>} squadsOrPoints @param {object[]} gwMatches */
+function villainVictoryLeagueEntryIds(squadsOrPoints, gwMatches) {
+  const points =
+    squadsOrPoints instanceof Map
+      ? squadsOrPoints
+      : squadsToGwPointsMap(squadsOrPoints);
+  return villainVictoryEntryIds(points, gwMatches);
 }
 
 /** @param {object[]} squads @param {object[]} gwMatches */
@@ -1016,8 +1020,14 @@ export function LiveScores({
   }, [liveStandingsRows]);
 
   const villainVictoryEntryIds = useMemo(
-    () => villainVictoryLeagueEntryIds(squads, gwMatches),
-    [squads, gwMatches]
+    () =>
+      villainVictoryLeagueEntryIds(
+        gwStandingsFrozen && finishedMatchPtsByLeagueEntry.size >= 8
+          ? finishedMatchPtsByLeagueEntry
+          : squads,
+        gwMatches,
+      ),
+    [gwStandingsFrozen, finishedMatchPtsByLeagueEntry, squads, gwMatches]
   );
 
   const heroDefeatEntryIds = useMemo(
@@ -1108,14 +1118,28 @@ export function LiveScores({
         awayName: teamNameForEntry(teams, awayId),
         homeSquad,
         awaySquad,
-        homeLive: liveGwDisplayTotal(homeSquad),
-        awayLive: liveGwDisplayTotal(awaySquad),
+        homeLive: gwStandingsFrozen
+          ? (finishedMatchPtsByLeagueEntry.get(homeId) ??
+            liveGwDisplayTotal(homeSquad))
+          : liveGwDisplayTotal(homeSquad),
+        awayLive: gwStandingsFrozen
+          ? (finishedMatchPtsByLeagueEntry.get(awayId) ??
+            liveGwDisplayTotal(awaySquad))
+          : liveGwDisplayTotal(awaySquad),
         homeRemaining,
         awayRemaining,
         comp: selectedGwOption?.label ?? `Gameweek ${gameweek}`,
       };
     });
-  }, [gwMatches, squadByLeagueEntry, teams, gameweek, selectedGwOption]);
+  }, [
+    gwMatches,
+    squadByLeagueEntry,
+    teams,
+    gameweek,
+    selectedGwOption,
+    gwStandingsFrozen,
+    finishedMatchPtsByLeagueEntry,
+  ]);
 
   const cardDeckCtx = useMemo(
     () => ({
@@ -1345,8 +1369,14 @@ export function LiveScores({
                 : awayName;
               const homeSquad = squadByLeagueEntry.get(homeId);
               const awaySquad = squadByLeagueEntry.get(awayId);
-              const homeLive = liveGwDisplayTotal(homeSquad);
-              const awayLive = liveGwDisplayTotal(awaySquad);
+              const homeLive = gwStandingsFrozen
+                ? (finishedMatchPtsByLeagueEntry.get(homeId) ??
+                  liveGwDisplayTotal(homeSquad))
+                : liveGwDisplayTotal(homeSquad);
+              const awayLive = gwStandingsFrozen
+                ? (finishedMatchPtsByLeagueEntry.get(awayId) ??
+                  liveGwDisplayTotal(awaySquad))
+                : liveGwDisplayTotal(awaySquad);
               /**
                * Distinct-player count (`xiPlayersRemaining`) drives the
                * bracketed `(N)` indicator next to each side's score. Falls
