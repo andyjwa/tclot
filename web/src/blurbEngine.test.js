@@ -6,6 +6,8 @@ import {
   isMottyVeganLine,
   emptyBlurbState,
   createGwContext,
+  previewConfig,
+  recapConfig,
 } from './blurbEngine.js'
 import { matchupPreviewSentences } from './weeklyPreviewText.js'
 import { matchupRecapSentences } from './weeklyRecapText.js'
@@ -237,6 +239,71 @@ test('cooldowns skip a Motty recap line already used this season', () => {
   assert.ok(first.mottyLineId)
   assert.ok(second.mottyLineId)
   assert.notEqual(first.mottyLineId, second.mottyLineId)
+})
+
+test('fact-line templates are a single sentence', () => {
+  for (const [surface, cfg] of [
+    ['preview', previewConfig],
+    ['recap', recapConfig],
+  ]) {
+    for (const [pack, tpls] of Object.entries(cfg.templatePacks || {})) {
+      for (const tpl of tpls) {
+        const dummy = String(tpl.text || '').replace(/\{[^}]+\}/g, 'Slot')
+        assert.ok(
+          countSentences([dummy]) <= 1,
+          `${surface} ${pack} ${tpl.id}: ${tpl.text}`,
+        )
+      }
+    }
+  }
+})
+
+test('preview does not stack odds and a waiver in one graf', () => {
+  const lines = matchupPreviewSentences({
+    gw: 4,
+    home: {
+      entryId: 10,
+      name: 'Suffolk Sméagol',
+      manager: 'Andrew Ward',
+      pickup: { name: 'Mykolenko' },
+    },
+    away: {
+      entryId: 11,
+      name: 'Brampton Balrogs',
+      manager: 'Eddy Webster',
+    },
+    odds: { favoriteSide: 'away', favoritePct: 49, home: 48, away: 49, draw: 3 },
+    bookie: { home: '4/5', away: '11/10' },
+  })
+  assert.equal(countSentences(lines), 1, JSON.stringify(lines))
+  const blob = lines.join(' ')
+  const odds = /%|\d\/\d/.test(blob)
+  const waiver = /wire|waiver|brought in|claimed|added/i.test(blob)
+  assert.ok(!(odds && waiver), blob)
+  assert.match(blob, /Suffolk|Brampton/)
+})
+
+test('rivalry overlay keeps a leading player name capitalised', () => {
+  const r = generateMatchupBlurb(
+    {
+      gw: 6,
+      home: {
+        entryId: 20,
+        name: 'Rokesly Regorasu',
+        manager: 'David Higman',
+        pickup: { name: 'Tel' },
+      },
+      away: {
+        entryId: 21,
+        name: 'Seoul Shire',
+        manager: 'Luke Butcher',
+      },
+      odds: { favoriteSide: 'home', favoritePct: 59, home: 59, away: 39, draw: 2 },
+    },
+    { surface: 'preview' },
+  )
+  assert.match(r.blurb, /East Asian Derby/)
+  assert.doesNotMatch(r.blurb, /: tel\b/)
 })
 
 test('emptyBlurbState serialises events after a GW', () => {

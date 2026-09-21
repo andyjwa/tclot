@@ -217,8 +217,8 @@
       },
       {
         "id": "pv_wa_03",
-        "required": ["favTeam", "favPct", "dogTeam", "dogPct", "waiverPlayer"],
-        "text": "{favTeam} sit at {favPct}% — {dogTeam} the long shots at {dogPct}%. {waiverPlayer} is live off the wire."
+        "required": ["waiverMgr", "waiverPlayer", "oppTeam"],
+        "text": "{waiverMgr} just added {waiverPlayer}, with {oppTeam} next up."
       },
       {
         "id": "pv_wa_04",

@@ -255,13 +255,13 @@
       },
       {
         "id": "sq_06",
-        "text": "{margin} point(s). That is the whole story."
+        "text": "{margin} point(s) — that is the whole story."
       }
     ],
     "stalemate": [
       {
         "id": "st_01",
-        "text": "Stalemate. {scoreline}. Nobody blinked."
+        "text": "Stalemate at {scoreline} — nobody blinked."
       },
       {
         "id": "st_02",
@@ -281,7 +281,7 @@
       },
       {
         "id": "st_06",
-        "text": "Split points. Split dignity. {scoreline}."
+        "text": "Split points, split dignity — {scoreline}."
       }
     ],
     "upset": [
@@ -299,11 +299,11 @@
       },
       {
         "id": "up_04",
-        "text": "Pre-match script shredded. {winnerTeam} win as the underdog."
+        "text": "Pre-match script shredded — {winnerTeam} win as the underdog."
       },
       {
         "id": "up_05",
-        "text": "{loserWinProb}% said {loserTeam}. The scoreboard said otherwise."
+        "text": "{loserWinProb}% said {loserTeam} — the scoreboard said otherwise."
       },
       {
         "id": "up_06",
@@ -313,11 +313,11 @@
     "model_miss": [
       {
         "id": "mm_01",
-        "text": "The model backed {modelPick}. Reality backed {winnerTeam} {scoreline}."
+        "text": "The model backed {modelPick}; reality backed {winnerTeam} {scoreline}."
       },
       {
         "id": "mm_02",
-        "text": "Model miss. {winnerMgr} makes the spreadsheet look polite."
+        "text": "Model miss — {winnerMgr} makes the spreadsheet look polite."
       },
       {
         "id": "mm_03",
@@ -329,7 +329,7 @@
       },
       {
         "id": "mm_05",
-        "text": "{modelPick} were the pick. {winnerTeam} were the result."
+        "text": "{modelPick} were the pick; {winnerTeam} were the result."
       },
       {
         "id": "mm_06",
@@ -385,7 +385,7 @@
       },
       {
         "id": "br_06",
-        "text": "Bench points: {benchPts}. Match points: not enough."
+        "text": "Bench points {benchPts} — match points not enough."
       }
     ],
     "waiver_haul": [
@@ -515,7 +515,7 @@
       },
       {
         "id": "rv_06",
-        "text": "{rivalryName}. {winnerTeam} cash the bragging rights."
+        "text": "{rivalryName}: {winnerTeam} cash the bragging rights."
       }
     ],
     "fallback_result": [

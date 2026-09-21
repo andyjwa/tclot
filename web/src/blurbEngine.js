@@ -664,7 +664,7 @@ function templatesForAngle(surface, angleId) {
 }
 
 function rejectReasons(text, { angleId, slots, m, brand }) {
-  if (sentenceCount(text) > 2) return 'max_sentences'
+  if (sentenceCount(text) > 1) return 'max_sentences'
   if (hasBlacklistedPhrase(text)) return 'blacklist'
   if (isFingerprint(text, slots)) return 'fingerprint'
   if (inventedNumbers(text, slots)) return 'invented'
@@ -674,9 +674,24 @@ function rejectReasons(text, { angleId, slots, m, brand }) {
   return null
 }
 
-function applyRivalryOverlay(text, brand) {
+function firstWordIsProper(text, slots = {}) {
+  const word = String(text || '')
+    .split(/\s+/)[0]
+    ?.replace(/[^A-Za-zÀ-ÿ'.-]/g, '')
+  if (!word) return false
+  return Object.values(slots).some((v) => {
+    if (typeof v !== 'string' || !v) return false
+    const token = v.split(/\s+/)[0]
+    return token.localeCompare(word, undefined, { sensitivity: 'accent' }) === 0
+  })
+}
+
+function applyRivalryOverlay(text, brand, slots = {}) {
   if (!brand || mentionsRivalryBrand(text, brand)) return text
-  return `${brand}: ${text.charAt(0).toLowerCase()}${text.slice(1)}`
+  const rest = firstWordIsProper(text, slots)
+    ? text
+    : `${text.charAt(0).toLowerCase()}${text.slice(1)}`
+  return `${brand}: ${rest}`
 }
 
 function pickTemplate(surface, angleId, slots, m, state, gwContext, key) {
@@ -700,7 +715,7 @@ function pickTemplate(surface, angleId, slots, m, state, gwContext, key) {
     for (let i = 0; i < pool.length; i++) {
       const tpl = pool[(start + i) % pool.length]
       let text = withBothSides(asSentence(fillTemplate(tpl.text, slots)), m)
-      if (brand) text = asSentence(applyRivalryOverlay(stripEnd(text), brand))
+      if (brand) text = asSentence(applyRivalryOverlay(stripEnd(text), brand, slots))
       text = withBothSides(text, m)
       const reason = rejectReasons(text, {
         angleId: packId === 'rivalry' ? angleId : packId,
@@ -1013,7 +1028,7 @@ export function generateMatchupBlurb(m, opts = {}) {
   }
   let sentence1 = chosen?.text || fallbackLine(surface, slots, m)
   if (slots.brand && !mentionsRivalryBrand(sentence1, slots.brand)) {
-    sentence1 = asSentence(applyRivalryOverlay(stripEnd(sentence1), slots.brand))
+    sentence1 = asSentence(applyRivalryOverlay(stripEnd(sentence1), slots.brand, slots))
   }
   const angleId = chosen?.angle?.id || (surface === 'preview' ? 'fallback_preview' : 'fallback_result')
   const templateId = chosen?.tpl?.id || (surface === 'preview' ? 'pv_fb_01' : 'fb_01')
