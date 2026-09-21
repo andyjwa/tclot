@@ -3,8 +3,9 @@
  * waivers run, then Waivers. Independent of the retired preseason hub.
  *
  * Once the FPL calendar loads, `seasonPhaseLanding` refines the landing to
- * follow the gameweek cycle: Scores while a GW is live, Recap after a GW
- * completes, Waivers once the next GW's waiver deadline has passed.
+ * follow the gameweek cycle: Scores while a GW is live, Table after a GW
+ * completes (before the next waiver deadline), Waivers once that deadline
+ * has passed.
  */
 
 import { pickDeadlinePassedLiveEvent } from './fplLiveCalendar.js'
@@ -52,13 +53,13 @@ export function initialMovesTab(events, now = new Date()) {
  *
  * - `'scores'`  — a GW is live (deadline passed, not finished)
  * - `'waivers'` — the upcoming GW's waiver deadline has passed, GW not live yet
- * - `'recap'`   — a GW has completed, upcoming waiver deadline not reached
+ * - `'table'`   — a GW has completed, upcoming waiver deadline not reached
  *                 (also season complete: nothing upcoming)
  * - `null`      — pre-season / no calendar yet (keep the Moves landing)
  *
  * @param {{ currentEvent?: object | null, nextEvent?: object | null, lastFinishedEvent?: object | null }} events
  * @param {Date} [now]
- * @returns {'scores' | 'waivers' | 'recap' | null}
+ * @returns {'scores' | 'waivers' | 'table' | null}
  */
 export function seasonPhaseLanding(
   { currentEvent = null, nextEvent = null, lastFinishedEvent = null } = {},
@@ -79,5 +80,5 @@ export function seasonPhaseLanding(
   const upcoming = currentUnfinished ? currentEvent : nextEvent
   const waiversMs = Date.parse(upcoming?.waivers_time)
   if (Number.isFinite(waiversMs) && waiversMs <= nowMs) return 'waivers'
-  return 'recap'
+  return 'table'
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useIsCeefax } from './useIsCeefax.js'
 import { useForbiddenWaivers } from './useForbiddenWaivers.js'
 import { filterForbiddenPlayers } from './forbiddenWaiversList.js'
@@ -18,8 +18,8 @@ function plClubBadgeUrl(code) {
  * baseline snapshot), so new signings appear here automatically.
  *
  * `takenPickupIds` is the set of element ids claimed in the latest waiver
- * run only. Those rows light up in red, and the list folds shut again when
- * that set is empty.
+ * run only. Those rows light up in red. The list stays collapsed; a Taken
+ * badge on the summary still flags a breach without opening the fold.
  */
 export function ForbiddenWaivers({ takenPickupIds = null }) {
   const { data, players } = useForbiddenWaivers()
@@ -40,10 +40,6 @@ export function ForbiddenWaivers({ takenPickupIds = null }) {
     () => filterForbiddenPlayers(players, search, takenPickupIds),
     [players, search, takenPickupIds],
   )
-
-  useEffect(() => {
-    setFoldOpen(takenCount > 0)
-  }, [takenCount])
 
   if (!data) return null
 

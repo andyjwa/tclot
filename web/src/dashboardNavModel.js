@@ -44,9 +44,9 @@ export function moreMenuItemLabel(item, status) {
 }
 
 /**
- * More is selected for Heritage / Settings / the More page, Bookies, and
- * Predictions. Recap/Preview is the contextual centre's job when that is
- * the centre destination.
+ * More is selected for Heritage / Settings / the More page, Bookies,
+ * Predictions, and Recap/Preview. The contextual centre is Scores (or
+ * Preview in pre-season), so Recap always lives in More.
  *
  * @param {string | null | undefined} view
  * @param {string | null | undefined} tab
