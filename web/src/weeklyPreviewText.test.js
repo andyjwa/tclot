@@ -8,6 +8,7 @@ import {
   bookiePrecall,
   isVeganManager,
 } from './weeklyPreviewText.js'
+import { isMottyVeganLine } from './blurbEngine.js'
 
 const team = (over = {}) => ({
   entryId: 1,
@@ -89,30 +90,24 @@ test('bookiePrecall prefers sheet fractions over model percents', () => {
   assert.match(fromModel.away, /^\d+\/\d+$/)
 })
 
-test('preview sentences are deterministic and skip restated percents / xP / projected points', () => {
+test('preview sentences are deterministic, short, and skip a final score', () => {
   const a = matchupPreviewSentences(base)
   const b = matchupPreviewSentences(base)
   assert.deepEqual(a, b)
-  assert.ok(a.length >= 2 && a.length <= 6)
+  assert.ok(a.length >= 1 && a.length <= 2)
   const joined = a.join(' ')
   assert.match(joined, /Mordor/)
   assert.match(joined, /Bilbo/)
-  assert.match(joined, /1\/4/)
-  assert.doesNotMatch(joined, /74%/)
   assert.doesNotMatch(joined, /Projected points/)
-  assert.doesNotMatch(joined, /\(\d+\.\d+\)/)
   assert.doesNotMatch(joined, /\d+–\d+/, 'preview must not leak a final score')
 })
 
-test('heavy favourite gets a short-price line and an underdog path, without restating the points call', () => {
+test('heavy favourite gets a book price, not a wall of projected stats', () => {
   const out = matchupPreviewSentences(base)
   const joined = out.join(' ')
-  assert.match(joined, /short 1\/4|clear favourite/i)
+  assert.match(joined, /1\/4|10\/3|74%|favourite|lean|book/i)
   assert.doesNotMatch(joined, /44 to 31|Projected points/)
-  assert.match(joined, /João Pedro/)
-  assert.match(joined, /Enzo/)
-  assert.match(joined, /haul|blank/i)
-  assert.match(joined, /last|bottom/)
+  assert.doesNotMatch(joined, /% of the|% of their/)
 })
 
 test('tight matchup is called a coin flip, not a clear favourite', () => {
@@ -134,7 +129,7 @@ test('tight matchup is called a coin flip, not a clear favourite', () => {
     }),
   })
   const joined = out.join(' ')
-  assert.match(joined, /tight|coin-flip/i)
+  assert.match(joined, /tight|coin-flip|toss-up|11\/10|4\/5/i)
   assert.doesNotMatch(joined, /short |clear favourite/i)
 })
 
@@ -149,7 +144,8 @@ test('named fixture leads the preview', () => {
       keys: [{ name: 'Palmer', xp: 6.1 }],
     }),
   })
-  assert.match(out[0], /Battle of Warderloo/)
+  assert.match(out.join(' '), /Battle of Warderloo/)
+  assert.ok(out.length <= 2)
 })
 
 test('Bad Blood Derby leads when Andy plays Nick Goodacre', () => {
@@ -167,33 +163,26 @@ test('Bad Blood Derby leads when Andy plays Nick Goodacre', () => {
       keys: [{ name: 'Enzo', xp: 5.3 }],
     }),
   })
-  assert.match(out[0], /Bad Blood Derby/)
+  assert.match(out.join(' '), /Bad Blood Derby/)
 })
 
-test('Mottershead preview always has a vegan joke', () => {
+test('Mottershead preview always has a vegan line from the preview bank', () => {
   for (let gw = 1; gw <= 16; gw++) {
-    const joined = matchupPreviewSentences({ ...base, gw }).join(' ')
-    assert.match(joined, /vegan|tofu|plant-based/i)
+    const lines = matchupPreviewSentences({ ...base, gw })
+    assert.ok(lines.length <= 2)
+    assert.equal(isMottyVeganLine(lines[1], 'preview'), true, lines[1])
   }
   assert.equal(isVeganManager('Nick Mottershead'), true)
   assert.equal(isVeganManager('Nick Goodacre'), false)
 })
 
-test('Mottershead gets a second line when the week hooks him', () => {
-  const quiet = matchupPreviewSentences(base).filter((s) =>
-    /vegan|tofu|plant-based|swagger|arts school|big-move|fallen-empire|trade flurry|extremely sure|Titanic/i.test(s),
-  )
-  assert.equal(quiet.length, 1)
-
+test('Mottershead stays at two sentences even when the week hooks him', () => {
   const hooked = matchupPreviewSentences({
     ...base,
     home: team({ recentPickups: [{ name: 'Schade', kind: 'w' }, { name: 'Tel', kind: 'w' }] }),
   })
-  const mott = hooked.filter((s) =>
-    /vegan|tofu|plant-based|swagger|arts school|big-move|fallen-empire|trade flurry|extremely sure|Titanic/i.test(s),
-  )
-  assert.ok(mott.length >= 2)
-  assert.match(mott.join(' '), /vegan|tofu|plant-based/i)
+  assert.equal(hooked.length, 2)
+  assert.equal(isMottyVeganLine(hooked[1], 'preview'), true)
 })
 
 test('no vegan joke when Mottershead is not playing', () => {
@@ -213,9 +202,10 @@ test('no vegan joke when Mottershead is not playing', () => {
     h2h: null,
   })
   assert.doesNotMatch(out.join(' '), /vegan|tofu|plant|oat milk/i)
+  assert.ok(out.length <= 2)
 })
 
-test('East Asian Derby always leads; one personality sprinkle, not both managers', () => {
+test('East Asian Derby always names the brand; lore is not a two-manager checklist', () => {
   const out = matchupPreviewSentences({
     ...base,
     gw: 2,
@@ -232,372 +222,21 @@ test('East Asian Derby always leads; one personality sprinkle, not both managers
     }),
     h2h: null,
   })
-  const joined = out.join(' ')
-  assert.match(out[0], /East Asian Derby/)
-  const lore = out.filter((s) =>
-    /BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil|people's champion|licence-fee|harmony|left-wing/i.test(
-      s,
-    ),
-  )
-  assert.equal(lore.length, 1)
-  assert.match(joined, /BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil|people's champion|licence-fee|harmony|left-wing/i)
+  assert.match(out.join(' '), /East Asian Derby/)
+  assert.ok(out.length <= 2)
 })
 
-test('GW2-style fixtures sprinkle lore without a line per manager', () => {
-  const fixtures = [
-    {
-      home: team({ manager: 'Nick Goodacre', name: 'Atlético Bilbo', entryId: 1 }),
-      away: team({
-        entryId: 2,
-        name: 'Toronto Gimli',
-        manager: 'Andy Ward',
-        rank: 4,
-        record: { w: 1, d: 0, l: 0 },
-        titlePct: 12,
-        lastPct: 8,
-        keys: [{ name: 'Haaland', xp: 7.1 }],
-      }),
-    },
-    {
-      home: team({
-        entryId: 3,
-        name: 'Suffolk Sméagol',
-        manager: 'Jon Ward',
-        rank: 5,
-        record: { w: 0, d: 0, l: 1 },
-        titlePct: 4,
-        lastPct: 18,
-        keys: [{ name: 'Palmer', xp: 6.2 }],
-      }),
-      away: team({
-        entryId: 4,
-        name: 'Brampton Balrogs',
-        manager: 'Eddy Webster',
-        rank: 6,
-        record: { w: 0, d: 1, l: 0 },
-        titlePct: 3,
-        lastPct: 20,
-        keys: [{ name: 'Saka', xp: 5.8 }],
-      }),
-    },
-    {
-      home: team({ manager: 'David Higman', name: 'Rokesly Regorasu', lastPct: 1.5, rank: 1, entryId: 5 }),
-      away: team({
-        entryId: 6,
-        name: 'Seoul Shire',
-        manager: 'Luke Butcher',
-        rank: 4,
-        record: { w: 1, d: 0, l: 0 },
-        titlePct: 5.1,
-        lastPct: 13.9,
-        keys: [{ name: 'Saka', xp: 6.8 }],
-      }),
-    },
-    {
-      home: team({
-        entryId: 7,
-        name: 'Hackney Rohirrim',
-        manager: 'Mike Sutton',
-        rank: 2,
-        record: { w: 1, d: 0, l: 0 },
-        titlePct: 10,
-        lastPct: 6,
-        keys: [{ name: 'Stach', xp: 5.4 }],
-      }),
-      away: team({
-        entryId: 8,
-        name: 'Mordor S.F.G',
-        manager: 'Nick Mottershead',
-        rank: 3,
-        record: { w: 1, d: 0, l: 0 },
-        titlePct: 28.5,
-        lastPct: 1.8,
-        keys: [{ name: 'João Pedro', xp: 6.4 }],
-      }),
-    },
-  ]
-  const loreRe =
-    /lampshade|spreadsheet|Northern caution|safest available|anything rash|comeback remains imminent|talks a big game|Titanic Duo|battle mode|British in Canada|lying down|Brother Ward|poked the bear|notes on everyone else's|thesis|timezone|puzzle|Classic Eddy|post-waiver debrief|gone native|talked himself out|BBC|Glastonbury|devil's advocate|people's champion|licence-fee|manifesto|Prime Minister|Samsung|Norfolk|harmony|left-wing|twins|wildcard|theorised|classified|vegan|tofu|plant-based|arts school|swagger|big-move|fallen-empire|extremely sure|trade flurry|invented veganism/i
-  for (const fx of fixtures) {
-    const sentences = matchupPreviewSentences({ ...base, gw: 2, h2h: null, ...fx })
-    const joined = sentences.join(' ')
-    const lore = sentences.filter((s) => loreRe.test(s))
-    const mott = Boolean(fx.home.manager === 'Nick Mottershead' || fx.away.manager === 'Nick Mottershead')
-    if (mott) {
-      assert.match(joined, /vegan|tofu|plant-based/i)
-      assert.ok(lore.length <= 2)
-    } else {
-      assert.equal(lore.length, 1, `expected one sprinkle on ${fx.home.manager} vs ${fx.away.manager}: ${joined}`)
-    }
-  }
-})
-
-test('round-two rivalry line when they have already met', () => {
-  const out = matchupPreviewSentences(base)
-  assert.match(out.join(' '), /round two|first meeting/i)
-})
-
-test('form line uses team names when both managers share a first name', () => {
+test('waiver claim can be the one preview angle', () => {
   const out = matchupPreviewSentences({
     ...base,
     home: team({
-      form: { over: { name: 'João Pedro', pts: 11, xp: 5.2 }, under: null },
-    }),
-    away: team({
-      entryId: 2,
-      name: 'Atlético Bilbo',
-      manager: 'Nick Goodacre',
-      rank: 8,
-      record: { w: 0, d: 0, l: 1 },
-      titlePct: 0.8,
-      lastPct: 41.6,
-      lastPrice: '6/5',
-      keys: [{ id: 20, name: 'Enzo', pos: 'MID', xp: 5.3 }],
-      form: { over: null, under: { name: 'Shaw', pts: 1, xp: 5.1 } },
-    }),
-  })
-  const joined = out.join(' ')
-  assert.match(joined, /João Pedro/)
-  assert.match(joined, /Mordor/)
-  assert.match(joined, /Shaw/)
-  assert.match(joined, /Bilbo/)
-  assert.doesNotMatch(joined, /for Nick last week[\s\S]*for Nick/)
-})
-
-test('recent waiver and last-week form land in the blurb', () => {
-  const out = matchupPreviewSentences({
-    ...base,
-    home: team({
+      manager: 'Eddy Webster',
+      name: 'Brampton Balrogs',
       recentPickups: [{ name: 'Schade', kind: 'w', gw: 1 }],
-      form: { over: { name: 'João Pedro', pts: 11, xp: 5.2 }, under: null },
-    }),
-    away: team({
-      entryId: 2,
-      name: 'Atlético Bilbo',
-      manager: 'Nick Goodacre',
-      rank: 8,
-      record: { w: 0, d: 0, l: 1 },
-      titlePct: 0.8,
-      lastPct: 41.6,
-      lastPrice: '6/5',
-      keys: [{ id: 20, name: 'Enzo', pos: 'MID', xp: 5.3 }],
-      form: { over: null, under: { name: 'Shaw', pts: 1, xp: 5.1 } },
     }),
   })
   const joined = out.join(' ')
   assert.match(joined, /Schade/)
-  assert.match(joined, /waiver|claimed/i)
-  assert.match(joined, /João Pedro/)
-  assert.match(joined, /Shaw/)
-  assert.match(joined, /11/)
-})
-
-test('title favourite uses the outright bookie price, not a restated percent', () => {
-  const out = matchupPreviewSentences({
-    ...base,
-    home: team({
-      name: 'Rokesly Regorasu',
-      manager: 'David Higman',
-      rank: 1,
-      record: { w: 1, d: 0, l: 0 },
-      titlePct: 31.9,
-      titlePrice: '15/8',
-      lastPct: 1.5,
-      keys: [{ name: 'Guéhi', xp: 6.9 }],
-    }),
-    away: team({
-      entryId: 2,
-      name: 'Seoul Shire',
-      manager: 'Luke Butcher',
-      rank: 4,
-      record: { w: 1, d: 0, l: 0 },
-      titlePct: 5.1,
-      lastPct: 13.9,
-      keys: [{ name: 'Cherki', xp: 7.7 }],
-    }),
-    odds: { favoriteSide: 'home', favoritePct: 61, home: 61, draw: 2, away: 37 },
-    bookie: { home: '4/7', draw: '40/1', away: '13/8' },
-    h2h: null,
-  })
-  const joined = out.join(' ')
-  assert.match(joined, /15\/8/)
-  assert.match(joined, /title favourite|title board/i)
-  assert.doesNotMatch(joined, /31\.9%/)
-})
-
-test('injury copy names a started-while-out player without restating xP', () => {
-  const out = matchupPreviewSentences({
-    ...base,
-    home: team({
-      injuries: [
-        {
-          name: 'Isak',
-          kind: 'starting-out',
-          inXi: true,
-          injury: 'groin injury',
-          xp: 1.7,
-        },
-      ],
-    }),
-  })
-  const joined = out.join(' ')
-  assert.match(joined, /Isak/)
-  assert.match(joined, /injured|groin/i)
-  assert.doesNotMatch(joined, /\(1\.7\)/)
-})
-
-test('bench copy questions the manager when a healthy option sits', () => {
-  const out = matchupPreviewSentences({
-    ...base,
-    away: team({
-      entryId: 2,
-      name: 'Atlético Bilbo',
-      manager: 'Nick Goodacre',
-      rank: 8,
-      record: { w: 0, d: 0, l: 1 },
-      lastPct: 41.6,
-      lastPrice: '6/5',
-      keys: [{ id: 20, name: 'Enzo', pos: 'MID', xp: 5.3 }],
-      benchCall: {
-        bench: { name: 'Konsa', pos: 'DEF', xp: 5.5, flag: 'ok' },
-        starter: { name: 'Colwill', pos: 'DEF', xp: 0.6, flag: 'ok' },
-        gap: 4.9,
-      },
-    }),
-  })
-  const joined = out.join(' ')
-  assert.match(joined, /has Konsa on the bench|left Konsa on the pine/)
-  assert.match(joined, /Konsa/)
-  assert.match(joined, /Colwill/)
-  assert.doesNotMatch(joined, /5\.5/)
-})
-
-test('lead weaves last-week arrival into the book line', () => {
-  const joined = matchupPreviewSentences({
-    ...base,
-    h2h: null,
-    home: team({
-      rank: 3,
-      record: { w: 1, d: 0, l: 0 },
-      lastPct: 1.8,
-    }),
-    away: team({
-      entryId: 2,
-      name: 'Hackney Rohirrim',
-      manager: 'Mike Sutton',
-      rank: 7,
-      record: { w: 0, d: 0, l: 1 },
-      titlePct: 11.4,
-      lastPct: 6.2,
-      lastPrice: '14/1',
-      keys: [{ name: 'Gabriel', pos: 'DEF', xp: 5.1 }],
-    }),
-    odds: { favoriteSide: 'home', favoritePct: 53, home: 53, draw: 3, away: 44 },
-    bookie: { home: '10/11', draw: '33/1', away: '5/4' },
-  }).join(' ')
-  assert.match(joined, /win/)
-  assert.match(joined, /loss/)
-  assert.match(joined, /10\/11/)
-  assert.match(joined, /5\/4/)
-})
-
-test('juicy last-week form survives when bench and waiver also exist', () => {
-  const joined = matchupPreviewSentences({
-    ...base,
-    h2h: null,
-    home: team({
-      recentPickups: [{ name: 'Bijol', kind: 'w', gw: 2 }],
-      form: { over: { name: 'Emersonn', pts: 9, xp: 0.5 }, under: { name: 'Roefs', pts: 1, xp: 5.4 } },
-      benchCall: {
-        bench: { name: 'Woltemade', pos: 'FWD', xp: 3.7, flag: 'ok' },
-        starter: { name: 'M.Sangaré', pos: 'MID', xp: 0.4, flag: 'ok' },
-        gap: 3.3,
-      },
-    }),
-    away: team({
-      entryId: 2,
-      name: 'Hackney Rohirrim',
-      manager: 'Mike Sutton',
-      rank: 7,
-      record: { w: 0, d: 0, l: 1 },
-      titlePct: 11.4,
-      lastPct: 6.2,
-      keys: [{ name: 'Gabriel', pos: 'DEF', xp: 5.1 }],
-      recentPickups: [{ name: 'McBurnie', kind: 'w', gw: 2 }],
-      form: { over: { name: 'Stach', pts: 13, xp: 3.4 }, under: { name: 'Bruno G.', pts: 0, xp: 4.8 } },
-    }),
-  }).join(' ')
-  assert.match(joined, /Stach|Emersonn/)
-  assert.match(joined, /13|9/)
-  assert.match(joined, /Woltemade|Sangaré/)
-  assert.doesNotMatch(joined, /claimed McBurnie|added Bijol|claimed Bijol/)
-})
-
-test('waiver is not restated when that player is already the bench story', () => {
-  const joined = matchupPreviewSentences({
-    ...base,
-    h2h: null,
-    home: team({
-      manager: 'Jon Ward',
-      name: 'Suffolk Sméagol',
-      rank: 2,
-      record: { w: 1, d: 0, l: 0 },
-      titlePct: 11.6,
-      lastPct: 5.8,
-      keys: [{ name: 'Lacroix', pos: 'DEF', xp: 3.4 }],
-      recentPickups: [{ name: 'Meunier', kind: 'w', gw: 2 }],
-      form: { over: { name: 'Palmer', pts: 13, xp: 4.5 }, under: null },
-      benchCall: {
-        bench: { name: 'Gyökeres', pos: 'FWD', xp: 4.7, flag: 'ok' },
-        starter: { name: 'Meunier', pos: 'DEF', xp: 0.5, flag: 'ok' },
-        gap: 4.2,
-      },
-    }),
-    away: team({
-      entryId: 44904,
-      name: 'Brampton Balrogs',
-      manager: 'Eddy Webster',
-      rank: 6,
-      record: { w: 0, d: 0, l: 1 },
-      titlePct: 3.6,
-      lastPct: 18.5,
-      keys: [{ name: 'De Cuyper', pos: 'DEF', xp: 4.5 }],
-      recentPickups: [{ name: 'Tzolakis', kind: 'w', gw: 2 }],
-      form: { over: null, under: { name: 'Thiago', pts: 0, xp: 4.3 } },
-    }),
-  }).join(' ')
-  assert.match(joined, /Palmer/)
-  assert.match(joined, /13/)
-  assert.match(joined, /Gyökeres/)
-  assert.match(joined, /Meunier/)
-  assert.doesNotMatch(joined, /claimed Meunier/)
-})
-
-test('missing-star injury copy when a notable player is out of the XI', () => {
-  const out = matchupPreviewSentences({
-    ...base,
-    away: team({
-      entryId: 2,
-      name: 'Seoul Shire',
-      manager: 'Luke Butcher',
-      rank: 4,
-      record: { w: 1, d: 0, l: 0 },
-      titlePct: 5.1,
-      lastPct: 13.9,
-      keys: [{ name: 'Saka', xp: 6.2 }],
-      injuries: [
-        {
-          name: 'J.Timber',
-          kind: 'missing',
-          inXi: false,
-          injury: 'groin injury',
-          xp: 4.8,
-        },
-      ],
-    }),
-    h2h: null,
-  })
-  const joined = out.join(' ')
-  assert.match(joined, /J\.Timber/)
-  assert.match(joined, /without|out of/)
+  assert.match(joined, /Bilbo/)
+  assert.ok(out.length <= 2)
 })

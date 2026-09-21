@@ -1,0 +1,110 @@
+[
+ {
+  "gw": 1,
+  "surface": "recap",
+  "templateId": "blow_01",
+  "managers": [
+   "nick mottershead",
+   "nick goodacre"
+  ]
+ },
+ {
+  "gw": 1,
+  "surface": "recap",
+  "templateId": "up_01",
+  "managers": [
+   "luke butcher",
+   "mike sutton"
+  ]
+ },
+ {
+  "gw": 1,
+  "surface": "recap",
+  "templateId": "blow_04",
+  "managers": [
+   "eddy webster",
+   "david higman"
+  ]
+ },
+ {
+  "gw": 1,
+  "surface": "recap",
+  "templateId": "tq_01",
+  "managers": [
+   "andy ward",
+   "jon ward"
+  ]
+ },
+ {
+  "gw": 1,
+  "surface": "preview",
+  "templateId": "pv_of_01",
+  "managers": [
+   "nick mottershead",
+   "nick goodacre"
+  ]
+ },
+ {
+  "gw": 1,
+  "surface": "preview",
+  "templateId": "pv_wa_02",
+  "managers": [
+   "luke butcher",
+   "mike sutton"
+  ]
+ },
+ {
+  "gw": 1,
+  "surface": "preview",
+  "templateId": "pv_wa_01",
+  "managers": [
+   "eddy webster",
+   "david higman"
+  ]
+ },
+ {
+  "gw": 1,
+  "surface": "preview",
+  "templateId": "pv_rv_05",
+  "managers": [
+   "andy ward",
+   "jon ward"
+  ]
+ },
+ {
+  "gw": 2,
+  "surface": "preview",
+  "templateId": "pv_rv_01",
+  "managers": [
+   "nick goodacre",
+   "andy ward"
+  ]
+ },
+ {
+  "gw": 2,
+  "surface": "preview",
+  "templateId": "pv_cf_03",
+  "managers": [
+   "jon ward",
+   "eddy webster"
+  ]
+ },
+ {
+  "gw": 2,
+  "surface": "preview",
+  "templateId": "pv_rv_04",
+  "managers": [
+   "david higman",
+   "luke butcher"
+  ]
+ },
+ {
+  "gw": 2,
+  "surface": "preview",
+  "templateId": "pv_pm_04",
+  "managers": [
+   "mike sutton",
+   "nick mottershead"
+  ]
+ }
+]

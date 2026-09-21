@@ -1,0 +1,471 @@
+{
+  "managerId": "nick_mottershead",
+  "surface": "preview",
+  "theme": "vegan",
+  "policy": {
+    "whenMottyInFixture": "Attach exactly one preview vegan one-liner as sentence 2.",
+    "selection": [
+      "Tag preview fixture: fav/dog/coin from win probs; waiver_in; projected_high/low; model_likes/hates; vs_andrew; titanic_context; trade_heavy; squeaker_proj/blowout_proj; etc.",
+      "Score matching tags; hard-skip fav lines if he's the dog and vice versa.",
+      "Cooldown 6 GWs; no season repeat while alternatives remain.",
+      "Preview blurbs are shorter than recap \u2014 voice line must be one short sentence."
+    ],
+    "tone": "mates taking the piss \u2014 affectionate, forward-looking, never cruel"
+  },
+  "eventTaggers": {
+    "fav": "preMatchWinProb >= 0.55",
+    "dog": "preMatchWinProb <= 0.40",
+    "coin": "0.40 < preMatchWinProb < 0.55",
+    "waiver_in": "has claim in latest waiver window in projected XI or roster",
+    "no_waiver": "!waiver_in",
+    "projected_high": "projectedPts >= league median projected + 8 or model fav strongly",
+    "projected_low": "projectedPts <= league median projected - 8",
+    "model_likes": "modelPick == this team",
+    "model_hates": "modelPick == opponent",
+    "blowout_proj": "projectedMargin >= 12",
+    "squeaker_proj": "projectedMargin <= 4",
+    "trade_heavy": "transfers since last GW >= 2",
+    "vs_andrew": "opponent is Andrew Ward",
+    "titanic_context": "weekly narrative or vs Andrew",
+    "high_xp_star": "top projected starter xP >= 6",
+    "dud_risk": "starter with high price/xP but flagged risk / low form",
+    "win_form": "won last H2H",
+    "loss_form": "lost last H2H",
+    "swagger": "always available soft tag",
+    "arts": "rare flavour",
+    "rivalry_lite": "any named rivalry week involving Motty (rare)",
+    "any": "always"
+  },
+  "lines": [
+    {
+      "id": "pv_001",
+      "tags": [
+        "fav",
+        "any"
+      ],
+      "text": "Favourite on the board, oat milk in the bottle, swagger pre-loaded.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_002",
+      "tags": [
+        "dog",
+        "any"
+      ],
+      "text": "Underdog price, overdog confidence \u2014 classic Motty.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_003",
+      "tags": [
+        "coin",
+        "any"
+      ],
+      "text": "Coin-flip H2H. He\u2019ll still brief you on seitan either way.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_004",
+      "tags": [
+        "waiver_in"
+      ],
+      "text": "Just claimed someone. Already writing the vegan victory speech.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_005",
+      "tags": [
+        "waiver_in",
+        "dog"
+      ],
+      "text": "Fresh off the wire and still the longer price. Bold.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_006",
+      "tags": [
+        "projected_high"
+      ],
+      "text": "Model loves his side. He loves that the model loves his side.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_007",
+      "tags": [
+        "projected_low"
+      ],
+      "text": "Projection is chilly. Propaganda temperature: medium-rare\u2026 wait, no.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_008",
+      "tags": [
+        "vs_andrew"
+      ],
+      "text": "Titanic intra-squad preview \u2014 expect trades, takes, and tempeh metaphors.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_009",
+      "tags": [
+        "titanic_context"
+      ],
+      "text": "Titanic Duo energy in the build-up. Icebergs sold separately.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_010",
+      "tags": [
+        "trade_heavy"
+      ],
+      "text": "Already reshuffled half the XI. Diet unchanged. Priority clear.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_011",
+      "tags": [
+        "fav",
+        "blowout_proj"
+      ],
+      "text": "Book has him strolling it. He has it as a lifestyle case study.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_012",
+      "tags": [
+        "dog",
+        "squeaker_proj"
+      ],
+      "text": "Narrow dog. Wide opinions about dairy.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_013",
+      "tags": [
+        "any"
+      ],
+      "text": "Preview note: conscience clear, squad\u2026 pending.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_014",
+      "tags": [
+        "fav"
+      ],
+      "text": "Short price, long lecture incoming if it lands.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_015",
+      "tags": [
+        "dog"
+      ],
+      "text": "Big odds, bigger claims about plant-based destiny.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_016",
+      "tags": [
+        "projected_high",
+        "fav"
+      ],
+      "text": "Everyone\u2019s tip. He\u2019ll still act like he invented the concept of winning.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_017",
+      "tags": [
+        "projected_low",
+        "dog"
+      ],
+      "text": "Written off pre-match. Perfect conditions for a manifesto.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_018",
+      "tags": [
+        "waiver_in",
+        "fav"
+      ],
+      "text": "New toy in the XI and the book already nodding along.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_019",
+      "tags": [
+        "no_waiver"
+      ],
+      "text": "Quiet on the wire. Loud on nutritional superiority.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_020",
+      "tags": [
+        "rivalry_lite"
+      ],
+      "text": "Named fixture week \u2014 Motty packing kale and talking points.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_021",
+      "tags": [
+        "model_likes"
+      ],
+      "text": "Model backing Motty. Somewhere a carrot is smug.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_022",
+      "tags": [
+        "model_hates"
+      ],
+      "text": "Model fading Motty. He\u2019ll treat that as dairy-industry propaganda.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_023",
+      "tags": [
+        "high_xp_star"
+      ],
+      "text": "His projected engine is cooking. He\u2019ll call it ethical performance.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_024",
+      "tags": [
+        "dud_risk"
+      ],
+      "text": "A chalky xP sitting in his XI \u2014 future cheese lecture material.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_025",
+      "tags": [
+        "any",
+        "swagger"
+      ],
+      "text": "Pre-match Motty: undefeated in confidence, undefeated in vegan branding.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_026",
+      "tags": [
+        "fav",
+        "squeaker_proj"
+      ],
+      "text": "Favourite in a tight one. Expect post-match purity tests either way.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_027",
+      "tags": [
+        "dog",
+        "blowout_proj"
+      ],
+      "text": "Dog on a nasty projection. Even the hummus is nervous.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_028",
+      "tags": [
+        "vs_andrew",
+        "fav"
+      ],
+      "text": "Lives next door to Bad Blood / Titanic politics \u2014 and he\u2019s the short price.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_029",
+      "tags": [
+        "vs_andrew",
+        "dog"
+      ],
+      "text": "Vs Andrew as the longer price. Empire civil war with snacks.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_030",
+      "tags": [
+        "trade_heavy",
+        "dog"
+      ],
+      "text": "Four moves and still the underdog. Lifestyle > maths, apparently.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_031",
+      "tags": [
+        "waiver_in",
+        "projected_high"
+      ],
+      "text": "Claim + green model = dangerous levels of Motty smugness pre-kickoff.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_032",
+      "tags": [
+        "any"
+      ],
+      "text": "Before a ball\u2019s kicked he\u2019s already won the moral fixture.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_033",
+      "tags": [
+        "coin"
+      ],
+      "text": "50/50 on points. 100/0 on whether veganism gets a mention.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_034",
+      "tags": [
+        "projected_low"
+      ],
+      "text": "Tough preview on paper. Soft landing planned on the high horse.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_035",
+      "tags": [
+        "fav",
+        "no_waiver"
+      ],
+      "text": "No new toys, short odds, same old patent-holder energy.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_036",
+      "tags": [
+        "dog",
+        "waiver_in"
+      ],
+      "text": "Long odds, new claim \u2014 chaos smoothie.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_037",
+      "tags": [
+        "model_likes",
+        "dog"
+      ],
+      "text": "Model whispers upset. Motty hears a TED Talk.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_038",
+      "tags": [
+        "model_hates",
+        "fav"
+      ],
+      "text": "Short price the model doesn\u2019t trust. Perfect Motty content.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_039",
+      "tags": [
+        "titanic_context",
+        "loss_form"
+      ],
+      "text": "Fallen-empire vibes in the build-up. Still correcting your lunch order.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_040",
+      "tags": [
+        "titanic_context",
+        "win_form"
+      ],
+      "text": "Historic titan form line. He\u2019ll credit the legumes.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_041",
+      "tags": [
+        "any",
+        "arts"
+      ],
+      "text": "Filing his preview from the improbable postcode.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_042",
+      "tags": [
+        "squeaker_proj"
+      ],
+      "text": "Projected nail-biter. Pack patience and protein.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_043",
+      "tags": [
+        "blowout_proj",
+        "fav"
+      ],
+      "text": "Projected cruise. He\u2019ll still treat kickoff like a product launch.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_044",
+      "tags": [
+        "blowout_proj",
+        "dog"
+      ],
+      "text": "Projected pasting. Propaganda reserves on standby.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_045",
+      "tags": [
+        "high_xp_star",
+        "fav"
+      ],
+      "text": "Star xP stacking on a favourite \u2014 peak smug forecast.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_046",
+      "tags": [
+        "dud_risk",
+        "dog"
+      ],
+      "text": "Chalky starter + long odds = future \u2018I meant to bench him\u2019 folklore.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_047",
+      "tags": [
+        "any"
+      ],
+      "text": "Another GW, another chance to invent veganism mid-presser.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_048",
+      "tags": [
+        "waiver_in"
+      ],
+      "text": "The claim is in. The TED Talk writes itself.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_049",
+      "tags": [
+        "trade_heavy",
+        "fav"
+      ],
+      "text": "Hyperactive build-up, short price \u2014 chaos with a green juice.",
+      "cooldownGws": 6
+    },
+    {
+      "id": "pv_050",
+      "tags": [
+        "any",
+        "swagger"
+      ],
+      "text": "Pre-match patent holder of plant-based fantasy superiority.",
+      "cooldownGws": 6
+    }
+  ],
+  "count": 50
+}

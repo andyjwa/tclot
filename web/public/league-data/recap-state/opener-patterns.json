@@ -1,0 +1,98 @@
+[
+ {
+  "gw": 1,
+  "managers": [
+   "nick mottershead",
+   "nick goodacre"
+  ],
+  "openerPatternId": "blow"
+ },
+ {
+  "gw": 1,
+  "managers": [
+   "luke butcher",
+   "mike sutton"
+  ],
+  "openerPatternId": "up"
+ },
+ {
+  "gw": 1,
+  "managers": [
+   "eddy webster",
+   "david higman"
+  ],
+  "openerPatternId": "blow"
+ },
+ {
+  "gw": 1,
+  "managers": [
+   "andy ward",
+   "jon ward"
+  ],
+  "openerPatternId": "tq"
+ },
+ {
+  "gw": 1,
+  "managers": [
+   "nick mottershead",
+   "nick goodacre"
+  ],
+  "openerPatternId": "pv_of"
+ },
+ {
+  "gw": 1,
+  "managers": [
+   "luke butcher",
+   "mike sutton"
+  ],
+  "openerPatternId": "pv_wa"
+ },
+ {
+  "gw": 1,
+  "managers": [
+   "eddy webster",
+   "david higman"
+  ],
+  "openerPatternId": "pv_wa"
+ },
+ {
+  "gw": 1,
+  "managers": [
+   "andy ward",
+   "jon ward"
+  ],
+  "openerPatternId": "pv_rv"
+ },
+ {
+  "gw": 2,
+  "managers": [
+   "nick goodacre",
+   "andy ward"
+  ],
+  "openerPatternId": "pv_rv"
+ },
+ {
+  "gw": 2,
+  "managers": [
+   "jon ward",
+   "eddy webster"
+  ],
+  "openerPatternId": "pv_cf"
+ },
+ {
+  "gw": 2,
+  "managers": [
+   "david higman",
+   "luke butcher"
+  ],
+  "openerPatternId": "pv_rv"
+ },
+ {
+  "gw": 2,
+  "managers": [
+   "mike sutton",
+   "nick mottershead"
+  ],
+  "openerPatternId": "pv_pm"
+ }
+]

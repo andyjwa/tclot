@@ -1,0 +1,17 @@
+[
+ {
+  "gw": 1,
+  "surface": "recap",
+  "mottyLineId": "vg_061"
+ },
+ {
+  "gw": 1,
+  "surface": "preview",
+  "mottyLineId": "pv_035"
+ },
+ {
+  "gw": 2,
+  "surface": "preview",
+  "mottyLineId": "pv_050"
+ }
+]

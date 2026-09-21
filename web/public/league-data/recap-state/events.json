@@ -1,0 +1,198 @@
+{
+ "version": 1,
+ "generatedAt": "2026-09-21T11:33:26.344Z",
+ "events": [
+  {
+   "gw": 1,
+   "surface": "recap",
+   "fixtureId": "18279-4259-gw1-recap",
+   "managers": [
+    "nick mottershead",
+    "nick goodacre"
+   ],
+   "angleId": "margin_blowout",
+   "templateId": "blow_01",
+   "loreLineId": null,
+   "mottyLineId": "vg_061",
+   "openerPatternId": "blow",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 1,
+   "surface": "recap",
+   "fixtureId": "30728-10173-gw1-recap",
+   "managers": [
+    "luke butcher",
+    "mike sutton"
+   ],
+   "angleId": "upset",
+   "templateId": "up_01",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "up",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 1,
+   "surface": "recap",
+   "fixtureId": "44904-6849-gw1-recap",
+   "managers": [
+    "eddy webster",
+    "david higman"
+   ],
+   "angleId": "margin_blowout",
+   "templateId": "blow_04",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "blow",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 1,
+   "surface": "recap",
+   "fixtureId": "4898-5220-gw1-recap",
+   "managers": [
+    "andy ward",
+    "jon ward"
+   ],
+   "angleId": "title_quake",
+   "templateId": "tq_01",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "tq",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 1,
+   "surface": "preview",
+   "fixtureId": "18279-4259-gw1-preview",
+   "managers": [
+    "nick mottershead",
+    "nick goodacre"
+   ],
+   "angleId": "odds_fav",
+   "templateId": "pv_of_01",
+   "loreLineId": null,
+   "mottyLineId": "pv_035",
+   "openerPatternId": "pv_of",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 1,
+   "surface": "preview",
+   "fixtureId": "30728-10173-gw1-preview",
+   "managers": [
+    "luke butcher",
+    "mike sutton"
+   ],
+   "angleId": "waiver_claim",
+   "templateId": "pv_wa_02",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "pv_wa",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 1,
+   "surface": "preview",
+   "fixtureId": "44904-6849-gw1-preview",
+   "managers": [
+    "eddy webster",
+    "david higman"
+   ],
+   "angleId": "waiver_claim",
+   "templateId": "pv_wa_01",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "pv_wa",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 1,
+   "surface": "preview",
+   "fixtureId": "4898-5220-gw1-preview",
+   "managers": [
+    "andy ward",
+    "jon ward"
+   ],
+   "angleId": "waiver_claim",
+   "templateId": "pv_rv_05",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "pv_rv",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 2,
+   "surface": "preview",
+   "fixtureId": "4259-4898-gw2-preview",
+   "managers": [
+    "nick goodacre",
+    "andy ward"
+   ],
+   "angleId": "odds_dog",
+   "templateId": "pv_rv_01",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "pv_rv",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 2,
+   "surface": "preview",
+   "fixtureId": "5220-44904-gw2-preview",
+   "managers": [
+    "jon ward",
+    "eddy webster"
+   ],
+   "angleId": "coin_flip",
+   "templateId": "pv_cf_03",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "pv_cf",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 2,
+   "surface": "preview",
+   "fixtureId": "6849-30728-gw2-preview",
+   "managers": [
+    "david higman",
+    "luke butcher"
+   ],
+   "angleId": "odds_fav",
+   "templateId": "pv_rv_04",
+   "loreLineId": null,
+   "mottyLineId": null,
+   "openerPatternId": "pv_rv",
+   "titanic": false,
+   "pctOfTeam": false
+  },
+  {
+   "gw": 2,
+   "surface": "preview",
+   "fixtureId": "10173-18279-gw2-preview",
+   "managers": [
+    "mike sutton",
+    "nick mottershead"
+   ],
+   "angleId": "projected_margin",
+   "templateId": "pv_pm_04",
+   "loreLineId": null,
+   "mottyLineId": "pv_050",
+   "openerPatternId": "pv_pm",
+   "titanic": false,
+   "pctOfTeam": false
+  }
+ ]
+}

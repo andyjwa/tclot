@@ -1,0 +1,1015 @@
+{
+  "version": 1,
+  "product": "TCLOT",
+  "goal": "Fully automatic matchup blurbs: one data angle, constrained templates, personality as rare seasoning.",
+  "fixturesPerGw": 4,
+  "writeAllFixtures": true,
+  "shape": {
+    "maxSentences": 2,
+    "sentence1": "fact_line",
+    "sentence2": "voice_line_optional",
+    "skipVoiceIfNoLoreHit": true,
+    "scanMaxWords": 14,
+    "columnMaxSentences": 2
+  },
+  "lengthPolicy": {
+    "allFixturesGetFactLine": true,
+    "columnUpgrade": {
+      "enabled": true,
+      "description": "All 4 get a fact line. Top 2 by interestingness may use a slightly richer template from the same angle pack (still \u22642 sentences). Bottom 2 stay scan-short.",
+      "topN": 2
+    }
+  },
+  "bans": {
+    "leagueWidePerGw": {
+      "percentOfTeamPhraseMax": 1,
+      "sameOpenerPatternMaxPerManager": 1,
+      "maxPersonalityRefsPerManager": 2,
+      "maxPersonalityRefsLeagueWide": 4,
+      "maxTitanicDuoMentions": 1
+    },
+    "phraseBlacklist": [
+      "% of the",
+      "% of their",
+      "was percent of",
+      "finished on",
+      "led with",
+      "best was",
+      "the dud for"
+    ],
+    "fingerprintBan": "Do not list both teams' top scorers AND a % share AND the final total in the same blurb.",
+    "neverPastePriorProseIntoPrompt": true
+  },
+  "qualityGates": [
+    {
+      "id": "max_sentences",
+      "rejectIf": "sentenceCount > 2"
+    },
+    {
+      "id": "pct_of_team_cap",
+      "rejectIf": "containsPercentOfTeam && leagueAlreadyUsedPercentOfTeamThisGw"
+    },
+    {
+      "id": "opener_cooldown",
+      "rejectIf": "openerPatternId == lastGwOpenerPatternId[managerId]"
+    },
+    {
+      "id": "joke_cooldown",
+      "rejectIf": "loreLineId in usedLoreLineIdsThisSeason[-8:]"
+    },
+    {
+      "id": "template_cooldown",
+      "rejectIf": "templateId used for this manager in last 3 GWs OR used anywhere in this GW"
+    },
+    {
+      "id": "must_use_angle_fact",
+      "rejectIf": "!blurbContains(primaryFactTokens)"
+    },
+    {
+      "id": "no_invented_stats",
+      "rejectIf": "anyNumberNotInFactTable"
+    },
+    {
+      "id": "rivalry_required",
+      "rejectIf": "isNamedRivalry && !mentionsRivalryBrand"
+    },
+    {
+      "id": "iconic_lore_cooldown",
+      "rejectIf": "loreLine.iconic && (loreLineId used in last loreLine.cooldownGws GWs || seasonCount[loreLineId] >= loreLine.maxPerSeason)"
+    }
+  ],
+  "regenerate": {
+    "maxAttempts": 4,
+    "onReject": "pickNextTemplateSameAngle else nextAngleByScore else scanOnlyFactLine"
+  },
+  "angles": [
+    {
+      "id": "margin_blowout",
+      "pickWhen": "abs(homePts - awayPts) >= 15",
+      "priority": 80,
+      "interestingness": "abs(margin)"
+    },
+    {
+      "id": "margin_squeaker",
+      "pickWhen": "abs(homePts - awayPts) <= 3 && homePts != awayPts",
+      "priority": 90,
+      "interestingness": "4 - abs(margin)"
+    },
+    {
+      "id": "stalemate",
+      "pickWhen": "homePts == awayPts",
+      "priority": 95,
+      "interestingness": 100
+    },
+    {
+      "id": "upset",
+      "pickWhen": "winner.preMatchWinProb <= 0.40",
+      "priority": 88,
+      "interestingness": "loser.preMatchWinProb - winner.preMatchWinProb"
+    },
+    {
+      "id": "model_miss",
+      "pickWhen": "modelPick != winner && modelConfidence != null",
+      "priority": 70,
+      "interestingness": "modelConfidence"
+    },
+    {
+      "id": "model_hit",
+      "pickWhen": "modelPick == winner",
+      "priority": 40,
+      "interestingness": "margin"
+    },
+    {
+      "id": "bench_regret",
+      "pickWhen": "max(home.benchPts, away.benchPts) >= 8 || max(home.bestXiRegret, away.bestXiRegret) >= 8",
+      "priority": 75,
+      "interestingness": "max(benchPts, bestXiRegret)"
+    },
+    {
+      "id": "waiver_haul",
+      "pickWhen": "max(home.waiverPtsThisGw, away.waiverPtsThisGw) >= 8",
+      "priority": 72,
+      "interestingness": "max(waiverPtsThisGw)"
+    },
+    {
+      "id": "engine",
+      "pickWhen": "maxPlayerShareOfTeamPts >= 0.28",
+      "priority": 35,
+      "interestingness": "playerShare",
+      "leagueWideCapPerGw": 1,
+      "notes": "Use rarely \u2014 this is the old fingerprint. Prefer other angles when eligible."
+    },
+    {
+      "id": "tape",
+      "pickWhen": "h2hSeasonRecord exists && (revengeWin || firstMeeting || sweeps)",
+      "priority": 65,
+      "interestingness": 60
+    },
+    {
+      "id": "title_quake",
+      "pickWhen": "max(abs(deltaTitlePct)) >= 3",
+      "priority": 78,
+      "interestingness": "abs(deltaTitlePct)"
+    },
+    {
+      "id": "rivalry",
+      "pickWhen": "namedRivalry != null",
+      "priority": 99,
+      "interestingness": 85,
+      "notes": "Angle can be rivalry-flavoured but MUST still attach one statistical claim from the winning competing angle."
+    },
+    {
+      "id": "fallback_result",
+      "pickWhen": "true",
+      "priority": 1,
+      "interestingness": "abs(margin)"
+    }
+  ],
+  "angleSelection": {
+    "perFixture": "Among eligible angles, take highest priority; break ties by interestingness. Then force exactly one. Rivalry brand is additive overlay when namedRivalry set \u2014 not a substitute for a stats angle unless rivalry+claim template used.",
+    "leagueCaps": {
+      "engine": 1,
+      "margin_blowout": 2,
+      "waiver_haul": 2
+    },
+    "cooldown": {
+      "sameAngleSameManagerGws": 2
+    }
+  },
+  "slots": [
+    "winnerTeam",
+    "loserTeam",
+    "winnerMgr",
+    "loserMgr",
+    "winnerPts",
+    "loserPts",
+    "margin",
+    "topPlayer",
+    "topPlayerPts",
+    "dudPlayer",
+    "dudPlayerPts",
+    "dudXp",
+    "benchPts",
+    "benchPlayer",
+    "benchPlayerPts",
+    "bestXiRegret",
+    "waiverPlayer",
+    "waiverPts",
+    "modelPick",
+    "modelCorrect",
+    "winnerWinProb",
+    "loserWinProb",
+    "deltaTitleWinner",
+    "deltaTitleLoser",
+    "h2hTape",
+    "rivalryName",
+    "scoreline"
+  ],
+  "templatePacks": {
+    "margin_blowout": [
+      {
+        "id": "blow_01",
+        "text": "{winnerTeam} put {loserTeam} away by {margin}."
+      },
+      {
+        "id": "blow_02",
+        "text": "A {margin}-point hammer: {winnerTeam} {winnerPts}, {loserTeam} {loserPts}."
+      },
+      {
+        "id": "blow_03",
+        "text": "{winnerMgr} ran up {winnerPts} and left {loserTeam} with nowhere to hide."
+      },
+      {
+        "id": "blow_04",
+        "text": "{loserTeam} were out by {margin} before the punchlines started."
+      },
+      {
+        "id": "blow_05",
+        "text": "Statement scoreline \u2014 {scoreline} \u2014 and it was not close."
+      },
+      {
+        "id": "blow_06",
+        "text": "{winnerTeam} turned a H2H into a mismatch by {margin}."
+      }
+    ],
+    "margin_squeaker": [
+      {
+        "id": "sq_01",
+        "text": "{winnerTeam} escaped by {margin}: {scoreline}."
+      },
+      {
+        "id": "sq_02",
+        "text": "Thin margins only \u2014 {winnerMgr} takes it {scoreline}."
+      },
+      {
+        "id": "sq_03",
+        "text": "{loserTeam} lose by {margin} and will replay every bench call."
+      },
+      {
+        "id": "sq_04",
+        "text": "One bad start and it flips; instead {winnerTeam} sneak {scoreline}."
+      },
+      {
+        "id": "sq_05",
+        "text": "Heartbreak maths: {loserPts} is not enough against {winnerPts}."
+      },
+      {
+        "id": "sq_06",
+        "text": "{margin} point(s). That is the whole story."
+      }
+    ],
+    "stalemate": [
+      {
+        "id": "st_01",
+        "text": "Stalemate. {scoreline}. Nobody blinked."
+      },
+      {
+        "id": "st_02",
+        "text": "A draw at {winnerPts} apiece \u2014 a shared shrug in the table."
+      },
+      {
+        "id": "st_03",
+        "text": "{winnerTeam} and {loserTeam} cancel out: {scoreline}."
+      },
+      {
+        "id": "st_04",
+        "text": "Villains on both benches; the scoreboard refuses to pick one."
+      },
+      {
+        "id": "st_05",
+        "text": "Mirror image H2H ends {scoreline}."
+      },
+      {
+        "id": "st_06",
+        "text": "Split points. Split dignity. {scoreline}."
+      }
+    ],
+    "upset": [
+      {
+        "id": "up_01",
+        "text": "{winnerTeam} had {winnerWinProb}% on the board and still took it {scoreline}."
+      },
+      {
+        "id": "up_02",
+        "text": "The favourite blinked \u2014 {loserTeam} at {loserWinProb}% lose {scoreline}."
+      },
+      {
+        "id": "up_03",
+        "text": "Upset complete: {winnerMgr} beats the book {scoreline}."
+      },
+      {
+        "id": "up_04",
+        "text": "Pre-match script shredded. {winnerTeam} win as the underdog."
+      },
+      {
+        "id": "up_05",
+        "text": "{loserWinProb}% said {loserTeam}. The scoreboard said otherwise."
+      },
+      {
+        "id": "up_06",
+        "text": "Dogged win for {winnerTeam}: {scoreline} against the odds."
+      }
+    ],
+    "model_miss": [
+      {
+        "id": "mm_01",
+        "text": "The model backed {modelPick}. Reality backed {winnerTeam} {scoreline}."
+      },
+      {
+        "id": "mm_02",
+        "text": "Model miss. {winnerMgr} makes the spreadsheet look polite."
+      },
+      {
+        "id": "mm_03",
+        "text": "Projected wrong, scored right \u2014 {winnerTeam} {winnerPts}."
+      },
+      {
+        "id": "mm_04",
+        "text": "Another fixture the model did not see: {scoreline}."
+      },
+      {
+        "id": "mm_05",
+        "text": "{modelPick} were the pick. {winnerTeam} were the result."
+      },
+      {
+        "id": "mm_06",
+        "text": "Blindfold week for the model; {winnerTeam} cash in."
+      }
+    ],
+    "model_hit": [
+      {
+        "id": "mh_01",
+        "text": "Model called {winnerTeam}; {scoreline} agrees."
+      },
+      {
+        "id": "mh_02",
+        "text": "Rare alignment \u2014 book and pitch both point at {winnerMgr}."
+      },
+      {
+        "id": "mh_03",
+        "text": "As forecasted, {winnerTeam} get it done {scoreline}."
+      },
+      {
+        "id": "mh_04",
+        "text": "No twist: model hit, {winnerPts}\u2013{loserPts}."
+      },
+      {
+        "id": "mh_05",
+        "text": "The spreadsheet survives contact with {loserTeam}."
+      },
+      {
+        "id": "mh_06",
+        "text": "Predicted and delivered \u2014 {winnerTeam}."
+      }
+    ],
+    "bench_regret": [
+      {
+        "id": "br_01",
+        "text": "{benchPlayer} ({benchPlayerPts}) watched from the pine while it slipped."
+      },
+      {
+        "id": "br_02",
+        "text": "{benchPts} left on the bench \u2014 that is the postmortem."
+      },
+      {
+        "id": "br_03",
+        "text": "Best XI regret sits at {bestXiRegret}; {loserTeam} feel it first."
+      },
+      {
+        "id": "br_04",
+        "text": "The wrong XI cost more than the scoreline admits."
+      },
+      {
+        "id": "br_05",
+        "text": "{winnerTeam} win; the other dugout still arguing with itself."
+      },
+      {
+        "id": "br_06",
+        "text": "Bench points: {benchPts}. Match points: not enough."
+      }
+    ],
+    "waiver_haul": [
+      {
+        "id": "wh_01",
+        "text": "Wire pays off \u2014 {waiverPlayer} returns {waiverPts}."
+      },
+      {
+        "id": "wh_02",
+        "text": "{winnerMgr}'s recent claim ({waiverPlayer}) just earned the week."
+      },
+      {
+        "id": "wh_03",
+        "text": "Waiver haul: {waiverPts} from {waiverPlayer}."
+      },
+      {
+        "id": "wh_04",
+        "text": "The free-agent market decides this one more than the draft board."
+      },
+      {
+        "id": "wh_05",
+        "text": "{waiverPlayer} on {waiverPts} \u2014 that claim looks smug now."
+      },
+      {
+        "id": "wh_06",
+        "text": "Added late, scored loud: {waiverPlayer}."
+      }
+    ],
+    "engine": [
+      {
+        "id": "en_01",
+        "text": "{topPlayer} carried the stack on {topPlayerPts}."
+      },
+      {
+        "id": "en_02",
+        "text": "One engine room: {topPlayer} ({topPlayerPts})."
+      },
+      {
+        "id": "en_03",
+        "text": "{topPlayerPts} from {topPlayer} was the difference that mattered."
+      },
+      {
+        "id": "en_04",
+        "text": "Strip the haul from {topPlayer} and the H2H changes clothes."
+      },
+      {
+        "id": "en_05",
+        "text": "{topPlayer} was the plan; {topPlayerPts} was the receipt."
+      },
+      {
+        "id": "en_06",
+        "text": "Single-player gravity: {topPlayer}."
+      }
+    ],
+    "tape": [
+      {
+        "id": "tp_01",
+        "text": "The H2H tape reads {h2hTape} \u2014 and it just moved again."
+      },
+      {
+        "id": "tp_02",
+        "text": "Season series update: {winnerTeam} edge {loserTeam}."
+      },
+      {
+        "id": "tp_03",
+        "text": "Revenge ink on the tape: {scoreline}."
+      },
+      {
+        "id": "tp_04",
+        "text": "Same fixture, new line \u2014 tape now {h2hTape}."
+      },
+      {
+        "id": "tp_05",
+        "text": "{winnerMgr} takes the season bragging rights a notch higher."
+      },
+      {
+        "id": "tp_06",
+        "text": "History between these two just got another stamp."
+      }
+    ],
+    "title_quake": [
+      {
+        "id": "tq_01",
+        "text": "Title odds swing hard \u2014 {winnerTeam} {deltaTitleWinner}."
+      },
+      {
+        "id": "tq_02",
+        "text": "Table quake: this result rewrites the percentage board."
+      },
+      {
+        "id": "tq_03",
+        "text": "{loserTeam} feel it in the model more than the chat."
+      },
+      {
+        "id": "tq_04",
+        "text": "Not just a W \u2014 a {deltaTitleWinner} tremor."
+      },
+      {
+        "id": "tq_05",
+        "text": "Standings maths move faster than the banter after {scoreline}."
+      },
+      {
+        "id": "tq_06",
+        "text": "Percentage board updated; {winnerMgr} enjoys the refresh."
+      }
+    ],
+    "rivalry": [
+      {
+        "id": "rv_01",
+        "text": "{rivalryName}: {scoreline}."
+      },
+      {
+        "id": "rv_02",
+        "text": "{rivalryName} goes to {winnerTeam} \u2014 {winnerPts} to {loserPts}."
+      },
+      {
+        "id": "rv_03",
+        "text": "Under the {rivalryName} banner, {winnerMgr} takes it."
+      },
+      {
+        "id": "rv_04",
+        "text": "{rivalryName} delivers a clean result: {scoreline}."
+      },
+      {
+        "id": "rv_05",
+        "text": "Named fixture, named winner \u2014 {rivalryName}."
+      },
+      {
+        "id": "rv_06",
+        "text": "{rivalryName}. {winnerTeam} cash the bragging rights."
+      }
+    ],
+    "fallback_result": [
+      {
+        "id": "fb_01",
+        "text": "{winnerTeam} beat {loserTeam} {scoreline}."
+      },
+      {
+        "id": "fb_02",
+        "text": "Final: {scoreline}."
+      },
+      {
+        "id": "fb_03",
+        "text": "{winnerMgr} gets the W \u2014 {winnerPts} to {loserPts}."
+      },
+      {
+        "id": "fb_04",
+        "text": "{loserTeam} come up short against {winnerTeam}."
+      },
+      {
+        "id": "fb_05",
+        "text": "H2H sorted: {winnerTeam} {winnerPts}, {loserTeam} {loserPts}."
+      },
+      {
+        "id": "fb_06",
+        "text": "{winnerTeam} leave with the points."
+      }
+    ]
+  },
+  "rivalries": [
+    {
+      "id": "warderloo",
+      "name": "The Battle of Warderloo",
+      "managers": [
+        "Andrew Ward",
+        "John Ward"
+      ],
+      "alwaysMention": true
+    },
+    {
+      "id": "bad_blood",
+      "name": "The Bad Blood Derby",
+      "managers": [
+        "Andrew Ward",
+        "Nick Goodacre"
+      ],
+      "alwaysMention": true
+    },
+    {
+      "id": "respect",
+      "name": "The Respect Derby",
+      "managers": [
+        "David Higman",
+        "Mike Sutton"
+      ],
+      "alwaysMention": true
+    },
+    {
+      "id": "east_asian",
+      "name": "The East Asian Derby",
+      "managers": [
+        "David Higman",
+        "Luke Butcher"
+      ],
+      "alwaysMention": true
+    }
+  ],
+  "partnerships": [
+    {
+      "id": "titanic",
+      "names": [
+        "The Titanic Duo",
+        "The Titanic"
+      ],
+      "managers": [
+        "Andrew Ward",
+        "Nick Mottershead"
+      ],
+      "useWhen": "confidence, historic success, trading activity, or simultaneous struggles",
+      "maxPerGw": 1,
+      "cooldownGws": 3
+    }
+  ],
+  "loreBank": {
+    "usage": {
+      "role": "sentence2_only",
+      "tone": "mates taking the piss \u2014 affectionate, light, never cruel",
+      "priorityOrder": [
+        "whatActuallyHappened",
+        "fantasyAnalysis",
+        "leagueNarrative",
+        "personalisedHumour"
+      ],
+      "perManagerPerGw": "0-1 preferred, hard max 2",
+      "mustConnectToWeekEventWhenPossible": true,
+      "doNotChecklistTraits": true,
+      "defaultHookCooldownGws": 4,
+      "preferVoiceLineWhenEligible": true,
+      "iconicHookMaxPerSeason": 2,
+      "notes": "Never default to a manager's most iconic line every week. Iconic hooks (Samsung, lampshade, tofu/vegan founding father spam, etc.) use longer cooldowns."
+    },
+    "managers": [
+      {
+        "id": "eddie_webster",
+        "displayName": "Eddie Webster",
+        "aliases": [
+          "Eddy",
+          "Eddie"
+        ],
+        "tone": "lovable disaster, overthinking, excuses, self-inflicted wounds",
+        "hooks": [
+          {
+            "id": "ed_bottom",
+            "text": "the people's favourite to finish last is never far from the plot"
+          },
+          {
+            "id": "ed_overthink",
+            "text": "another week of talking himself out of the obvious"
+          },
+          {
+            "id": "ed_waiver",
+            "text": "classic Eddie waiver energy \u2014 wrong player, airtight explanation"
+          },
+          {
+            "id": "ed_kids",
+            "text": "parenting remains the official alibi department"
+          },
+          {
+            "id": "ed_puzzle",
+            "text": "puzzle trauma still echoes somewhere in the decision tree",
+            "iconic": true,
+            "cooldownGws": 6,
+            "maxPerSeason": 2
+          },
+          {
+            "id": "ed_accent",
+            "text": "British passport, Canadian vowels, same chaos"
+          },
+          {
+            "id": "ed_again",
+            "text": "surely he has not done it again"
+          }
+        ],
+        "preferWhenAngles": [
+          "waiver_haul",
+          "bench_regret",
+          "model_miss",
+          "margin_squeaker"
+        ]
+      },
+      {
+        "id": "nick_goodacre",
+        "displayName": "Nick Goodacre",
+        "aliases": [
+          "Nick G",
+          "Goodacre"
+        ],
+        "tone": "ultra-conservative, data paralysis, mid-table safety",
+        "hooks": [
+          {
+            "id": "ng_safe",
+            "text": "risk aversion remains undefeated even when the XI is not"
+          },
+          {
+            "id": "ng_nolast",
+            "text": "the grand plan still reads: do not finish last"
+          },
+          {
+            "id": "ng_notrade",
+            "text": "the trade button gathers dust on schedule"
+          },
+          {
+            "id": "ng_sheets",
+            "text": "spreadsheets consulted; adventure declined"
+          },
+          {
+            "id": "ng_lampshade",
+            "text": "interior decorating pace applied to squad building",
+            "iconic": true,
+            "cooldownGws": 6,
+            "maxPerSeason": 2
+          },
+          {
+            "id": "ng_mid",
+            "text": "safety-first football, mid-table soul"
+          }
+        ],
+        "preferWhenAngles": [
+          "model_hit",
+          "margin_squeaker",
+          "tape",
+          "fallback_result"
+        ]
+      },
+      {
+        "id": "david_higman",
+        "displayName": "David Higman",
+        "aliases": [
+          "David",
+          "Higman"
+        ],
+        "tone": "people's champion, contrarian, Glastonbury, BBC",
+        "hooks": [
+          {
+            "id": "dh_people",
+            "text": "the people's champion keeps the chat honest"
+          },
+          {
+            "id": "dh_contrary",
+            "text": "someone had to disagree \u2014 David volunteered"
+          },
+          {
+            "id": "dh_glasto",
+            "text": "Glastonbury energy, Premier League points"
+          },
+          {
+            "id": "dh_bbc",
+            "text": "BBC HQ files another imaginary nod of approval"
+          },
+          {
+            "id": "dh_licence",
+            "text": "licence-fee ambassador energy on full display"
+          }
+        ],
+        "preferWhenAngles": [
+          "rivalry",
+          "upset",
+          "title_quake",
+          "tape"
+        ]
+      },
+      {
+        "id": "nick_mottershead",
+        "displayName": "Nick Mottershead",
+        "aliases": [
+          "Mottershead",
+          "Nick M"
+        ],
+        "tone": "swagger, trades, vegan lore, fallen-empire",
+        "hooks": [
+          {
+            "id": "nm_vegan",
+            "text": "veganism's founding father claims another moral victory",
+            "iconic": true,
+            "cooldownGws": 6,
+            "maxPerSeason": 2
+          },
+          {
+            "id": "nm_trade",
+            "text": "the wire never sleeps when Mottershead is awake"
+          },
+          {
+            "id": "nm_swagger",
+            "text": "confidence remains high; evidence files a dissenting note"
+          },
+          {
+            "id": "nm_arts",
+            "text": "reporting in from the improbable postcode"
+          },
+          {
+            "id": "nm_empire",
+            "text": "former-great-power energy, current-week reality"
+          }
+        ],
+        "preferWhenAngles": [
+          "waiver_haul",
+          "bench_regret",
+          "margin_blowout",
+          "upset"
+        ]
+      },
+      {
+        "id": "andrew_ward",
+        "displayName": "Andrew Ward",
+        "aliases": [
+          "Andrew",
+          "AJ"
+        ],
+        "tone": "emotional, loud, combative, glory imminent",
+        "hooks": [
+          {
+            "id": "aw_meltdown",
+            "text": "the group chat brace position was not for nothing"
+          },
+          {
+            "id": "aw_comeback",
+            "text": "the comeback remains scheduled for imminently"
+          },
+          {
+            "id": "aw_trades",
+            "text": "active manager syndrome: every move is historic"
+          },
+          {
+            "id": "aw_war",
+            "text": "war declared on the league; results TBD"
+          },
+          {
+            "id": "aw_talk",
+            "text": "big game talk, smaller table font"
+          },
+          {
+            "id": "aw_canada",
+            "text": "transatlantic intensity, same old rivalries"
+          }
+        ],
+        "preferWhenAngles": [
+          "rivalry",
+          "title_quake",
+          "upset",
+          "margin_blowout",
+          "waiver_haul"
+        ]
+      },
+      {
+        "id": "luke_butcher",
+        "displayName": "Luke Butcher",
+        "aliases": [
+          "Luke"
+        ],
+        "tone": "lovely left-wing almost-PM, Korea/Samsung, fence on own manifesto",
+        "hooks": [
+          {
+            "id": "lb_pm",
+            "text": "Butcher for PM pauses to not publish a manifesto",
+            "cooldownGws": 3
+          },
+          {
+            "id": "lb_judge",
+            "text": "everyone else's politics reviewed; his own filed under later",
+            "cooldownGws": 3
+          },
+          {
+            "id": "lb_korea",
+            "text": "South Korea's unofficial league ambassador nods along",
+            "tags": [
+              "korea"
+            ],
+            "cooldownGws": 5
+          },
+          {
+            "id": "lb_samsung",
+            "text": "Samsung would like a word about the XI",
+            "iconic": true,
+            "cooldownGws": 8,
+            "maxPerSeason": 2,
+            "avoidIfRecentTags": [
+              "korea",
+              "samsung"
+            ]
+          },
+          {
+            "id": "lb_norwich",
+            "text": "Norfolk patience, Seoul logistics",
+            "cooldownGws": 3
+          },
+          {
+            "id": "lb_nice",
+            "text": "harmony preserved; points less so",
+            "cooldownGws": 3
+          }
+        ],
+        "preferWhenAngles": [
+          "rivalry",
+          "bench_regret",
+          "model_miss",
+          "fallback_result"
+        ],
+        "hookSelection": {
+          "mode": "weighted_round_robin",
+          "downweightIconicUnlessNoAlternative": true,
+          "neverRepeatSameHookWithinGws": 8,
+          "ifLastLukeHookTaggedKorea_forceNonKorea": true
+        }
+      },
+      {
+        "id": "mike_sutton",
+        "displayName": "Mike Sutton",
+        "aliases": [
+          "Mike"
+        ],
+        "tone": "lovable wildcard, low stress, accidental genius",
+        "hooks": [
+          {
+            "id": "ms_twins",
+            "text": "father of twins, still the calmest man in the league",
+            "iconic": true,
+            "cooldownGws": 6,
+            "maxPerSeason": 2
+          },
+          {
+            "id": "ms_zen",
+            "text": "zero visible analysis, inconveniently fine results"
+          },
+          {
+            "id": "ms_obscure",
+            "text": "picked someone nobody else had noticed existed"
+          },
+          {
+            "id": "ms_enigma",
+            "text": "the league's hardest matchup to scouting-report"
+          },
+          {
+            "id": "ms_chill",
+            "text": "while others spiral, Mike simply\u2026 continues"
+          }
+        ],
+        "preferWhenAngles": [
+          "waiver_haul",
+          "upset",
+          "engine",
+          "rivalry"
+        ]
+      },
+      {
+        "id": "john_ward",
+        "displayName": "John Ward",
+        "aliases": [
+          "John"
+        ],
+        "tone": "provocateur; confidence exceeds the table",
+        "hooks": [
+          {
+            "id": "jw_poke",
+            "text": "the bear has been poked on schedule"
+          },
+          {
+            "id": "jw_critic",
+            "text": "unsolicited tactical review delivered from the lower half"
+          },
+          {
+            "id": "jw_bottom",
+            "text": "bottom-two gravity remains a character trait"
+          },
+          {
+            "id": "jw_beef",
+            "text": "recurring beef finds a new matchday"
+          },
+          {
+            "id": "jw_restart",
+            "text": "argument closed; John opens the appendix"
+          }
+        ],
+        "preferWhenAngles": [
+          "rivalry",
+          "margin_squeaker",
+          "stumble_context",
+          "model_miss"
+        ]
+      }
+    ]
+  },
+  "prompting": {
+    "system": [
+      "You write TCLOT H2H blurbs for a private FPL Draft league.",
+      "Mates taking the piss: affectionate, never cruel.",
+      "Stats/event claim is mandatory and primary.",
+      "Personality is optional seasoning (sentence 2 only).",
+      "Use ONLY provided slots and allowed loreLineId.",
+      "Max 2 sentences. No % of team phrases unless explicitly allowed this GW.",
+      "Do not invent scores, players, or results.",
+      "If rivalryName provided, mention that exact brand once."
+    ],
+    "userMessageShape": {
+      "angleId": "string",
+      "templateId": "string",
+      "templateText": "string with slots",
+      "slots": "object of facts only",
+      "allowedLore": "0-1 hook objects with id+text",
+      "rivalryName": "string|null",
+      "output": "Replace slots in template for sentence1. Optionally append one short voice clause from allowedLore. Return plain text only."
+    },
+    "preferredMode": "slot_fill_first__llm_polish_optional",
+    "notes": "Best path: render template locally (no LLM). Optional LLM only to lightly fuse sentence2 without changing numbers. If LLM used, never include prior GW prose in context."
+  },
+  "outputPerFixture": {
+    "fixtureId": "",
+    "angleId": "",
+    "templateId": "",
+    "interestingness": 0,
+    "tier": "scan|column",
+    "blurb": "",
+    "loreLineId": null,
+    "rivalryName": null,
+    "gatePasses": true
+  },
+  "seasonStateFiles": {
+    "templateCooldowns": "recap-state/template-cooldowns.json",
+    "loreCooldowns": "recap-state/lore-cooldowns.json",
+    "openerPatterns": "recap-state/opener-patterns.json",
+    "usedPercentOfTeamByGw": "recap-state/pct-cap.json"
+  },
+  "tone": {
+    "defaultTemplatePack": "fun",
+    "preferVoiceLineWhenEligible": true,
+    "fingerprintStillBanned": true
+  }
+}

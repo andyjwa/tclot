@@ -1,7 +1,7 @@
 /**
  * Scan-first recap/preview copy. Header tiles, per-fixture stat boxes, and
- * a reporter-style recap box: one unused news angle per card, jokes as
- * asides, Mottershead vegan required but not always first.
+ * a recap box from the shared blurb engine: one data angle, max two sentences,
+ * Mottershead vegan required as sentence 2.
  */
 
 import {
@@ -19,7 +19,13 @@ import {
   titleModelFor,
 } from './recapSiteContext.js'
 import { standingsMobileTeamName } from './teamNameUtils.js'
-import { variantIndex } from './weeklyRecapText.js'
+import { variantIndex } from './variantIndex.js'
+import {
+  decoratePersonality,
+  generateMatchupBlurb,
+  hydrateUsedBag,
+  rememberBlurb,
+} from './blurbEngine.js'
 
 const TABLE_OPEN = /^(That leaves|That keeps|Both sides finished)\b/
 const QUIPPY =
@@ -162,7 +168,7 @@ function asFollowOn(s) {
   return FOLLOW_ON.test(t) ? lcFirst(t) : t
 }
 
-function weave(lead, aside) {
+function _weave(lead, aside) {
   if (!aside) return stripEnd(lead)
   if (!lead) return stripEnd(aside)
   return `${stripEnd(lead)}, ${asFollowOn(aside)}`
@@ -668,7 +674,7 @@ function sideOnTheme(m, news, side) {
   return `${shortTeam(side.name)} were the other name on the card`
 }
 
-function ensureBothSides(lines, m, news) {
+function _ensureBothSides(lines, m, news) {
   if (mentionsBothSides(lines, m)) return
   const missing = [m?.home, m?.away].filter((s) => s?.name && !mentionsSide(lines.join(' '), s))
   for (const side of missing) {
@@ -699,7 +705,7 @@ function ensureBothSides(lines, m, news) {
 }
 
 /** Keep four lines without dropping vegan or the only mention of a side. */
-function trimRecap(lines, m) {
+function _trimRecap(lines, m) {
   while (lines.length > 4) {
     let idx = -1
     for (let i = lines.length - 1; i >= 1; i -= 1) {
@@ -856,7 +862,7 @@ export function themeSupport(m, news, { preview = false, priorGws = [], site = n
 
 const JOKE_SKIP = new Set(['waiver', 'dud', 'streak', 'record'])
 
-function assignNews(angles, bag, key) {
+function _assignNews(angles, bag, key) {
   const unusedKind = angles.filter((a) => isFree(a, bag) && !bag.kinds.includes(a.kind))
   const pool = unusedKind.length ? unusedKind : angles.filter((a) => isFree(a, bag))
   if (!pool.length) return null
@@ -974,7 +980,7 @@ function pickPreviewHook(angles, bag, key, avoidKind) {
   return pick(pool, key)
 }
 
-function previewPersonality(m, used, ctx) {
+function _previewPersonality(m, used) {
   const key = fixtureKey(m, true)
   const bag = usedBag(used)
   const mottOn =
@@ -1052,104 +1058,28 @@ function previewPersonality(m, used, ctx) {
 }
 
 /**
- * One news theme per card, then two or three site-data sentences on that
- * theme. Jokes are a closing aside. Mottershead vegan is required but not
- * always first. Minimum three sentences. Recaps stay on theme and still
- * name both teams. Previews name both teams.
+ * One fact-line angle per card (max two sentences). Mottershead vegan is
+ * required as sentence 2. Other lore is rare. Recaps and previews both
+ * name both teams.
  */
 export function personalityRecap(m, preview = false, used = [], ctx = {}) {
-  if (preview) return previewPersonality(m, used, ctx)
-  const key = fixtureKey(m, preview)
-  const bag = usedBag(used)
-  const priorGws = ctx?.priorGws || []
-  const site = ctx?.site || null
-  const mottOn =
-    isMottershead(m?.home?.manager) || isMottershead(m?.away?.manager)
-
-  const news = assignNews(fixtureStoryAngles(m, preview, key), bag, key)
-  const skipJoke = news && JOKE_SKIP.has(news.kind)
-  let joke = null
-  if (!skipJoke) {
-    const sides = [m?.home, m?.away].filter(
-      (s) => s?.manager && !isMottershead(s.manager),
-    )
-    const side = sides.length > 1 ? pick(sides, `${key}-jside`) : sides[0]
-    joke = jokeAngle(side, `${key}-joke`, bag)
+  const bag = hydrateUsedBag(used, preview, m?.gw)
+  const surface = preview ? 'preview' : 'recap'
+  const result = generateMatchupBlurb(m, {
+    surface,
+    gwContext: bag._gwContext,
+    state: bag._state,
+    site: ctx?.site || null,
+  })
+  rememberBlurb(bag, result)
+  if (used && !Array.isArray(used)) {
+    used.lines = bag.lines
+    used.kinds = bag.kinds
+    used.stems = bag.stems
+    used._gwContext = bag._gwContext
+    used._state = bag._state
   }
-  const vegan = mottOn ? veganAngle(key, bag) : null
-
-  const kinds = []
-  const stems = []
-  const lines = []
-
-  if (news) {
-    lines.push(news.text)
-    noteAngle(bag, kinds, stems, news)
-    const room = mottOn ? 2 : 3
-    for (const extra of themeSupport(m, news, { preview, priorGws, site, key })) {
-      if (lines.length >= 1 + room) break
-      if (overlaps(extra, lines)) continue
-      lines.push(extra)
-    }
-  }
-
-  if (vegan) {
-    if (!lines.length) {
-      lines.push(vegan.text)
-      noteAngle(bag, kinds, stems, vegan)
-    } else if (pick(['aside', 'aside', 'lead'], `${key}-vegan-slot`) === 'lead') {
-      lines.unshift(vegan.text)
-      noteAngle(bag, kinds, stems, vegan)
-    } else {
-      lines.push(vegan.text)
-      noteAngle(bag, kinds, stems, vegan)
-    }
-  }
-
-  if (joke && lines.length < 4) {
-    lines.push(joke.text)
-    noteAngle(bag, kinds, stems, joke)
-  }
-
-  if (lines.length < 3) {
-    const padNews = { kind: 'fill', about: { side: news?.about?.side || m.home } }
-    for (const extra of themeSupport(m, padNews, {
-      preview,
-      priorGws,
-      site,
-      key: `${key}-pad`,
-    })) {
-      if (lines.length >= 3) break
-      if (overlaps(extra, lines)) continue
-      lines.push(extra)
-    }
-  }
-
-  if (!lines.length) {
-    const fb = pick(
-      [
-        `${who(m.home)} is already narrating this like it was the plan`,
-        `${who(m.away)} has a theory, and the scoreboard is the footnote`,
-      ],
-      `${key}-fallback`,
-    )
-    lines.push(fb)
-    kinds.push('fallback')
-    stems.push(recapStem(fb))
-  }
-
-  const about = news || { about: { side: m?.home, opp: m?.away } }
-  ensureBothSides(lines, m, about)
-  trimRecap(lines, m)
-  if (!mentionsBothSides(lines, m)) {
-    ensureBothSides(lines, m, about)
-    trimRecap(lines, m)
-  }
-
-  const out = lines.slice(0, 4)
-  out.kinds = kinds
-  out.stems = stems
-  return out
+  return decoratePersonality(result)
 }
 
 function formatTitlePct(n) {
