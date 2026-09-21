@@ -3,7 +3,7 @@ import { TeamAvatar } from './TeamAvatar';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { liveFixtureLead } from './liveScoresDerivations.js';
 import { englishOrdinal } from './playerContributionEvents.js';
-import { villainVictoryLine } from './teamNameUtils.js';
+import { matchupVillainVictoryLine } from './teamNameUtils.js';
 import './LiveOddsSection.css';
 
 /**
@@ -26,8 +26,10 @@ import './LiveOddsSection.css';
  * right — either the caller's `rightText` (the Live Scores scorecard passes
  * the favourite's odds, e.g. `Mordor SFG 92%`) or the default to-play counts
  * ("10 v 11 to play", flipping to "FT" once both sides are done). A villain
- * victory parks sentence-case copy (`Regorasu is a villain!`) in the empty
- * centre, in Scorebook lilac. Either side renders independently — a missing
+ * victory parks sentence-case copy (`Regorasu is a villain!`, or
+ * `couple of villains!` when both sides drew at the bottom of the GW
+ * table) in the empty centre, in Scorebook lilac. Either side renders
+ * independently — a missing
  * rank (off-season standings) or missing squad payload never blanks the
  * whole strip. Renders nothing when neither label nor a villain line is
  * available.
@@ -294,13 +296,12 @@ export function MatchupScorecard({
   className,
 }) {
   const Head = onClick ? 'button' : 'div';
-  const villainFullName =
-    homeStatus === 'villain'
-      ? fixture.homeName
-      : awayStatus === 'villain'
-        ? fixture.awayName
-        : null;
-  const villainLine = villainFullName ? villainVictoryLine(villainFullName) : null;
+  const villainLine = matchupVillainVictoryLine({
+    homeName: fixture.homeName,
+    awayName: fixture.awayName,
+    homeVillain: homeStatus === 'villain',
+    awayVillain: awayStatus === 'villain',
+  });
   return (
     <div
       className={

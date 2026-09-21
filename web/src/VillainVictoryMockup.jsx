@@ -121,8 +121,9 @@ function Scorecard({ variant }) {
 }
 
 function LiveTable({ variant }) {
-  const hasPill = variant === 'banner-pill' || variant === 'pill' || variant === 'loud'
-  const hasChip = variant === 'banner-pill' || variant === 'banner' || variant === 'loud'
+  const couple = variant === 'couple'
+  const hasPill = couple || variant === 'banner-pill' || variant === 'pill' || variant === 'loud'
+  const hasChip = couple || variant === 'banner-pill' || variant === 'banner' || variant === 'loud'
   const loudRow = variant === 'loud'
 
   return (
@@ -142,7 +143,7 @@ function LiveTable({ variant }) {
             <td colSpan={5}>Titans</td>
           </tr>
           {TABLE.map((row) => {
-            const isV = row.villain
+            const isV = couple ? row.rank >= 7 : row.villain
             return (
               <tr
                 key={row.rank}
@@ -312,6 +313,75 @@ const OPTIONS = [
   },
 ]
 
+function CoupleSchedule() {
+  const home = TEAMS.BB
+  const away = TEAMS.AB
+  return (
+    <div className="vvm-sched">
+      <div className="vvm-sched__band">
+        <span className="vvm-sched__gw">GW 05</span>
+        <span className="vvm-sched__status">Complete</span>
+      </div>
+      <ul className="vvm-sched__list">
+        <li className="vvm-sched__item">
+          <div className="vvm-sched__banner">
+            <span className="vvm-line vvm-line--purple">couple of villains!</span>
+          </div>
+          <div className="vvm-sched__row">
+            <Crest team={home} ring />
+            <TeamName team={home} pill align="right" />
+            <span className="vvm-sched__mid tabular">
+              <span className="vvm-sched__score">24</span>
+              <span className="vvm-sched__dash">–</span>
+              <span className="vvm-sched__score">24</span>
+            </span>
+            <TeamName team={away} pill />
+            <Crest team={away} ring />
+          </div>
+        </li>
+      </ul>
+    </div>
+  )
+}
+
+function CoupleScorecard() {
+  const home = TEAMS.BB
+  const away = TEAMS.AB
+  return (
+    <div className="vvm-card">
+      <div className="vvm-meta">
+        <span className="vvm-meta__ghost">7th vs 8th</span>
+        <span className="vvm-line vvm-line--purple">couple of villains!</span>
+        <span className="vvm-meta__ghost">FT</span>
+      </div>
+      <div className="vvm-hdr">
+        <div className="vvm-hdr__side">
+          <Crest team={home} ring />
+          <TeamName team={home} pill />
+        </div>
+        <div className="vvm-hdr__score" aria-label="Gameweek score">
+          <span className="vvm-hdr__half">24</span>
+          <span className="vvm-hdr__sep">–</span>
+          <span className="vvm-hdr__half">24</span>
+        </div>
+        <div className="vvm-hdr__side vvm-hdr__side--away">
+          <TeamName team={away} pill align="right" />
+          <Crest team={away} ring />
+        </div>
+      </div>
+      <div className="vvm-gauge">
+        <span className="vvm-gauge__ft">FT</span>
+        <span className="vvm-gauge__track">
+          <span className="vvm-gauge__fill vvm-gauge__fill--home" />
+          <span className="vvm-gauge__notch" />
+          <span className="vvm-gauge__fill vvm-gauge__fill--away" />
+        </span>
+        <span className="vvm-gauge__ft">FT</span>
+      </div>
+    </div>
+  )
+}
+
 export function VillainVictoryMockup() {
   return (
     <div className="vvm">
@@ -378,14 +448,48 @@ export function VillainVictoryMockup() {
             </div>
           </article>
         ))}
+        <article className="vvm-option">
+          <div className="vvm-option__head">
+            <div className="vvm-option__title-row">
+              <span className="vvm-option__id">Draw</span>
+              <span className="vvm-option__title">Couple of villains</span>
+              <span className="vvm-option__tag vvm-option__tag--pick">Production</span>
+            </div>
+            <p className="vvm-option__desc">
+              When the two lowest GW scores draw with each other, both names
+              get the lilac pill and the centre line is “couple of villains!”
+            </p>
+          </div>
+          <div className="vvm-option__surfaces">
+            <figure className="vvm-surface">
+              <figcaption>Live Scores</figcaption>
+              <Phone>
+                <CoupleScorecard />
+              </Phone>
+            </figure>
+            <figure className="vvm-surface">
+              <figcaption>Live Table</figcaption>
+              <Phone>
+                <LiveTable variant="couple" />
+              </Phone>
+            </figure>
+            <figure className="vvm-surface">
+              <figcaption>Schedule</figcaption>
+              <Phone>
+                <CoupleSchedule />
+              </Phone>
+            </figure>
+          </div>
+        </article>
       </div>
 
       <p className="vvm-note">
         Option A is production: Live Scores centre line + name pill, Live
-        Table pill + Villain chip, Schedule banner + name pill. This gallery
-        stays as the comparison — open via <code>?villain=1</code>. Sample:
-        Regorasu (3rd in the league) beats Rohirrim 42–38 while 7th in that
-        GW’s raw FPL table.
+        Table pill + Villain chip, Schedule banner + name pill. A draw at
+        the bottom of the GW table is “couple of villains!” with both names
+        pillowed. This gallery stays as the comparison — open via{' '}
+        <code>?villain=1</code>. Sample: Regorasu (3rd in the league) beats
+        Rohirrim 42–38 while 7th in that GW’s raw FPL table.
       </p>
     </div>
   )

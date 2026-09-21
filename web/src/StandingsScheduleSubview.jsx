@@ -13,7 +13,7 @@ import { useHistoricGwFixtureSquads } from './useHistoricGwFixtureSquads.js'
 import { useNarrowViewport } from './usePortraitMobile.js'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
 import { villainVictoryEntryIdsFromGwFixtures } from './gwRawPointsRankSeason.js'
-import { villainVictoryLine } from './teamNameUtils.js'
+import { matchupVillainVictoryLine } from './teamNameUtils.js'
 
 function pad2(n) {
   const num = Number(n)
@@ -309,12 +309,12 @@ function ScheduleFixtureItem({
     fx.finished && fx.homePts != null && fx.awayPts != null && fx.awayPts > fx.homePts
   const homeVillain = Boolean(villainEntryIds?.has(Number(fx.homeId)))
   const awayVillain = Boolean(villainEntryIds?.has(Number(fx.awayId)))
-  const villainFullName = homeVillain
-    ? fx.homeName
-    : awayVillain
-      ? fx.awayName
-      : null
-  const villainLine = villainFullName ? villainVictoryLine(villainFullName) : null
+  const villainLine = matchupVillainVictoryLine({
+    homeName: fx.homeName,
+    awayName: fx.awayName,
+    homeVillain,
+    awayVillain,
+  })
 
   const expandable = fx.finished
   const bodyId = `standings-fixture-${expandedKey}`

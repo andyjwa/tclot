@@ -7,6 +7,8 @@ import {
   standingsMobileTeamName,
   threeLetterTeamName,
   villainVictoryLine,
+  matchupVillainVictoryLine,
+  COUPLE_OF_VILLAINS_LINE,
 } from './teamNameUtils.js';
 
 test('firstWord — multi-word names collapse to leading token', () => {
@@ -141,4 +143,41 @@ test('villainVictoryLine — curated short name, never a mid-word clip', () => {
   assert.equal(villainVictoryLine('Mordor SFG'), 'MSFG is a villain!');
   assert.equal(villainVictoryLine(null), 'Villain victory');
   assert.equal(villainVictoryLine('  '), 'Villain victory');
+});
+
+test('matchupVillainVictoryLine — couple of villains when both sides qualify', () => {
+  assert.equal(
+    matchupVillainVictoryLine({
+      homeName: 'Rokesly Regorasu',
+      awayName: 'Hackney Rohirrim',
+      homeVillain: true,
+      awayVillain: true,
+    }),
+    COUPLE_OF_VILLAINS_LINE,
+  );
+  assert.equal(
+    matchupVillainVictoryLine({
+      homeName: 'Rokesly Regorasu',
+      awayName: 'Hackney Rohirrim',
+      homeVillain: true,
+      awayVillain: false,
+    }),
+    'Regorasu is a villain!',
+  );
+  assert.equal(
+    matchupVillainVictoryLine({
+      homeName: 'Rokesly Regorasu',
+      awayName: 'Hackney Rohirrim',
+      homeVillain: false,
+      awayVillain: true,
+    }),
+    'Rohirrim is a villain!',
+  );
+  assert.equal(
+    matchupVillainVictoryLine({
+      homeName: 'Rokesly Regorasu',
+      awayName: 'Hackney Rohirrim',
+    }),
+    null,
+  );
 });

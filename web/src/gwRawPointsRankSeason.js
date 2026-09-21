@@ -33,6 +33,9 @@ export function fplGwScoreOrdinalFromPointsMap(pointsByEntryId) {
 }
 
 /**
+ * Entries that won H2H while 7th in that GW's raw FPL table, plus both
+ * sides of a draw that sits at the lowest score of a full 8-team table.
+ *
  * @param {Map<number, number>} pointsByEntryId
  * @param {object[]} gwMatches
  * @returns {Set<number>}
@@ -57,6 +60,16 @@ export function villainVictoryEntryIds(pointsByEntryId, gwMatches) {
       if (ordinalById.get(homeId) === 7) out.add(homeId);
     } else if (a > h) {
       if (ordinalById.get(awayId) === 7) out.add(awayId);
+    } else if (pointsByEntryId.size >= 8) {
+      /* Draw at the bottom of a full 8-team GW table: both are villains. */
+      let minPts = Infinity;
+      for (const pts of pointsByEntryId.values()) {
+        if (pts < minPts) minPts = pts;
+      }
+      if (h === minPts) {
+        out.add(homeId);
+        out.add(awayId);
+      }
     }
   }
   return out;

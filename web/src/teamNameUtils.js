@@ -111,6 +111,9 @@ export function standingsMobileTeamName(name) {
   return trimmed
 }
 
+/** Banner copy when the two lowest GW scores drew with each other. */
+export const COUPLE_OF_VILLAINS_LINE = 'couple of villains!'
+
 /**
  * Scorecard / schedule banner copy for a villain victory. Always pass the
  * full club name — {@link firstWord} applies the curated short label
@@ -123,4 +126,23 @@ export function villainVictoryLine(fullName) {
   const short = firstWord(fullName)
   if (!short) return 'Villain victory'
   return `${short} is a villain!`
+}
+
+/**
+ * Matchup banner: a lone villain is named; a bottom-table draw is
+ * {@link COUPLE_OF_VILLAINS_LINE}.
+ *
+ * @param {{ homeName?: string | null, awayName?: string | null, homeVillain?: boolean, awayVillain?: boolean }} sides
+ * @returns {string | null}
+ */
+export function matchupVillainVictoryLine({
+  homeName,
+  awayName,
+  homeVillain = false,
+  awayVillain = false,
+} = {}) {
+  if (homeVillain && awayVillain) return COUPLE_OF_VILLAINS_LINE
+  if (homeVillain) return villainVictoryLine(homeName)
+  if (awayVillain) return villainVictoryLine(awayName)
+  return null
 }
