@@ -484,6 +484,9 @@ export function useLiveScores({
   /** Bumps on each load start so a slow stale request cannot overwrite newer squads (wrong players / GW). */
   const loadGenerationRef = useRef(0);
 
+  /** Last GW we published into `contributionLiveContext`. A change must drop that snapshot so the points feed cannot diff last week's cards under the new GW. */
+  const contributionGwRef = useRef(null);
+
   /** Prem + fixture snapshot so Lineups MIN can tick off kickoff between 90s polls. */
   const minuteCtxRef = useRef(null);
 
@@ -502,6 +505,11 @@ export function useLiveScores({
     const teamList = teamsRef.current;
     const gw = Number(gameweek);
     if (!enabled || !Number.isFinite(gw) || !teamList?.length) return;
+
+    if (contributionGwRef.current != null && contributionGwRef.current !== gw) {
+      setContributionLiveContext(null);
+    }
+    contributionGwRef.current = gw;
 
     loadGenerationRef.current += 1;
     const loadGen = loadGenerationRef.current;
@@ -810,6 +818,8 @@ export function useLiveScores({
         draftScoring,
         /** Finished GWs for start-rate (not a fake /19). */
         gamesSampled: seasonGamesSampled(boot),
+        /** GW this snapshot was fetched for. The points feed must not diff it under another GW. */
+        gameweek: gw,
       });
       setLastUpdated(new Date().toISOString());
     } catch (e) {
