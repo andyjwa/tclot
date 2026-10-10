@@ -28,7 +28,7 @@ import './LiveOddsSection.css';
  * ("10 v 11 to play", flipping to "FT" once both sides are done). A villain
  * victory parks sentence-case copy (`Regorasu is a villain!`, or
  * `couple of villains!` when both sides drew at the bottom of the GW
- * table) in the empty centre, in Scorebook lilac. Either side renders
+ * table — never on a 0–0) in the empty centre, in Scorebook lilac. Either side renders
  * independently — a missing
  * rank (off-season standings) or missing squad payload never blanks the
  * whole strip. Renders nothing when neither label nor a villain line is

@@ -57,6 +57,41 @@ test('villainVictoryEntryIds — draw at the lowest GW score marks both', () => 
   assert.ok(v.has(8));
 });
 
+test('villainVictoryEntryIds — a 0-0 draw is not a couple of villains', () => {
+  const allZero = new Map([
+    [1, 0],
+    [2, 0],
+    [3, 0],
+    [4, 0],
+    [5, 0],
+    [6, 0],
+    [7, 0],
+    [8, 0],
+  ]);
+  const liveSlate = [
+    { league_entry_1: 1, league_entry_2: 2 },
+    { league_entry_1: 3, league_entry_2: 4 },
+    { league_entry_1: 5, league_entry_2: 6 },
+    { league_entry_1: 7, league_entry_2: 8 },
+  ];
+  assert.equal(villainVictoryEntryIds(allZero, liveSlate).size, 0);
+
+  const bottomBlank = new Map([
+    [1, 80],
+    [2, 70],
+    [3, 60],
+    [4, 50],
+    [5, 40],
+    [6, 30],
+    [7, 0],
+    [8, 0],
+  ]);
+  const v = villainVictoryEntryIds(bottomBlank, [
+    { league_entry_1: 7, league_entry_2: 8 },
+  ]);
+  assert.equal(v.size, 0);
+});
+
 test('villainVictoryEntryIds — draw that is not the lowest score is not a villain', () => {
   const pts = new Map([
     [1, 80],
