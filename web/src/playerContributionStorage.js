@@ -66,3 +66,24 @@ export function mergePersistPlayerContributions(
   }
   return trimmed;
 }
+
+/**
+ * Replace the stored list. Used to drop rows that the current gameweek's live
+ * stats no longer support (a previous GW's card stamped onto this one).
+ * @param {string} key
+ * @param {object[]} events
+ */
+export function replacePlayerContributionEvents(key, events) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      key,
+      JSON.stringify({
+        generated: new Date().toISOString(),
+        events: Array.isArray(events) ? events : [],
+      })
+    );
+  } catch {
+    /* quota / private mode */
+  }
+}

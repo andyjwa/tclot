@@ -17,6 +17,7 @@ import {
   fplCumulativeEventOrdinalLabel,
   liveElementRowForFeedValidation,
   fplTotalFeedEventContradictsLive,
+  contributionEventIsStaleForLiveGw,
   contributionCoveredByTimelineOmit,
   diffContributionEvents,
 } from './playerContributionEvents';
@@ -24,6 +25,7 @@ import {
   mergePersistPlayerContributions,
   playerContributionStorageKey,
   readPlayerContributionBucket,
+  replacePlayerContributionEvents,
 } from './playerContributionStorage';
 import { fetchEspnContributionTimeline } from './espnPremTimeline';
 import {
@@ -411,7 +413,12 @@ export function PlayerContributions({
           (String(e?.stableId || '').startsWith('espn:') ||
             String(e?.stableId || '').startsWith('fotmob:'))
       );
-      return mergeContributionLists([espnFromUi, local, arch]);
+      const merged = mergeContributionLists([espnFromUi, local, arch]);
+      const ctx = contribCtxRef.current;
+      if (ctx && Number(ctx.gameweek) === gwNum) {
+        return merged.filter((ev) => !contributionEventIsStaleForLiveGw(ev, ctx));
+      }
+      return merged;
     });
   }, [leagueId, gameweek, storageKey, mergeContributionLists]);
 
@@ -497,6 +504,7 @@ export function PlayerContributions({
       try {
         const liveCtx = contribCtxRef.current;
         if (!liveCtx?.gwFixtures?.length) return;
+        if (Number(liveCtx.gameweek) !== Number(gameweek)) return;
         const ev = await fetchEspnContributionTimeline({
           gameweek,
           gwFixtures: liveCtx.gwFixtures,
@@ -590,6 +598,10 @@ export function PlayerContributions({
 
   useEffect(() => {
     if (!lastUpdated || !contributionLiveContext?.liveFullByElementId) return;
+    if (Number(contributionLiveContext.gameweek) !== Number(gameweek)) {
+      prevLiveRef.current = null;
+      return;
+    }
     const ctx = contributionLiveContext;
     const next = ctx.liveFullByElementId;
     const nowIso = new Date().toISOString();
@@ -640,6 +652,30 @@ export function PlayerContributions({
   ]);
 
   /**
+   * Drop rows the current GW's live stats and fixtures do not support, including
+   * ones already written to localStorage on an earlier visit.
+   */
+  useEffect(() => {
+    const ctx = contributionLiveContext;
+    if (!ctx?.liveFullByElementId) return;
+    if (Number(ctx.gameweek) !== Number(gameweek)) return;
+    const bucket = readPlayerContributionBucket(storageKey);
+    if (bucket?.events?.length) {
+      const kept = bucket.events.filter(
+        (ev) => !contributionEventIsStaleForLiveGw(ev, ctx)
+      );
+      if (kept.length !== bucket.events.length) {
+        replacePlayerContributionEvents(storageKey, kept);
+      }
+    }
+    setDisplayed((prev) => {
+      const list = prev || [];
+      const next = list.filter((ev) => !contributionEventIsStaleForLiveGw(ev, ctx));
+      return next.length === list.length ? prev : next;
+    });
+  }, [contributionLiveContext, gameweek, storageKey]);
+
+  /**
    * Latest first (top), reading down goes back in time. No auto-scroll — user controls position.
    * Dedupe: when ESPN covers (elementId, kind, fixture) we drop the matching FPL row.
    */
@@ -647,8 +683,13 @@ export function PlayerContributions({
     const teamById = contributionLiveContext?.teamById || {};
     const liveFull = contributionLiveContext?.liveFullByElementId;
     const liveBy = contributionLiveContext?.liveByElementId;
-    const inThisGw = (displayed || []).filter((e) =>
-      contributionEventMatchesGameweek(e, gameweek)
+    const liveScoped =
+      Number(contributionLiveContext?.gameweek) === Number(gameweek);
+    if (!liveScoped) return [];
+    const inThisGw = (displayed || []).filter(
+      (e) =>
+        contributionEventMatchesGameweek(e, gameweek) &&
+        !contributionEventIsStaleForLiveGw(e, contributionLiveContext)
     );
     const liveCoverage = buildTimelineCoverageSet(
       inThisGw.filter((e) => {

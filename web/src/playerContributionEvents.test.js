@@ -13,6 +13,7 @@ import {
   contributionCoveredByTimelineOmit,
   contributionEventMatchesGameweek,
   fplTotalFeedEventContradictsLive,
+  contributionEventIsStaleForLiveGw,
   liveElementRowForFeedValidation,
   effectiveContributionSortKey,
   diffContributionEvents,
@@ -446,6 +447,72 @@ test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc/car
   assert.equal(saveEv?.delta, 2);
 });
 
+test('fplTotalFeedEventContradictsLive — stale yellow/red vs a 0-card line', () => {
+  const yellow = { kind: 'yellow_card', stableId: '6:295:yellow_card:tot1' };
+  const live0 = { stats: { yellow_cards: 0, red_cards: 0, minutes: 0 }, explain: [] };
+  assert.equal(fplTotalFeedEventContradictsLive(yellow, live0, 4), true);
+  const liveYellow = { stats: { yellow_cards: 1, red_cards: 0, minutes: 90 }, explain: [] };
+  assert.equal(fplTotalFeedEventContradictsLive(yellow, liveYellow, 4), false);
+  const red = { kind: 'red_card', stableId: '6:295:red_card:tot1' };
+  assert.equal(fplTotalFeedEventContradictsLive(red, live0, 4), true);
+  assert.equal(
+    fplTotalFeedEventContradictsLive(red, { stats: { red_cards: 1, minutes: 70 }, explain: [] }, 4),
+    false
+  );
+});
+
+test('contributionEventIsStaleForLiveGw — previous-GW yellow on a gameweek that has not started', () => {
+  const gw6 = [
+    {
+      id: 56,
+      team_h: 11,
+      team_a: 9,
+      started: false,
+      finished: false,
+      minutes: 0,
+      kickoff_time: '2026-10-11T13:00:00Z',
+    },
+  ];
+  const ev = {
+    stableId: '6:295:yellow_card:tot1',
+    kind: 'yellow_card',
+    elementId: 295,
+    gameweek: 6,
+    fplFixtureId: 46,
+    minuteLabel: "90'",
+  };
+  const ctx = {
+    gameweek: 6,
+    elementById: { 295: { id: 295, team: 11, element_type: 4 } },
+    gwFixtures: gw6,
+    liveFullByElementId: {
+      295: { stats: { yellow_cards: 0, minutes: 0 }, explain: [] },
+    },
+  };
+  assert.equal(
+    contributionEventIsStaleForLiveGw(ev, ctx),
+    true,
+    'a card whose fixture is not in this GW is last week’s event'
+  );
+  const taggedThisGw = { ...ev, fplFixtureId: 56 };
+  assert.equal(
+    contributionEventIsStaleForLiveGw(taggedThisGw, ctx),
+    true,
+    'same card pinned to a fixture that has not kicked off'
+  );
+  const liveCard = {
+    ...ctx,
+    gwFixtures: [{ ...gw6[0], started: true, minutes: 20 }],
+    liveFullByElementId: {
+      295: { stats: { yellow_cards: 1, minutes: 20 }, explain: [] },
+    },
+  };
+  assert.equal(
+    contributionEventIsStaleForLiveGw({ ...taggedThisGw, minuteLabel: "18'" }, liveCard),
+    false
+  );
+});
+
 test('diffContributionEvents — bootstrap with 0′ minutes never backfills cards (placeholder totals)', () => {
   const out = diffContributionEvents({
     prevLiveByElementId: null,
@@ -490,6 +557,55 @@ test('diffContributionEvents — minuteLabel frozen at emit time from explain fi
     goal?.minuteLabel,
     "15'",
     'event carries the clock at emit time so the feed label never drifts to 90′'
+  );
+});
+
+test('diffContributionEvents — 0-min yellow does not emit after bootstrap either', () => {
+  const out = diffContributionEvents({
+    prevLiveByElementId: {
+      295: { stats: { yellow_cards: 0, red_cards: 0, minutes: 0 }, explain: [] },
+    },
+    nextLiveByElementId: {
+      295: { stats: { yellow_cards: 1, red_cards: 0, minutes: 0 }, explain: [] },
+    },
+    elementById: { 295: { element_type: 4, team: 11 } },
+    trackedElementIds: new Set([295]),
+    gameweek: 6,
+    nowIso: '2026-10-10T10:22:00.000Z',
+  });
+  assert.equal(out.length, 0);
+});
+
+test('diffContributionEvents — pre-kickoff fixture does not emit last week’s 90′ yellow', () => {
+  const gwFixtures = [
+    {
+      id: 56,
+      team_h: 11,
+      team_a: 9,
+      started: false,
+      finished: false,
+      minutes: 0,
+      kickoff_time: '2026-10-11T13:00:00Z',
+    },
+  ];
+  const out = diffContributionEvents({
+    prevLiveByElementId: null,
+    nextLiveByElementId: {
+      295: {
+        stats: { yellow_cards: 1, minutes: 90 },
+        explain: [[[{ stat: 'minutes', value: 90 }, { stat: 'yellow_cards', value: 1 }], 46]],
+      },
+    },
+    elementById: { 295: { id: 295, element_type: 4, team: 11 } },
+    trackedElementIds: new Set([295]),
+    gameweek: 6,
+    nowIso: '2026-10-10T10:22:00.000Z',
+    gwFixtures,
+  });
+  assert.equal(
+    out.length,
+    0,
+    'Hull have not kicked off, so a 90′ yellow is not a GW6 event'
   );
 });
 

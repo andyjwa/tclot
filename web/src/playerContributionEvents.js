@@ -91,14 +91,19 @@ function fplTotSuffixN(stableId) {
 /**
  * Dropped when current FPL live **stats** do not back this `…:totN` row. Handles stale
  * `localStorage` or bad rows for players with real minutes (previously they were never
- * pruned because we only treated 0-minute ghosts as invalid).
+ * pruned because we only treated 0-minute ghosts as invalid). Cards use the same check
+ * so a yellow from the previous gameweek cannot sit on a 0-card line.
  * @param {object} ev
  * @param {object | null | undefined} liveRow
  * @param {number | null | undefined} elementTypeId
  */
 export function fplTotalFeedEventContradictsLive(ev, liveRow, elementTypeId) {
   if (!ev) return false;
-  if (!/^\d+:\d+:(goal|assist|dc_points|save_points):tot/.test(String(ev.stableId || '')))
+  if (
+    !/^\d+:\d+:(goal|assist|dc_points|save_points|yellow_card|red_card):tot/.test(
+      String(ev.stableId || '')
+    )
+  )
     return false;
   if (!liveRow) return false;
   const N = fplTotSuffixN(ev.stableId);
@@ -116,7 +121,25 @@ export function fplTotalFeedEventContradictsLive(ev, liveRow, elementTypeId) {
   if (ev.kind === 'save_points') {
     return saveFantasyPointsFromSaves(s.saves, elementTypeId) < N;
   }
+  if (ev.kind === 'yellow_card') {
+    return (Number(s.yellow_cards) || 0) < N;
+  }
+  if (ev.kind === 'red_card') {
+    return (Number(s.red_cards) || 0) < N;
+  }
   return false;
+}
+
+/**
+ * FPL fixture row is explicitly pre-kickoff. Missing `started` is not enough —
+ * tests and older payloads omit it, and a live match must still emit.
+ * @param {object | null | undefined} fx
+ */
+function fixtureExplicitlyNotStarted(fx) {
+  if (!fx) return false;
+  if (fx.finished === true || fx.started === true) return false;
+  if (Number(fx.minutes) > 0) return false;
+  return fx.started === false;
 }
 
 /**
@@ -234,6 +257,44 @@ export function primaryFixtureForContribution(nextRow, teamId, gwFixtures) {
     })[0];
   }
   return null;
+}
+
+/**
+ * Last week's points-feed row carried onto a gameweek that has not started.
+ * Happens when a GW switch diffs the previous `event/live` snapshot under the
+ * new gameweek number: goals and assists are already dropped by
+ * {@link fplTotalFeedEventContradictsLive}, but cards were not, so a 90' yellow
+ * from the previous match survives on the new GW's empty feed.
+ *
+ * @param {object | null | undefined} ev
+ * @param {{
+ *   liveFullByElementId?: Record<number, object> | null,
+ *   liveByElementId?: Record<number, object> | null,
+ *   elementById?: Record<number, object> | null,
+ *   gwFixtures?: object[] | null,
+ * } | null | undefined} ctx
+ */
+export function contributionEventIsStaleForLiveGw(ev, ctx) {
+  if (!ev || !ctx) return false;
+  const gwFixtures = ctx.gwFixtures || [];
+  const elid = Number(ev.elementId);
+  const el = Number.isFinite(elid) ? ctx.elementById?.[elid] : undefined;
+  const live = liveElementRowForFeedValidation(
+    ctx.liveFullByElementId,
+    ctx.liveByElementId,
+    elid
+  );
+  if (fplTotalFeedEventContradictsLive(ev, live, el?.element_type)) return true;
+  if (!gwFixtures.length) return false;
+  const fid = Number(ev.fplFixtureId);
+  if (Number.isFinite(fid)) {
+    const fx = gwFixtures.find((f) => Number(f.id) === fid);
+    if (!fx) return true;
+    return fixtureExplicitlyNotStarted(fx);
+  }
+  return fixtureExplicitlyNotStarted(
+    primaryFixtureForContribution(live, el?.team, gwFixtures)
+  );
 }
 
 /**
@@ -729,9 +790,10 @@ export function contributionEventMatchesGameweek(ev, gameweek) {
 /**
  * Compare two live snapshots; emit positive deltas only. Goals, assists, DC fantasy points, and
  * save fantasy points require {@link hasMeaningfulMinutesOnPitch} on `nextRow` on every tick, so
- * 0-minute placeholder or inconsistent API state never creates rows. Yellow/red emit on bootstrap
- * too (backfill after a mid-match refresh) but then require meaningful minutes; `stableId` dedupe
- * plus the ESPN coverage omit prevent double-counting with match-feed sources.
+ * 0-minute placeholder or inconsistent API state never creates rows. Yellow/red also emit on
+ * bootstrap (backfill after a mid-match refresh) but, like goals, only when the player has real
+ * minutes and the fixture is not explicitly pre-kickoff. `stableId` dedupe plus the ESPN coverage
+ * omit prevent double-counting with match-feed sources.
  *
  * @param {{
  *   prevLiveByElementId: Record<number, object> | null,
@@ -799,6 +861,9 @@ export function diffContributionEvents({
     const et = el?.element_type;
     const fxRow = primaryFixtureForContribution(nextRow, el?.team, gwFixtures);
     const fplFixtureId = fxRow?.id != null ? Number(fxRow.id) : null;
+    // Pre-kickoff rows are not this gameweek's events. A GW rollover can still
+    // be holding last week's minutes and cards; `started: false` is the signal.
+    if (fixtureExplicitlyNotStarted(fxRow)) continue;
 
     const ps = statsOf(prevRow);
     const ns = statsOf(nextRow);
@@ -914,9 +979,9 @@ export function diffContributionEvents({
 
     const y0 = Number(ps.yellow_cards) || 0;
     const y1 = Number(ns.yellow_cards) || 0;
-    // Cards emit on bootstrap too (backfill after a mid-match refresh), but only for
-    // players with real minutes so 0' placeholder totals never become rows.
-    const canEmitCards = !bootstrap || hasMeaningfulMinutesOnPitch(nextRow);
+    // Same rule as goals: a card with no on-pitch minutes is a placeholder total,
+    // including after the first poll. Bootstrap still backfills a real in-play card.
+    const canEmitCards = hasMeaningfulMinutesOnPitch(nextRow);
     if (canEmitCards && !isOmitted(elid, 'yellow_card', fplFixtureId) && y1 > y0) {
       out.push({
         stableId: `${gw}:${elid}:yellow_card:tot${y1}`,
