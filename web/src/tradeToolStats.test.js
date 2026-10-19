@@ -3,7 +3,6 @@ import assert from 'node:assert/strict'
 import {
   TRADE_MIN_STATS,
   TRADE_MAX_STATS,
-  TRADE_MAX_PLAYERS_PER_SIDE,
   DEFAULT_TRADE_STAT_IDS,
   seasonShortLabel,
   normalizeTradeStatSelection,
@@ -18,7 +17,12 @@ import {
   polygonPath,
   formatTradeStat,
   toggleTradeStat,
-  lockedTradePosition,
+  tradePositionCounts,
+  tradeSideCovers,
+  tradePositionsMatch,
+  canAddTradePosition,
+  missingTradePositions,
+  formatTradePositionNeeds,
   filterSquadForTrade,
   filterSquadByPosition,
   filterSquadByQuery,
@@ -168,15 +172,38 @@ test('toggleTradeStat — respects min and max', () => {
   assert.equal(toggleTradeStat(atMax, 'starts').length, TRADE_MAX_STATS)
 })
 
-test('TRADE_MAX_PLAYERS_PER_SIDE is one-for-one', () => {
-  assert.equal(TRADE_MAX_PLAYERS_PER_SIDE, 1)
-})
-
-test('lockedTradePosition — first pick on either side locks the position', () => {
-  assert.equal(lockedTradePosition([], []), null)
-  assert.equal(lockedTradePosition([{ positionType: 1 }], []), 1)
-  assert.equal(lockedTradePosition([], [{ positionType: 3 }]), 3)
-  assert.equal(lockedTradePosition([{ positionType: 2 }], [{ positionType: 2 }]), 2)
+test('trade position counts — mixed sides must match as a multiset', () => {
+  const midFwd = tradePositionCounts([
+    { positionType: 3 },
+    { positionType: 4 },
+    { positionType: 3 },
+  ])
+  assert.deepEqual(midFwd, { 1: 0, 2: 0, 3: 2, 4: 1 })
+  const other = tradePositionCounts([{ positionType: 3 }, { positionType: 4 }])
+  assert.equal(tradeSideCovers(midFwd, other), true)
+  assert.equal(tradeSideCovers(other, midFwd), false)
+  assert.equal(tradePositionsMatch(midFwd, other), false)
+  assert.equal(
+    tradePositionsMatch(midFwd, { 1: 0, 2: 0, 3: 2, 4: 1 }),
+    true,
+  )
+  assert.equal(canAddTradePosition(other, midFwd, 3), true)
+  assert.equal(canAddTradePosition(other, midFwd, 4), false)
+  assert.equal(canAddTradePosition(other, midFwd, 2), false)
+  assert.equal(canAddTradePosition(midFwd, other, 1), true)
+  assert.deepEqual(missingTradePositions(other, midFwd), [3])
+  assert.equal(
+    formatTradePositionNeeds(missingTradePositions(other, midFwd), (t) =>
+      ({ 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' })[t],
+    ),
+    'MID',
+  )
+  assert.equal(
+    formatTradePositionNeeds([3, 4, 3], (t) =>
+      ({ 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' })[t],
+    ),
+    '2 MID, FWD',
+  )
 })
 
 test('filterSquadByPosition — keeps one slot; blank or unknown leaves list', () => {
@@ -199,16 +226,30 @@ test('filterSquadByPosition — keeps one slot; blank or unknown leaves list', (
   )
 })
 
-test('filterSquadForTrade — locked position hides every other slot', () => {
+test('filterSquadForTrade — catching-up side only lists positions still owed', () => {
   const squad = [
     { element: 1, positionType: 1 },
     { element: 2, positionType: 2 },
-    { element: 3, positionType: 1 },
+    { element: 3, positionType: 3 },
+    { element: 4, positionType: 4 },
+    { element: 5, positionType: 3 },
   ]
-  assert.deepEqual(filterSquadForTrade(squad, null), squad)
+  const open = { 1: 0, 2: 0, 3: 0, 4: 0 }
+  assert.deepEqual(filterSquadForTrade(squad), squad)
   assert.deepEqual(
-    filterSquadForTrade(squad, 1).map((p) => p.element),
-    [1, 3],
+    filterSquadForTrade(squad, { sideCounts: open, otherCounts: open }).map(
+      (p) => p.element,
+    ),
+    [1, 2, 3, 4, 5],
+  )
+  const needMidFwd = { 1: 0, 2: 0, 3: 1, 4: 1 }
+  assert.deepEqual(
+    filterSquadForTrade(squad, {
+      sideCounts: open,
+      otherCounts: needMidFwd,
+      selectedIds: [2],
+    }).map((p) => p.element),
+    [2, 3, 4, 5],
   )
 })
 
@@ -226,15 +267,18 @@ test('filterSquadByQuery — matches player name, ignores blank query', () => {
   assert.equal(filterSquadByQuery(squad, 'zzz').length, 0)
 })
 
-test('applyTradePick — one per side, same-position, replace, deselect', () => {
-  const gkA = { element: 10, positionType: 1 }
-  const defA = { element: 11, positionType: 2 }
-  const gkB = { element: 20, positionType: 1 }
+test('applyTradePick — any mix on one side, other side matches positions', () => {
+  const midA = { element: 10, positionType: 3 }
+  const fwdA = { element: 11, positionType: 4 }
+  const defA = { element: 12, positionType: 2 }
+  const midA2 = { element: 13, positionType: 3 }
+  const fwdB = { element: 20, positionType: 4 }
   const midB = { element: 21, positionType: 3 }
-  const squadA = [gkA, defA]
-  const squadB = [gkB, midB]
+  const defB = { element: 22, positionType: 2 }
+  const squadA = [midA, fwdA, defA, midA2]
+  const squadB = [fwdB, midB, defB]
 
-  const pickGkA = applyTradePick({
+  const pickMid = applyTradePick({
     idsA: [],
     idsB: [],
     squadA,
@@ -242,55 +286,92 @@ test('applyTradePick — one per side, same-position, replace, deselect', () => 
     side: 'a',
     elementId: 10,
   })
-  assert.deepEqual(pickGkA, { idsA: [10], idsB: [] })
+  assert.deepEqual(pickMid, { idsA: [10], idsB: [] })
 
-  const pickGkB = applyTradePick({
-    ...pickGkA,
-    squadA,
-    squadB,
-    side: 'b',
-    elementId: 20,
-  })
-  assert.deepEqual(pickGkB, { idsA: [10], idsB: [20] })
-
-  const rejectMid = applyTradePick({
-    ...pickGkB,
-    squadA,
-    squadB,
-    side: 'b',
-    elementId: 21,
-  })
-  assert.deepEqual(rejectMid, { idsA: [10], idsB: [20] })
-
-  const replaceSamePos = applyTradePick({
-    idsA: [10],
-    idsB: [],
+  const pickFwd = applyTradePick({
+    ...pickMid,
     squadA,
     squadB,
     side: 'a',
     elementId: 11,
   })
-  assert.deepEqual(replaceSamePos, { idsA: [11], idsB: [] })
+  assert.deepEqual(pickFwd, { idsA: [10, 11], idsB: [] })
+
+  const rejectDefOnB = applyTradePick({
+    ...pickFwd,
+    squadA,
+    squadB,
+    side: 'b',
+    elementId: 22,
+  })
+  assert.deepEqual(rejectDefOnB, { idsA: [10, 11], idsB: [] })
+
+  const pickFwdFirstOnB = applyTradePick({
+    ...pickFwd,
+    squadA,
+    squadB,
+    side: 'b',
+    elementId: 20,
+  })
+  assert.deepEqual(pickFwdFirstOnB, { idsA: [10, 11], idsB: [20] })
+
+  const pickMidOnB = applyTradePick({
+    ...pickFwdFirstOnB,
+    squadA,
+    squadB,
+    side: 'b',
+    elementId: 21,
+  })
+  assert.deepEqual(pickMidOnB, { idsA: [10, 11], idsB: [20, 21] })
+
+  const extendWithAnotherMid = applyTradePick({
+    ...pickMidOnB,
+    squadA,
+    squadB,
+    side: 'a',
+    elementId: 13,
+  })
+  assert.deepEqual(extendWithAnotherMid, { idsA: [10, 11, 13], idsB: [20, 21] })
+
+  const bCannotAddDefWhileShort = applyTradePick({
+    ...extendWithAnotherMid,
+    squadA,
+    squadB,
+    side: 'b',
+    elementId: 22,
+  })
+  assert.deepEqual(bCannotAddDefWhileShort, {
+    idsA: [10, 11, 13],
+    idsB: [20, 21],
+  })
 
   const deselect = applyTradePick({
-    idsA: [10],
-    idsB: [20],
+    idsA: [10, 11],
+    idsB: [20, 21],
     squadA,
     squadB,
     side: 'a',
     elementId: 10,
   })
-  assert.deepEqual(deselect, { idsA: [], idsB: [20] })
+  assert.deepEqual(deselect, { idsA: [11], idsB: [20, 21] })
 
-  const swapSamePos = applyTradePick({
-    idsA: [10],
-    idsB: [20],
-    squadA: [...squadA, { element: 12, positionType: 1 }],
+  const onlyFillTheGap = applyTradePick({
+    ...deselect,
+    squadA,
     squadB,
     side: 'a',
     elementId: 12,
   })
-  assert.deepEqual(swapSamePos, { idsA: [12], idsB: [20] })
+  assert.deepEqual(onlyFillTheGap, { idsA: [11], idsB: [20, 21] })
+
+  const fillMid = applyTradePick({
+    ...deselect,
+    squadA,
+    squadB,
+    side: 'a',
+    elementId: 10,
+  })
+  assert.deepEqual(fillMid, { idsA: [11, 10], idsB: [20, 21] })
 })
 
 test('encodeTradeSource / parseTradeSource — entry vs club keys', () => {

@@ -193,8 +193,6 @@ export const DEFAULT_TRADE_STAT_IDS = [
 
 export const TRADE_MAX_STATS = 8
 export const TRADE_MIN_STATS = 3
-/** One-for-one compare — FPL Draft trades are same-position swaps. */
-export const TRADE_MAX_PLAYERS_PER_SIDE = 1
 
 /** "2026-27" → "26/27" */
 export function seasonShortLabel(label) {
@@ -465,19 +463,96 @@ export function formatTradeStat(statId, value) {
 }
 
 /**
- * Position lock for same-position trades. The first selected player on
- * either side sets the position the other side may pick.
+ * Count of GKP / DEF / MID / FWD (element types 1–4) in a picked side.
  *
- * @param {{ positionType?: number }[] | null | undefined} pickedA
- * @param {{ positionType?: number }[] | null | undefined} pickedB
- * @returns {number | null}
+ * @param {{ positionType?: number }[] | null | undefined} players
+ * @returns {Record<1 | 2 | 3 | 4, number>}
  */
-export function lockedTradePosition(pickedA, pickedB) {
-  const a = Array.isArray(pickedA) ? pickedA[0] : null
-  const b = Array.isArray(pickedB) ? pickedB[0] : null
-  const type = a?.positionType ?? b?.positionType
-  const n = Number(type)
-  return Number.isFinite(n) ? n : null
+export function tradePositionCounts(players) {
+  const counts = { 1: 0, 2: 0, 3: 0, 4: 0 }
+  for (const p of players || []) {
+    const t = Number(p?.positionType)
+    if (t >= 1 && t <= 4) counts[t] += 1
+  }
+  return counts
+}
+
+/**
+ * True when every position count on this side is at least the other side's.
+ * An empty other side is always covered, so the first side can pick freely.
+ *
+ * @param {Record<number, number> | null | undefined} sideCounts
+ * @param {Record<number, number> | null | undefined} otherCounts
+ */
+export function tradeSideCovers(sideCounts, otherCounts) {
+  for (let t = 1; t <= 4; t += 1) {
+    if ((sideCounts?.[t] || 0) < (otherCounts?.[t] || 0)) return false
+  }
+  return true
+}
+
+/**
+ * Both sides hold the same number of players at each position.
+ *
+ * @param {Record<number, number> | null | undefined} countsA
+ * @param {Record<number, number> | null | undefined} countsB
+ */
+export function tradePositionsMatch(countsA, countsB) {
+  for (let t = 1; t <= 4; t += 1) {
+    if ((countsA?.[t] || 0) !== (countsB?.[t] || 0)) return false
+  }
+  return true
+}
+
+/**
+ * A side that already covers the other may add any position. A side that
+ * is short may only fill a position the other side still has more of.
+ *
+ * @param {Record<number, number> | null | undefined} sideCounts
+ * @param {Record<number, number> | null | undefined} otherCounts
+ * @param {number | string | null | undefined} positionType
+ */
+export function canAddTradePosition(sideCounts, otherCounts, positionType) {
+  const pos = Number(positionType)
+  if (!Number.isFinite(pos) || pos < 1 || pos > 4) return false
+  if ((sideCounts?.[pos] || 0) < (otherCounts?.[pos] || 0)) return true
+  return tradeSideCovers(sideCounts, otherCounts)
+}
+
+/**
+ * Positions this side still owes, one entry per missing player, GKP → FWD.
+ *
+ * @param {Record<number, number> | null | undefined} sideCounts
+ * @param {Record<number, number> | null | undefined} otherCounts
+ * @returns {number[]}
+ */
+export function missingTradePositions(sideCounts, otherCounts) {
+  const missing = []
+  for (let t = 1; t <= 4; t += 1) {
+    const gap = (otherCounts?.[t] || 0) - (sideCounts?.[t] || 0)
+    for (let i = 0; i < gap; i += 1) missing.push(t)
+  }
+  return missing
+}
+
+/**
+ * "MID, FWD" or "2 MID, FWD".
+ *
+ * @param {number[] | null | undefined} positionTypes
+ * @param {(positionType: number) => string} [labelOf]
+ */
+export function formatTradePositionNeeds(positionTypes, labelOf) {
+  const counts = tradePositionCounts(
+    (positionTypes || []).map((positionType) => ({ positionType })),
+  )
+  const parts = []
+  for (let t = 1; t <= 4; t += 1) {
+    const n = counts[t]
+    if (!n) continue
+    const label = labelOf ? labelOf(t) : String(t)
+    parts.push(n > 1 ? `${n} ${label}` : label)
+  }
+  return parts.join(', ')
 }
 
 /**
@@ -496,15 +571,29 @@ export function filterSquadByPosition(squad, positionType) {
 }
 
 /**
- * Squad list for one trade side. Once a position is locked, both sides
- * only list that position — FPL Draft trades are same-position swaps.
+ * Squad list for one trade side. Selected players stay visible so they can
+ * be removed. Everyone else is hidden unless their position can still be
+ * added without breaking the position match.
  *
  * @param {object[] | null | undefined} squad
- * @param {number | null | undefined} lockPosition
+ * @param {{
+ *   sideCounts?: Record<number, number>,
+ *   otherCounts?: Record<number, number>,
+ *   selectedIds?: number[],
+ * }} [opts]
  * @returns {object[]}
  */
-export function filterSquadForTrade(squad, lockPosition) {
-  return filterSquadByPosition(squad, lockPosition)
+export function filterSquadForTrade(squad, opts = {}) {
+  const list = Array.isArray(squad) ? squad : []
+  const sideCounts = opts?.sideCounts
+  const otherCounts = opts?.otherCounts
+  if (!sideCounts || !otherCounts) return list
+  if (tradeSideCovers(sideCounts, otherCounts)) return list
+  const selected = new Set((opts.selectedIds || []).map(Number))
+  return list.filter((p) => {
+    if (selected.has(Number(p.element))) return true
+    return canAddTradePosition(sideCounts, otherCounts, p.positionType)
+  })
 }
 
 /**
@@ -545,9 +634,22 @@ export function parseTradeSource(raw) {
 }
 
 /**
- * Toggle or replace a one-player-per-side pick. A mismatched position is
- * ignored when the other side already has a player selected. The same
- * element cannot sit on both sides (a club squad can overlap a fantasy squad).
+ * Players for the given ids, in pick order.
+ *
+ * @param {number[]} ids
+ * @param {{ element: number }[] | null | undefined} squad
+ */
+function playersFromIds(ids, squad) {
+  const byId = new Map()
+  for (const p of squad || []) byId.set(Number(p.element), p)
+  return (ids || []).map((id) => byId.get(Number(id))).filter(Boolean)
+}
+
+/**
+ * Toggle a player on one side. There is no cap on how many players a side
+ * can hold. The side that already covers the other may add any position;
+ * the side that is short may only fill a position the other side still has
+ * more of. The same element cannot sit on both sides.
  *
  * @param {{
  *   idsA?: number[],
@@ -568,34 +670,38 @@ export function applyTradePick({
   elementId,
 }) {
   const id = Number(elementId)
+  const nextA = (idsA || []).map(Number)
+  const nextB = (idsB || []).map(Number)
+  if (!Number.isFinite(id)) return { idsA: nextA, idsB: nextB }
+
   const isA = side === 'a'
   const squad = isA ? squadA : squadB
   const player = (squad || []).find((p) => Number(p.element) === id)
-  if (!player) return { idsA: [...idsA], idsB: [...idsB] }
+  if (!player) return { idsA: nextA, idsB: nextB }
 
-  const current = isA ? idsA : idsB
-  const other = isA ? idsB : idsA
+  const current = isA ? nextA : nextB
+  const other = isA ? nextB : nextA
+
+  if (current.includes(id)) {
+    const kept = current.filter((x) => x !== id)
+    return isA ? { idsA: kept, idsB: other } : { idsA: other, idsB: kept }
+  }
+
+  if (other.includes(id)) return { idsA: nextA, idsB: nextB }
+
   const otherSquad = isA ? squadB : squadA
-  const otherPicked = (otherSquad || []).find((p) =>
-    (other || []).includes(Number(p.element)),
-  )
-
-  if ((current || []).includes(id)) {
-    return isA ? { idsA: [], idsB: [...other] } : { idsA: [...other], idsB: [] }
-  }
-
-  if ((other || []).includes(id)) {
-    return { idsA: [...idsA], idsB: [...idsB] }
-  }
-
   if (
-    otherPicked &&
-    Number(otherPicked.positionType) !== Number(player.positionType)
+    !canAddTradePosition(
+      tradePositionCounts(playersFromIds(current, squad)),
+      tradePositionCounts(playersFromIds(other, otherSquad)),
+      player.positionType,
+    )
   ) {
-    return { idsA: [...idsA], idsB: [...idsB] }
+    return { idsA: nextA, idsB: nextB }
   }
 
-  return isA ? { idsA: [id], idsB: [...other] } : { idsA: [...other], idsB: [id] }
+  const added = [...current, id]
+  return isA ? { idsA: added, idsB: other } : { idsA: other, idsB: added }
 }
 
 /**
