@@ -18,7 +18,7 @@ On each build, GitHub runs **`ingest.py`** with the committed id, then builds th
 
 **Scheduled builds are gated** (`web/scripts/waiver-refresh-gate.mjs`): the hourly cron only deploys during ~36h after each FPL `waivers_time`, during **05:26–05:45 / 13:26–13:45 / 21:26–21:45 UTC** daily catch-alls, every **3 hours** in the **24h** before the next `waivers_time`, from each GW **lineup deadline until +3h** (so locked XIs and the weekly Preview publish at lock, not two hours later), or from **2h after a GW deadline** until **3h before the next GW deadline** (does **not** wait for FPL's lagging event `finished` flag) — so H2H `details.json` can update when a week ends, not only when waivers run. A separate **`*/15` burst cron** deploys during the **~90 min after each `waivers_time`** and during the **3h after each lineup deadline** (and skips at all other times) so freshly processed waivers and locked-XI previews appear within minutes. **Pushes to `main` and manual “Run workflow” always deploy.** If the live site looks a week behind, run the workflow or push after `python3 ingest.py` + `npm run publish-real-league`; open `deploy-check.json` on the site and confirm `details.json` reflects the latest finished GW.
 
-**Vercel live site:** Scheduled Actions deploy to GitHub Pages. The public site at **tclot.vercel.app** only rebuilds on git push unless you add a **Deploy Hook**: Vercel → Project → Settings → Git → Deploy Hooks → create one, then save the URL as repository (or `github-pages` Environment) secret **`VERCEL_DEPLOY_HOOK`**. The deploy workflow POSTs that hook after every successful Pages deploy so scheduled post-deadline / waiver refreshes reach Vercel too.
+**Vercel live site:** Scheduled Actions deploy to GitHub Pages. The public site at **tclot.vercel.app** rebuilds on git push (Vercel Git) and on a **Deploy Hook** for a few scheduled refreshes. Create the hook at Vercel → Project → Settings → Git → Deploy Hooks and save the URL as repository (or `github-pages` Environment) secret **`VERCEL_DEPLOY_HOOK`**. The deploy workflow POSTs that hook only for the **three daily catch-alls** and **workflow_dispatch** (manual + Preview refresh ping) — not on git push (already a Vercel production deploy) and not on hourly / `*/15` burst crons (those still update GitHub Pages). Hobby **Deployment Storage is 10 GB** and counts every stored deploy; see §5.
 
 **H2H “finished” lag:** FPL Draft often leaves `details.matches[].finished` (and event `finished` / `data_checked`) false for many hours after the football ends, even while provisional points are already on every match. The build (`copy-data.js`) and the app (`useLeagueData`) promote those rows to finished once every Premier League fixture for that GW is `finished` or `finished_provisional`, so standings / form / schedule / weekly recaps update when the gameweek closes instead of waiting for FPL’s “data checked” step.
 
@@ -187,18 +187,18 @@ You’ll see something like:
   "leagueName": "...",
   "teamCount": 8,
   "isDemoData": false,
-  "teamLogosPngInDist": 0,
+  "teamLogosWebInDist": 10,
   ...
 }
 ```
 
 - **`isDemoData: true`** → data path A or B above isn’t wired yet  
-- **`teamLogosPngInDist: 0`** → no PNGs were in the repo at build time  
+- **`teamLogosWebInDist: 0`** → no PNGs were in `web/public/team-logos/` at build time (source uploads are not copied into `dist/`)  
 
 In **Actions → latest run → build job log**, look for:
 
 - `Ingest: league ID is configured` vs `No FPL_LEAGUE_ID`
-- `Team logo PNGs in build: N`
+- `Team logo web PNGs in build: N`
 
 ---
 
@@ -211,3 +211,20 @@ In **Actions → latest run → build job log**, look for:
 | Demo league / yellow banner | No `FPL_LEAGUE_ID` and no real committed `league-data` |
 | Wrong league | Wrong ID in secret |
 | Letter avatars only | `team-logos/*.png` not committed |
+
+---
+
+## 5. Vercel Hobby — Deployment Storage (10 GB)
+
+Vercel emails **“Approaching your limits … Deployment Storage (10 GB)”** when **old deployments** fill the free-team cap. This is not traffic. Each production (and preview) build is stored until retention deletes it (Hobby default: **30 days**, and the latest preview for every **still-open git branch** is kept even longer).
+
+Hourly + `*/15` ingest used to POST `VERCEL_DEPLOY_HOOK` after every Pages deploy, so one GW week could add dozens of ~40 MB production artifacts. Cursor `cursor/*` preview branches stacked on top of that.
+
+**Do this once in the Vercel dashboard so deploys are not paused:**
+
+1. [Vercel Dashboard](https://vercel.com/dashboard) → team **tclot** → Usage → Deployment Storage. If more than one project is listed (including a leftover from **andyjwar/TCLOT**), delete unused projects.
+2. Open the live project → **Deployments**. Delete old production and preview deployments you do not need to roll back to. Bulk-select helps.
+3. **Settings → Security → Deployment Retention Policy.** Set Preview / Canceled / Errored / Production as short as the dropdown allows (1 day if offered). Save. Hobby still keeps the last few Ready production deploys plus the current alias.
+4. **Settings → Git.** Confirm only **`main`** production deploys. This repo’s `vercel.json` `ignoreCommand` skips **preview** builds (`VERCEL_ENV != production`) so PR/branch previews no longer consume storage.
+
+Going forward, `dist/` no longer includes the 2–3 MB source badge photos (only `team-logos-web/` 192×192 output), and the Pages workflow triggers Vercel at most a few times a day. Live scores and waiver *claims* still update in the browser without a Vercel rebuild.
