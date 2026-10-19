@@ -26,14 +26,18 @@ import {
   applyTradePick,
   buildRadarAxes,
   encodeTradeSource,
+  canAddTradePosition,
   filterSquadByQuery,
   filterSquadByPosition,
   filterSquadForTrade,
+  formatTradePositionNeeds,
   formatTradeStat,
   indexElementsByCode,
   joinPriorByCode,
-  lockedTradePosition,
+  missingTradePositions,
   normalizeTradeStatSelection,
+  tradePositionCounts,
+  tradePositionsMatch,
   parseTradeSource,
   seasonShortLabel,
   toggleTradeStat,
@@ -389,6 +393,12 @@ function ClubCrest({ badgeUrl, fallback }) {
   )
 }
 
+function playersInPickOrder(ids, pool) {
+  const byId = new Map()
+  for (const p of pool || []) byId.set(Number(p.element), p)
+  return (ids || []).map((id) => byId.get(Number(id))).filter(Boolean)
+}
+
 function squadForSource(source, squadsByEntry, squadsByClub) {
   const parsed = parseTradeSource(source)
   if (!parsed) return []
@@ -475,6 +485,7 @@ function SquadRow({ player, selected, side, onToggle, missingPrior, seasonMode }
 
 /**
  * Manager-vs-manager trade builder. Analyzer only — nothing is sent to FPL.
+ * Any number of players per side; the other side has to match positions.
  *
  * @param {{
  *   leagueEntries: object[],
@@ -597,44 +608,43 @@ export function TradeTool({
   const squadB = squadForSource(sourceB, squadsByEntry, squadsByClub)
   const poolA = parsedA ? squadA : allPlayers
   const poolB = parsedB ? squadB : allPlayers
-  const pickedA = poolA.filter((p) => idsA.includes(p.element))
-  const pickedB = poolB.filter((p) => idsB.includes(p.element))
-  const lockPosition = lockedTradePosition(pickedA, pickedB)
+  const pickedA = useMemo(
+    () => playersInPickOrder(idsA, poolA),
+    [idsA, poolA],
+  )
+  const pickedB = useMemo(
+    () => playersInPickOrder(idsB, poolB),
+    [idsB, poolB],
+  )
+  const countsA = useMemo(() => tradePositionCounts(pickedA), [pickedA])
+  const countsB = useMemo(() => tradePositionCounts(pickedB), [pickedB])
+  const needsA = missingTradePositions(countsA, countsB)
+  const needsB = missingTradePositions(countsB, countsA)
+  const positionsMatched =
+    pickedA.length > 0 &&
+    pickedB.length > 0 &&
+    tradePositionsMatch(countsA, countsB)
   const browseA =
     parsedA || queryA.trim() || positionA ? (parsedA ? squadA : allPlayers) : []
   const browseB =
     parsedB || queryB.trim() || positionB ? (parsedB ? squadB : allPlayers) : []
   const visibleA = filterSquadForTrade(
     filterSquadByPosition(filterSquadByQuery(browseA, queryA), positionA),
-    lockPosition,
+    { sideCounts: countsA, otherCounts: countsB, selectedIds: idsA },
   )
   const visibleB = filterSquadForTrade(
     filterSquadByPosition(filterSquadByQuery(browseB, queryB), positionB),
-    lockPosition,
+    { sideCounts: countsB, otherCounts: countsA, selectedIds: idsB },
   )
-
-  useEffect(() => {
-    if (lockPosition == null) return
-    if (positionA && positionA !== lockPosition) setPositionA(lockPosition)
-    if (positionB && positionB !== lockPosition) setPositionB(lockPosition)
-  }, [lockPosition, positionA, positionB])
 
   const pickPosition = (side, raw) => {
     const pos = /** @type {1 | 2 | 3 | 4} */ (Number(raw))
     if (!POSITION_ORDER.includes(pos)) return
-    if (lockPosition != null && pos !== lockPosition) return
-    const dropMismatched = (ids, pool) =>
-      ids.filter((id) => {
-        const player = pool.find((p) => p.element === id)
-        return player != null && player.positionType === pos
-      })
-    if (side === 'a') {
-      setPositionA(pos)
-      setIdsA((ids) => dropMismatched(ids, poolA))
-    } else {
-      setPositionB(pos)
-      setIdsB((ids) => dropMismatched(ids, poolB))
-    }
+    const sideCounts = side === 'a' ? countsA : countsB
+    const otherCounts = side === 'a' ? countsB : countsA
+    if (!canAddTradePosition(sideCounts, otherCounts, pos)) return
+    if (side === 'a') setPositionA(pos)
+    else setPositionB(pos)
   }
 
   const clearPosition = (side) => {
@@ -651,8 +661,16 @@ export function TradeTool({
       side,
       elementId,
     })
+    const nextCountsA = tradePositionCounts(playersInPickOrder(next.idsA, poolA))
+    const nextCountsB = tradePositionCounts(playersInPickOrder(next.idsB, poolB))
     setIdsA(next.idsA)
     setIdsB(next.idsB)
+    if (positionA && !canAddTradePosition(nextCountsA, nextCountsB, positionA)) {
+      setPositionA('')
+    }
+    if (positionB && !canAddTradePosition(nextCountsB, nextCountsA, positionB)) {
+      setPositionB('')
+    }
   }
 
   const sideAStats = useMemo(
@@ -670,12 +688,13 @@ export function TradeTool({
 
   const nameA = sourceDisplayName(sourceA, managers, clubs, 'Side A')
   const nameB = sourceDisplayName(sourceB, managers, clubs, 'Side B')
-  const compareA = pickedA[0]?.name || nameA
-  const compareB = pickedB[0]?.name || nameB
+  const compareA = pickedA.length > 1 ? nameA : pickedA[0]?.name || nameA
+  const compareB = pickedB.length > 1 ? nameB : pickedB[0]?.name || nameB
   const currentShort = seasonShortLabel(currentSeasonLabel) || 'This season'
   const priorShort = seasonShortLabel(priorSeasonLabel) || 'Last season'
-  const showRadar = pickedA.length > 0 && pickedB.length > 0
-  const lockPosLabel = lockPosition != null ? POS_LABEL[lockPosition] : null
+  const showRadar = positionsMatched
+  const needLabelA = formatTradePositionNeeds(needsA, (t) => POS_LABEL[t])
+  const needLabelB = formatTradePositionNeeds(needsB, (t) => POS_LABEL[t])
 
   const renderSquad = (side) => {
     const source = side === 'a' ? sourceA : sourceB
@@ -694,6 +713,9 @@ export function TradeTool({
     const hasQuery = Boolean(query.trim())
     const hasPosition = position !== ''
     const posLabel = hasPosition ? POS_LABEL[position] : null
+    const sideCounts = side === 'a' ? countsA : countsB
+    const otherCounts = side === 'a' ? countsB : countsA
+    const needLabel = side === 'a' ? needLabelA : needLabelB
     const club =
       parsed?.kind === 'club'
         ? clubs.find((c) => c.id === parsed.id) ?? null
@@ -701,7 +723,7 @@ export function TradeTool({
     const positionOptions = POSITION_ORDER.map((type) => ({
       value: String(type),
       label: POS_LABEL[type],
-      disabled: lockPosition != null && lockPosition !== type,
+      disabled: !canAddTradePosition(sideCounts, otherCounts, type),
     }))
 
     return (
@@ -766,10 +788,10 @@ export function TradeTool({
           <p className="muted muted--tight">
             {hasQuery
               ? 'No matching player.'
-              : lockPosLabel && hasTeam
-                ? `No ${lockPosLabel} on this squad.`
-                : lockPosLabel
-                  ? `Same position · ${lockPosLabel} only.`
+              : needLabel && hasTeam
+                ? `No ${needLabel} on this squad.`
+                : needLabel
+                  ? `Match positions · ${needLabel}.`
                   : hasPosition && hasTeam
                     ? `No ${posLabel} on this squad.`
                     : hasPosition
@@ -778,8 +800,8 @@ export function TradeTool({
           </p>
         ) : (
           <div className="trade-tool__roster">
-            {lockPosLabel ? (
-              <p className="trade-tool__lock-hint">Same position · {lockPosLabel}</p>
+            {needLabel ? (
+              <p className="trade-tool__lock-hint">Match positions · {needLabel}</p>
             ) : null}
             {groups.map((g) => (
               <div key={g.type} className="trade-tool__pos-block">
@@ -812,8 +834,9 @@ export function TradeTool({
           </h2>
         </div>
         <p className="tile-hint muted tile-hint--tight">
-          Pick a team or a position, then one player each. Same position only —
-          nothing is sent to FPL Draft. Agree the deal, then offer it in the
+          Pick any players from one team. The other side has to match those
+          positions — a mid and a forward need a mid and a forward back.
+          Nothing is sent to FPL Draft. Agree the deal, then offer it in the
           official app.
         </p>
 
@@ -953,8 +976,13 @@ export function TradeTool({
               </>
             ) : (
               <p className="muted muted--tight trade-tool__empty">
-                Pick a team, a position, or search a player on each side. Same
-                position only.
+                {needLabelA && needLabelB
+                  ? `Positions have to match. ${nameA} still needs ${needLabelA}. ${nameB} still needs ${needLabelB}.`
+                  : needLabelA
+                    ? `Pick ${needLabelA} on ${nameA} so the positions match.`
+                    : needLabelB
+                      ? `Pick ${needLabelB} on ${nameB} so the positions match.`
+                      : 'Pick players on each side. The other side has to match those positions.'}
               </p>
             )}
           </div>
