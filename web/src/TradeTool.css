@@ -625,12 +625,48 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
   letter-spacing: 0.04em;
 }
 
+.trade-tool__th-a,
+.trade-tool__th-b {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .trade-tool__th-a {
   color: var(--trade-a);
 }
 
 .trade-tool__th-b {
   color: var(--trade-b);
+}
+
+.trade-tool__th-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.trade-tool__th-team .team-avatar-frame,
+.trade-tool__th-team .trade-tool__club-crest,
+.trade-tool__th-team .team-shirt {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.trade-tool__th-team .trade-tool__club-crest img {
+  width: 16px;
+  height: 16px;
+}
+
+.trade-tool__th-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .trade-tool__tr {
@@ -727,11 +763,12 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
     padding: 6px 8px;
   }
 
-  .trade-tool__th-a,
-  .trade-tool__th-b {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .trade-tool__controls {
+    margin: 2px 0 0;
+  }
+
+  .trade-radar {
+    gap: 2px;
   }
 
   .trade-tool__stats-sheet {
