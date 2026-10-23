@@ -381,6 +381,55 @@ function TradeStatsPill({ selectedIds, onChange, sheet }) {
   )
 }
 
+/** First word of a club name, so the stat-table header can sit beside a badge. */
+function teamFirstName(name) {
+  const trimmed = String(name ?? '').trim()
+  return trimmed.split(/\s+/)[0] || trimmed
+}
+
+function TradeTableHead({
+  label,
+  asTeam,
+  source,
+  clubs,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
+  if (!asTeam) {
+    return (
+      <span className="trade-tool__th-name" title={label}>
+        {label}
+      </span>
+    )
+  }
+  const parsed = parseTradeSource(source)
+  const short = teamFirstName(label)
+  const club =
+    parsed?.kind === 'club'
+      ? clubs.find((c) => c.id === parsed.id) ?? null
+      : null
+  return (
+    <span className="trade-tool__th-team" title={label}>
+      {parsed?.kind === 'entry' ? (
+        <TeamAvatar
+          entryId={parsed.id}
+          name={label}
+          size="sm"
+          logoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          badgeFallback
+        />
+      ) : parsed?.kind === 'club' ? (
+        <ClubCrest
+          badgeUrl={badgeUrlFor(club)}
+          fallback={(club?.short_name || short).slice(0, 3)}
+        />
+      ) : null}
+      <span className="trade-tool__th-name">{short}</span>
+    </span>
+  )
+}
+
 function ClubCrest({ badgeUrl, fallback }) {
   return (
     <span className="trade-tool__club-crest" aria-hidden>
@@ -937,8 +986,26 @@ export function TradeTool({
                 <div className="trade-tool__table" role="table" aria-label="Trade totals">
                   <div className="trade-tool__th" role="row">
                     <span>Stat</span>
-                    <span className="trade-tool__th-a">{compareA}</span>
-                    <span className="trade-tool__th-b">{compareB}</span>
+                    <span className="trade-tool__th-a">
+                      <TradeTableHead
+                        label={pickedA.length > 1 ? nameA : compareA}
+                        asTeam={pickedA.length > 1}
+                        source={sourceA}
+                        clubs={clubs}
+                        teamLogoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
+                    </span>
+                    <span className="trade-tool__th-b">
+                      <TradeTableHead
+                        label={pickedB.length > 1 ? nameB : compareB}
+                        asTeam={pickedB.length > 1}
+                        source={sourceB}
+                        clubs={clubs}
+                        teamLogoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
+                    </span>
                     <span>Δ</span>
                   </div>
                   {axes.map((ax) => {

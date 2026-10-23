@@ -1,12 +1,14 @@
 import { formatTradeStat, polygonPath, radarVertex } from './tradeToolStats.js'
 import './TradeRadar.css'
 
-const SIZE = 400
+/* Wider than tall so chips, chart, and the stat table fit one phone screen. */
+const VB_W = 400
+const VB_H = 332
 const CX = 200
-const CY = 198
-const RADIUS = 118
+const CY = 158
+const RADIUS = 102
 const RINGS = [0.25, 0.5, 0.75, 1]
-const LABEL_R = 158
+const LABEL_R = 134
 
 /**
  * Radar comparison of two trade sides. Axes come from `buildRadarAxes`.
@@ -46,7 +48,7 @@ export function TradeRadar({ axes, labelA = 'Give', labelB = 'Get' }) {
     <figure className="trade-radar">
       <svg
         className="trade-radar__svg"
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        viewBox={`0 0 ${VB_W} ${VB_H}`}
         role="img"
         aria-label={`${labelA} versus ${labelB}: ${aria}`}
       >
