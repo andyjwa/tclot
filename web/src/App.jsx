@@ -539,7 +539,6 @@ import {
 } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
-import { ForbiddenWaivers } from './ForbiddenWaivers'
 import {
   WeeklyWaivers,
   WaiverTotalsToggle,
@@ -548,7 +547,6 @@ import {
   WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
 import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
-import { pickupIdSetFromLatestWaiver } from './forbiddenWaivers.js'
 import { reloadStandaloneApp } from './tclotRefresh.js'
 import {
   readTclotViewState,
@@ -3019,11 +3017,6 @@ function App() {
     () => mergeWaiverOutGwRows(staticWaiverOutGwRows, liveWaiver.rows),
     [staticWaiverOutGwRows, liveWaiver.rows],
   )
-  /** Forbidden stamps follow the latest waiver run only, so last week's claims drop off. */
-  const takenPickupIds = useMemo(
-    () => pickupIdSetFromLatestWaiver(waiverOutGwRows),
-    [waiverOutGwRows],
-  )
   const refreshLeagueAndWaivers = useCallback(async () => {
     // In-place JSON refetch cannot unstick an iOS home-screen app; the
     // document is frozen until the process is killed. Cache-bust navigate.
@@ -4052,8 +4045,6 @@ function App() {
               )}
               {dashboardView === 'teamSelection' && teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
-              <ForbiddenWaivers takenPickupIds={takenPickupIds} />
-
               <WaiverFreshnessBanner notice={waiverFreshnessNotice} />
 
               <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
