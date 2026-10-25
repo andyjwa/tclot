@@ -58,7 +58,7 @@ const LI_TABS = /** @type {const} */ ([
  */
 const TCLOT_TERMS = [
   { term: 'Villains Victory',     def: 'Winning with the 7th highest score of the GW.' },
-  { term: 'Heroes Defeat',        def: 'Losing with the 2nd highest score of the GW.' },
+  { term: 'Heroes Defeat',        def: 'Losing with the 2nd highest score of the GW.', tone: 'hero' },
   { term: 'The Motty',            def: 'Winning thanks to a bench player coming in.' },
   { term: 'Douchebag Sneak',      def: 'Winning with the 5th highest score.' },
   { term: 'Stallions Stalemate',  def: 'The top 2 scorers of the GW drawing.' },
@@ -386,8 +386,22 @@ export function LeagueInfoModal({
               <dl className="li-terms">
                 {TCLOT_TERMS.map((t) => (
                   <div className="li-term" key={t.term}>
-                    <dt className="li-term__name">{t.term}</dt>
-                    <dd className="li-term__def">{t.def}</dd>
+                    <dt
+                      className={
+                        'li-term__name' +
+                        (t.tone === 'hero' ? ' li-term__name--hero' : '')
+                      }
+                    >
+                      {t.term}
+                    </dt>
+                    <dd
+                      className={
+                        'li-term__def' +
+                        (t.tone === 'hero' ? ' li-term__def--hero' : '')
+                      }
+                    >
+                      {t.def}
+                    </dd>
                   </div>
                 ))}
               </dl>

@@ -334,6 +334,7 @@ export function LiveFixtureCard({
               kitIndexByEntry={ctx.kitIndexByEntry}
               mobile
               villainEntryIds={ctx.villainEntryIds}
+              heroEntryIds={ctx.heroEntryIds}
             />
           </div>
         </div>

@@ -475,6 +475,11 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   color: var(--text);
   letter-spacing: 0.005em;
 }
+/* Heroes Defeat is the orange twin of Villains Victory. */
+.league-info-modal-shell .li-term__name--hero,
+.league-info-modal-shell .li-term__def--hero {
+  color: var(--live-hero-strong, #b45309);
+}
 
 /* ==================================================================
  * Settings card — overrides for the embedded SettingsPanelBody so it

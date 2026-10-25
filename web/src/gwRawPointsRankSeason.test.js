@@ -5,6 +5,7 @@ import {
   buildGwRawPointsRankSeasonTotals,
   fplGwScoreOrdinalFromPointsMap,
   heroDefeatEntryIds,
+  heroDefeatEntryIdsFromGwFixtures,
   villainVictoryEntryIds,
   villainVictoryEntryIdsFromGwFixtures,
 } from './gwRawPointsRankSeason.js';
@@ -133,6 +134,19 @@ test('villainVictoryEntryIdsFromGwFixtures — bottom-table draw needs 8 scores'
   assert.ok(v.has(7));
   assert.ok(v.has(8));
   assert.equal(villainVictoryEntryIdsFromGwFixtures(fixtures.slice(0, 3)).size, 0);
+});
+
+test('heroDefeatEntryIdsFromGwFixtures — 2nd-highest loser needs 8 scores', () => {
+  const fixtures = [
+    { homeId: 1, awayId: 2, homePts: 80, awayPts: 70 },
+    { homeId: 3, awayId: 4, homePts: 60, awayPts: 50 },
+    { homeId: 5, awayId: 6, homePts: 40, awayPts: 30 },
+    { homeId: 7, awayId: 8, homePts: 25, awayPts: 20 },
+  ];
+  const h = heroDefeatEntryIdsFromGwFixtures(fixtures);
+  assert.equal(h.size, 1);
+  assert.ok(h.has(2));
+  assert.equal(heroDefeatEntryIdsFromGwFixtures(fixtures.slice(0, 3)).size, 0);
 });
 
 test('heroDefeatEntryIds — lose H2H at 2nd in league raw GW', () => {
