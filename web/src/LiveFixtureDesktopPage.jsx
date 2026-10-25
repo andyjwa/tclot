@@ -275,6 +275,7 @@ export function LiveFixtureDesktopPage({
             teamLogoMap={ctx.teamLogoMap}
             kitIndexByEntry={ctx.kitIndexByEntry}
             villainEntryIds={ctx.villainEntryIds}
+            heroEntryIds={ctx.heroEntryIds}
           />
         </div>
       ) : null}

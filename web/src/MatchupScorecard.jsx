@@ -3,7 +3,7 @@ import { TeamAvatar } from './TeamAvatar';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { liveFixtureLead } from './liveScoresDerivations.js';
 import { englishOrdinal } from './playerContributionEvents.js';
-import { matchupVillainVictoryLine } from './teamNameUtils.js';
+import { matchupHeroDefeatLine, matchupVillainVictoryLine } from './teamNameUtils.js';
 import './LiveOddsSection.css';
 
 /**
@@ -28,10 +28,11 @@ import './LiveOddsSection.css';
  * ("10 v 11 to play", flipping to "FT" once both sides are done). A villain
  * victory parks sentence-case copy (`Regorasu is a villain!`, or
  * `couple of villains!` when both sides drew at the bottom of the GW
- * table — never on a 0–0) in the empty centre, in Scorebook lilac. Either side renders
- * independently — a missing
+ * table — never on a 0–0) in the empty centre, in Scorebook lilac. A hero
+ * defeat does the same in orange (`Regorasu is a hero!` — 2nd-highest raw
+ * GW score, and they lost). Either side renders independently — a missing
  * rank (off-season standings) or missing squad payload never blanks the
- * whole strip. Renders nothing when neither label nor a villain line is
+ * whole strip. Renders nothing when neither label nor a narrative line is
  * available.
  */
 export function MatchupMeta({
@@ -39,6 +40,7 @@ export function MatchupMeta({
   liveRankByEntry,
   rightText,
   villainLine = null,
+  heroLine = null,
 }) {
   const homeRank = Number(liveRankByEntry?.[f.homeId]);
   const awayRank = Number(liveRankByEntry?.[f.awayId]);
@@ -46,6 +48,7 @@ export function MatchupMeta({
     Number.isFinite(homeRank) && Number.isFinite(awayRank)
       ? `${englishOrdinal(homeRank)} vs ${englishOrdinal(awayRank)}`
       : null;
+  const narrative = Boolean(villainLine || heroLine);
   const hasRemaining =
     f.homeRemaining != null &&
     Number.isFinite(Number(f.homeRemaining)) &&
@@ -57,16 +60,21 @@ export function MatchupMeta({
       : `${f.homeRemaining} v ${f.awayRemaining} to play`
     : null;
   const right = rightText ?? toPlayLabel;
-  if (!seedLabel && !right && !villainLine) return null;
+  if (!seedLabel && !right && !narrative) return null;
   return (
-    <div className={'lo-meta' + (villainLine ? ' lo-meta--villain' : '')}>
+    <div className={'lo-meta' + (narrative ? ' lo-meta--narrative' : '')}>
       <span className="lo-meta__text">{seedLabel}</span>
-      {villainLine ? (
-        <span className="lo-meta__villain">{villainLine}</span>
+      {narrative ? (
+        <span className="lo-meta__narrative">
+          {heroLine ? <span className="lo-meta__hero">{heroLine}</span> : null}
+          {villainLine ? (
+            <span className="lo-meta__villain">{villainLine}</span>
+          ) : null}
+        </span>
       ) : null}
       {right ? (
         <span className="lo-meta__text lo-meta__text--end">{right}</span>
-      ) : villainLine ? (
+      ) : narrative ? (
         <span className="lo-meta__text lo-meta__text--end" />
       ) : null}
     </div>
@@ -206,7 +214,12 @@ export function MatchupHeader({
         />
         <FittedTeamName
           className={
-            'lo-hdr__name' + (homeStatus === 'villain' ? ' lo-hdr__name--villain' : '')
+            'lo-hdr__name' +
+            (homeStatus === 'villain'
+              ? ' lo-hdr__name--villain'
+              : homeStatus === 'hero'
+                ? ' lo-hdr__name--hero'
+                : '')
           }
           fullName={f.homeName}
           displayName={homeDisplayName}
@@ -241,7 +254,12 @@ export function MatchupHeader({
       <div className="lo-hdr__side lo-hdr__side--away">
         <FittedTeamName
           className={
-            'lo-hdr__name' + (awayStatus === 'villain' ? ' lo-hdr__name--villain' : '')
+            'lo-hdr__name' +
+            (awayStatus === 'villain'
+              ? ' lo-hdr__name--villain'
+              : awayStatus === 'hero'
+                ? ' lo-hdr__name--hero'
+                : '')
           }
           fullName={f.awayName}
           displayName={awayDisplayName}
@@ -302,6 +320,12 @@ export function MatchupScorecard({
     homeVillain: homeStatus === 'villain',
     awayVillain: awayStatus === 'villain',
   });
+  const heroLine = matchupHeroDefeatLine({
+    homeName: fixture.homeName,
+    awayName: fixture.awayName,
+    homeHero: homeStatus === 'hero',
+    awayHero: awayStatus === 'hero',
+  });
   return (
     <div
       className={
@@ -319,6 +343,7 @@ export function MatchupScorecard({
           liveRankByEntry={liveRankByEntry}
           rightText={metaRight}
           villainLine={villainLine}
+          heroLine={heroLine}
         />
         <MatchupHeader
           fixture={fixture}

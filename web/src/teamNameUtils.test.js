@@ -8,6 +8,8 @@ import {
   threeLetterTeamName,
   villainVictoryLine,
   matchupVillainVictoryLine,
+  heroDefeatLine,
+  matchupHeroDefeatLine,
   COUPLE_OF_VILLAINS_LINE,
 } from './teamNameUtils.js';
 
@@ -175,6 +177,42 @@ test('matchupVillainVictoryLine — couple of villains when both sides qualify',
   );
   assert.equal(
     matchupVillainVictoryLine({
+      homeName: 'Rokesly Regorasu',
+      awayName: 'Hackney Rohirrim',
+    }),
+    null,
+  );
+});
+
+test('heroDefeatLine — curated short name, same recipe as villain victory', () => {
+  assert.equal(heroDefeatLine('Rokesly Regorasu'), 'Regorasu is a hero!');
+  assert.equal(heroDefeatLine('Mordor SFG'), 'MSFG is a hero!');
+  assert.equal(heroDefeatLine('Mordor S.F.G'), 'MSFG is a hero!');
+  assert.equal(heroDefeatLine(null), 'Hero defeat');
+  assert.equal(heroDefeatLine('  '), 'Hero defeat');
+});
+
+test('matchupHeroDefeatLine — names the loser, never a couple', () => {
+  assert.equal(
+    matchupHeroDefeatLine({
+      homeName: 'Rokesly Regorasu',
+      awayName: 'Hackney Rohirrim',
+      homeHero: true,
+      awayHero: false,
+    }),
+    'Regorasu is a hero!',
+  );
+  assert.equal(
+    matchupHeroDefeatLine({
+      homeName: 'Rokesly Regorasu',
+      awayName: 'Hackney Rohirrim',
+      homeHero: false,
+      awayHero: true,
+    }),
+    'Rohirrim is a hero!',
+  );
+  assert.equal(
+    matchupHeroDefeatLine({
       homeName: 'Rokesly Regorasu',
       awayName: 'Hackney Rohirrim',
     }),

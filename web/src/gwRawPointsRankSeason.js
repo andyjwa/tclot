@@ -105,6 +105,32 @@ export function villainVictoryEntryIdsFromGwFixtures(fixtures) {
 }
 
 /**
+ * Hero-defeat set for one GW of schedule-shaped fixtures. Same 8-score
+ * gate as {@link villainVictoryEntryIdsFromGwFixtures}: 2nd-highest only
+ * means something once the whole table is in.
+ *
+ * @param {object[]} fixtures
+ * @returns {Set<number>}
+ */
+export function heroDefeatEntryIdsFromGwFixtures(fixtures) {
+  const pointsByEntryId = new Map();
+  const gwMatches = [];
+  for (const fx of fixtures || []) {
+    const homeId = Number(fx.homeId ?? fx.league_entry_1);
+    const awayId = Number(fx.awayId ?? fx.league_entry_2);
+    const homePts = Number(fx.homePts ?? fx.league_entry_1_points);
+    const awayPts = Number(fx.awayPts ?? fx.league_entry_2_points);
+    if (!Number.isFinite(homeId) || !Number.isFinite(awayId)) continue;
+    if (!Number.isFinite(homePts) || !Number.isFinite(awayPts)) continue;
+    pointsByEntryId.set(homeId, homePts);
+    pointsByEntryId.set(awayId, awayPts);
+    gwMatches.push({ league_entry_1: homeId, league_entry_2: awayId });
+  }
+  if (pointsByEntryId.size < 8) return new Set();
+  return heroDefeatEntryIds(pointsByEntryId, gwMatches);
+}
+
+/**
  * @param {Map<number, number>} pointsByEntryId
  * @param {object[]} gwMatches
  * @returns {Set<number>}

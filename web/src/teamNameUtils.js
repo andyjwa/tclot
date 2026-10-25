@@ -129,6 +129,35 @@ export function villainVictoryLine(fullName) {
 }
 
 /**
+ * Scorecard / schedule banner for a hero defeat: 2nd-highest raw GW
+ * score, and they lost the H2H. Same short-name recipe as
+ * {@link villainVictoryLine}.
+ *
+ * @param {string | null | undefined} fullName
+ * @returns {string}
+ */
+export function heroDefeatLine(fullName) {
+  const short = firstWord(fullName)
+  if (!short) return 'Hero defeat'
+  return `${short} is a hero!`
+}
+
+/**
+ * @param {{ homeName?: string | null, awayName?: string | null, homeHero?: boolean, awayHero?: boolean }} sides
+ * @returns {string | null}
+ */
+export function matchupHeroDefeatLine({
+  homeName,
+  awayName,
+  homeHero = false,
+  awayHero = false,
+} = {}) {
+  if (homeHero) return heroDefeatLine(homeName)
+  if (awayHero) return heroDefeatLine(awayName)
+  return null
+}
+
+/**
  * Matchup banner: a lone villain is named; a bottom-table draw is
  * {@link COUPLE_OF_VILLAINS_LINE}.
  *

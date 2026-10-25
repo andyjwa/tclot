@@ -95,23 +95,37 @@
 .lo-meta__text--end {
   text-align: right;
 }
-/* Option A: villain copy sits in the empty centre; seed + odds stay ghosts. */
+/* Narrative copy sits in the empty centre; seed + odds stay ghosts. */
+.lo-meta--narrative,
 .lo-meta--villain {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: baseline;
   gap: 6px;
 }
-.lo-meta__villain {
+.lo-meta__narrative {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+}
+.lo-meta__villain,
+.lo-meta__hero {
   font-family: var(--tclot-font-ui, inherit);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.015em;
   text-transform: none;
-  color: var(--live-villain-strong, #6f5fa8);
   white-space: nowrap;
   text-align: center;
   min-width: 0;
+}
+.lo-meta__villain {
+  color: var(--live-villain-strong, #6f5fa8);
+}
+.lo-meta__hero {
+  color: var(--live-hero-strong, #b45309);
 }
 
 /* ---- C2 edge-aligned face-off header ---- */
@@ -144,13 +158,20 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.lo-hdr__name--villain {
+.lo-hdr__name--villain,
+.lo-hdr__name--hero {
   flex: 0 1 auto;
   padding: 2px 9px 3px;
   border-radius: 999px;
+  font-weight: 700;
+}
+.lo-hdr__name--villain {
   background: color-mix(in srgb, var(--live-villain-color, #8f7fc0) 22%, var(--fm-card));
   color: var(--live-villain-strong, #6f5fa8);
-  font-weight: 700;
+}
+.lo-hdr__name--hero {
+  background: color-mix(in srgb, var(--live-hero-color, #d97706) 22%, var(--fm-card));
+  color: var(--live-hero-strong, #b45309);
 }
 .lo-hdr__score {
   display: grid;
