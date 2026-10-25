@@ -39,3 +39,24 @@ export function liveGwDisplayTotal(squad) {
   if (sumXi != null) return sumXi;
   return null;
 }
+
+/**
+ * Score to print on a fixture. A frozen H2H row can still be Saturday's
+ * total after Sunday has kicked off — never show that below the live XI.
+ *
+ * @param {boolean} frozen
+ * @param {number | null | undefined} matchPoints `league_entry_*_points` when the row is finished
+ * @param {number | null | undefined} liveTotal {@link liveGwDisplayTotal}
+ * @returns {number | null}
+ */
+export function displayedSidePoints(frozen, matchPoints, liveTotal) {
+  if (!frozen) return liveTotal == null ? null : liveTotal;
+  const live = Number(liveTotal);
+  const match = Number(matchPoints);
+  const hasLive = Number.isFinite(live);
+  const hasMatch = Number.isFinite(match);
+  if (hasLive && hasMatch) return Math.max(live, match);
+  if (hasMatch) return match;
+  if (hasLive) return live;
+  return null;
+}
