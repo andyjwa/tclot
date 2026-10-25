@@ -6,6 +6,7 @@ import {
   compareStandingsRows,
   completedFootballGameweeks,
   deriveStandingsFromFinishedMatches,
+  dropUnconfirmedMatchPromotions,
   finishedEventIdsFromEvents,
   matchEffectivelyFinished,
   mergeStandingsPreferringHigherFor,
@@ -14,6 +15,7 @@ import {
   reconcileMatchPointsFromStandings,
   sortH2hStandingsRows,
 } from './h2hEffectiveFinished.js'
+import { displayedSidePoints } from './liveGwTotals.js'
 
 const fixturesGw1Done = [
   { event: 1, finished: false, finished_provisional: true },
@@ -373,6 +375,127 @@ test('applyLeagueResults — official FOR beats leftover H2H and rewrites the ta
   assert.equal(bilbo.points_for, 43)
   assert.equal(bilbo.total, 3)
   assert.equal(seoul.total, 0)
+})
+
+test('applyLeagueResults — does not freeze Saturday leftovers once Sunday has been played', () => {
+  const fixturesGw8Done = [
+    { event: 8, finished: false, finished_provisional: true },
+    { event: 8, finished: false, finished_provisional: true },
+  ]
+  const details = {
+    league_entries: [{ id: 1, entry_name: 'Mordor' }, { id: 2, entry_name: 'Bilbo' }],
+    matches: [
+      {
+        event: 7,
+        finished: true,
+        started: true,
+        league_entry_1: 1,
+        league_entry_2: 2,
+        league_entry_1_points: 59,
+        league_entry_2_points: 68,
+      },
+      {
+        event: 8,
+        finished: false,
+        started: true,
+        league_entry_1: 1,
+        league_entry_2: 2,
+        league_entry_1_points: 26,
+        league_entry_2_points: 40,
+      },
+    ],
+    standings: [
+      { league_entry: 1, points_for: 59, points_against: 68, total: 0 },
+      { league_entry: 2, points_for: 68, points_against: 59, total: 3 },
+    ],
+  }
+  const { matches, standings } = applyLeagueResults(details, fixturesGw8Done, new Set())
+  const gw8 = matches.find((m) => m.event === 8)
+  assert.equal(gw8.finished, false)
+  assert.equal(gw8.league_entry_1_points, 26)
+  assert.equal(gw8.league_entry_2_points, 40)
+  const mordor = standings.find((s) => s.league_entry === 1)
+  const bilbo = standings.find((s) => s.league_entry === 2)
+  assert.equal(mordor.points_for, 59)
+  assert.equal(bilbo.points_for, 68)
+  assert.equal(mordor.total, 0)
+  assert.equal(bilbo.total, 3)
+})
+
+test('applyLeagueResults — still lifts leftovers once official FOR includes the gameweek', () => {
+  const fixturesGw8Done = [{ event: 8, finished: false, finished_provisional: true }]
+  const details = {
+    league_entries: [{ id: 1, entry_name: 'Mordor' }, { id: 2, entry_name: 'Bilbo' }],
+    matches: [
+      {
+        event: 7,
+        finished: true,
+        started: true,
+        league_entry_1: 1,
+        league_entry_2: 2,
+        league_entry_1_points: 100,
+        league_entry_2_points: 80,
+      },
+      {
+        event: 8,
+        finished: false,
+        started: true,
+        league_entry_1: 1,
+        league_entry_2: 2,
+        league_entry_1_points: 26,
+        league_entry_2_points: 30,
+      },
+    ],
+    standings: [
+      { league_entry: 1, points_for: 149, points_against: 121, total: 0 },
+      { league_entry: 2, points_for: 121, points_against: 149, total: 3 },
+    ],
+  }
+  const { matches, standings } = applyLeagueResults(details, fixturesGw8Done, new Set())
+  const gw8 = matches.find((m) => m.event === 8)
+  assert.equal(gw8.finished, true)
+  assert.equal(gw8.league_entry_1_points, 49)
+  assert.equal(gw8.league_entry_2_points, 41)
+  assert.equal(standings.find((s) => s.league_entry === 1).points_for, 149)
+  assert.equal(standings.find((s) => s.league_entry === 2).points_for, 121)
+})
+
+test('dropUnconfirmedMatchPromotions — a 0-0 with no table movement stays unfinished', () => {
+  const original = [
+    {
+      event: 7,
+      finished: true,
+      started: true,
+      league_entry_1: 1,
+      league_entry_2: 2,
+      league_entry_1_points: 10,
+      league_entry_2_points: 12,
+    },
+    {
+      event: 8,
+      finished: false,
+      started: true,
+      league_entry_1: 1,
+      league_entry_2: 2,
+      league_entry_1_points: 0,
+      league_entry_2_points: 0,
+    },
+  ]
+  const promoted = original.map((m) => (m.event === 8 ? { ...m, finished: true } : m))
+  const out = dropUnconfirmedMatchPromotions(original, promoted, [
+    { league_entry: 1, points_for: 10 },
+    { league_entry: 2, points_for: 12 },
+  ])
+  assert.equal(out.find((m) => m.event === 8).finished, false)
+  assert.equal(out.find((m) => m.event === 7).finished, true)
+})
+
+test('displayedSidePoints — a frozen Saturday total does not hide a higher live XI', () => {
+  assert.equal(displayedSidePoints(true, 26, 49), 49)
+  assert.equal(displayedSidePoints(true, 49, 40), 49)
+  assert.equal(displayedSidePoints(false, 26, 49), 49)
+  assert.equal(displayedSidePoints(false, 26, null), null)
+  assert.equal(displayedSidePoints(true, 26, null), 26)
 })
 
 test('mergeStandingsPreferringHigherFor — keeps the website-fresh FOR', () => {

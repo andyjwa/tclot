@@ -10,12 +10,13 @@
  *
  * These helpers bridge that gap. A gameweek's H2H matches are treated as
  * effectively final as soon as all of that GW's Premier League fixtures are
- * complete — `finished` OR `finished_provisional` in the classic `fixtures.json`.
- * At that point FPL often still has **Saturday leftover** `league_entry_*_points`
- * (e.g. Seoul Shire 9 while Mitchell already has 15). Official
- * `standings.points_for` on the draft site updates sooner. If we derive the
- * table from those leftovers we overwrite the website FOR and freeze a wrong
- * recap scoreline. Always lift match points to official FOR before deriving.
+ * complete — `finished` OR `finished_provisional` in the classic `fixtures.json` —
+ * but only once official `standings.points_for` has absorbed the gameweek.
+ * Until then the draft match row is often still Saturday's total (Sunday's
+ * points never landed). Promoting that row freezes the scoreboard and the
+ * table on the leftover. Leave it unfinished so Live keeps the player feed.
+ * When the table is already ahead of those leftovers, lift the scoreline up
+ * to official FOR before deriving.
  */
 
 /**
@@ -116,6 +117,124 @@ export function normalizeMatchesFinished(matches, fixtures, extraFinishedGws) {
       ? { ...m, finished: true }
       : m,
   );
+}
+
+function matchPairKey(m) {
+  const ev = Number(m?.event);
+  const a = Number(m?.league_entry_1);
+  const b = Number(m?.league_entry_2);
+  const lo = a < b ? a : b;
+  const hi = a < b ? b : a;
+  return `${ev}:${lo}-${hi}`;
+}
+
+/**
+ * Undo promotions whose points the official table has not absorbed.
+ *
+ * Football being over is not enough. Draft `league_entry_*_points` often stop
+ * at Saturday while Sunday's returns are already in `event/live`. Marking
+ * those rows finished makes the scoreboard and the derived table prefer the
+ * leftover (higher than last week's FOR, so the merge keeps it) and Live
+ * stops adding the player feed.
+ *
+ * A promotion stays only when each side's points fit in the gap between
+ * official `points_for` and the matches FPL itself already marked finished.
+ * {@link reconcileMatchPointsFromStandings} then tops a short scoreline up
+ * to that official total.
+ *
+ * @param {object[] | null | undefined} originalMatches Rows before promotion
+ *   (`finished` still as FPL sent it).
+ * @param {object[] | null | undefined} promotedMatches Rows after promotion
+ *   and the official-FOR lift.
+ * @param {object[] | null | undefined} officialStandings
+ * @returns {object[]}
+ */
+export function dropUnconfirmedMatchPromotions(
+  originalMatches,
+  promotedMatches,
+  officialStandings,
+) {
+  const original = Array.isArray(originalMatches) ? originalMatches : [];
+  const promoted = Array.isArray(promotedMatches) ? promotedMatches : [];
+  if (!promoted.length) return promoted;
+  if (!Array.isArray(officialStandings) || officialStandings.length === 0) {
+    return promoted;
+  }
+
+  const officialPf = new Map();
+  for (const s of officialStandings) {
+    const id = Number(s.league_entry);
+    if (!Number.isFinite(id)) continue;
+    officialPf.set(id, Number(s.points_for) || 0);
+  }
+
+  const originalByKey = new Map();
+  for (const m of original) {
+    if (!m) continue;
+    originalByKey.set(matchPairKey(m), m);
+  }
+
+  /** @type {number[]} */
+  const promotedEvents = [];
+  for (const m of promoted) {
+    if (!m || m.finished !== true) continue;
+    const prev = originalByKey.get(matchPairKey(m));
+    if (prev && prev.finished === true) continue;
+    const ev = Number(m.event);
+    if (!Number.isFinite(ev) || promotedEvents.includes(ev)) continue;
+    promotedEvents.push(ev);
+  }
+  if (promotedEvents.length === 0) return promoted;
+  promotedEvents.sort((a, b) => a - b);
+
+  const basePf = pointsForFromFinishedMatches(
+    original.filter((m) => m?.finished === true),
+  );
+  const headroom = new Map();
+  for (const id of new Set([...officialPf.keys(), ...basePf.keys()])) {
+    const room = (officialPf.get(id) || 0) - (basePf.get(id) || 0);
+    headroom.set(id, room > 0 ? room : 0);
+  }
+
+  const revert = new Set();
+  for (const ev of promotedEvents) {
+    const rows = promoted.filter(
+      (m) => m?.finished === true && Number(m.event) === ev,
+    );
+    const add = new Map();
+    for (const m of rows) {
+      const id1 = Number(m.league_entry_1);
+      const id2 = Number(m.league_entry_2);
+      const p1 = Number(m.league_entry_1_points) || 0;
+      const p2 = Number(m.league_entry_2_points) || 0;
+      if (Number.isFinite(id1)) add.set(id1, (add.get(id1) || 0) + p1);
+      if (Number.isFinite(id2)) add.set(id2, (add.get(id2) || 0) + p2);
+    }
+    let fits = true;
+    for (const [id, pts] of add) {
+      if (pts > (headroom.get(id) || 0)) {
+        fits = false;
+        break;
+      }
+    }
+    const anyPoints = [...add.values()].some((n) => n > 0);
+    const anyRoom = [...add.keys()].some((id) => (headroom.get(id) || 0) > 0);
+    if (!fits || (!anyPoints && !anyRoom)) {
+      revert.add(ev);
+      continue;
+    }
+    for (const [id, pts] of add) {
+      headroom.set(id, (headroom.get(id) || 0) - pts);
+    }
+  }
+  if (revert.size === 0) return promoted;
+
+  return promoted.map((m) => {
+    if (!m || !revert.has(Number(m.event))) return m;
+    const prev = originalByKey.get(matchPairKey(m));
+    if (prev && prev.finished === true) return m;
+    return prev ? { ...prev } : { ...m, finished: false };
+  });
 }
 
 /**
@@ -418,10 +537,9 @@ export function applyLeagueResults(details, fixtures, extraFinishedGws, liveDeta
     details?.standings,
     liveDetails?.standings,
   );
-  const matches = reconcileMatchPointsFromStandings(
-    normalizeMatchesFinished(baseMatches, fixtures, extraFinishedGws),
-    official,
-  );
+  const promoted = normalizeMatchesFinished(baseMatches, fixtures, extraFinishedGws);
+  const reconciled = reconcileMatchPointsFromStandings(promoted, official);
+  const matches = dropUnconfirmedMatchPromotions(baseMatches, reconciled, official);
   const derived = deriveStandingsFromFinishedMatches(details?.league_entries, matches);
   const standings =
     derived.length > 0 ? mergeStandingsPreferringHigherFor(derived, official) : official;

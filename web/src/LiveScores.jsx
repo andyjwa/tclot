@@ -18,7 +18,7 @@ import { usePlayerHistory, ClickablePlayerName } from './PlayerHistoryContext.js
 import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx';
 import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
 import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
-import { liveGwDisplayTotal } from './liveGwTotals.js';
+import { displayedSidePoints, liveGwDisplayTotal } from './liveGwTotals.js';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { MatchupScorecard } from './MatchupScorecard.jsx';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
@@ -900,22 +900,59 @@ export function LiveScores({
       const gf = Number(row.gf) || 0;
       const ga = Number(row.ga) || 0;
       const total = Number(row.total) || 0;
-      const addMine =
-        gwStandingsFrozen || liveGw == null ? 0 : liveGw;
-      const addOpp =
-        gwStandingsFrozen ||
-        !inFixture ||
-        oppLiveGw == null ||
-        !Number.isFinite(Number(oppLiveGw))
-          ? 0
+      /**
+       * A frozen H2H row can still be a partial total (Saturday, before
+       * the later kickoffs land). The table already counted that number,
+       * so add only the part the live XI is ahead by instead of dropping
+       * it or adding the whole GW twice.
+       */
+      const frozenMatchPts = finishedMatchPtsByLeagueEntry.get(eid);
+      const liveNum = liveGw == null ? null : Number(liveGw);
+      const matchNum =
+        frozenMatchPts == null ? null : Number(frozenMatchPts);
+      const liveAhead =
+        gwStandingsFrozen &&
+        liveNum != null &&
+        Number.isFinite(liveNum) &&
+        matchNum != null &&
+        Number.isFinite(matchNum) &&
+        liveNum > matchNum
+          ? liveNum - matchNum
+          : 0;
+      const addMine = gwStandingsFrozen
+        ? liveAhead
+        : liveNum != null && Number.isFinite(liveNum)
+          ? liveNum
+          : 0;
+      const oppMatchPts = inFixture
+        ? finishedMatchPtsByLeagueEntry.get(
+            oppEntryByLeagueEntry.get(eid) ?? NaN,
+          )
+        : null;
+      const oppNum =
+        oppLiveGw == null || !Number.isFinite(Number(oppLiveGw))
+          ? null
           : Number(oppLiveGw);
+      const oppMatchNum =
+        oppMatchPts == null ? null : Number(oppMatchPts);
+      const oppAhead =
+        gwStandingsFrozen &&
+        oppNum != null &&
+        oppMatchNum != null &&
+        Number.isFinite(oppMatchNum) &&
+        oppNum > oppMatchNum
+          ? oppNum - oppMatchNum
+          : 0;
+      const addOpp = gwStandingsFrozen
+        ? oppAhead
+        : !inFixture || oppNum == null
+          ? 0
+          : oppNum;
 
       /**
-       * PR #5g — `projectedFor` is the live-cumulative For (season points
-       * for + this GW's live FPL points). When `gwStandingsFrozen` is true
-       * the league `gf` already includes this GW so we add 0 to avoid
-       * double-counting. This is the same value rendered in the new `FOR`
-       * column post-restructure — no separate helper needed.
+       * `projectedFor` is season points for plus this GW. A confirmed GW
+       * is already inside `gf`. A frozen row that is still short of the
+       * live XI contributes only that shortfall.
        */
       const projectedFor = gf + addMine;
       const projectedGa = ga + addOpp;
@@ -1118,14 +1155,16 @@ export function LiveScores({
         awayName: teamNameForEntry(teams, awayId),
         homeSquad,
         awaySquad,
-        homeLive: gwStandingsFrozen
-          ? (finishedMatchPtsByLeagueEntry.get(homeId) ??
-            liveGwDisplayTotal(homeSquad))
-          : liveGwDisplayTotal(homeSquad),
-        awayLive: gwStandingsFrozen
-          ? (finishedMatchPtsByLeagueEntry.get(awayId) ??
-            liveGwDisplayTotal(awaySquad))
-          : liveGwDisplayTotal(awaySquad),
+        homeLive: displayedSidePoints(
+          gwStandingsFrozen,
+          finishedMatchPtsByLeagueEntry.get(homeId),
+          liveGwDisplayTotal(homeSquad),
+        ),
+        awayLive: displayedSidePoints(
+          gwStandingsFrozen,
+          finishedMatchPtsByLeagueEntry.get(awayId),
+          liveGwDisplayTotal(awaySquad),
+        ),
         homeRemaining,
         awayRemaining,
         comp: selectedGwOption?.label ?? `Gameweek ${gameweek}`,
@@ -1369,14 +1408,16 @@ export function LiveScores({
                 : awayName;
               const homeSquad = squadByLeagueEntry.get(homeId);
               const awaySquad = squadByLeagueEntry.get(awayId);
-              const homeLive = gwStandingsFrozen
-                ? (finishedMatchPtsByLeagueEntry.get(homeId) ??
-                  liveGwDisplayTotal(homeSquad))
-                : liveGwDisplayTotal(homeSquad);
-              const awayLive = gwStandingsFrozen
-                ? (finishedMatchPtsByLeagueEntry.get(awayId) ??
-                  liveGwDisplayTotal(awaySquad))
-                : liveGwDisplayTotal(awaySquad);
+              const homeLive = displayedSidePoints(
+                gwStandingsFrozen,
+                finishedMatchPtsByLeagueEntry.get(homeId),
+                liveGwDisplayTotal(homeSquad),
+              );
+              const awayLive = displayedSidePoints(
+                gwStandingsFrozen,
+                finishedMatchPtsByLeagueEntry.get(awayId),
+                liveGwDisplayTotal(awaySquad),
+              );
               /**
                * Distinct-player count (`xiPlayersRemaining`) drives the
                * bracketed `(N)` indicator next to each side's score. Falls
