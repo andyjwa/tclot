@@ -249,8 +249,8 @@ test('matchupMottyLine — names the side the bench saved', () => {
 });
 
 test('douchebagSneakLine — curated short name', () => {
-  assert.equal(douchebagSneakLine('Toronto Gimli'), 'To. Gimli with a Douchebag Sneak');
-  assert.equal(douchebagSneakLine('Brampton Balrogs'), 'Balrogs with a Douchebag Sneak');
+  assert.equal(douchebagSneakLine('Toronto Gimli'), 'To. Gimli are sneaky Douchebags!');
+  assert.equal(douchebagSneakLine('Brampton Balrogs'), 'Balrogs are sneaky Douchebags!');
   assert.equal(douchebagSneakLine(null), 'Douchebag Sneak');
 });
 
@@ -261,6 +261,6 @@ test('matchupDouchebagSneakLine — names the 5th-place winner', () => {
       awayName: 'Toronto Gimli',
       homeSneak: true,
     }),
-    'Balrogs with a Douchebag Sneak',
+    'Balrogs are sneaky Douchebags!',
   );
 });

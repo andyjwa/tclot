@@ -37,7 +37,7 @@ import './LiveOddsSection.css';
  * defeat does the same in orange (`MSFG are heroes` — 2nd-highest raw
  * GW score, and they lost). The Motty (`Regorasu is the Motty!`) is a win
  * that disappears if you take away the bench points that came in. A
- * Douchebag Sneak (`Balrogs with a Douchebag Sneak`) is a win at 5th in
+ * Douchebag Sneak (`Balrogs are sneaky Douchebags!`) is a win at 5th in
  * the raw GW table. Either side renders independently — a missing
  * rank (off-season standings) or missing squad payload never blanks the
  * whole strip. Renders nothing when neither label nor a narrative line is
