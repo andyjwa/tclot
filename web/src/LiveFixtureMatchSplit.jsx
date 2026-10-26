@@ -11,6 +11,12 @@ import {
 } from './liveScoresDerivations.js';
 import { effectiveBench, effectiveStarters } from './liveSquadEffective.js';
 import { MATCH_EVENT_KINDS, collectSideEvents } from './matchEvents.js';
+import {
+  matchupDouchebagSneakLine,
+  matchupHeroDefeatLine,
+  matchupMottyLine,
+  matchupVillainVictoryLine,
+} from './teamNameUtils.js';
 
 /**
  * Minutes dot tone → CSS suffix: full/good → green, partial/low → yellow.
@@ -230,6 +236,28 @@ export function MatchEventsBlock({ homeSquad, awaySquad }) {
   );
 }
 
+function awardLines(fixture, ctx) {
+  const has = (set, id) => Boolean(set?.has(Number(id)));
+  const flags = {
+    homeName: fixture.homeName,
+    awayName: fixture.awayName,
+    homeHero: has(ctx?.heroEntryIds, fixture.homeId),
+    awayHero: has(ctx?.heroEntryIds, fixture.awayId),
+    homeVillain: has(ctx?.villainEntryIds, fixture.homeId),
+    awayVillain: has(ctx?.villainEntryIds, fixture.awayId),
+    homeMotty: has(ctx?.mottyEntryIds, fixture.homeId),
+    awayMotty: has(ctx?.mottyEntryIds, fixture.awayId),
+    homeSneak: has(ctx?.sneakEntryIds, fixture.homeId),
+    awaySneak: has(ctx?.sneakEntryIds, fixture.awayId),
+  };
+  return [
+    ['hero', matchupHeroDefeatLine(flags)],
+    ['villain', matchupVillainVictoryLine(flags)],
+    ['motty', matchupMottyLine(flags)],
+    ['sneak', matchupDouchebagSneakLine(flags)],
+  ].filter(([, text]) => text);
+}
+
 /**
  * Match tab — both teams on one page as two independent half-width columns
  * (mockup "split columns" option B). Each column pins crest + name + running
@@ -242,8 +270,18 @@ export function LiveFixtureMatchSplit({ fixture, ctx, onOpenPlayer }) {
   const { homeId, awayId, homeName, awayName, homeSquad, awaySquad } = fixture;
   const pick = (squad) =>
     onOpenPlayer ? (row) => onOpenPlayer(row, squad) : undefined;
+  const lines = awardLines(fixture, ctx);
   return (
     <div className="lfc-split">
+      {lines.length ? (
+        <div className="lfc-award" aria-label="Fixture awards">
+          {lines.map(([kind, text]) => (
+            <p key={kind} className={'lfc-award__line lfc-award__line--' + kind}>
+              {text}
+            </p>
+          ))}
+        </div>
+      ) : null}
       <SplitHead squad={homeSquad} name={homeName} entryId={homeId} ctx={ctx} />
       <SplitHead squad={awaySquad} name={awayName} entryId={awayId} ctx={ctx} away />
       <MatchEventsBlock homeSquad={homeSquad} awaySquad={awaySquad} />

@@ -107,7 +107,7 @@ body[data-tclot-paint='1'] .fotmob {
 
   /* Data semantics — wins bright green, losses rust, draws/warnings gold. */
   --fm-win: #34d399;
-  --fm-draw: #a3a89b;
+  --fm-draw: #d9a441;
   --fm-loss: #e08a5e;
   --fm-loss-dot: #d97a4e;
   --fm-standings-8th-bg: color-mix(in srgb, #d97a4e 10%, #1e2620);
@@ -186,9 +186,9 @@ body[data-tclot-paint='1'] .fotmob[data-theme='light'] {
   --brand-tint: color-mix(in srgb, #1f4a38 11%, transparent);
   --brand-grad: var(--tclot-header-grad);
 
-  /* Data semantics */
+  /* Data semantics — draw dots are butter gold, not the olive idle grey. */
   --fm-win: #12844e;
-  --fm-draw: #8a8871;
+  --fm-draw: #d9a441;
   --fm-loss: #b04f26;
   --fm-loss-dot: #b04f26;
   --fm-standings-8th-bg: color-mix(in srgb, #b04f26 7%, #fdfaf0);
@@ -214,6 +214,14 @@ body[data-tclot-paint='1'] .fotmob[data-theme='light'] {
   --text-strong: #1a231a;
   --text-muted: #77775f;
   --row-hi: #f1ebd9;
+}
+
+/* Draw dots carry a W/D/L letter on the larger form chips. Butter gold
+ * is too light for white ink, so the letter goes scorebook-ink. The
+ * standings circles hide the letter (color: transparent, higher
+ * specificity) and keep the gold fill. */
+body[data-tclot-paint='1'] .form-dot--draw {
+  color: #1a231a;
 }
 
 /* Pitch/accent greens shared by both themes (tables, FPL-style accents). */

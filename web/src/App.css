@@ -118,6 +118,14 @@
   --live-villain-color: #8f7fc0;
   --live-villain-strong: #6f5fa8;
   --live-villain-tint: color-mix(in srgb, #8f7fc0 13%, transparent);
+  /* The Motty (bench decided the win) and Douchebag Sneak (win at 5th).
+   * Dark-theme ink; light theme overrides below. */
+  --live-motty-color: #e2c16a;
+  --live-motty-strong: #f3dc9a;
+  --live-motty-tint: color-mix(in srgb, #e2c16a 18%, transparent);
+  --live-sneak-color: #b7c98a;
+  --live-sneak-strong: #d5e2b0;
+  --live-sneak-tint: color-mix(in srgb, #b7c98a 18%, transparent);
 
   /* Surface stack — DARK defaults */
   --bg: #0a0a0d;
@@ -192,6 +200,12 @@
   --text-strong: #0a0a0d;
   --text-muted: #6b6b78;
   --row-hi: #f3f3f7;
+  --live-motty-color: #d9a441;
+  --live-motty-strong: #8a6218;
+  --live-motty-tint: color-mix(in srgb, #d9a441 16%, transparent);
+  --live-sneak-color: #6a7a45;
+  --live-sneak-strong: #3f4c28;
+  --live-sneak-tint: color-mix(in srgb, #6a7a45 16%, transparent);
 }
 
 .fotmob[data-theme='light'] .tile {
@@ -10444,7 +10458,7 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   background: var(--data-positive, #12a15a);
 }
 .live-form-dot--draw {
-  background: var(--data-neutral, #9ca3af);
+  background: var(--fm-draw, var(--data-neutral, #9ca3af));
 }
 .live-form-dot--loss {
   background: var(--data-negative, #ef4444);
@@ -14451,9 +14465,19 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, var(--live-hero-color) 22%, var(--fm-card));
   color: var(--live-hero-strong);
 }
+.standings-schedule__fixture-name--motty {
+  background: color-mix(in srgb, var(--live-motty-color) 28%, var(--fm-card));
+  color: var(--live-motty-strong);
+}
+.standings-schedule__fixture-name--sneak {
+  background: color-mix(in srgb, var(--live-sneak-color) 24%, var(--fm-card));
+  color: var(--live-sneak-strong);
+}
 
 .standings-schedule__villain-banner,
-.standings-schedule__hero-banner {
+.standings-schedule__hero-banner,
+.standings-schedule__motty-banner,
+.standings-schedule__sneak-banner {
   margin: 0;
   padding: 6px 12px 0;
   text-align: center;
@@ -14467,6 +14491,12 @@ button.live-xp__player-name:focus-visible {
 }
 .standings-schedule__hero-banner {
   color: var(--live-hero-strong);
+}
+.standings-schedule__motty-banner {
+  color: var(--live-motty-strong);
+}
+.standings-schedule__sneak-banner {
+  color: var(--live-sneak-strong);
 }
 
 .standings-schedule__fixture-name--winner {
@@ -14719,7 +14749,9 @@ button.live-xp__player-name:focus-visible {
 }
 
 .standings-schedule-team__chip--villain,
-.standings-schedule-team__chip--hero {
+.standings-schedule-team__chip--hero,
+.standings-schedule-team__chip--motty,
+.standings-schedule-team__chip--sneak {
   width: auto;
   padding: 0 7px;
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
@@ -14735,6 +14767,14 @@ button.live-xp__player-name:focus-visible {
 .standings-schedule-team__chip--hero {
   background: color-mix(in srgb, var(--live-hero-color) 20%, transparent);
   color: var(--live-hero-strong);
+}
+.standings-schedule-team__chip--motty {
+  background: color-mix(in srgb, var(--live-motty-color) 24%, transparent);
+  color: var(--live-motty-strong);
+}
+.standings-schedule-team__chip--sneak {
+  background: color-mix(in srgb, var(--live-sneak-color) 22%, transparent);
+  color: var(--live-sneak-strong);
 }
 
 /* Each Complete GW card spans the full width on every breakpoint — when

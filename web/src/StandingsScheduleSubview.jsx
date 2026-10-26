@@ -13,10 +13,17 @@ import { useHistoricGwFixtureSquads } from './useHistoricGwFixtureSquads.js'
 import { useNarrowViewport } from './usePortraitMobile.js'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
 import {
+  douchebagSneakEntryIdsFromGwFixtures,
   heroDefeatEntryIdsFromGwFixtures,
   villainVictoryEntryIdsFromGwFixtures,
 } from './gwRawPointsRankSeason.js'
-import { matchupHeroDefeatLine, matchupVillainVictoryLine } from './teamNameUtils.js'
+import { isMottyWin } from './mottyAward.js'
+import {
+  matchupDouchebagSneakLine,
+  matchupHeroDefeatLine,
+  matchupMottyLine,
+  matchupVillainVictoryLine,
+} from './teamNameUtils.js'
 
 function pad2(n) {
   const num = Number(n)
@@ -133,6 +140,14 @@ export function StandingsScheduleSubview({
     return map
   }, [allGwGroups])
 
+  const sneaksByGw = useMemo(() => {
+    const map = new Map()
+    for (const g of allGwGroups) {
+      map.set(g.event, douchebagSneakEntryIdsFromGwFixtures(g.fixtures))
+    }
+    return map
+  }, [allGwGroups])
+
   return (
     <section className="standings-schedule" aria-labelledby="standings-schedule-heading">
       <h2 id="standings-schedule-heading" className="visually-hidden">
@@ -201,6 +216,7 @@ export function StandingsScheduleSubview({
           teamsForFormSelect={teamsForFormSelect}
           villainsByGw={villainsByGw}
           heroesByGw={heroesByGw}
+          sneaksByGw={sneaksByGw}
         />
       ) : (
         <TeamScheduleCompact
@@ -212,6 +228,7 @@ export function StandingsScheduleSubview({
           teamId={Number(teamFilter)}
           villainsByGw={villainsByGw}
           heroesByGw={heroesByGw}
+          sneaksByGw={sneaksByGw}
         />
       )}
     </section>
@@ -225,6 +242,7 @@ function AllTeamsScheduleList({
   teamsForFormSelect = [],
   villainsByGw = null,
   heroesByGw = null,
+  sneaksByGw = null,
 }) {
   /** Lookup league_entry → fplEntryId so finished rows can expand into FPL picks. */
   const fplEntryByLeagueId = useMemo(() => {
@@ -285,6 +303,7 @@ function AllTeamsScheduleList({
                 onToggle={toggleExpanded}
                 villainEntryIds={villainsByGw?.get(g.event) ?? null}
                 heroEntryIds={heroesByGw?.get(g.event) ?? null}
+                sneakEntryIds={sneaksByGw?.get(g.event) ?? null}
               />
             ))}
           </ul>
@@ -318,6 +337,7 @@ function ScheduleFixtureItem({
   onToggle,
   villainEntryIds = null,
   heroEntryIds = null,
+  sneakEntryIds = null,
 }) {
   const homeWin =
     fx.finished && fx.homePts != null && fx.awayPts != null && fx.homePts > fx.awayPts
@@ -327,6 +347,8 @@ function ScheduleFixtureItem({
   const awayVillain = Boolean(villainEntryIds?.has(Number(fx.awayId)))
   const homeHero = Boolean(heroEntryIds?.has(Number(fx.homeId)))
   const awayHero = Boolean(heroEntryIds?.has(Number(fx.awayId)))
+  const homeSneak = Boolean(sneakEntryIds?.has(Number(fx.homeId)))
+  const awaySneak = Boolean(sneakEntryIds?.has(Number(fx.awayId)))
   const villainLine = matchupVillainVictoryLine({
     homeName: fx.homeName,
     awayName: fx.awayName,
@@ -338,6 +360,12 @@ function ScheduleFixtureItem({
     awayName: fx.awayName,
     homeHero,
     awayHero,
+  })
+  const sneakLine = matchupDouchebagSneakLine({
+    homeName: fx.homeName,
+    awayName: fx.awayName,
+    homeSneak,
+    awaySneak,
   })
 
   const expandable = fx.finished
@@ -366,7 +394,10 @@ function ScheduleFixtureItem({
           className={
             'standings-schedule__fixture-name-full' +
             (homeVillain ? ' standings-schedule__fixture-name--villain' : '') +
-            (homeHero ? ' standings-schedule__fixture-name--hero' : '')
+            (homeHero ? ' standings-schedule__fixture-name--hero' : '') +
+            (!homeVillain && !homeHero && homeSneak
+              ? ' standings-schedule__fixture-name--sneak'
+              : '')
           }
         >
           {fx.homeName}
@@ -411,7 +442,10 @@ function ScheduleFixtureItem({
           className={
             'standings-schedule__fixture-name-full' +
             (awayVillain ? ' standings-schedule__fixture-name--villain' : '') +
-            (awayHero ? ' standings-schedule__fixture-name--hero' : '')
+            (awayHero ? ' standings-schedule__fixture-name--hero' : '') +
+            (!awayVillain && !awayHero && awaySneak
+              ? ' standings-schedule__fixture-name--sneak'
+              : '')
           }
         >
           {fx.awayName}
@@ -445,7 +479,8 @@ function ScheduleFixtureItem({
       className={
         'standings-schedule__fixture-item' +
         (villainLine ? ' standings-schedule__fixture-item--villain' : '') +
-        (heroLine ? ' standings-schedule__fixture-item--hero' : '')
+        (heroLine ? ' standings-schedule__fixture-item--hero' : '') +
+        (sneakLine ? ' standings-schedule__fixture-item--sneak' : '')
       }
     >
       {heroLine ? (
@@ -453,6 +488,9 @@ function ScheduleFixtureItem({
       ) : null}
       {villainLine ? (
         <p className="standings-schedule__villain-banner">{villainLine}</p>
+      ) : null}
+      {sneakLine ? (
+        <p className="standings-schedule__sneak-banner">{sneakLine}</p>
       ) : null}
       {expandable ? (
         <button
@@ -513,7 +551,17 @@ function ScheduleFixtureExpandedBody({ fx, fplEntryByLeagueId }) {
       </p>
     )
   }
+  const mottyLine = matchupMottyLine({
+    homeName: fx.homeName,
+    awayName: fx.awayName,
+    homeMotty: isMottyWin(homeSquad, fx.homePts, fx.awayPts),
+    awayMotty: isMottyWin(awaySquad, fx.awayPts, fx.homePts),
+  })
   return (
+    <>
+      {mottyLine ? (
+        <p className="standings-schedule__motty-banner">{mottyLine}</p>
+      ) : null}
     <LiveExpandedFixture
       homeSquad={homeSquad}
       awaySquad={awaySquad}
@@ -521,6 +569,7 @@ function ScheduleFixtureExpandedBody({ fx, fplEntryByLeagueId }) {
       awayName={fx.awayName}
       viewport={narrow ? 'mobile' : 'desktop'}
     />
+    </>
   )
 }
 
@@ -533,6 +582,7 @@ function TeamScheduleCompact({
   teamId = null,
   villainsByGw = null,
   heroesByGw = null,
+  sneaksByGw = null,
 }) {
   return (
     <>
@@ -594,6 +644,9 @@ function TeamScheduleCompact({
             )
             const isHero = Boolean(
               teamId != null && heroesByGw?.get(r.event)?.has(Number(teamId)),
+            )
+            const isSneak = Boolean(
+              teamId != null && sneaksByGw?.get(r.event)?.has(Number(teamId)),
             )
             return (
               <li
@@ -679,6 +732,14 @@ function TeamScheduleCompact({
                   {isHero ? (
                     <span className="standings-schedule-team__chip standings-schedule-team__chip--hero">
                       Hero
+                    </span>
+                  ) : null}
+                  {isSneak ? (
+                    <span
+                      className="standings-schedule-team__chip standings-schedule-team__chip--sneak"
+                      title="Douchebag Sneak"
+                    >
+                      Sneak
                     </span>
                   ) : null}
                   {tone ? (

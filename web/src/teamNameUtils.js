@@ -158,6 +158,61 @@ export function matchupHeroDefeatLine({
 }
 
 /**
+ * The Motty: won, and the bench points that came in are the only reason
+ * it is a win. Same short-name recipe as {@link villainVictoryLine}.
+ *
+ * @param {string | null | undefined} fullName
+ * @returns {string}
+ */
+export function mottyLine(fullName) {
+  const short = firstWord(fullName)
+  if (!short) return 'The Motty'
+  return `${short} is the Motty!`
+}
+
+/**
+ * @param {{ homeName?: string | null, awayName?: string | null, homeMotty?: boolean, awayMotty?: boolean }} sides
+ * @returns {string | null}
+ */
+export function matchupMottyLine({
+  homeName,
+  awayName,
+  homeMotty = false,
+  awayMotty = false,
+} = {}) {
+  if (homeMotty) return mottyLine(homeName)
+  if (awayMotty) return mottyLine(awayName)
+  return null
+}
+
+/**
+ * Douchebag Sneak: won the H2H with the 5th-highest raw GW score.
+ *
+ * @param {string | null | undefined} fullName
+ * @returns {string}
+ */
+export function douchebagSneakLine(fullName) {
+  const short = firstWord(fullName)
+  if (!short) return 'Douchebag Sneak'
+  return `${short} is a Douchebag Sneak!`
+}
+
+/**
+ * @param {{ homeName?: string | null, awayName?: string | null, homeSneak?: boolean, awaySneak?: boolean }} sides
+ * @returns {string | null}
+ */
+export function matchupDouchebagSneakLine({
+  homeName,
+  awayName,
+  homeSneak = false,
+  awaySneak = false,
+} = {}) {
+  if (homeSneak) return douchebagSneakLine(homeName)
+  if (awaySneak) return douchebagSneakLine(awayName)
+  return null
+}
+
+/**
  * Matchup banner: a lone villain is named; a bottom-table draw is
  * {@link COUPLE_OF_VILLAINS_LINE}.
  *
