@@ -31,10 +31,10 @@ import './LiveOddsSection.css';
  * right — either the caller's `rightText` (the Live Scores scorecard passes
  * the favourite's odds, e.g. `Mordor SFG 92%`) or the default to-play counts
  * ("10 v 11 to play", flipping to "FT" once both sides are done). A villain
- * victory parks sentence-case copy (`Regorasu is a villain!`, or
+ * victory parks sentence-case copy (`Regorasu are villains!`, or
  * `couple of villains!` when both sides drew at the bottom of the GW
  * table — never on a 0–0) in the empty centre, in Scorebook lilac. A hero
- * defeat does the same in orange (`Regorasu is a hero!` — 2nd-highest raw
+ * defeat does the same in orange (`MSFG are heroes` — 2nd-highest raw
  * GW score, and they lost). The Motty (`Regorasu is the Motty!`) is a win
  * that disappears if you take away the bench points that came in. A
  * Douchebag Sneak (`Regorasu is a Douchebag Sneak!`) is a win at 5th in

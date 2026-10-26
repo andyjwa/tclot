@@ -117,29 +117,29 @@ export const COUPLE_OF_VILLAINS_LINE = 'couple of villains!'
 /**
  * Scorecard / schedule banner copy for a villain victory. Always pass the
  * full club name — {@link firstWord} applies the curated short label
- * (`Rokesly Regorasu` → `Regorasu is a villain!`).
+ * (`Toronto Gimli` → `To. Gimli are villains!`).
  *
  * @param {string | null | undefined} fullName
  * @returns {string}
  */
 export function villainVictoryLine(fullName) {
   const short = firstWord(fullName)
-  if (!short) return 'Villain victory'
-  return `${short} is a villain!`
+  if (!short) return 'Villains!'
+  return `${short} are villains!`
 }
 
 /**
  * Scorecard / schedule banner for a hero defeat: 2nd-highest raw GW
- * score, and they lost the H2H. Same short-name recipe as
- * {@link villainVictoryLine}.
+ * score, and they lost the H2H. Same short-label recipe as
+ * {@link villainVictoryLine} (`Mordor SFG` → `MSFG are heroes`).
  *
  * @param {string | null | undefined} fullName
  * @returns {string}
  */
 export function heroDefeatLine(fullName) {
   const short = firstWord(fullName)
-  if (!short) return 'Hero defeat'
-  return `${short} is a hero!`
+  if (!short) return 'Heroes'
+  return `${short} are heroes`
 }
 
 /**

@@ -142,13 +142,15 @@ test('standingsMobileTeamName — full names, MSFG renders as Mordor SFG', () =>
   assert.equal(standingsMobileTeamName('  '), '');
 });
 
-test('villainVictoryLine — curated short name, never a mid-word clip', () => {
-  assert.equal(villainVictoryLine('Rokesly Regorasu'), 'Regorasu is a villain!');
-  assert.equal(villainVictoryLine('Hackney Rohirrim'), 'Rohirrim is a villain!');
-  assert.equal(villainVictoryLine('Toronto Gimli'), 'To. Gimli is a villain!');
-  assert.equal(villainVictoryLine('Mordor SFG'), 'MSFG is a villain!');
-  assert.equal(villainVictoryLine(null), 'Villain victory');
-  assert.equal(villainVictoryLine('  '), 'Villain victory');
+test('villainVictoryLine — curated short label, not the last word alone', () => {
+  assert.equal(villainVictoryLine('Rokesly Regorasu'), 'Regorasu are villains!');
+  assert.equal(villainVictoryLine('Hackney Rohirrim'), 'Rohirrim are villains!');
+  assert.equal(villainVictoryLine('Toronto Gimli'), 'To. Gimli are villains!');
+  assert.equal(villainVictoryLine('Atlético Bilbo'), 'Atleti Bilbo are villains!');
+  assert.equal(villainVictoryLine('Seoul Shire'), 'Seoul Shire are villains!');
+  assert.equal(villainVictoryLine('Mordor SFG'), 'MSFG are villains!');
+  assert.equal(villainVictoryLine(null), 'Villains!');
+  assert.equal(villainVictoryLine('  '), 'Villains!');
 });
 
 test('matchupVillainVictoryLine — couple of villains when both sides qualify', () => {
@@ -168,7 +170,7 @@ test('matchupVillainVictoryLine — couple of villains when both sides qualify',
       homeVillain: true,
       awayVillain: false,
     }),
-    'Regorasu is a villain!',
+    'Regorasu are villains!',
   );
   assert.equal(
     matchupVillainVictoryLine({
@@ -177,7 +179,7 @@ test('matchupVillainVictoryLine — couple of villains when both sides qualify',
       homeVillain: false,
       awayVillain: true,
     }),
-    'Rohirrim is a villain!',
+    'Rohirrim are villains!',
   );
   assert.equal(
     matchupVillainVictoryLine({
@@ -188,12 +190,13 @@ test('matchupVillainVictoryLine — couple of villains when both sides qualify',
   );
 });
 
-test('heroDefeatLine — curated short name, same recipe as villain victory', () => {
-  assert.equal(heroDefeatLine('Rokesly Regorasu'), 'Regorasu is a hero!');
-  assert.equal(heroDefeatLine('Mordor SFG'), 'MSFG is a hero!');
-  assert.equal(heroDefeatLine('Mordor S.F.G'), 'MSFG is a hero!');
-  assert.equal(heroDefeatLine(null), 'Hero defeat');
-  assert.equal(heroDefeatLine('  '), 'Hero defeat');
+test('heroDefeatLine — curated short label, same recipe as villain victory', () => {
+  assert.equal(heroDefeatLine('Rokesly Regorasu'), 'Regorasu are heroes');
+  assert.equal(heroDefeatLine('Toronto Gimli'), 'To. Gimli are heroes');
+  assert.equal(heroDefeatLine('Mordor SFG'), 'MSFG are heroes');
+  assert.equal(heroDefeatLine('Mordor S.F.G'), 'MSFG are heroes');
+  assert.equal(heroDefeatLine(null), 'Heroes');
+  assert.equal(heroDefeatLine('  '), 'Heroes');
 });
 
 test('matchupHeroDefeatLine — names the loser, never a couple', () => {
@@ -204,7 +207,7 @@ test('matchupHeroDefeatLine — names the loser, never a couple', () => {
       homeHero: true,
       awayHero: false,
     }),
-    'Regorasu is a hero!',
+    'Regorasu are heroes',
   );
   assert.equal(
     matchupHeroDefeatLine({
@@ -213,7 +216,7 @@ test('matchupHeroDefeatLine — names the loser, never a couple', () => {
       homeHero: false,
       awayHero: true,
     }),
-    'Rohirrim is a hero!',
+    'Rohirrim are heroes',
   );
   assert.equal(
     matchupHeroDefeatLine({
