@@ -187,7 +187,7 @@ export function matchupMottyLine({
 
 /**
  * Douchebag Sneak: won the H2H with the 5th-highest raw GW score.
- * `Brampton Balrogs` → `Balrogs with a Douchebag Sneak`.
+ * `Brampton Balrogs` → `Balrogs are sneaky Douchebags!`.
  *
  * @param {string | null | undefined} fullName
  * @returns {string}
@@ -195,7 +195,7 @@ export function matchupMottyLine({
 export function douchebagSneakLine(fullName) {
   const short = firstWord(fullName)
   if (!short) return 'Douchebag Sneak'
-  return `${short} with a Douchebag Sneak`
+  return `${short} are sneaky Douchebags!`
 }
 
 /**
