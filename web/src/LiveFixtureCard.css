@@ -558,6 +558,27 @@
 }
 
 /* ---- Match tab: split columns (both teams side by side) ---- */
+.lfc-award {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px 2px;
+  text-align: center;
+}
+.lfc-award__line {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+.lfc-award__line--hero { color: var(--live-hero-strong, #b45309); }
+.lfc-award__line--villain { color: var(--live-villain-strong, #6f5fa8); }
+.lfc-award__line--motty { color: var(--live-motty-strong, #8a6218); }
+.lfc-award__line--sneak { color: var(--live-sneak-strong, #3f4c28); }
+
 .lfc-split {
   display: grid;
   grid-template-columns: 1fr 1fr;

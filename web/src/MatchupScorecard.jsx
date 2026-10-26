@@ -3,7 +3,12 @@ import { TeamAvatar } from './TeamAvatar';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { liveFixtureLead } from './liveScoresDerivations.js';
 import { englishOrdinal } from './playerContributionEvents.js';
-import { matchupHeroDefeatLine, matchupVillainVictoryLine } from './teamNameUtils.js';
+import {
+  matchupDouchebagSneakLine,
+  matchupHeroDefeatLine,
+  matchupMottyLine,
+  matchupVillainVictoryLine,
+} from './teamNameUtils.js';
 import './LiveOddsSection.css';
 
 /**
@@ -30,7 +35,10 @@ import './LiveOddsSection.css';
  * `couple of villains!` when both sides drew at the bottom of the GW
  * table — never on a 0–0) in the empty centre, in Scorebook lilac. A hero
  * defeat does the same in orange (`Regorasu is a hero!` — 2nd-highest raw
- * GW score, and they lost). Either side renders independently — a missing
+ * GW score, and they lost). The Motty (`Regorasu is the Motty!`) is a win
+ * that disappears if you take away the bench points that came in. A
+ * Douchebag Sneak (`Regorasu is a Douchebag Sneak!`) is a win at 5th in
+ * the raw GW table. Either side renders independently — a missing
  * rank (off-season standings) or missing squad payload never blanks the
  * whole strip. Renders nothing when neither label nor a narrative line is
  * available.
@@ -41,6 +49,8 @@ export function MatchupMeta({
   rightText,
   villainLine = null,
   heroLine = null,
+  mottyLine = null,
+  sneakLine = null,
 }) {
   const homeRank = Number(liveRankByEntry?.[f.homeId]);
   const awayRank = Number(liveRankByEntry?.[f.awayId]);
@@ -48,7 +58,7 @@ export function MatchupMeta({
     Number.isFinite(homeRank) && Number.isFinite(awayRank)
       ? `${englishOrdinal(homeRank)} vs ${englishOrdinal(awayRank)}`
       : null;
-  const narrative = Boolean(villainLine || heroLine);
+  const narrative = Boolean(villainLine || heroLine || mottyLine || sneakLine);
   const hasRemaining =
     f.homeRemaining != null &&
     Number.isFinite(Number(f.homeRemaining)) &&
@@ -70,6 +80,8 @@ export function MatchupMeta({
           {villainLine ? (
             <span className="lo-meta__villain">{villainLine}</span>
           ) : null}
+          {mottyLine ? <span className="lo-meta__motty">{mottyLine}</span> : null}
+          {sneakLine ? <span className="lo-meta__sneak">{sneakLine}</span> : null}
         </span>
       ) : null}
       {right ? (
@@ -190,7 +202,17 @@ function MatchupCrest({ entryId, name, status, teamLogoMap, kitIndexByEntry }) {
  * preferred candidate — the Scores list passes the curated mobile short
  * label there so phones try e.g. `Mordor SFG` before falling back further.
  * `homeStatus` / `awayStatus` (optional) add the hero/villain avatar ring.
+ * Motty / Douchebag Sneak tint the name when that side is not already a
+ * hero or villain.
  */
+function nameAwardClass(status, motty, sneak) {
+  if (status === 'villain') return ' lo-hdr__name--villain';
+  if (status === 'hero') return ' lo-hdr__name--hero';
+  if (motty) return ' lo-hdr__name--motty';
+  if (sneak) return ' lo-hdr__name--sneak';
+  return '';
+}
+
 export function MatchupHeader({
   fixture: f,
   teamLogoMap,
@@ -199,6 +221,10 @@ export function MatchupHeader({
   awayDisplayName,
   homeStatus = null,
   awayStatus = null,
+  homeMotty = false,
+  awayMotty = false,
+  homeSneak = false,
+  awaySneak = false,
 }) {
   const lead = liveFixtureLead(f.homeLive, f.awayLive);
   const bothScores = f.homeLive != null && f.awayLive != null;
@@ -213,14 +239,7 @@ export function MatchupHeader({
           kitIndexByEntry={kitIndexByEntry}
         />
         <FittedTeamName
-          className={
-            'lo-hdr__name' +
-            (homeStatus === 'villain'
-              ? ' lo-hdr__name--villain'
-              : homeStatus === 'hero'
-                ? ' lo-hdr__name--hero'
-                : '')
-          }
+          className={'lo-hdr__name' + nameAwardClass(homeStatus, homeMotty, homeSneak)}
           fullName={f.homeName}
           displayName={homeDisplayName}
           title={f.homeName}
@@ -253,14 +272,7 @@ export function MatchupHeader({
       </div>
       <div className="lo-hdr__side lo-hdr__side--away">
         <FittedTeamName
-          className={
-            'lo-hdr__name' +
-            (awayStatus === 'villain'
-              ? ' lo-hdr__name--villain'
-              : awayStatus === 'hero'
-                ? ' lo-hdr__name--hero'
-                : '')
-          }
+          className={'lo-hdr__name' + nameAwardClass(awayStatus, awayMotty, awaySneak)}
           fullName={f.awayName}
           displayName={awayDisplayName}
           title={f.awayName}
@@ -296,6 +308,10 @@ export function MatchupHeader({
  *   awayDisplayName?: string,
  *   homeStatus?: 'hero' | 'villain' | null,
  *   awayStatus?: 'hero' | 'villain' | null,
+ *   homeMotty?: boolean,
+ *   awayMotty?: boolean,
+ *   homeSneak?: boolean,
+ *   awaySneak?: boolean,
  *   onClick?: () => void,
  *   className?: string,
  * }} props
@@ -310,6 +326,10 @@ export function MatchupScorecard({
   awayDisplayName,
   homeStatus = null,
   awayStatus = null,
+  homeMotty = false,
+  awayMotty = false,
+  homeSneak = false,
+  awaySneak = false,
   onClick,
   className,
 }) {
@@ -325,6 +345,18 @@ export function MatchupScorecard({
     awayName: fixture.awayName,
     homeHero: homeStatus === 'hero',
     awayHero: awayStatus === 'hero',
+  });
+  const mottyLineText = matchupMottyLine({
+    homeName: fixture.homeName,
+    awayName: fixture.awayName,
+    homeMotty,
+    awayMotty,
+  });
+  const sneakLineText = matchupDouchebagSneakLine({
+    homeName: fixture.homeName,
+    awayName: fixture.awayName,
+    homeSneak,
+    awaySneak,
   });
   return (
     <div
@@ -344,6 +376,8 @@ export function MatchupScorecard({
           rightText={metaRight}
           villainLine={villainLine}
           heroLine={heroLine}
+          mottyLine={mottyLineText}
+          sneakLine={sneakLineText}
         />
         <MatchupHeader
           fixture={fixture}
@@ -353,6 +387,10 @@ export function MatchupScorecard({
           awayDisplayName={awayDisplayName}
           homeStatus={homeStatus}
           awayStatus={awayStatus}
+          homeMotty={homeMotty}
+          awayMotty={awayMotty}
+          homeSneak={homeSneak}
+          awaySneak={awaySneak}
         />
         <RemainingGauge
           homeRemaining={fixture.homeRemaining}

@@ -111,7 +111,9 @@
   min-width: 0;
 }
 .lo-meta__villain,
-.lo-meta__hero {
+.lo-meta__hero,
+.lo-meta__motty,
+.lo-meta__sneak {
   font-family: var(--tclot-font-ui, inherit);
   font-size: 12px;
   font-weight: 700;
@@ -121,11 +123,21 @@
   text-align: center;
   min-width: 0;
 }
+.lo-meta__sneak {
+  white-space: normal;
+  line-height: 1.2;
+}
 .lo-meta__villain {
   color: var(--live-villain-strong, #6f5fa8);
 }
 .lo-meta__hero {
   color: var(--live-hero-strong, #b45309);
+}
+.lo-meta__motty {
+  color: var(--live-motty-strong, #8a6218);
+}
+.lo-meta__sneak {
+  color: var(--live-sneak-strong, #3f4c28);
 }
 
 /* ---- C2 edge-aligned face-off header ---- */
@@ -159,7 +171,9 @@
   white-space: nowrap;
 }
 .lo-hdr__name--villain,
-.lo-hdr__name--hero {
+.lo-hdr__name--hero,
+.lo-hdr__name--motty,
+.lo-hdr__name--sneak {
   flex: 0 1 auto;
   padding: 2px 9px 3px;
   border-radius: 999px;
@@ -172,6 +186,14 @@
 .lo-hdr__name--hero {
   background: color-mix(in srgb, var(--live-hero-color, #d97706) 22%, var(--fm-card));
   color: var(--live-hero-strong, #b45309);
+}
+.lo-hdr__name--motty {
+  background: color-mix(in srgb, var(--live-motty-color, #d9a441) 28%, var(--fm-card));
+  color: var(--live-motty-strong, #8a6218);
+}
+.lo-hdr__name--sneak {
+  background: color-mix(in srgb, var(--live-sneak-color, #6a7a45) 24%, var(--fm-card));
+  color: var(--live-sneak-strong, #3f4c28);
 }
 .lo-hdr__score {
   display: grid;
@@ -346,6 +368,22 @@
   background-image: linear-gradient(
     to right,
     color-mix(in srgb, #ef4444 5%, transparent),
+    transparent 40%,
+    transparent
+  );
+}
+.lo-matchup--motty {
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--live-motty-color, #d9a441) 10%, transparent),
+    transparent 40%,
+    transparent
+  );
+}
+.lo-matchup--sneak {
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--live-sneak-color, #6a7a45) 10%, transparent),
     transparent 40%,
     transparent
   );
