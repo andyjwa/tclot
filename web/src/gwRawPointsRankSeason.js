@@ -131,6 +131,59 @@ export function heroDefeatEntryIdsFromGwFixtures(fixtures) {
 }
 
 /**
+ * Douchebag Sneak: won the H2H while 5th in that GW's raw points table.
+ * Needs a full 8-team score table so "5th" is the league's 5th, not a
+ * partial ranking. A draw never qualifies — the award is a win.
+ *
+ * @param {Map<number, number>} pointsByEntryId
+ * @param {object[]} gwMatches
+ * @returns {Set<number>}
+ */
+export function douchebagSneakEntryIds(pointsByEntryId, gwMatches) {
+  if (!pointsByEntryId || pointsByEntryId.size < 8) return new Set();
+  const ordinalById = fplGwScoreOrdinalFromPointsMap(pointsByEntryId);
+  const out = new Set();
+
+  for (const m of gwMatches || []) {
+    const homeId = Number(m.league_entry_1);
+    const awayId = Number(m.league_entry_2);
+    if (!Number.isFinite(homeId) || !Number.isFinite(awayId)) continue;
+
+    const homePts = pointsByEntryId.get(homeId);
+    const awayPts = pointsByEntryId.get(awayId);
+    if (!Number.isFinite(homePts) || !Number.isFinite(awayPts)) continue;
+
+    const h = Number(homePts);
+    const a = Number(awayPts);
+    if (h > a && ordinalById.get(homeId) === 5) out.add(homeId);
+    else if (a > h && ordinalById.get(awayId) === 5) out.add(awayId);
+  }
+  return out;
+}
+
+/**
+ * @param {object[]} fixtures
+ * @returns {Set<number>}
+ */
+export function douchebagSneakEntryIdsFromGwFixtures(fixtures) {
+  const pointsByEntryId = new Map();
+  const gwMatches = [];
+  for (const fx of fixtures || []) {
+    const homeId = Number(fx.homeId ?? fx.league_entry_1);
+    const awayId = Number(fx.awayId ?? fx.league_entry_2);
+    const homePts = Number(fx.homePts ?? fx.league_entry_1_points);
+    const awayPts = Number(fx.awayPts ?? fx.league_entry_2_points);
+    if (!Number.isFinite(homeId) || !Number.isFinite(awayId)) continue;
+    if (!Number.isFinite(homePts) || !Number.isFinite(awayPts)) continue;
+    pointsByEntryId.set(homeId, homePts);
+    pointsByEntryId.set(awayId, awayPts);
+    gwMatches.push({ league_entry_1: homeId, league_entry_2: awayId });
+  }
+  if (pointsByEntryId.size < 8) return new Set();
+  return douchebagSneakEntryIds(pointsByEntryId, gwMatches);
+}
+
+/**
  * @param {Map<number, number>} pointsByEntryId
  * @param {object[]} gwMatches
  * @returns {Set<number>}

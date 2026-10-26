@@ -4,6 +4,8 @@ import {
   assignGwFinishRankAndPositionPoints,
   buildGwRawPointsRankSeasonTotals,
   fplGwScoreOrdinalFromPointsMap,
+  douchebagSneakEntryIds,
+  douchebagSneakEntryIdsFromGwFixtures,
   heroDefeatEntryIds,
   heroDefeatEntryIdsFromGwFixtures,
   villainVictoryEntryIds,
@@ -147,6 +149,74 @@ test('heroDefeatEntryIdsFromGwFixtures — 2nd-highest loser needs 8 scores', ()
   assert.equal(h.size, 1);
   assert.ok(h.has(2));
   assert.equal(heroDefeatEntryIdsFromGwFixtures(fixtures.slice(0, 3)).size, 0);
+});
+
+test('douchebagSneakEntryIds — win H2H at 5th in league raw GW', () => {
+  const pts = new Map([
+    [1, 80],
+    [2, 70],
+    [3, 60],
+    [4, 50],
+    [5, 40],
+    [6, 30],
+    [7, 25],
+    [8, 20],
+  ]);
+  const gwMatches = [
+    { league_entry_1: 5, league_entry_2: 8 },
+    { league_entry_1: 1, league_entry_2: 2 },
+  ];
+  const s = douchebagSneakEntryIds(pts, gwMatches);
+  assert.equal(s.size, 1);
+  assert.ok(s.has(5));
+});
+
+test('douchebagSneakEntryIds — 5th who lost, and a win at 4th, are not sneaks', () => {
+  const pts = new Map([
+    [1, 80],
+    [2, 70],
+    [3, 60],
+    [4, 50],
+    [5, 40],
+    [6, 30],
+    [7, 25],
+    [8, 20],
+  ]);
+  const lost = douchebagSneakEntryIds(pts, [
+    { league_entry_1: 5, league_entry_2: 4 },
+  ]);
+  assert.equal(lost.size, 0);
+  const fourth = douchebagSneakEntryIds(pts, [
+    { league_entry_1: 4, league_entry_2: 8 },
+  ]);
+  assert.equal(fourth.size, 0);
+  const drawn = douchebagSneakEntryIds(
+    new Map([
+      [1, 80],
+      [2, 70],
+      [3, 60],
+      [4, 50],
+      [5, 40],
+      [6, 40],
+      [7, 25],
+      [8, 20],
+    ]),
+    [{ league_entry_1: 5, league_entry_2: 6 }],
+  );
+  assert.equal(drawn.size, 0);
+});
+
+test('douchebagSneakEntryIdsFromGwFixtures — needs a full 8-team table', () => {
+  const fixtures = [
+    { homeId: 1, awayId: 2, homePts: 80, awayPts: 70 },
+    { homeId: 3, awayId: 4, homePts: 60, awayPts: 50 },
+    { homeId: 5, awayId: 6, homePts: 40, awayPts: 10 },
+    { homeId: 7, awayId: 8, homePts: 25, awayPts: 20 },
+  ];
+  const s = douchebagSneakEntryIdsFromGwFixtures(fixtures);
+  assert.equal(s.size, 1);
+  assert.ok(s.has(5));
+  assert.equal(douchebagSneakEntryIdsFromGwFixtures(fixtures.slice(0, 3)).size, 0);
 });
 
 test('heroDefeatEntryIds — lose H2H at 2nd in league raw GW', () => {

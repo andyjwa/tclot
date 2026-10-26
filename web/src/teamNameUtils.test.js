@@ -10,6 +10,10 @@ import {
   matchupVillainVictoryLine,
   heroDefeatLine,
   matchupHeroDefeatLine,
+  mottyLine,
+  matchupMottyLine,
+  douchebagSneakLine,
+  matchupDouchebagSneakLine,
   COUPLE_OF_VILLAINS_LINE,
 } from './teamNameUtils.js';
 
@@ -220,5 +224,42 @@ test('matchupHeroDefeatLine — names the loser, never a couple', () => {
       awayName: 'Hackney Rohirrim',
     }),
     null,
+  );
+});
+
+test('mottyLine — curated short name', () => {
+  assert.equal(mottyLine('Rokesly Regorasu'), 'Regorasu is the Motty!');
+  assert.equal(mottyLine('Mordor SFG'), 'MSFG is the Motty!');
+  assert.equal(mottyLine(null), 'The Motty');
+});
+
+test('matchupMottyLine — names the side the bench saved', () => {
+  assert.equal(
+    matchupMottyLine({
+      homeName: 'Hackney Rohirrim',
+      awayName: 'Seoul Shire',
+      awayMotty: true,
+    }),
+    'Seoul Shire is the Motty!',
+  );
+  assert.equal(
+    matchupMottyLine({ homeName: 'Hackney Rohirrim', awayName: 'Seoul Shire' }),
+    null,
+  );
+});
+
+test('douchebagSneakLine — curated short name', () => {
+  assert.equal(douchebagSneakLine('Toronto Gimli'), 'To. Gimli is a Douchebag Sneak!');
+  assert.equal(douchebagSneakLine(null), 'Douchebag Sneak');
+});
+
+test('matchupDouchebagSneakLine — names the 5th-place winner', () => {
+  assert.equal(
+    matchupDouchebagSneakLine({
+      homeName: 'Brampton Balrogs',
+      awayName: 'Toronto Gimli',
+      homeSneak: true,
+    }),
+    'Balrogs is a Douchebag Sneak!',
   );
 });

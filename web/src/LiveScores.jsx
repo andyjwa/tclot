@@ -16,7 +16,12 @@ import { eventNameToGameWeekLabel } from './gwLabel.js';
 import { GameWeekNavigator } from './GameWeekNavigator.jsx';
 import { usePlayerHistory, ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx';
-import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
+import {
+  douchebagSneakEntryIds,
+  heroDefeatEntryIds,
+  villainVictoryEntryIds,
+} from './gwRawPointsRankSeason.js';
+import { mottyEntryIdsFromFixtures } from './mottyAward.js';
 import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
 import { displayedSidePoints, liveGwDisplayTotal } from './liveGwTotals.js';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
@@ -463,6 +468,15 @@ function villainVictoryLeagueEntryIds(squadsOrPoints, gwMatches) {
 /** @param {object[]} squads @param {object[]} gwMatches */
 function heroDefeatLeagueEntryIds(squads, gwMatches) {
   return heroDefeatEntryIds(squadsToGwPointsMap(squads), gwMatches);
+}
+
+/** @param {object[] | Map<number, number>} squadsOrPoints @param {object[]} gwMatches */
+function douchebagSneakLeagueEntryIds(squadsOrPoints, gwMatches) {
+  const points =
+    squadsOrPoints instanceof Map
+      ? squadsOrPoints
+      : squadsToGwPointsMap(squadsOrPoints);
+  return douchebagSneakEntryIds(points, gwMatches);
 }
 
 const LEFT_TO_PLAY_TITLE =
@@ -1072,6 +1086,17 @@ export function LiveScores({
     [squads, gwMatches]
   );
 
+  const douchebagSneakEntryIds = useMemo(
+    () =>
+      douchebagSneakLeagueEntryIds(
+        gwStandingsFrozen && finishedMatchPtsByLeagueEntry.size >= 8
+          ? finishedMatchPtsByLeagueEntry
+          : squads,
+        gwMatches,
+      ),
+    [gwStandingsFrozen, finishedMatchPtsByLeagueEntry, squads, gwMatches]
+  );
+
   const pairedLeagueEntryIds = useMemo(() => {
     const s = new Set();
     for (const m of gwMatches) {
@@ -1180,6 +1205,11 @@ export function LiveScores({
     finishedMatchPtsByLeagueEntry,
   ]);
 
+  const mottyEntryIds = useMemo(
+    () => mottyEntryIdsFromFixtures(cardFixtures),
+    [cardFixtures],
+  );
+
   const cardDeckCtx = useMemo(
     () => ({
       matches,
@@ -1193,6 +1223,8 @@ export function LiveScores({
       onOpenPlayer: openPlayerFromFixture,
       villainEntryIds: villainVictoryEntryIds,
       heroEntryIds: heroDefeatEntryIds,
+      mottyEntryIds,
+      sneakEntryIds: douchebagSneakEntryIds,
     }),
     [
       matches,
@@ -1206,6 +1238,8 @@ export function LiveScores({
       openPlayerFromFixture,
       villainVictoryEntryIds,
       heroDefeatEntryIds,
+      mottyEntryIds,
+      douchebagSneakEntryIds,
     ],
   );
 
@@ -1443,6 +1477,10 @@ export function LiveScores({
               const awayVillain = villainVictoryEntryIds.has(awayId);
               const homeHero = heroDefeatEntryIds.has(homeId);
               const awayHero = heroDefeatEntryIds.has(awayId);
+              const homeMotty = mottyEntryIds.has(homeId);
+              const awayMotty = mottyEntryIds.has(awayId);
+              const homeSneak = douchebagSneakEntryIds.has(homeId);
+              const awaySneak = douchebagSneakEntryIds.has(awayId);
 
               const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
 
@@ -1488,10 +1526,16 @@ export function LiveScores({
                   awayDisplayName={awayDisplayName}
                   homeStatus={homeStatus}
                   awayStatus={awayStatus}
+                  homeMotty={homeMotty}
+                  awayMotty={awayMotty}
+                  homeSneak={homeSneak}
+                  awaySneak={awaySneak}
                   onClick={() => openFixtureCard(fixtureIndex)}
                   className={[
                     homeVillain || awayVillain ? 'lo-matchup--villain-victory' : null,
                     homeHero || awayHero ? 'lo-matchup--hero-defeat' : null,
+                    homeMotty || awayMotty ? 'lo-matchup--motty' : null,
+                    homeSneak || awaySneak ? 'lo-matchup--sneak' : null,
                   ]
                     .filter(Boolean)
                     .join(' ')}

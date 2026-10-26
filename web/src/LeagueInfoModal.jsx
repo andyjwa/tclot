@@ -59,7 +59,7 @@ const LI_TABS = /** @type {const} */ ([
 const TCLOT_TERMS = [
   { term: 'Villains Victory',     def: 'Winning with the 7th highest score of the GW.' },
   { term: 'Heroes Defeat',        def: 'Losing with the 2nd highest score of the GW.', tone: 'hero' },
-  { term: 'The Motty',            def: 'Winning thanks to a bench player coming in.' },
+  { term: 'The Motty',            def: 'Winning only because a bench player came in.' },
   { term: 'Douchebag Sneak',      def: 'Winning with the 5th highest score.' },
   { term: 'Stallions Stalemate',  def: 'The top 2 scorers of the GW drawing.' },
   { term: 'The Ream',             def: 'Picking an insanely poor first waiver.' },
