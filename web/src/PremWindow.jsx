@@ -24,6 +24,7 @@ import {
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { subscribeTclotRefresh } from './tclotRefresh.js';
 import { PremFixtureMoments } from './PremFixtureMoments.jsx';
+import { StartingSnapshot } from './StartingSnapshot.jsx';
 import { claimedLineupElementIds } from './matchEvents.js';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
@@ -1252,6 +1253,7 @@ export function PremWindow({
   const teamById = contributionLiveContext?.teamById ?? null;
   const elementById = contributionLiveContext?.elementById ?? null;
   const narrow = useNarrow560();
+  const [lineupMode, setLineupMode] = useState('lineups');
   const [premWindowLoading, setPremWindowLoading] = useState(false);
   const [premWindowError, setPremWindowError] = useState(null);
   const [premWindowRows, setPremWindowRows] = useState(/** @type {any[]} */ ([]));
@@ -1516,6 +1518,25 @@ export function PremWindow({
           </button>
         </div>
 
+        <div className="prem-start-modes" role="group" aria-label="Lineup view">
+          <button
+            type="button"
+            className={lineupMode === 'lineups' ? 'is-on' : ''}
+            aria-pressed={lineupMode === 'lineups'}
+            onClick={() => setLineupMode('lineups')}
+          >
+            Lineups
+          </button>
+          <button
+            type="button"
+            className={lineupMode === 'starting' ? 'is-on' : ''}
+            aria-pressed={lineupMode === 'starting'}
+            onClick={() => setLineupMode('starting')}
+          >
+            Starting
+          </button>
+        </div>
+
         {liveError ? (
           <div className="data-banner data-banner--error" role="alert">
             <strong>Could not load live FPL context.</strong> {liveError}
@@ -1547,13 +1568,26 @@ export function PremWindow({
         </section>
       ) : null}
 
-      {noFixtures ? (
+      {lineupMode === 'lineups' && noFixtures ? (
         <section className="tile tile--compact">
           <p className="muted muted--tight">No fixtures for this gameweek.</p>
         </section>
       ) : null}
 
-      {(liveFixtures.length > 0 || dayGroups.length > 0) ? (
+      {lineupMode === 'starting' && !awaitingFplContext && !awaitingPremWindow ? (
+        <StartingSnapshot
+          key={gameweek}
+          fixtures={premWindowRows}
+          squads={squads}
+          elementById={elementById}
+          teamById={teamById}
+          narrow={narrow}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      ) : null}
+
+      {lineupMode === 'lineups' && (liveFixtures.length > 0 || dayGroups.length > 0) ? (
         <section className="prem-fixlist-card" aria-label="Fixtures">
           <LiveStrip
             fixtures={liveFixtures}
