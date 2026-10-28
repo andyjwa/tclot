@@ -250,54 +250,110 @@
   box-shadow: 0 1px 2px rgba(23, 64, 47, 0.12);
 }
 
-.son-filters { padding: 4px 12px 8px; }
-.son-filters__row {
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
+.son-filters {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  align-items: center;
-  margin-top: 6px;
+  padding: 8px 12px 4px;
 }
-.son-filters__label {
+.son-dd { position: relative; z-index: 1; }
+.son-dd.is-open { z-index: 30; }
+.son-dd__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 5px 10px 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+}
+.son-dd__btn.is-open,
+.son-dd__btn.is-set {
+  border-color: color-mix(in srgb, var(--purple) 50%, var(--line));
+  background: color-mix(in srgb, var(--purple) 10%, white);
+}
+.son-dd__label {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.son-filters__scroller {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+.son-dd__sep { color: color-mix(in srgb, var(--muted) 70%, transparent); }
+.son-dd__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.son-filters__scroller button {
+.son-dd__chev { color: var(--muted); font-size: 11px; }
+.son-dd__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  width: max-content;
+  min-width: 220px;
+  max-width: min(320px, 92vw);
+  max-height: 320px;
+  margin: 0;
+  padding: 5px;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffdf8;
+  box-shadow: 0 10px 28px rgba(23, 40, 28, 0.16);
+}
+.son-dd--right .son-dd__menu { left: auto; right: 0; }
+.son-dd__menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+.son-dd__menu button.is-on,
+.son-dd__menu button:hover {
+  background: color-mix(in srgb, var(--purple) 12%, white);
+}
+.son-dd__tick {
+  flex: 0 0 16px;
+  width: 16px;
+  color: transparent;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+.son-dd__tick.is-on { color: var(--purple); }
+.son-dd__opt { min-width: 0; }
+.son-dd__team, .son-dd__fix {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  flex: 0 0 auto;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 5px 9px;
-  background: var(--card);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 650;
-  color: var(--ink);
+  gap: 6px;
 }
-.son-filters__scroller button i {
+.son-dd__team i {
   width: 8px;
   height: 8px;
   border-radius: 99px;
+  flex: 0 0 auto;
 }
-.son-filters__scroller button.is-on {
-  background: var(--purple);
-  border-color: var(--purple);
-  color: white;
-}
-.son-filters__vs { color: var(--muted); font-weight: 600; }
-.son-filters__scroller button.is-on .son-filters__vs { color: rgba(255, 255, 255, 0.75); }
-.son-filters__live {
+.son-dd__vs { color: var(--muted); font-weight: 600; }
+.son-dd__live {
   padding: 1px 5px;
   border-radius: 99px;
   background: #ef4e5d;

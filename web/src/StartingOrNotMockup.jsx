@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ANNOUNCED,
   CLUBS,
@@ -256,61 +256,129 @@ function StartingBody({ variant, teamId, fixtureId, mobile }) {
   )
 }
 
-function FilterRow({ label, children }) {
+function CheckMenu({ label, value, options, onChange, align = 'left' }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  const selected = options.find((opt) => opt.value === value) ?? options[0]
+
+  useEffect(() => {
+    if (!open) return undefined
+    const onDoc = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false)
+    }
+    const onKey = (event) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
   return (
-    <div className="son-filters__row">
-      <span className="son-filters__label">{label}</span>
-      <div className="son-filters__scroller">{children}</div>
+    <div className={'son-dd' + (open ? ' is-open' : '') + (align === 'right' ? ' son-dd--right' : '')} ref={rootRef}>
+      <button
+        type="button"
+        className={'son-dd__btn' + (open ? ' is-open' : '') + (selected?.marked ? ' is-set' : '')}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={selected ? `${label}: ${selected.trigger}` : label}
+        onClick={() => setOpen((next) => !next)}
+      >
+        <span className="son-dd__label">{label}</span>
+        <span className="son-dd__sep" aria-hidden>·</span>
+        <span className="son-dd__value">{selected?.trigger}</span>
+        <span className="son-dd__chev" aria-hidden>{open ? '▴' : '▾'}</span>
+      </button>
+      {open ? (
+        <ul className="son-dd__menu" role="listbox" aria-label={label}>
+          {options.map((opt) => {
+            const on = opt.value === value
+            return (
+              <li key={String(opt.value)}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={on}
+                  className={on ? 'is-on' : ''}
+                  onClick={() => {
+                    onChange(opt.value)
+                    setOpen(false)
+                  }}
+                >
+                  <span className={'son-dd__tick' + (on ? ' is-on' : '')} aria-hidden="true">{on ? '✓' : ''}</span>
+                  <span className="son-dd__opt">{opt.node}</span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      ) : null}
     </div>
   )
 }
 
-function TeamFilters({ teamId, onTeam, mobile }) {
+function fixtureTrigger(fixture, mobile) {
+  if (!fixture) return 'All out'
+  const home = mobile ? fixture.home : clubName(fixture.home)
+  const away = mobile ? fixture.away : clubName(fixture.away)
+  return fixture.state === 'live' ? `${home} v ${away} ${fixture.minute}` : `${home} v ${away}`
+}
+
+function FixtureOptionLabel({ fixture }) {
   return (
-    <FilterRow label="Team">
-      <button type="button" className={!teamId ? 'is-on' : ''} onClick={() => onTeam(null)}>
-        Everyone
-      </button>
-      {MANAGERS.map((m) => (
-        <button
-          type="button"
-          key={m.id}
-          className={teamId === m.id ? 'is-on' : ''}
-          onClick={() => onTeam(teamId === m.id ? null : m.id)}
-        >
-          <i style={{ background: m.color }} aria-hidden="true" />
-          {mobile ? m.id : m.short}
-        </button>
-      ))}
-    </FilterRow>
+    <span className="son-dd__fix">
+      <Crest code={fixture.home} size={16} />
+      <span>{clubName(fixture.home)}</span>
+      <span className="son-dd__vs">v</span>
+      <Crest code={fixture.away} size={16} />
+      <span>{clubName(fixture.away)}</span>
+      {fixture.state === 'live' ? <span className="son-dd__live">{fixture.minute}</span> : null}
+    </span>
   )
 }
 
+function TeamFilters({ teamId, onTeam, mobile }) {
+  const options = [
+    { value: null, trigger: 'Everyone', node: 'Everyone', marked: false },
+    ...MANAGERS.map((m) => ({
+      value: m.id,
+      trigger: mobile ? m.id : m.short,
+      marked: true,
+      node: (
+        <span className="son-dd__team">
+          <i style={{ background: m.color }} aria-hidden="true" />
+          {m.name}
+        </span>
+      ),
+    })),
+  ]
+  return <CheckMenu label="Team" value={teamId} options={options} onChange={onTeam} />
+}
+
 function FixtureFilters({ fixtureId, onFixture, requiredId, mobile }) {
-  const active = requiredId ? (fixtureId && ANNOUNCED.some((f) => f.id === fixtureId) ? fixtureId : requiredId) : fixtureId
+  const active = requiredId
+    ? (fixtureId && ANNOUNCED.some((f) => f.id === fixtureId) ? fixtureId : requiredId)
+    : fixtureId
+  const options = [
+    ...(requiredId ? [] : [{ value: null, trigger: 'All out', node: 'All out', marked: false }]),
+    ...ANNOUNCED.map((f) => ({
+      value: f.id,
+      trigger: fixtureTrigger(f, mobile),
+      marked: true,
+      node: <FixtureOptionLabel fixture={f} />,
+    })),
+  ]
   return (
-    <FilterRow label="Fixture">
-      {requiredId ? null : (
-        <button type="button" className={!active ? 'is-on' : ''} onClick={() => onFixture(null)}>
-          All out
-        </button>
-      )}
-      {ANNOUNCED.map((f) => (
-        <button
-          type="button"
-          key={f.id}
-          className={active === f.id ? 'is-on' : ''}
-          onClick={() => onFixture(f.id)}
-        >
-          <Crest code={f.home} size={14} />
-          {mobile ? f.home : clubName(f.home)}
-          <span className="son-filters__vs">v</span>
-          <Crest code={f.away} size={14} />
-          {mobile ? f.away : clubName(f.away)}
-          {f.state === 'live' ? <span className="son-filters__live">{f.minute}</span> : null}
-        </button>
-      ))}
-    </FilterRow>
+    <CheckMenu
+      label="Fixture"
+      value={active}
+      options={options}
+      onChange={onFixture}
+      align={mobile ? 'right' : 'left'}
+    />
   )
 }
 
