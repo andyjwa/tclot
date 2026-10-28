@@ -25,7 +25,7 @@ const OPTIONS = [
     id: 'lineups',
     kicker: 'A',
     label: 'On Lineups',
-    place: 'Lives on the Lineups page, under the gameweek control. Sheets is the fixture list and the XI you screenshot today. Starting is the snapshot, with the team and fixture filters.',
+    place: 'Lives on the Lineups page, under the gameweek control. The two modes are Lineups and Starting. Lineups is the fixture list and the XI you screenshot today. Starting is the snapshot, with the team and fixture filters.',
   },
   {
     id: 'section',
@@ -468,7 +468,7 @@ function SheetList({ mobile, openId, onToggle }) {
   const live = SHEET_DAYS.flatMap((day) => day.ids.map(sheetById).filter((f) => f?.state === 'live'))
   return (
     <div className="son-sheetlist">
-      <p className="son-caption">Sheets is the current Lineups page. Open a row to screenshot the XI.</p>
+      <p className="son-caption">Lineups is the fixture list and the XI. Open a row to screenshot it.</p>
       {live.length ? (
         <section>
           <div className="son-day son-day--live">Live now</div>
@@ -513,15 +513,15 @@ function LineupsOption({ mobile, teamId, fixtureId, onTeam, onFixture, mode, onM
     <>
       <Subnav tabs={['Scores', 'Lineups']} active="Lineups" />
       <GwNav />
-      <div className="son-modes" role="tablist" aria-label="Lineups mode">
-        <button type="button" role="tab" aria-selected={mode === 'sheets'} className={mode === 'sheets' ? 'is-on' : ''} onClick={() => onMode('sheets')}>
-          Sheets
+      <div className="son-modes" role="tablist" aria-label="Lineups or Starting">
+        <button type="button" role="tab" aria-selected={mode === 'lineups'} className={mode === 'lineups' ? 'is-on' : ''} onClick={() => onMode('lineups')}>
+          Lineups
         </button>
         <button type="button" role="tab" aria-selected={mode === 'starting'} className={mode === 'starting' ? 'is-on' : ''} onClick={() => onMode('starting')}>
           Starting
         </button>
       </div>
-      {mode === 'sheets' ? (
+      {mode === 'lineups' ? (
         <SheetList mobile={mobile} openId={openId} onToggle={onToggle} />
       ) : (
         <>
@@ -667,9 +667,10 @@ export function StartingOrNotMockup() {
           <span className="son-kicker">TCLOT · lineup day</span>
           <h1>Starting or not</h1>
           <p>
-            On the day the sheets drop, a snapshot of who is starting and who is not, for each fantasy team.
-            It reads the fixtures whose lineups are out and still to play. Filter by a team, by a fixture between two clubs, or both.
-            Sample Saturday in GW 31: Newcastle v Brighton is live, Arsenal v Liverpool has a sheet for 5:30.
+            On the Lineups page, the two modes are Lineups and Starting. Lineups is the fixture list and the XI.
+            Starting is who is in and who is out, for each fantasy team, from fixtures whose lineups are out and still to play.
+            Filter by a team, by a fixture between two clubs, or both.
+            Sample Saturday in GW 31: Newcastle v Brighton is live, Arsenal v Liverpool kicks off at 5:30.
           </p>
         </div>
         <a href="?">Exit mockup</a>
