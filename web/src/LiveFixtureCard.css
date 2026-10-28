@@ -1171,7 +1171,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 .lfc-seg__btn.is-active.is-live {
-  color: #1d8a55;
+  color: var(--tclot-logo-purple, #795bfb);
 }
 .lfc-seg__btn.is-disabled {
   /* Theme-aware muted (a hardcoded black alpha vanished on the dark theme). */

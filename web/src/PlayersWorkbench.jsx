@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { readMyClubId } from './myClub.js'
 import { draftCurrentGameweek } from './draftBoardRosterStatus'
 import {
   fplElementDisplayName,
@@ -920,9 +921,14 @@ export function PlayersWorkbench({
   /** @type {[number[] | null, (ids: number[] | null) => void]} */
   const [selectedPlClubs, setSelectedPlClubs] = useState(null)
   /** @type {[number[] | null, (ids: number[] | null) => void]} */
-  const [selectedFantasyTeams, setSelectedFantasyTeams] = useState(null)
+  const [selectedFantasyTeams, setSelectedFantasyTeams] = useState(() => {
+    const id = readMyClubId()
+    return id == null ? null : [id]
+  })
   /** @type {['wire' | 'owned', (v: 'wire' | 'owned') => void]} */
-  const [wireOwnedMode, setWireOwnedMode] = useState('wire')
+  const [wireOwnedMode, setWireOwnedMode] = useState(() =>
+    readMyClubId() == null ? 'wire' : 'owned',
+  )
 
   /** Player detail launches via the shared overlay (no inline view). */
   const playerDetailOverlay = usePlayerDetailOverlayOptional()
