@@ -114,23 +114,40 @@ function byName(list, name) {
   return list.find((p) => p.name === name);
 }
 
-test('everyone sees starters, bench, left-out, and waiting, and skips full time and unowned', () => {
+test('everyone sees starters, bench, left-out, waiting, and played sheets', () => {
   const snap = buildStartingSnapshot({ fixtures, squads, elementById, teamById });
   assert.equal(snap.groups.length, 1);
   assert.equal(snap.groups[0].teamName, 'Crouch End');
-  assert.deepEqual(names(snap.groups[0].starting), ['Saliba', 'Gordon']);
+  assert.deepEqual(
+    snap.groups[0].starting.map((p) => [p.name, p.fixtureId, Boolean(p.finished)]),
+    [
+      ['Saliba', 100, false],
+      ['Saliba', 400, true],
+      ['Gordon', 300, false],
+      ['Gordon', 400, true],
+    ],
+  );
   assert.equal(byName(snap.groups[0].starting, 'Gordon').live, true);
   assert.equal(byName(snap.groups[0].starting, 'Gordon').minute, "67'");
   assert.equal(byName(snap.groups[0].starting, 'Saliba').pos, 'DEF');
   assert.equal(byName(snap.groups[0].starting, 'Saliba').oppShort, 'LIV');
   const not = snap.groups[0].notStarting;
-  assert.equal(byName(not, 'Trent').role, 'bench');
-  assert.equal(byName(not, 'Saka').role, 'nis');
+  assert.deepEqual(
+    not.map((p) => [p.name, p.role, p.fixtureId]),
+    [
+      ['Trent', 'bench', 100],
+      ['Trent', 'nis', 400],
+      ['Saka', 'nis', 100],
+      ['Saka', 'nis', 400],
+    ],
+  );
   assert.deepEqual(names(snap.groups[0].waiting), ['Haaland']);
   assert.equal(names(snap.groups[0].starting).includes('Raya'), false);
   const menu = listAnnouncedFixtures(fixtures, teamById);
-  assert.deepEqual(menu.map((f) => f.id), [300, 100]);
-  assert.equal(menu.some((f) => f.id === 400 || f.id === 200), false);
+  assert.deepEqual(menu.map((f) => f.id), [400, 300, 100]);
+  assert.equal(menu.some((f) => f.id === 200), false);
+  assert.equal(menu.find((f) => f.id === 400).finished, true);
+  assert.equal(menu.find((f) => f.id === 300).live, true);
 });
 
 test('a fixture filter drops other matches and every waiting row', () => {
@@ -181,6 +198,29 @@ test('before any sheet is out, scheduled players are not dumped in as waiting', 
   assert.equal(snap.announcedCount, 0);
   assert.deepEqual(snap.groups, []);
   assert.deepEqual(listAnnouncedFixtures(onlyScheduled, teamById), []);
+});
+
+test('a finished gameweek still shows who started', () => {
+  const played = [fixtures[3]];
+  const snap = buildStartingSnapshot({
+    fixtures: played,
+    squads,
+    elementById,
+    teamById,
+  });
+  assert.deepEqual(names(snap.groups[0].starting), ['Saliba', 'Gordon']);
+  assert.equal(byName(snap.groups[0].starting, 'Saliba').finished, true);
+  assert.equal(byName(snap.groups[0].starting, 'Gordon').oppShort, 'ARS');
+  assert.deepEqual(
+    snap.groups[0].notStarting.map((p) => [p.name, p.role]),
+    [
+      ['Trent', 'nis'],
+      ['Saka', 'nis'],
+    ],
+  );
+  assert.deepEqual(snap.groups[0].waiting, []);
+  const menu = listAnnouncedFixtures(played, teamById);
+  assert.deepEqual(menu.map((f) => [f.id, f.finished]), [[400, true]]);
 });
 
 test('a confirmed sheet with no resolved ids is waiting, not out', () => {
