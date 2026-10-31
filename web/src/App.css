@@ -20328,3 +20328,321 @@ button.live-xp__player-name:focus-visible {
   }
 }
 
+/* Lineups page: Lineups | Starting, and the starting snapshot. */
+.prem-start-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--fm-surface-2, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--fm-border, #2f2f2f);
+}
+
+.prem-start-modes button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.prem-start-modes button.is-on {
+  background: var(--brand, #795bfb);
+  color: #fff;
+}
+
+.prem-start {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.prem-start__filters {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.prem-start__status {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
+.prem-start-card {
+  border: 1px solid var(--fm-border, #2f2f2f);
+  background: var(--fm-card, #1e1e1e);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.prem-start__teamhead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.prem-start__teamname {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fm-text-strong, #fff);
+}
+
+.prem-start__split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.prem-start__split.is-narrow {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 560px) {
+  .prem-start__split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.prem-start__wait {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--fm-border, #2f2f2f);
+}
+
+.prem-start__col h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
+.prem-start__col h3 span {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.prem-start__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.prem-start__player {
+  display: grid;
+  grid-template-columns: 28px 16px minmax(0, 1fr);
+  grid-template-areas: 'pos crest name' 'meta meta meta';
+  gap: 2px 6px;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 13px;
+  color: var(--fm-text, rgba(255, 255, 255, 0.87));
+}
+
+.prem-start__pos {
+  grid-area: pos;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
+.prem-start__player .start-dd__crest {
+  grid-area: crest;
+}
+
+.prem-start__name {
+  grid-area: name;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+  color: var(--fm-text-strong, #fff);
+}
+
+.prem-start__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding-left: 50px;
+  font-size: 11px;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
+.prem-start__tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--fm-surface-2, rgba(255, 255, 255, 0.06));
+}
+
+.prem-start__tag--nis {
+  color: var(--fm-loss, #f87171);
+}
+
+.prem-start__empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
+.start-dd {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.start-dd.is-open {
+  z-index: 30;
+}
+
+.start-dd__btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fm-text, rgba(255, 255, 255, 0.87));
+  background: var(--fm-card, #1e1e1e);
+  border: 1px solid var(--fm-border, #2f2f2f);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.start-dd__btn.is-set {
+  border-color: var(--brand, #795bfb);
+}
+
+.start-dd__label {
+  flex: 0 0 auto;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.start-dd__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-weight: 650;
+}
+
+.start-dd__caret {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
+.start-dd__menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(320px, 86vw);
+  max-height: 280px;
+  margin: 0;
+  padding: 4px;
+  overflow: auto;
+  list-style: none;
+  background: var(--fm-card, #1e1e1e);
+  border: 1px solid var(--fm-border, #2f2f2f);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.start-dd--right .start-dd__menu {
+  left: auto;
+  right: 0;
+}
+
+.start-dd__opt {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--fm-text, rgba(255, 255, 255, 0.87));
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.start-dd__opt.is-on,
+.start-dd__opt:hover {
+  background: color-mix(in srgb, var(--brand, #795bfb) 18%, transparent);
+}
+
+.start-dd__tick {
+  flex: 0 0 14px;
+  width: 14px;
+  font-weight: 700;
+  color: transparent;
+}
+
+.start-dd__tick.is-on {
+  color: var(--brand, #795bfb);
+}
+
+.start-dd__opt-body {
+  min-width: 0;
+}
+
+.start-dd__team,
+.start-dd__fix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.start-dd__crest {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.start-dd__v {
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+  font-size: 11px;
+}
+
+.start-dd__live {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fm-win, #34d399);
+}
+
