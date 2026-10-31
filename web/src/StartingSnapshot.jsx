@@ -22,7 +22,6 @@ function minuteLabel(minute) {
 }
 
 function roleTag(role) {
-  if (role === 'bench') return 'Bench';
   if (role === 'nis') return 'Out';
   return '';
 }
@@ -121,6 +120,15 @@ function PlayerLine({ player }) {
         {player.name}
       </ClickablePlayerName>
       <span className="prem-start__meta">
+        {player.role === 'bench' ? (
+          <span
+            className="prem-owner-bench"
+            title="On the bench"
+            aria-label="On the bench"
+          >
+            🪑
+          </span>
+        ) : null}
         {tag ? <span className={`prem-start__tag prem-start__tag--${player.role}`}>{tag}</span> : null}
         <span className="prem-start__opp">
           {when ? `${when} · ` : ''}v {player.oppShort}
@@ -233,8 +241,12 @@ export function StartingSnapshot({
     ? `${selectedFixture.homeName} v ${selectedFixture.awayName}`
     : '';
 
+  const visibleGroups = snap.groups.filter(
+    (group) => group.starting.length || group.notStarting.length,
+  );
+
   let status = '';
-  if (snap.groups.length === 0) {
+  if (visibleGroups.length === 0) {
     if (announced.length === 0) {
       status = 'No sheets are out yet. They usually land about 75 minutes before kickoff.';
     } else if (selectedTeam && fixtureLabel) {
@@ -247,9 +259,8 @@ export function StartingSnapshot({
       status = 'No players match this filter.';
     }
   } else {
-    const { starting, notStarting, waiting } = snap.totals;
+    const { starting, notStarting } = snap.totals;
     status = `${starting} starting · ${notStarting} not starting`;
-    if (waiting) status += ` · ${waiting} waiting on a sheet`;
   }
 
   return (
@@ -267,7 +278,7 @@ export function StartingSnapshot({
       <p className="prem-start__status" aria-live="polite">
         {status}
       </p>
-      {snap.groups.map((group) => (
+      {visibleGroups.map((group) => (
         <article className="prem-start-card" key={group.leagueEntryId}>
           <header className="prem-start__teamhead">
             <TeamAvatar
@@ -283,11 +294,6 @@ export function StartingSnapshot({
             <Column title="Starting" players={group.starting} empty="None" />
             <Column title="Not starting" players={group.notStarting} empty="None" />
           </div>
-          {group.waiting.length ? (
-            <div className="prem-start__wait">
-              <Column title="Waiting" players={group.waiting} empty="" />
-            </div>
-          ) : null}
         </article>
       ))}
     </section>
