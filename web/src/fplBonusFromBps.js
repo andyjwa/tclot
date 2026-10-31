@@ -526,21 +526,89 @@ export function bonusForFixtureFromExplain(liveRow, fixtureId) {
 }
 
 /**
- * Official bonus slate from classic `fixtures[]`.stats (`identifier: "bonus"`).
- * @param {object | null | undefined} fx
- * @returns {Map<number, number>}
+ * Classic fixture-stat element id → the id used on draft squads.
+ * Unmapped ids stay as-is (most players share an id; new ones do until the
+ * classic bootstrap join catches them).
+ *
+ * @param {number} classicId
+ * @param {Map<number, number> | Record<string, number> | null | undefined} idMap
+ * @returns {number}
  */
-export function officialBonusFromFixtureStats(fx) {
+export function draftIdForClassicElement(classicId, idMap) {
+  const id = Number(classicId);
+  if (!idMap || !Number.isFinite(id)) return id;
+  if (typeof idMap.get === 'function') {
+    if (idMap.has(id)) return Number(idMap.get(id));
+    if (idMap.has(String(id))) return Number(idMap.get(String(id)));
+    return id;
+  }
+  if (Object.prototype.hasOwnProperty.call(idMap, id)) return Number(idMap[id]);
+  if (Object.prototype.hasOwnProperty.call(idMap, String(id))) {
+    return Number(idMap[String(id)]);
+  }
+  return id;
+}
+
+/**
+ * True when this bootstrap element plays for either club in the fixture.
+ * Missing elements are treated as in-fixture so a partial bootstrap does not
+ * wipe a real slate.
+ *
+ * @param {Record<number, { team?: number }> | null | undefined} elementById
+ * @param {number} id
+ * @param {number} teamH
+ * @param {number} teamA
+ */
+function elementPlaysInFixture(elementById, id, teamH, teamA) {
+  if (!elementById) return true;
+  const el = elementById[id] ?? elementById[String(id)];
+  if (el == null) return true;
+  const tid = Number(el.team);
+  if (!Number.isFinite(tid)) return true;
+  return tid === teamH || tid === teamA;
+}
+
+/**
+ * Official bonus slate from classic `fixtures[]`.stats (`identifier: "bonus"`).
+ *
+ * Those `element` ids are classic FPL ids. Draft squads use a different id
+ * space for a slice of the player pool (GW9: classic 566 is Silva, draft 566
+ * is Horníček). Pass `classicToDraftId` when scoring draft rows. Pass
+ * `elementById` so a row is dropped when that player does not play for either
+ * club — otherwise Silva’s +2 is painted onto Horníček before Newcastle kick off.
+ *
+ * @param {object | null | undefined} fx
+ * @param {{
+ *   classicToDraftId?: Map<number, number> | Record<string, number> | null,
+ *   elementById?: Record<number, { team?: number }> | null,
+ * }} [opts]
+ * @returns {Map<number, number>} squad element id → bonus
+ */
+export function officialBonusFromFixtureStats(fx, opts = {}) {
   const m = new Map();
   const blocks = fx?.stats;
   if (!Array.isArray(blocks)) return m;
+  const idMap = opts.classicToDraftId ?? null;
+  const elementById = opts.elementById ?? null;
+  const fh = Number(fx?.team_h);
+  const fa = Number(fx?.team_a);
+  const teamsKnown = Number.isFinite(fh) && Number.isFinite(fa);
+
   for (const block of blocks) {
     if ((block?.identifier ?? block?.stat) !== 'bonus') continue;
     for (const side of ['h', 'a']) {
       for (const row of block[side] || []) {
-        const id = Number(row.element);
+        const classicId = Number(row.element);
         const val = Number(row.value) || 0;
-        if (!Number.isFinite(id) || val <= 0) continue;
+        if (!Number.isFinite(classicId) || val <= 0) continue;
+        const id = draftIdForClassicElement(classicId, idMap);
+        if (!Number.isFinite(id)) continue;
+        if (
+          teamsKnown &&
+          !elementPlaysInFixture(elementById, id, fh, fa)
+        ) {
+          continue;
+        }
         m.set(id, (m.get(id) || 0) + val);
       }
     }
@@ -551,12 +619,16 @@ export function officialBonusFromFixtureStats(fx) {
 /**
  * Sum official fixture-stats bonus per element across the GW.
  * @param {object[]} gwFixtures
+ * @param {{
+ *   classicToDraftId?: Map<number, number> | Record<string, number> | null,
+ *   elementById?: Record<number, { team?: number }> | null,
+ * }} [opts]
  * @returns {Map<number, number>}
  */
-export function officialGwBonusByElementId(gwFixtures) {
+export function officialGwBonusByElementId(gwFixtures, opts = {}) {
   const m = new Map();
   for (const fx of gwFixtures || []) {
-    for (const [id, pts] of officialBonusFromFixtureStats(fx)) {
+    for (const [id, pts] of officialBonusFromFixtureStats(fx, opts)) {
       m.set(id, (m.get(id) || 0) + pts);
     }
   }

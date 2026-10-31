@@ -297,6 +297,91 @@ test('officialBonusFromFixtureStats reads the classic bonus slate', () => {
   assert.equal(officialGwBonusByElementId([fx]).get(94), 3);
 });
 
+test('classic fixture bonus is not awarded to a draft player in a different id space', () => {
+  // GW9: classic 566 is Silva (Bournemouth). Draft 566 is Horníček (Newcastle),
+  // whose fixture has not kicked off. Draft Silva is 555.
+  const bournemouth = 3;
+  const leeds = 13;
+  const newcastle = 17;
+  const fx = {
+    id: 82,
+    team_h: bournemouth,
+    team_a: leeds,
+    started: true,
+    stats: [
+      {
+        identifier: 'bonus',
+        h: [{ value: 2, element: 566 }],
+        a: [],
+      },
+    ],
+  };
+  const elementById = {
+    566: { id: 566, team: newcastle, web_name: 'Horníček' },
+    555: { id: 555, team: bournemouth, web_name: 'Silva' },
+  };
+  const classicToDraftId = new Map([
+    [566, 555],
+    [555, 559],
+  ]);
+
+  const bare = officialBonusFromFixtureStats(fx, { elementById });
+  assert.equal(bare.get(566), undefined, 'Horníček does not play in this fixture');
+  assert.equal(bare.get(555), undefined);
+
+  const mapped = officialGwBonusByElementId([fx], {
+    classicToDraftId,
+    elementById,
+  });
+  assert.equal(mapped.get(555), 2, 'Silva keeps the official +2');
+  assert.equal(mapped.get(566), undefined, 'Horníček stays on 0');
+
+  const rows = applyBonusColumn(
+    [
+      { element: 566, bonusApi: 0, total_points: 0 },
+      { element: 555, bonusApi: 0, total_points: 6 },
+    ],
+    new Map(),
+    elementById,
+    [fx],
+    mapped,
+  );
+  const byId = Object.fromEntries(rows.map((r) => [r.element, r]));
+  assert.equal(byId[566].bonus, 0);
+  assert.equal(byId[566].total_points, 0);
+  assert.equal(byId[555].bonus, 2);
+  assert.equal(byId[555].bonusConfirmed, true);
+  assert.equal(byId[555].total_points, 8);
+});
+
+test('same-fixture id collision follows the classic-to-draft map', () => {
+  // Classic 571 is Florentino (team 12). Draft 571 is Tzolakis (team 11),
+  // who DOES play in this fixture, so a club check alone would keep the +1.
+  const fx = {
+    id: 86,
+    team_h: 11,
+    team_a: 12,
+    started: true,
+    stats: [
+      {
+        identifier: 'bonus',
+        h: [],
+        a: [{ value: 1, element: 571 }],
+      },
+    ],
+  };
+  const elementById = {
+    571: { id: 571, team: 11, web_name: 'Tzolakis' },
+    572: { id: 572, team: 12, web_name: 'Florentino' },
+  };
+  const mapped = officialBonusFromFixtureStats(fx, {
+    classicToDraftId: new Map([[571, 572]]),
+    elementById,
+  });
+  assert.equal(mapped.get(572), 1);
+  assert.equal(mapped.get(571), undefined);
+});
+
 test('Schade official 3 locks the fixture — Collins does not keep a BPS medal', () => {
   const bre = 4;
   const opp = 16;
