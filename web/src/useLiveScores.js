@@ -36,6 +36,7 @@ import { bustFplLiveCache, fetchFplJsonCached } from './fplFetchCache.js';
 import { subscribeTclotRefresh } from './tclotRefresh.js';
 import { gameWeekSelectLabel } from './gwLabel.js';
 import { countEffectiveXiPlayersRemaining } from './liveScoresDerivations.js';
+import { classicToDraftIdMap } from './reconcilePlayerIds.js';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
 export function classicResourceUrl(pathAndQuery) {
@@ -569,12 +570,21 @@ export function useLiveScores({
         })
       );
 
-      const [bootRes, knownMapRes, liveRes, fixturesRes] =
+      const [bootRes, knownMapRes, liveRes, fixturesRes, classicBootRes] =
         await Promise.allSettled([
           fetchFplJsonCached(bootUrl, { label: 'draft bootstrap-static' }),
           fetchKnownNameMap(),
           fetchFplJsonCached(liveUrl, { label: 'draft event/live' }),
           fetchFplJsonCached(fxUrl, { label: 'classic fixtures' }),
+          /**
+           * Classic `fixtures[].stats` element ids are not draft ids. The join
+           * (Opta code) lives on classic bootstrap. Failure degrades to a
+           * club-membership check so a cross-fixture id collision still cannot
+           * mint bonus before kickoff.
+           */
+          fetchFplJsonCached(classicResourceUrl('bootstrap-static/'), {
+            label: 'classic bootstrap-static',
+          }),
         ]);
 
       if (bootRes.status === 'rejected') throw bootRes.reason;
@@ -644,7 +654,14 @@ export function useLiveScores({
         }
       }
 
-      const officialByElement = officialGwBonusByElementId(gwFixtures);
+      const classicElements =
+        classicBootRes.status === 'fulfilled'
+          ? classicBootRes.value?.elements || []
+          : [];
+      const officialByElement = officialGwBonusByElementId(gwFixtures, {
+        classicToDraftId: classicToDraftIdMap(classicElements, elements),
+        elementById,
+      });
       const provisionalByElement = computeProvisionalGwBonusByElementId(
         elements,
         liveFullNumeric,

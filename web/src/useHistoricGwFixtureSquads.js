@@ -7,6 +7,7 @@ import {
   fetchKnownNameMap,
 } from './fplElementNames.js'
 import { applyBonusColumn, officialGwBonusByElementId } from './fplBonusFromBps'
+import { classicToDraftIdMap } from './reconcilePlayerIds.js'
 import {
   classicResourceUrl,
   liveFullByElementId,
@@ -74,7 +75,7 @@ async function loadGwContext(gw) {
   const key = String(gw)
   if (gwContextCache.has(key)) return gwContextCache.get(key)
   const p = (async () => {
-    const [boot, liveJson, knownMap] = await Promise.all([
+    const [boot, liveJson, knownMap, classicBoot] = await Promise.all([
       fetchFplJsonCached(draftResourceUrl('bootstrap-static'), {
         label: 'draft bootstrap-static (historic)',
       }),
@@ -82,6 +83,9 @@ async function loadGwContext(gw) {
         label: 'draft event/live (historic)',
       }),
       fetchKnownNameMap(),
+      fetchFplJsonCached(classicResourceUrl('bootstrap-static/'), {
+        label: 'classic bootstrap-static (historic)',
+      }).catch(() => null),
     ])
     let gwFixtures = []
     try {
@@ -122,6 +126,7 @@ async function loadGwContext(gw) {
       liveByElementId: liveByEl,
       liveFullNumeric,
       gwFixtures,
+      classicToDraftId: classicToDraftIdMap(classicBoot?.elements, elements),
     }
   })()
   gwContextCache.set(key, p)
@@ -177,7 +182,10 @@ async function loadEntrySquad(gw, fplEntryId, leagueEntryId, teamName) {
       new Map(),
       ctx.elementById,
       ctx.gwFixtures,
-      officialGwBonusByElementId(ctx.gwFixtures),
+      officialGwBonusByElementId(ctx.gwFixtures, {
+        classicToDraftId: ctx.classicToDraftId,
+        elementById: ctx.elementById,
+      }),
     )
     const withCaptain = withBonus.map((r) => ({
       ...r,

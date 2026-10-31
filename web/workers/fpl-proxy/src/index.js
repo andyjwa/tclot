@@ -47,7 +47,7 @@ function cacheTtlSeconds(path, upstreamBase) {
   }
   if (upstreamBase === FOTMOB_API) return 60;
   if (upstreamBase === ESPN_API) return 120;
-  if (path === 'bootstrap-static') return 600;
+  if (path.replace(/\/+$/, '') === 'bootstrap-static') return 600;
   if (path.includes('/live')) return 45;
   if (path.startsWith('fixtures')) return 180;
   if (path.includes('/entry/') && path.includes('/event/')) return 45;

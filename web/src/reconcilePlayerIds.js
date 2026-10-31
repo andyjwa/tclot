@@ -117,3 +117,23 @@ export function buildReconciliationMaps(regularElements = [], draftElements = []
     },
   };
 }
+
+/**
+ * Classic element id → draft element id, joined on Opta `code`.
+ * Ids that already match are included so callers can treat the map as complete
+ * for everyone it recognised. Unknown classic ids are simply absent.
+ *
+ * @param {object[]} regularElements
+ * @param {object[]} draftElements
+ * @returns {Map<number, number>}
+ */
+export function classicToDraftIdMap(regularElements = [], draftElements = []) {
+  const { regularToDraftMap } = buildReconciliationMaps(regularElements, draftElements);
+  const m = new Map();
+  for (const [classicId, draftId] of Object.entries(regularToDraftMap)) {
+    const c = Number(classicId);
+    const d = Number(draftId);
+    if (Number.isFinite(c) && Number.isFinite(d)) m.set(c, d);
+  }
+  return m;
+}

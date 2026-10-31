@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normaliseKey, buildReconciliationMaps } from './reconcilePlayerIds.js';
+import { normaliseKey, buildReconciliationMaps, classicToDraftIdMap } from './reconcilePlayerIds.js';
 
 test('normaliseKey strips accents, punctuation and lowercases', () => {
   assert.equal(normaliseKey('Kevin', 'De Bruyne', 11), 'kevin_debruyne_11'); // spaces stripped
@@ -59,4 +59,18 @@ test('buildReconciliationMaps: unmatched regular players are reported', () => {
   assert.equal(r.counts.unmatchedRegular, 1);
   assert.equal(r.unmatchedRegular[0].regularId, 8);
   assert.deepEqual(r.regularToDraftMap, {});
+});
+
+test('classicToDraftIdMap joins on Opta code', () => {
+  const regular = [
+    { id: 566, code: 483067, first_name: 'Antonio', second_name: 'Silva', team: 3, web_name: 'Silva' },
+    { id: 567, code: 470551, first_name: 'Lukas', second_name: 'Hornicek', team: 17, web_name: 'Horníček' },
+  ];
+  const draft = [
+    { id: 555, code: 483067, first_name: 'Antonio', second_name: 'Silva', team: 3, web_name: 'Silva' },
+    { id: 566, code: 470551, first_name: 'Lukas', second_name: 'Hornicek', team: 17, web_name: 'Horníček' },
+  ];
+  const m = classicToDraftIdMap(regular, draft);
+  assert.equal(m.get(566), 555);
+  assert.equal(m.get(567), 566);
 });
