@@ -106,7 +106,11 @@ function CheckMenu({ label, value, options, onChange, align = 'left' }) {
 
 function PlayerLine({ player }) {
   const tag = roleTag(player.role);
-  const when = player.live ? minuteLabel(player.minute) : kickoffLabel(player.kickoffIso);
+  const when = player.live
+    ? minuteLabel(player.minute)
+    : player.finished
+      ? 'FT'
+      : kickoffLabel(player.kickoffIso);
   return (
     <li className="prem-start__player">
       <span className="prem-start__pos">{player.pos}</span>
@@ -207,12 +211,19 @@ export function StartingSnapshot({
       ),
     })),
   ];
+  const allPlayed = announced.length > 0 && announced.every((fx) => fx.finished);
   const fixtureOptions = [
-    { key: 'all', value: null, trigger: 'All out', marked: false, node: 'All out' },
+    {
+      key: 'all',
+      value: null,
+      trigger: allPlayed ? 'All played' : 'All out',
+      marked: false,
+      node: allPlayed ? 'All played' : 'All out',
+    },
     ...announced.map((fx) => ({
       key: `fx-${fx.id}`,
       value: fx.id,
-      trigger: `${fx.homeShort} v ${fx.awayShort}`,
+      trigger: fx.finished ? `${fx.homeShort} v ${fx.awayShort} FT` : `${fx.homeShort} v ${fx.awayShort}`,
       marked: true,
       node: (
         <span className="start-dd__fix">
@@ -222,6 +233,7 @@ export function StartingSnapshot({
           <Crest code={fx.awayCode} />
           <span>{fx.awayShort}</span>
           {fx.live ? <span className="start-dd__live">{minuteLabel(fx.minute)}</span> : null}
+          {fx.finished ? <span className="start-dd__ft">FT</span> : null}
         </span>
       ),
     })),
@@ -234,9 +246,15 @@ export function StartingSnapshot({
     : '';
 
   let status = '';
+  const gwFinished =
+    Array.isArray(fixtures) &&
+    fixtures.length > 0 &&
+    fixtures.every((fx) => fx?.score?.finished || fx?.fplFixture?.finished || fx?.fplFixture?.finished_provisional);
   if (snap.groups.length === 0) {
     if (announced.length === 0) {
-      status = 'No sheets are out yet. They usually land about 75 minutes before kickoff.';
+      status = gwFinished
+        ? 'No lineups saved for this gameweek.'
+        : 'No sheets are out yet. They usually land about 75 minutes before kickoff.';
     } else if (selectedTeam && fixtureLabel) {
       status = `${selectedTeam.teamName} has nobody in ${fixtureLabel}.`;
     } else if (selectedTeam) {

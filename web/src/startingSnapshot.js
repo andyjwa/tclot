@@ -1,10 +1,11 @@
 /**
  * Who's starting for the fantasy league, from sheets that are out.
  *
- * A club counts as announced when the match is not full time and that side's
- * sheet is confirmed with at least one resolved player id. Full-time matches
- * stay off the snapshot. Owned players on a scheduled club are "waiting" only
- * when some sheet is already out and no fixture is selected — otherwise the
+ * A club counts as announced when that side's sheet has at least one resolved
+ * player id. Played matches stay in the snapshot, so a finished gameweek still
+ * shows who started. A match that is still to come counts only once the sheet
+ * is confirmed. Owned players on a scheduled club are "waiting" only when some
+ * still-to-play sheet is already out and no fixture is selected — otherwise the
  * page would list the whole league before any team news. A confirmed sheet
  * whose player ids failed to resolve is waiting, never "out".
  */
@@ -47,12 +48,14 @@ function sideIndex(side) {
 
 /**
  * @returns {'sheet'|'unresolved'|'scheduled'|null}
- * null means the match is full time and the club is out of the snapshot.
+ * null means this side has no lineup we can trust. A finished match with a
+ * resolved XI is a sheet, so past gameweeks stay visible.
  */
 function clubSlotKind(fx, side) {
-  if (isFullTime(fx)) return null;
+  const usable = sideIndex(side).usable;
+  if (isFullTime(fx)) return usable ? 'sheet' : null;
   if (side?.confirmed !== true) return 'scheduled';
-  return sideIndex(side).usable ? 'sheet' : 'unresolved';
+  return usable ? 'sheet' : 'unresolved';
 }
 
 function clubMeta(teamById, id) {
@@ -74,11 +77,10 @@ function kickoffOf(fx) {
   return fx?.score?.kickoffIso || fx?.fplFixture?.kickoff_time || null;
 }
 
-/** Announced fixtures for the Fixture menu: a sheet is out and the match is still to play or live. */
+/** Fixtures for the Fixture menu: a sheet is out, including matches that have already been played. */
 export function listAnnouncedFixtures(fixtures, teamById) {
   const out = [];
   for (const fx of fixtures || []) {
-    if (isFullTime(fx)) continue;
     const id = fixtureIdOf(fx);
     if (id == null) continue;
     const homeKind = clubSlotKind(fx, fx?.lineups?.home);
@@ -87,6 +89,7 @@ export function listAnnouncedFixtures(fixtures, teamById) {
     const home = clubMeta(teamById, fx.fplFixture.team_h);
     const away = clubMeta(teamById, fx.fplFixture.team_a);
     const minute = fx?.score?.liveMinute;
+    const finished = isFullTime(fx);
     out.push({
       id,
       homeShort: home.short,
@@ -96,6 +99,7 @@ export function listAnnouncedFixtures(fixtures, teamById) {
       homeCode: home.code,
       awayCode: away.code,
       live: isLive(fx),
+      finished,
       minute: minute ? String(minute) : null,
       kickoffIso: kickoffOf(fx),
     });
@@ -187,6 +191,7 @@ export function buildStartingSnapshot({
         clubCode: club.code,
         oppShort: opp.short,
         live: isLive(fx),
+        finished: isFullTime(fx),
         minute: fx?.score?.liveMinute ? String(fx.score.liveMinute) : null,
         kickoffIso: kickoffOf(fx),
       });
@@ -224,6 +229,7 @@ export function buildStartingSnapshot({
           clubCode: slot.clubCode,
           oppShort: slot.oppShort,
           live: slot.live,
+          finished: slot.finished,
           minute: slot.minute,
           kickoffIso: slot.kickoffIso,
           fixtureId: slot.fixtureId,
