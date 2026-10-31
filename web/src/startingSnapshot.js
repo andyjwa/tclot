@@ -122,6 +122,24 @@ function ownedElementIds(squad) {
   return ids;
 }
 
+/** Same rule as the Lineups chair: pick 1–11 is the fantasy XI. */
+function fantasyBenchIds(squad) {
+  const ids = new Map();
+  const mark = (rows, fromBenchList) => {
+    for (const row of rows || []) {
+      const id = elementIdOf(row?.element);
+      if (id == null) continue;
+      const pickPos = Number(row?.pickPosition);
+      const onBench =
+        Number.isFinite(pickPos) && pickPos > 0 ? pickPos > 11 : fromBenchList === true;
+      if (!ids.has(id) || !onBench) ids.set(id, onBench);
+    }
+  };
+  mark(squad?.starters, false);
+  mark(squad?.bench, true);
+  return ids;
+}
+
 function comparePlayers(a, b) {
   return a.posRank - b.posRank || a.name.localeCompare(b.name) || a.fixtureId - b.fixtureId;
 }
@@ -205,6 +223,7 @@ export function buildStartingSnapshot({
     if (selectedTeam != null && leagueEntryId !== selectedTeam) continue;
 
     const bucket = { starting: [], notStarting: [], waiting: [] };
+    const onBench = fantasyBenchIds(squad);
     for (const elementId of ownedElementIds(squad)) {
       const el = elementById?.[elementId] ?? elementById?.[String(elementId)];
       const clubId = Number(el?.team);
@@ -228,6 +247,7 @@ export function buildStartingSnapshot({
           kickoffIso: slot.kickoffIso,
           fixtureId: slot.fixtureId,
           role: 'wait',
+          onFantasyBench: onBench.get(elementId) === true,
         };
         if (slot.kind === 'sheet' && slot.xi.has(elementId)) {
           player.role = 'xi';

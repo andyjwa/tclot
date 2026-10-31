@@ -22,6 +22,7 @@ function minuteLabel(minute) {
 }
 
 function roleTag(role) {
+  if (role === 'bench') return 'Bench';
   if (role === 'nis') return 'Out';
   return '';
 }
@@ -110,25 +111,27 @@ function PlayerLine({ player }) {
     <li className="prem-start__player">
       <span className="prem-start__pos">{player.pos}</span>
       <Crest code={player.clubCode} />
-      <ClickablePlayerName
-        element={player.elementId}
-        displayName={player.name}
-        web_name={player.name}
-        teamShort={player.clubShort}
-        className="prem-start__name"
-      >
-        {player.name}
-      </ClickablePlayerName>
-      <span className="prem-start__meta">
-        {player.role === 'bench' ? (
+      <span className="prem-start__who">
+        <ClickablePlayerName
+          element={player.elementId}
+          displayName={player.name}
+          web_name={player.name}
+          teamShort={player.clubShort}
+          className="prem-start__name"
+        >
+          {player.name}
+        </ClickablePlayerName>
+        {player.onFantasyBench ? (
           <span
             className="prem-owner-bench"
-            title="On the bench"
-            aria-label="On the bench"
+            title="On fantasy bench"
+            aria-label="On fantasy bench"
           >
             🪑
           </span>
         ) : null}
+      </span>
+      <span className="prem-start__meta">
         {tag ? <span className={`prem-start__tag prem-start__tag--${player.role}`}>{tag}</span> : null}
         <span className="prem-start__opp">
           {when ? `${when} · ` : ''}v {player.oppShort}
