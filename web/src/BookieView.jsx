@@ -197,7 +197,7 @@ function WeeklyWinnerFigures({ bet }) {
  * decimal prices frozen into each market, so stake × odds is exactly what
  * a winning ticket pays.
  */
-export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
+export function BookieView({ teamLogoMap = {}, kitIndexByEntry, pane = 'slip' }) {
   const enabled = bookieEnabled()
   const [session, setSession] = useState(() => (enabled ? loadBookieSession() : null))
   const [state, setState] = useState(null)
@@ -328,6 +328,8 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       ) : null}
 
       <div className="tile bookie-menu">
+      {pane !== 'board' ? (
+      <>
       <WeeklyMarkets
         gw={openGw}
         markets={weeklyOpen}
@@ -340,7 +342,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       />
 
       {placeMarkets.length > 0 ? (
-        <CouponFold title="Season">
+        <CouponFold title="Places">
           <SeasonPlaceBoard
             markets={placeMarkets}
             me={me}
@@ -381,7 +383,9 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           />
         </CouponFold>
       ) : null}
-
+      </>
+      ) : (
+      <>
       <CouponFold title="Live bets">
         <LiveBets
           state={state}
@@ -402,9 +406,11 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           kitIndexByEntry={kitIndexByEntry}
         />
       </CouponFold>
+      </>
+      )}
       </div>
 
-      {slip && me ? (
+      {slip && me && pane !== 'board' ? (
         <BetSlip
           slip={slip}
           me={me}

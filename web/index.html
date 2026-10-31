@@ -23,19 +23,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>TCLOT — Tri-Continental League of Titans</title>
     <style>
-      html {
-        background-color: #17402f;
+      html, body {
+        margin: 0;
+        background-color: #121212;
+      }
+      body[data-tclot-theme='light'] {
+        background-color: #f2f2f2;
+      }
+      body[data-tclot-theme='ceefax'] {
+        background-color: #000000;
       }
       #root-loading-hint {
-        margin: 2rem;
-        font-family: system-ui, sans-serif;
-        max-width: 28rem;
-        line-height: 1.5;
-        color: rgba(244, 246, 240, 0.92);
+        margin: 0 auto;
+        padding: 72px 16px 24px;
+        max-width: 40rem;
       }
-      #root-loading-hint small {
-        color: rgba(244, 246, 240, 0.55);
+      .boot-row {
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr) 40px 64px;
+        gap: 12px;
+        align-items: center;
+        height: 46px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
+      body[data-tclot-theme='light'] .boot-row {
+        border-bottom-color: rgba(0, 0, 0, 0.08);
+      }
+      .boot-row span {
+        display: block;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+      }
+      body[data-tclot-theme='light'] .boot-row span {
+        background: rgba(0, 0, 0, 0.08);
+      }
+      .boot-row span:nth-child(2) { width: 42%; }
+      .boot-row span:nth-child(4) { width: 72%; justify-self: end; }
     </style>
   </head>
   <body>
@@ -51,25 +75,32 @@
                 ? 'dark'
                 : 'light'
           document.body.dataset.tclotTheme = resolved
+          var bg =
+            resolved === 'light'
+              ? '#f2f2f2'
+              : resolved === 'ceefax'
+                ? '#000000'
+                : '#121212'
+          document.documentElement.style.backgroundColor = bg
+          document.body.style.backgroundColor = bg
         } catch (e) {
           document.body.dataset.tclotTheme = 'light'
+          document.documentElement.style.backgroundColor = '#f2f2f2'
+          document.body.style.backgroundColor = '#f2f2f2'
         }
       })()
     </script>
     <div id="root">
-      <p id="root-loading-hint">
-        Loading dashboard…
-        <br /><br />
-        <small
-          ><strong>Local dev:</strong> this app’s base path is <code>/TCLOT/</code> — use
-          <code>http://localhost:5173/TCLOT/</code> (the dev server also redirects
-          <code>/</code> there). If <code>npm run dev</code> hangs on league / analytics
-          scripts, run <code>npm run dev:vite</code> once data is already built.<br /><br />
-          <strong>GitHub Pages:</strong> use the exact link from <strong>Settings → Pages</strong>
-          with a trailing <strong>/</strong> (e.g. <code>…github.io/your-repo/</code>). Then F12 →
-          Console for errors.</small
-        >
-      </p>
+      <div id="root-loading-hint" aria-hidden="true">
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+        <div class="boot-row"><span></span><span></span><span></span><span></span></div>
+      </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

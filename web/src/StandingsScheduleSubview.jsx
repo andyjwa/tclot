@@ -18,6 +18,7 @@ import {
   villainVictoryEntryIdsFromGwFixtures,
 } from './gwRawPointsRankSeason.js'
 import { isMottyWin } from './mottyAward.js'
+import { isMyClub } from './myClub.js'
 import {
   matchupDouchebagSneakLine,
   matchupHeroDefeatLine,
@@ -55,6 +56,7 @@ export function StandingsScheduleSubview({
   leagueEntries = [],
   teamLogoMap = {},
   kitIndexByEntry = {},
+  myClubId = null,
   teamFilter = 'all',
   onTeamFilterChange,
   resultsFilter = 'all',
@@ -217,12 +219,14 @@ export function StandingsScheduleSubview({
           villainsByGw={villainsByGw}
           heroesByGw={heroesByGw}
           sneaksByGw={sneaksByGw}
+          myClubId={myClubId}
         />
       ) : (
         <TeamScheduleCompact
           rows={filteredTeamRows}
           summary={teamSummary}
           activeTeamName={filteredTeam?.teamName ?? ''}
+          myClubId={myClubId}
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
           teamId={Number(teamFilter)}
@@ -243,6 +247,7 @@ function AllTeamsScheduleList({
   villainsByGw = null,
   heroesByGw = null,
   sneaksByGw = null,
+  myClubId = null,
 }) {
   /** Lookup league_entry → fplEntryId so finished rows can expand into FPL picks. */
   const fplEntryByLeagueId = useMemo(() => {
@@ -304,6 +309,7 @@ function AllTeamsScheduleList({
                 villainEntryIds={villainsByGw?.get(g.event) ?? null}
                 heroEntryIds={heroesByGw?.get(g.event) ?? null}
                 sneakEntryIds={sneaksByGw?.get(g.event) ?? null}
+                myClubId={myClubId}
               />
             ))}
           </ul>
@@ -338,6 +344,7 @@ function ScheduleFixtureItem({
   villainEntryIds = null,
   heroEntryIds = null,
   sneakEntryIds = null,
+  myClubId = null,
 }) {
   const homeWin =
     fx.finished && fx.homePts != null && fx.awayPts != null && fx.homePts > fx.awayPts
@@ -397,7 +404,8 @@ function ScheduleFixtureItem({
             (homeHero ? ' standings-schedule__fixture-name--hero' : '') +
             (!homeVillain && !homeHero && homeSneak
               ? ' standings-schedule__fixture-name--sneak'
-              : '')
+              : '') +
+            (isMyClub(fx.homeId, myClubId) ? ' my-club-pill' : '')
           }
         >
           {fx.homeName}
@@ -445,7 +453,8 @@ function ScheduleFixtureItem({
             (awayHero ? ' standings-schedule__fixture-name--hero' : '') +
             (!awayVillain && !awayHero && awaySneak
               ? ' standings-schedule__fixture-name--sneak'
-              : '')
+              : '') +
+            (isMyClub(fx.awayId, myClubId) ? ' my-club-pill' : '')
           }
         >
           {fx.awayName}
@@ -583,6 +592,7 @@ function TeamScheduleCompact({
   villainsByGw = null,
   heroesByGw = null,
   sneaksByGw = null,
+  myClubId = null,
 }) {
   return (
     <>
@@ -685,7 +695,12 @@ function TeamScheduleCompact({
                     className="standings-schedule-team__opp-name"
                     title={r.opponentName}
                   >
-                    <span className="standings-schedule-team__opp-name-full">
+                    <span
+                      className={
+                        'standings-schedule-team__opp-name-full' +
+                        (isMyClub(r.opponentId, myClubId) ? ' my-club-pill' : '')
+                      }
+                    >
                       {r.opponentName}
                     </span>
                   </span>

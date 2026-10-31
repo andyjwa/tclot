@@ -2,23 +2,21 @@
  * Shared dashboard IA helpers for the main nav + Moves / More grouping.
  *
  * Players lives under Moves (left of Waivers). The mobile More slot opens a
- * popup above the dock: Recap or Preview (by gameweek), Bookies,
- * Predictions, Heritage, and Settings. Bookie remains the betting hub;
- * season Predictions is a sibling row, not a nested Bookies child.
+ * popup above the dock: Recap or Preview (by gameweek), Markets, and
+ * Heritage. Markets is the betting desk (Slip, Board, Season). Settings
+ * lives on the league-info modal, not in this menu.
  */
 
 import { recapMenuLabelForStatus } from './weeklyRecapView.js'
 
 /** @typedef {'waivers' | 'trades' | 'tradeTool' | 'draft' | 'players'} MovesTabId */
 
-/** @typedef {'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} FplLiveTabId */
+/** @typedef {'squads' | 'live' | 'recap' | 'predictions' | 'bookie' | 'board'} FplLiveTabId */
 
 export const MORE_MENU_ITEMS = /** @type {const} */ ([
   { id: 'recap', label: 'Recap', view: 'fplLive', tab: 'recap', icon: 'newspaper' },
-  { id: 'bookies', label: 'Bookies', view: 'fplLive', tab: 'bookie', icon: 'dices' },
-  { id: 'predictions', label: 'Predictions', view: 'fplLive', tab: 'predictions', icon: 'sparkle' },
+  { id: 'markets', label: 'Markets', view: 'fplLive', tab: 'bookie', icon: 'dices' },
   { id: 'hall', label: 'Heritage', view: 'hall', tab: null, icon: 'column' },
-  { id: 'settings', label: 'Settings', view: 'settings', tab: null, icon: 'settings' },
 ])
 
 /** @param {string | null | undefined} view */
@@ -26,9 +24,9 @@ export function isMovesDashboardView(view) {
   return view === 'teamSelection' || view === 'players'
 }
 
-/** Season Predictions lives under the Bookie hub. */
+/** Slip, Board, and Season Predictions share the Markets hub. */
 export function isBookieHubTab(tab) {
-  return tab === 'bookie' || tab === 'predictions'
+  return tab === 'bookie' || tab === 'board' || tab === 'predictions'
 }
 
 /**
@@ -44,16 +42,15 @@ export function moreMenuItemLabel(item, status) {
 }
 
 /**
- * More is selected for Heritage / Settings / the More page, Bookies,
- * Predictions, and Recap/Preview. The contextual centre is Scores (or
- * Preview in pre-season), so Recap always lives in More.
+ * More is selected for Heritage, the More page, Markets, and Recap/Preview.
+ * The contextual centre is always Scores, so Recap lives in More.
  *
  * @param {string | null | undefined} view
  * @param {string | null | undefined} tab
  * @param {string | null | undefined} centerTab
  */
 export function isMoreMenuDestination(view, tab, centerTab) {
-  if (view === 'hall' || view === 'settings' || view === 'more') return true
+  if (view === 'hall' || view === 'more') return true
   if (view !== 'fplLive') return false
   if (isBookieHubTab(tab)) return true
   return tab === 'recap' && tab !== centerTab
@@ -66,9 +63,7 @@ export function isMoreMenuDestination(view, tab, centerTab) {
  */
 export function isMoreMenuItemActive(view, tab, itemId) {
   if (itemId === 'hall') return view === 'hall'
-  if (itemId === 'settings') return view === 'settings'
-  if (itemId === 'bookies') return view === 'fplLive' && tab === 'bookie'
-  if (itemId === 'predictions') return view === 'fplLive' && tab === 'predictions'
+  if (itemId === 'markets') return view === 'fplLive' && isBookieHubTab(tab)
   if (itemId === 'recap') return view === 'fplLive' && tab === 'recap'
   return false
 }

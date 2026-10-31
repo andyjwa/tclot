@@ -504,7 +504,7 @@ import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
-import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverlay.jsx'
+import { TeamDetailOverlayProvider, ClickableTeamName, useTeamDetailOverlayOptional } from './TeamDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
@@ -521,7 +521,9 @@ import {
   isBookieHubTab,
   isMovesDashboardView,
 } from './dashboardNavModel.js'
-import { SettingsPage } from './SettingsPage'
+import { useMyClub } from './useMyClub.js'
+import { isMyClub } from './myClub.js'
+import { raceWatchLines } from './raceWatch.js'
 import { usePushNotifications } from './usePushNotifications.js'
 import { BrandHeaderWordmark } from './BrandHeaderWordmark'
 import { LeagueInfoModal } from './LeagueInfoModal'
@@ -538,7 +540,6 @@ import {
   seasonPhaseLanding,
 } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
-import { WaiverSummaryShare } from './WaiverSummaryShare'
 import {
   WeeklyWaivers,
   WaiverTotalsToggle,
@@ -595,15 +596,67 @@ import './App.css'
  * Complete / future GW tiles: full club name at every width — matching the
  * Schedule tab — with the one standing exception that MSFG stays `MSFG`.
  */
-function GwFixtureTightTeamName({ name }) {
+function GwFixtureTightTeamName({ name, className = '' }) {
   const label = standingsMobileTeamName(name)
   return (
     <span
-      className="gw-fixture-name-text team-name team-name--sidebar"
+      className={
+        'gw-fixture-name-text team-name team-name--sidebar' +
+        (className ? ` ${className}` : '')
+      }
       title={label || undefined}
     >
       {label || '—'}
     </span>
+  )
+}
+
+function MarketsStrip({ tab, onSelect }) {
+  const items = [
+    ['bookie', 'Slip', 'tab-fpl-live-bookie-hub'],
+    ['board', 'Board', 'tab-fpl-live-board'],
+    ['predictions', 'Season', 'tab-fpl-live-season'],
+  ]
+  return (
+    <div className="subnav subnav--predictions" role="tablist" aria-label="Markets">
+      {items.map(([id, label, btnId]) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          id={btnId}
+          aria-selected={tab === id}
+          className={'subnav__tab' + (tab === id ? ' subnav__tab--active' : '')}
+          onClick={() => onSelect(id)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Standings row. A tap anywhere opens that club. */
+function StandingsClubRow({ leagueEntryId, className, children }) {
+  const overlay = useTeamDetailOverlayOptional()
+  const open = () => {
+    if (leagueEntryId == null) return
+    overlay?.openTeamDetail(leagueEntryId)
+  }
+  return (
+    <tr
+      className={className || undefined}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          open()
+        }
+      }}
+      tabIndex={0}
+    >
+      {children}
+    </tr>
   )
 }
 
@@ -2460,6 +2513,7 @@ function initialDashboardViewForViewport() {
     return initialDashboardView({ hasPlayersHash, archiveView })
   }
   const stored = readTclotViewState().dashboardView
+  if (stored === 'settings') return 'standings'
   if (stored) return stored
   return initialDashboardView({ hasPlayersHash, archiveView })
 }
@@ -2581,8 +2635,6 @@ function App() {
     teamsForFormSelect = [],
     nextEvent = null,
     previousGameweek = null,
-    isSampleData = false,
-    fetchFailedDemo = false,
     teamLogoMap = {},
     defaultKitIndexByLeagueEntry: kitIndexByEntry = {},
     mostWaiveredPlayers = [],
@@ -2614,7 +2666,7 @@ function App() {
    * moved to the Preseason hub) and `'forecast'` (player forecast leaderboard,
    * hidden — the forecast data still powers the fixture Odds tab). */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} */ (
+    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie' | 'board'} */ (
       () => readTclotViewState().fplLiveTab
     ),
   )
@@ -2636,7 +2688,6 @@ function App() {
    * condensed rows below. Visual treatment matches the leader hero so
    * the rank-1 highlight tradition still reads, plus user can mark any
    * other row for at-a-glance comparison. */
-  const [selectedStandingsEntry, setSelectedStandingsEntry] = useState(null)
   const [liveGw, setLiveGw] = useState(() => readTclotViewState().liveGw)
   /** Draft bootstrap `events.current` — default Live tab GW when user has not chosen one. */
   const [fplLiveLandingGw, setFplLiveLandingGw] = useState(null)
@@ -2676,6 +2727,8 @@ function App() {
    * trigger (deep inside `<BrandHeader>`) and the modal mount (sibling
    * of the dashboard layout) share the same open state. */
   const [leagueInfoOpen, setLeagueInfoOpen] = useState(false)
+  const [leagueInfoTab, setLeagueInfoTab] = useState('terminology')
+  const myClubId = useMyClub()
 
   const draftGate = useMemo(
     () => resolveDraftGate(league, statusNow, { archiveView: isArchiveView() }),
@@ -2693,6 +2746,11 @@ function App() {
   })
 
   const selectDashboardView = useCallback((view) => {
+    if (view === 'settings') {
+      setLeagueInfoTab('settings')
+      setLeagueInfoOpen(true)
+      return
+    }
     if (draftGate.navLocked && !isPreDraftAllowedView(view)) {
       setDashboardView('teamSelection')
     } else {
@@ -2707,9 +2765,7 @@ function App() {
     }
   }, [draftGate.navLocked])
 
-  /** Contextual centre button: routes to FPL Live AND lands on the sub-tab
-   * matching the season phase (Scores when live or after FT, Predictions
-   * in pre-season). Recap is a More destination. */
+  /** Contextual centre button: always opens Scores. Recap is a More destination. */
   const selectLiveHub = useCallback(
     (view, tab) => {
       if (tab) setFplLiveTab(tab)
@@ -2940,13 +2996,9 @@ function App() {
     ],
   )
 
-  /* Effective FPL Live sub-tab. Until the user picks one, the default follows
-   * the season phase: live or post-FT → Scores; pre-season → Predictions
-   * before GW1 else Scores. Recap is reached from More. Any explicit choice
-   * — sub-tab tap or the contextual centre button — wins from then on. */
-  const fplLiveTab =
-    fplLiveTabRaw ??
-    (brandHeaderStatus?.status === 'pre-season' ? 'predictions' : 'live')
+  /* Effective FPL Live sub-tab. Until the user picks one, Scores is the
+   * landing tab in every season phase, including pre-season. */
+  const fplLiveTab = fplLiveTabRaw ?? 'live'
 
   useEffect(() => {
     if (fplLiveTab === 'recap') return
@@ -3175,11 +3227,10 @@ function App() {
     })
   }, [])
 
-  /** Toggle the user-selected standings row (hero card + condensed rows). */
-  const toggleStandingsHighlight = useCallback((leagueEntryId) => {
-    if (leagueEntryId == null) return
-    setSelectedStandingsEntry((prev) => (prev === leagueEntryId ? null : leagueEntryId))
-  }, [])
+  const raceLines = useMemo(
+    () => raceWatchLines(tableRows, matches),
+    [tableRows, matches],
+  )
 
   /** Manager display name keyed by `league_entry` — used under each team
    * name in the desktop standings rows. Mirrors the lookup `BrandHeader`
@@ -3403,7 +3454,10 @@ function App() {
           <span
             className={`gw-fixture-name-cell gw-fixture-name-cell--home${homeWin ? ' gw-fixture-name--winner' : ''}`}
           >
-            <GwFixtureTightTeamName name={fx.homeName} />
+            <GwFixtureTightTeamName
+              name={fx.homeName}
+              className={isMyClub(fx.homeId, myClubId) ? 'my-club-pill' : ''}
+            />
             {homeRank != null ? (
               <span className="gw-fixture-rank muted"> ({homeRank})</span>
             ) : null}
@@ -3418,7 +3472,10 @@ function App() {
           <span
             className={`gw-fixture-name-cell gw-fixture-name-cell--away${awayWin ? ' gw-fixture-name--winner' : ''}`}
           >
-            <GwFixtureTightTeamName name={fx.awayName} />
+            <GwFixtureTightTeamName
+              name={fx.awayName}
+              className={isMyClub(fx.awayId, myClubId) ? 'my-club-pill' : ''}
+            />
             {awayRank != null ? (
               <span className="gw-fixture-rank muted"> ({awayRank})</span>
             ) : null}
@@ -3477,29 +3534,15 @@ function App() {
               kitIndexByEntry={kitIndexByEntry}
               liveStatus={brandHeaderStatus}
               leagueInfoOpen={leagueInfoOpen}
-              onOpenLeagueInfo={() => setLeagueInfoOpen(true)}
+              onOpenLeagueInfo={() => {
+                setLeagueInfoTab('terminology')
+                setLeagueInfoOpen(true)
+              }}
               currentSeasonLabel={seasonCatalog.current}
               archivedSeasons={seasonCatalog.archived}
               hideStatusStrip={hideMobileStatusStrip}
               teamsForFormSelect={teamsForFormSelect}
             />
-            {fetchFailedDemo && (
-              <div className="data-banner data-banner--error" role="alert">
-                <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}
-                Use <code>https://YOUR_USER.github.io/repo-name/</code> with your real repo name (often
-                lowercase). If the repo is <code>you.github.io</code>, use <code>https://you.github.io/</code>{' '}
-                — no <code>/repo/</code> path.
-              </div>
-            )}
-            {isSampleData && !fetchFailedDemo && (
-              <div className="data-banner" role="status">
-                <strong>Demo data</strong> — site owner: add GitHub secret{' '}
-                <code>FPL_LEAGUE_ID</code> (your draft league number) under Settings → Secrets, then redeploy.
-                Or publish files: <code>python3 ingest.py ID</code>,{' '}
-                <code>cd web && npm run publish-real-league</code>, commit{' '}
-                <code>web/public/league-data/</code>. ID: <code>draft.premierleague.com/league/YOUR_ID</code>
-              </div>
-            )}
             {isArchiveView() && (
               <div className="data-banner data-banner--archive" role="status">
                 <strong>
@@ -3609,13 +3652,13 @@ function App() {
                       </thead>
                       <tbody>
                         {mobileStandingsRows.map((row, rowIdx) => {
-                          const isSelected = selectedStandingsEntry === row.league_entry
                           const rowClass = [
+                            'standings-row--club',
                             colorTheme !== 'ceefax' && row.rank === 1
                               ? 'standings-row--leader standings-row--divider-below'
                               : '',
                             row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
-                            isSelected ? 'is-selected' : '',
+                            isMyClub(row.league_entry, myClubId) ? 'standings-row--my-club' : '',
                             ceefaxStandingsZebraClass(rowIdx, colorTheme),
                           ]
                             .filter(Boolean)
@@ -3630,27 +3673,11 @@ function App() {
                           const form5 = (row.form ?? []).slice(-5)
                           return (
                             <Fragment key={row.league_entry}>
-                            <tr
+                            <StandingsClubRow
+                              leagueEntryId={row.league_entry}
                               className={rowClass || undefined}
-                              onClick={() => toggleStandingsHighlight(row.league_entry)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault()
-                                  toggleStandingsHighlight(row.league_entry)
-                                }
-                              }}
-                              tabIndex={0}
-                              aria-pressed={isSelected}
                             >
-                              <td className="col-rank">
-                                {row.rank === 8 ? (
-                                  <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
-                                    L
-                                  </span>
-                                ) : (
-                                  row.rank
-                                )}
-                              </td>
+                              <td className="col-rank">{row.rank}</td>
                               <td className="col-team">
                                 <span className="team-cell">
                                   <TeamAvatar
@@ -3693,7 +3720,7 @@ function App() {
                                   <span className="muted">—</span>
                                 )}
                               </td>
-                            </tr>
+                            </StandingsClubRow>
                             {colorTheme !== 'ceefax' && row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
@@ -3766,42 +3793,26 @@ function App() {
                       </thead>
                       <tbody>
                         {desktopStandingsRows.map((row, rowIdx) => {
-                          const isSelected = selectedStandingsEntry === row.league_entry
                           const mgr = managerByEntry.get(row.league_entry) ?? ''
                           const rowClass = [
+                            'standings-row--club',
                             colorTheme !== 'ceefax' && row.rank === 1
                               ? 'standings-row--leader standings-row--divider-below'
                               : '',
                             row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
-                            isSelected ? 'is-selected' : '',
+                            isMyClub(row.league_entry, myClubId) ? 'standings-row--my-club' : '',
                             ceefaxStandingsZebraClass(rowIdx, colorTheme),
                           ]
                             .filter(Boolean)
                             .join(' ')
-                          const form7 = (row.form ?? []).slice(-7)
+                          const form5 = (row.form ?? []).slice(-5)
                           return (
                             <Fragment key={row.league_entry}>
-                            <tr
+                            <StandingsClubRow
+                              leagueEntryId={row.league_entry}
                               className={rowClass || undefined}
-                              onClick={() => toggleStandingsHighlight(row.league_entry)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault()
-                                  toggleStandingsHighlight(row.league_entry)
-                                }
-                              }}
-                              tabIndex={0}
-                              aria-pressed={isSelected}
                             >
-                              <td className="col-rank">
-                                {row.rank === 8 ? (
-                                  <span role="img" className="standings-rank-last" aria-label="8" title="Last place">
-                                    L
-                                  </span>
-                                ) : (
-                                  row.rank
-                                )}
-                              </td>
+                              <td className="col-rank">{row.rank}</td>
                               <td className="col-team">
                                 <span className="team-cell">
                                   <TeamAvatar
@@ -3840,7 +3851,7 @@ function App() {
                                 <strong>{row.total}</strong>
                               </td>
                               <td className="col-form">
-                                <FormCircles form={form7} />
+                                <FormCircles form={form5} />
                               </td>
                               <td className="col-next">
                                 {row.next ? (
@@ -3855,7 +3866,7 @@ function App() {
                                   <span className="muted">—</span>
                                 )}
                               </td>
-                            </tr>
+                            </StandingsClubRow>
                             {colorTheme !== 'ceefax' && row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
@@ -3876,6 +3887,10 @@ function App() {
                   </div>
                 )}
               </section>
+
+                  {raceLines.length > 0 ? (
+                    <p className="standings-race-note">{raceLines.join(' · ')}</p>
+                  ) : null}
 
                   {nextGwForFixtureTile != null && nextGwFixtures.length > 0 ? (
                     <section
@@ -3912,6 +3927,7 @@ function App() {
                     leagueEntries={leagueEntries}
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
+                    myClubId={myClubId}
                     teamFilter={scheduleTeamFilter}
                     onTeamFilterChange={setScheduleTeamFilter}
                     resultsFilter={scheduleResultsFilter}
@@ -4076,17 +4092,6 @@ function App() {
                         />
                       ) : null
                     }
-                    summaryView={
-                      <WaiverSummaryShare
-                        gw={waiversForSelectedGw.gw}
-                        groups={waiversForSelectedGw.groups}
-                        leagueTitleAbbr={LEAGUE_TITLE_ABBR}
-                        leagueTitle={leagueTitle(seasonCatalog.current)}
-                        teamLogoMap={teamLogoMap}
-                        kitIndexByEntry={kitIndexByEntry}
-                        showGwPicker={false}
-                      />
-                    }
                     emptyMessage={
                       waiverOutGwRows.length ? (
                         <>No waiver or free-agency activity in GW {waiverGwEffective}.</>
@@ -4215,16 +4220,6 @@ function App() {
             />
           ) : null}
 
-          {dashboardView === 'settings' ? (
-            <SettingsPage
-              themePref={themePref}
-              onThemePrefChange={setThemePref}
-              defaultTab={defaultTabPref}
-              onDefaultTabChange={setDefaultTabPref}
-              push={pushNotifications}
-            />
-          ) : null}
-
           {dashboardView === 'fplLive' && (
             <section
               className="tile tile--compact tile--team-selection"
@@ -4235,9 +4230,8 @@ function App() {
                 (fplLiveTab === 'recap' || isBookieHubTab(fplLiveTab))
               ) ? (
               <div className="section-chrome section-chrome--sticky">
-              {/* Mobile: Recap/Preview + Bookie live only in the More sheet,
-                  so that chrome is hidden on those destinations. Desktop
-                  keeps the tabs — there is no More dock. */}
+              {/* Mobile: Recap and Markets live in the More sheet, so the
+                  Scores / Lineups tabs stay hidden there. Desktop keeps them. */}
               <div
                 className="subnav"
                 role="tablist"
@@ -4297,45 +4291,18 @@ function App() {
                         if (!isBookieHubTab(fplLiveTab)) setFplLiveTab('bookie')
                       }}
                     >
-                      Bookie
+                      Markets
                     </button>
                   </>
                 ) : null}
               </div>
-              {!mobileLayout && isBookieHubTab(fplLiveTab) ? (
-                <div
-                  className="subnav subnav--predictions"
-                  role="tablist"
-                  aria-label="Bookie views"
-                >
-                  <button
-                    type="button"
-                    role="tab"
-                    id="tab-fpl-live-bookie-hub"
-                    aria-selected={fplLiveTab === 'bookie'}
-                    className={
-                      'subnav__tab' +
-                      (fplLiveTab === 'bookie' ? ' subnav__tab--active' : '')
-                    }
-                    onClick={() => setFplLiveTab('bookie')}
-                  >
-                    Bookie
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    id="tab-fpl-live-season"
-                    aria-selected={fplLiveTab === 'predictions'}
-                    className={
-                      'subnav__tab' +
-                      (fplLiveTab === 'predictions' ? ' subnav__tab--active' : '')
-                    }
-                    onClick={() => setFplLiveTab('predictions')}
-                  >
-                    Predictions
-                  </button>
-                </div>
+              {isBookieHubTab(fplLiveTab) ? (
+                <MarketsStrip tab={fplLiveTab} onSelect={setFplLiveTab} />
               ) : null}
+              </div>
+              ) : isBookieHubTab(fplLiveTab) ? (
+              <div className="section-chrome section-chrome--sticky">
+                <MarketsStrip tab={fplLiveTab} onSelect={setFplLiveTab} />
               </div>
               ) : null}
               <div className="section-body">
@@ -4364,6 +4331,7 @@ function App() {
                   fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
                   liveStatus={brandHeaderStatus}
                   compactMobileChrome
+                  myClubId={myClubId}
                 />
               ) : null}
               {fplLiveTab === 'recap' ? (
@@ -4386,10 +4354,11 @@ function App() {
                   />
                 </div>
               ) : null}
-              {fplLiveTab === 'bookie' ? (
+              {fplLiveTab === 'bookie' || fplLiveTab === 'board' ? (
                 <BookieView
                   teamLogoMap={teamLogoMap}
                   kitIndexByEntry={kitIndexByEntry}
+                  pane={fplLiveTab === 'board' ? 'board' : 'slip'}
                 />
               ) : null}
               </div>
@@ -4408,6 +4377,7 @@ function App() {
       />
       <LeagueInfoModal
         open={leagueInfoOpen}
+        initialTab={leagueInfoTab}
         onClose={() => setLeagueInfoOpen(false)}
         leagueEntries={leagueEntries}
         teamLogoMap={teamLogoMap}

@@ -356,6 +356,31 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   gap: 6px;
   min-width: 0;
 }
+.league-info-modal-shell button.li-badge {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  padding: 8px 4px;
+  cursor: pointer;
+  border-radius: 12px;
+}
+.league-info-modal-shell button.li-badge.is-yours {
+  background: color-mix(in srgb, var(--brand, #795bfb) 18%, transparent);
+}
+.league-info-modal-shell .li-badge__yours {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--brand, #795bfb);
+}
+.league-info-modal-shell .li-card__hint {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
 .league-info-modal-shell .league-info-modal__badge-crest {
   width: 44px;
   height: 44px;

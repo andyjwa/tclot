@@ -27,6 +27,7 @@ export const TCLOT_FPL_LIVE_TABS = new Set([
   'recap',
   'predictions',
   'bookie',
+  'board',
 ])
 
 export const TCLOT_FIXTURE_TABS = new Set(FIXTURE_CARD_TABS.map((t) => t.id))

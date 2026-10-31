@@ -9,9 +9,8 @@
  * shared brand-header status (`deriveBrandHeaderStatus`, passed in as
  * `liveStatus`):
  *
- *   - PRESEASON (status 'pre-season' / 'unknown'): label "Preview" with a
- *     muted mono "GW{next}" chip. Routes to FPL Live landing on the Season
- *     Predictions sub-tab.
+ *   - PRESEASON (status 'pre-season' / 'unknown'): label "Scores" with a
+ *     muted mono "GW{next}" chip. Routes to FPL Live landing on Scores.
  *   - LIVE GW (status 'live' — deadline passed, GW not finished): a solid
  *     green Geist Mono "LIVE" chip with a subtly blinking tick; label
  *     "Live" (accent). Routes to FPL Live landing on Scores.
@@ -22,8 +21,7 @@
  *     label "Scores". Routes to FPL Live on Scores. Recap lives in More.
  *
  * Players lives under Moves (left of Waivers). More opens a popup above
- * the dock with Recap or Preview (by gameweek), Bookies, Predictions,
- * Heritage, and Settings.
+ * the dock with Recap or Preview (by gameweek), Markets, and Heritage.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
  * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses
@@ -64,11 +62,10 @@ const TABS = [
 ]
 
 /** Per-phase copy + routing for the contextual centre slot. `tab` is the
- * FPL Live sub-tab the button lands on: Scores while a GW is live or
- * finished, Season Predictions before the campaign starts. Recap is a
- * More destination, not the centre. */
+ * FPL Live sub-tab the button lands on: Scores in every season phase.
+ * Recap is a More destination, not the centre. */
 const CENTER_BY_STATE = {
-  pre:  { label: 'Preview', view: /** @type {const} */ ('fplLive'), tab: 'predictions', aria: 'Season predictions' },
+  pre:  { label: 'Scores', view: /** @type {const} */ ('fplLive'), tab: 'live', aria: 'FPL Live scores' },
   live: { label: 'Live',    view: /** @type {const} */ ('fplLive'), tab: 'live',        aria: 'FPL Live scores' },
   over: { label: 'Scores',  view: /** @type {const} */ ('fplLive'), tab: 'live',        aria: 'FPL Live scores' },
 }

@@ -25,9 +25,9 @@
   --fm-dashboard-nav-active-glow: 0 3px 20px rgba(121, 91, 251, 0.48);
   /* Pitch green — tables, FPL-style accents (W/L, pills) */
   --fm-pitch: #12a15a;
-  --fm-accent: #12a15a;
+  --fm-accent: #795bfb;
   --fm-accent-gradient: var(--fm-pitch);
-  --fm-accent-glow: 0 3px 18px rgba(18, 161, 90, 0.35);
+  --fm-accent-glow: 0 3px 18px rgba(121, 91, 251, 0.35);
   --fm-dash-gradient: var(--fm-accent-gradient);
   --fm-standings-cut: #404040;
   --fm-table-head: #252830;
@@ -173,8 +173,8 @@
   --fm-dashboard-nav-active-bg: var(--tclot-header-grad);
   --fm-dashboard-nav-active-glow: 0 2px 16px rgba(121, 91, 251, 0.32);
   --fm-pitch: #12a15a;
-  --fm-accent: #12a15a;
-  --fm-accent-glow: 0 2px 14px rgba(18, 161, 90, 0.22);
+  --fm-accent: #795bfb;
+  --fm-accent-glow: 0 2px 14px rgba(121, 91, 251, 0.22);
   --fm-standings-cut: #d4d4d4;
   --fm-table-head: #f3f4f6;
   --fm-standings-8th-bg: rgba(239, 68, 68, 0.09);
@@ -3902,7 +3902,7 @@ button.player-history-name-btn.latest-waivers__player-name {
   gap: 0;
   font-size: 0.74rem;
   line-height: 1.35;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-family: 'Geist Mono', ui-monospace, monospace;
 }
 
 .waiver-summary-share__compact-line {
@@ -5303,7 +5303,7 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 }
 
 .live-score-ticker__team--lead {
-  color: var(--fm-accent, #12a15a);
+  color: var(--data-positive, #12a15a);
 }
 
 .live-score-ticker__pts {
@@ -5312,7 +5312,7 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 }
 
 .live-score-ticker__pts--lead {
-  color: var(--fm-accent, #12a15a);
+  color: var(--data-positive, #12a15a);
 }
 
 body[data-tclot-theme='dark'] .live-score-ticker {
@@ -5576,8 +5576,8 @@ button.live-gw-hbar__proj {
   top: 0;
   bottom: 0;
   border-radius: 6px;
-  background: var(--fm-accent, #12a15a);
-  box-shadow: var(--fm-accent-glow, 0 1px 6px rgba(18, 161, 90, 0.25));
+  background: var(--data-positive, #12a15a);
+  box-shadow: 0 1px 6px rgba(18, 161, 90, 0.25);
   z-index: 1;
   min-width: 2px;
   transition: width 0.2s ease-out;
@@ -7978,7 +7978,7 @@ button.live-player-name--btn:focus-visible {
   --fm-surface-2: #f7f7f7;
   --tclot-logo-purple: #795bfb;
   --fm-pitch: #12a15a;
-  --fm-accent: #12a15a;
+  --fm-accent: #795bfb;
 }
 
 body[data-tclot-theme='dark'] .live-player-slide {
@@ -7995,7 +7995,7 @@ body[data-tclot-theme='dark'] .live-player-slide {
   --fm-surface-2: #252525;
   --tclot-logo-purple: #795bfb;
   --fm-pitch: #12a15a;
-  --fm-accent: #12a15a;
+  --fm-accent: #795bfb;
 }
 
 .live-player-slide--open {
@@ -10706,6 +10706,30 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 /* 8th place: soft red tint (same “faded” idea as leader blue) */
 .standings-table tbody tr.standings-row--8th td {
   background: var(--fm-standings-8th-bg);
+}
+
+.standings-table tbody tr.standings-row--club {
+  cursor: pointer;
+}
+
+.standings-table tbody tr.standings-row--my-club td {
+  background: color-mix(in srgb, var(--brand, #795bfb) 16%, transparent);
+}
+
+.my-club-pill {
+  background: color-mix(in srgb, var(--brand, #795bfb) 24%, transparent);
+  border-radius: 6px;
+  padding: 0 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.standings-race-note {
+  margin: 10px 16px 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-strong, var(--fm-text-strong));
 }
 
 /* Thin dashed separators — easy on the eye */
@@ -17601,7 +17625,7 @@ button.live-xp__player-name:focus-visible {
  * Heritage purple used on titles / crests. */
 .heritage-cofc__th--pts.is-active .standings-sort-btn__label,
 .heritage-cofc__th--pts.is-league-default .standings-sort-btn__label {
-  color: var(--fm-accent, #12a15a);
+  color: var(--data-positive, #12a15a);
 }
 
 .heritage-cofc__th--mgr .standings-sort-btn__label {
