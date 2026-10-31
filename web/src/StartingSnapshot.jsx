@@ -1,7 +1,12 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
-import { buildStartingSnapshot, listAnnouncedFixtures } from './startingSnapshot.js';
+import {
+  STARTING_SCOPE_GW,
+  STARTING_SCOPE_UPCOMING,
+  buildStartingSnapshot,
+  listGameweekFixtures,
+} from './startingSnapshot.js';
 
 function plBadgeUrl(code) {
   const n = Number(code);
@@ -77,6 +82,13 @@ function CheckMenu({ label, value, options, onChange, align = 'left' }) {
       {open ? (
         <ul className="start-dd__menu" id={listId} role="listbox" aria-label={label}>
           {options.map((opt) => {
+            if (opt.type === 'sep') {
+              return (
+                <li key={opt.key} className="start-dd__sep" role="presentation">
+                  {opt.trigger}
+                </li>
+              );
+            }
             const on = Object.is(opt.value, value);
             return (
               <li key={opt.key}>
@@ -106,7 +118,11 @@ function CheckMenu({ label, value, options, onChange, align = 'left' }) {
 
 function PlayerLine({ player }) {
   const tag = roleTag(player.role);
-  const when = player.live ? minuteLabel(player.minute) : kickoffLabel(player.kickoffIso);
+  const when = player.live
+    ? minuteLabel(player.minute)
+    : player.fullTime
+      ? 'FT'
+      : kickoffLabel(player.kickoffIso);
   return (
     <li className="prem-start__player">
       <span className="prem-start__pos">{player.pos}</span>
@@ -175,13 +191,18 @@ export function StartingSnapshot({
   kitIndexByEntry,
 }) {
   const [teamId, setTeamId] = useState(null);
-  const [fixtureId, setFixtureId] = useState(null);
+  const [fixtureFilter, setFixtureFilter] = useState(STARTING_SCOPE_UPCOMING);
 
-  const announced = useMemo(
-    () => listAnnouncedFixtures(fixtures, teamById),
+  const gameweekFixtures = useMemo(
+    () => listGameweekFixtures(fixtures, teamById),
     [fixtures, teamById],
   );
-  const activeFixtureId = announced.some((fx) => fx.id === fixtureId) ? fixtureId : null;
+  const activeFilter = gameweekFixtures.some((fx) => fx.id === fixtureFilter)
+    ? fixtureFilter
+    : fixtureFilter === STARTING_SCOPE_GW
+      ? STARTING_SCOPE_GW
+      : STARTING_SCOPE_UPCOMING;
+  const activeFixtureId = typeof activeFilter === 'number' ? activeFilter : null;
 
   const snap = useMemo(
     () =>
@@ -192,8 +213,9 @@ export function StartingSnapshot({
         teamById,
         teamId,
         fixtureId: activeFixtureId,
+        scope: activeFixtureId == null ? activeFilter : 'fixture',
       }),
-    [fixtures, squads, elementById, teamById, teamId, activeFixtureId],
+    [fixtures, squads, elementById, teamById, teamId, activeFixtureId, activeFilter],
   );
 
   const teams = (squads || []).filter((squad) => squad && !squad.error && squad.teamName);
@@ -219,8 +241,22 @@ export function StartingSnapshot({
     })),
   ];
   const fixtureOptions = [
-    { key: 'all', value: null, trigger: 'All out', marked: false, node: 'All out' },
-    ...announced.map((fx) => ({
+    {
+      key: 'gw',
+      value: STARTING_SCOPE_GW,
+      trigger: 'Full game week',
+      marked: false,
+      node: 'Full game week',
+    },
+    {
+      key: 'upcoming',
+      value: STARTING_SCOPE_UPCOMING,
+      trigger: 'Upcoming games',
+      marked: false,
+      node: 'Upcoming games',
+    },
+    { key: 'sep', type: 'sep', trigger: 'Fixtures' },
+    ...gameweekFixtures.map((fx) => ({
       key: `fx-${fx.id}`,
       value: fx.id,
       trigger: `${fx.homeShort} v ${fx.awayShort}`,
@@ -233,16 +269,19 @@ export function StartingSnapshot({
           <Crest code={fx.awayCode} />
           <span>{fx.awayShort}</span>
           {fx.live ? <span className="start-dd__live">{minuteLabel(fx.minute)}</span> : null}
+          {fx.fullTime ? <span className="start-dd__ft">FT</span> : null}
         </span>
       ),
     })),
   ];
 
   const selectedTeam = teams.find((squad) => Number(squad.leagueEntryId) === teamId);
-  const selectedFixture = announced.find((fx) => fx.id === activeFixtureId);
+  const selectedFixture = gameweekFixtures.find((fx) => fx.id === activeFixtureId);
   const fixtureLabel = selectedFixture
     ? `${selectedFixture.homeName} v ${selectedFixture.awayName}`
     : '';
+  const upcomingAnnounced = gameweekFixtures.some((fx) => fx.announced && !fx.kickedOff);
+  const anyAnnounced = gameweekFixtures.some((fx) => fx.announced);
 
   const visibleGroups = snap.groups.filter(
     (group) => group.starting.length || group.notStarting.length,
@@ -250,12 +289,18 @@ export function StartingSnapshot({
 
   let status = '';
   if (visibleGroups.length === 0) {
-    if (announced.length === 0) {
+    if (activeFilter === STARTING_SCOPE_UPCOMING && !upcomingAnnounced) {
       status = 'No sheets are out yet. They usually land about 75 minutes before kickoff.';
+    } else if (activeFilter === STARTING_SCOPE_GW && !anyAnnounced) {
+      status = 'No sheets are out yet. They usually land about 75 minutes before kickoff.';
+    } else if (selectedFixture && !selectedFixture.announced) {
+      status = `Lineups are not out yet for ${fixtureLabel}.`;
     } else if (selectedTeam && fixtureLabel) {
       status = `${selectedTeam.teamName} has nobody in ${fixtureLabel}.`;
+    } else if (selectedTeam && activeFilter === STARTING_SCOPE_UPCOMING) {
+      status = `${selectedTeam.teamName} has nobody in the upcoming sheets.`;
     } else if (selectedTeam) {
-      status = `${selectedTeam.teamName} has nobody in the sheets that are out.`;
+      status = `${selectedTeam.teamName} has nobody in this gameweek's sheets.`;
     } else if (fixtureLabel) {
       status = `Nobody in the league is in ${fixtureLabel}.`;
     } else {
@@ -272,9 +317,9 @@ export function StartingSnapshot({
         <CheckMenu label="Team" value={teamId} options={teamOptions} onChange={setTeamId} />
         <CheckMenu
           label="Fixture"
-          value={activeFixtureId}
+          value={activeFilter}
           options={fixtureOptions}
-          onChange={setFixtureId}
+          onChange={setFixtureFilter}
           align="right"
         />
       </div>
