@@ -20653,3 +20653,21 @@ button.live-xp__player-name:focus-visible {
   color: var(--fm-win, #34d399);
 }
 
+.start-dd__ft {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
+.start-dd__sep {
+  margin: 4px 8px 2px;
+  padding: 6px 4px 2px;
+  border-top: 1px solid var(--fm-border, #2f2f2f);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
+}
+
