@@ -47,7 +47,7 @@ function leagueDataUrl(path, cacheKey) {
   if (!cacheKey) return base;
   return `${base}${base.includes('?') ? '&' : '?'}v=${encodeURIComponent(cacheKey)}`;
 }
-const FORM_LAST_N = 7;
+const FORM_LAST_N = 5;
 /** Team form tile: last N finished H2Hs (standings form column still uses FORM_LAST_N). */
 const FORM_STRIP_N = 8;
 

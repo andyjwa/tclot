@@ -72,14 +72,10 @@ function NavButton({ item, active, onSelect, variant }) {
 export function DashboardNav({ variant, dashboardView, onSelect, navLocked = false }) {
   const isBottom = variant === 'bottom'
 
-  // Single source of truth for desktop top-nav order (left → right):
-  // FPL Live · Standings · Moves · TCLOT Heritage. Players now lives
-  // under Moves (left of Waivers). The mobile dock (MobileBottomNav.jsx)
-  // is Table · Moves · contextual centre · More, with More opening a
-  // popup for Recap/Preview, Bookies (Predictions nested), and Heritage.
-  // `More` stays
-  // `bottomOnly` so it never renders here; desktop gets a Settings gear
-  // (rendered below the .map() loop). Heritage stays a top-level item.
+  // Desktop top-nav order (left → right):
+  // FPL Live · Standings · Moves · Hall of Champions. Players lives
+  // under Moves. Settings is the league-info modal, opened from the
+  // wordmark. The mobile dock is Table · Moves · Scores · More.
   const primaryItems = [
     {
       id: /** @type {const} */ ('fplLive'),
@@ -102,7 +98,7 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
     },
     {
       id: /** @type {const} */ ('hall'),
-      label: 'TCLOT Heritage',
+      label: 'Hall of Champions',
       shortLabel: 'Heritage',
       icon: /** @type {const} */ ('column'),
     },
@@ -125,13 +121,9 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
 
   const isActive = (id) => {
     if (id === 'teamSelection') return isMovesDashboardView(dashboardView)
-    if (id === 'more') {
-      return dashboardView === 'more' || dashboardView === 'settings'
-    }
+    if (id === 'more') return dashboardView === 'more'
     return dashboardView === id
   }
-
-  const settingsActive = dashboardView === 'settings'
 
   return (
     <nav
@@ -151,21 +143,6 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
           variant={variant}
         />
       ))}
-      {!isBottom && !navLocked && (
-        <button
-          type="button"
-          className={
-            'dashboard-nav__btn dashboard-nav__btn--settings' +
-            (settingsActive ? ' dashboard-nav__btn--active' : '')
-          }
-          onClick={() => onSelect('settings')}
-          aria-current={settingsActive ? 'page' : undefined}
-          aria-label="Settings"
-          title="Settings"
-        >
-          <NavIcon name="settings" className="dashboard-nav__icon" />
-        </button>
-      )}
     </nav>
   )
 }
@@ -176,13 +153,9 @@ export function DashboardMorePanel({
   teamLogoMap = {},
   kitIndexByEntry = {},
 }) {
-  // Fallback More page (session restore / desktop). Mobile More is a
-  // popup on the bottom dock: Recap/Preview, Bookies, Predictions,
-  // Heritage, Settings. This panel still lists Heritage + Settings for
-  // the rare `dashboardView === 'more'` landing.
+  // Fallback More page (session restore). Mobile More is the dock popup.
   const rows = [
-    { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },
-    { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },
+    { id: /** @type {const} */ ('hall'), label: 'Hall of Champions', emoji: '🏛️' },
   ]
 
   return (

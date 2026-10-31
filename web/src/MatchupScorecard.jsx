@@ -225,6 +225,7 @@ export function MatchupHeader({
   awayMotty = false,
   homeSneak = false,
   awaySneak = false,
+  myClubId = null,
 }) {
   const lead = liveFixtureLead(f.homeLive, f.awayLive);
   const bothScores = f.homeLive != null && f.awayLive != null;
@@ -239,7 +240,11 @@ export function MatchupHeader({
           kitIndexByEntry={kitIndexByEntry}
         />
         <FittedTeamName
-          className={'lo-hdr__name' + nameAwardClass(homeStatus, homeMotty, homeSneak)}
+          className={
+            'lo-hdr__name' +
+            nameAwardClass(homeStatus, homeMotty, homeSneak) +
+            (myClubId != null && Number(f.homeId) === Number(myClubId) ? ' my-club-pill' : '')
+          }
           fullName={f.homeName}
           displayName={homeDisplayName}
           title={f.homeName}
@@ -272,7 +277,11 @@ export function MatchupHeader({
       </div>
       <div className="lo-hdr__side lo-hdr__side--away">
         <FittedTeamName
-          className={'lo-hdr__name' + nameAwardClass(awayStatus, awayMotty, awaySneak)}
+          className={
+            'lo-hdr__name' +
+            nameAwardClass(awayStatus, awayMotty, awaySneak) +
+            (myClubId != null && Number(f.awayId) === Number(myClubId) ? ' my-club-pill' : '')
+          }
           fullName={f.awayName}
           displayName={awayDisplayName}
           title={f.awayName}
@@ -330,6 +339,7 @@ export function MatchupScorecard({
   awayMotty = false,
   homeSneak = false,
   awaySneak = false,
+  myClubId = null,
   onClick,
   className,
 }) {
@@ -391,6 +401,7 @@ export function MatchupScorecard({
           awayMotty={awayMotty}
           homeSneak={homeSneak}
           awaySneak={awaySneak}
+          myClubId={myClubId}
         />
         <RemainingGauge
           homeRemaining={fixture.homeRemaining}

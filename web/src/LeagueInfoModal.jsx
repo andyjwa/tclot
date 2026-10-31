@@ -32,6 +32,8 @@
  * `.live-player-slide` in `App.css`.
  */
 import { useEffect, useRef, useState } from 'react'
+import { isMyClub, writeMyClubId } from './myClub.js'
+import { useMyClub } from './useMyClub.js'
 import { createPortal } from 'react-dom'
 import { TeamAvatar } from './TeamAvatar'
 import { SettingsPanelBody } from './SettingsPage'
@@ -102,6 +104,7 @@ function liInitials(text, count = 2) {
  *   teamLogoMap?: Record<string|number, string>,
  *   kitIndexByEntry?: Record<string|number, number>,
  *   gw?: number | null,
+ *   initialTab?: string,
  *   themePref: 'light' | 'dark' | 'system' | 'ceefax',
  *   onThemePrefChange: (t: 'light' | 'dark' | 'system' | 'ceefax') => void,
  *   defaultTab: string,
@@ -116,6 +119,7 @@ export function LeagueInfoModal({
   teamLogoMap = {},
   kitIndexByEntry = {},
   gw, // eslint-disable-line no-unused-vars -- kept for caller-API stability
+  initialTab = 'terminology',
   themePref,
   onThemePrefChange,
   defaultTab,
@@ -128,14 +132,16 @@ export function LeagueInfoModal({
    * open, then sticky for the lifetime of the open instance (resets when
    * the modal is dismissed and re-opened so the user always lands on the
    * glossary first). */
-  const [activeTab, setActiveTab] = useState(/** @type {string} */ ('terminology'))
+  const [activeTab, setActiveTab] = useState(/** @type {string} */ (initialTab))
+  const myClubId = useMyClub()
   /* Reset to the glossary whenever the modal closes — done during render
    * (React's "adjust state when props change" pattern) instead of an
-   * effect, so there's no extra post-commit render pass. */
+   * effect, so there's no extra post-commit render pass. Opening lands
+   * on `initialTab` (Settings when the wordmark path asks for it). */
   const [prevOpen, setPrevOpen] = useState(open)
   if (open !== prevOpen) {
     setPrevOpen(open)
-    if (!open) setActiveTab('terminology')
+    setActiveTab(open ? initialTab : 'terminology')
   }
 
   /* Escape + browser/Android system back — shared overlay stack, same
@@ -305,14 +311,22 @@ export function LeagueInfoModal({
               aria-labelledby="li-tab-roster"
             >
               <div className="li-card__eyebrow">League Roster</div>
+              <p className="li-card__hint">Tap a crest to set your club on this phone. Tap it again to clear.</p>
               {sortedEntries.length === 0 ? (
                 <p className="league-info-modal__placeholder">League data not loaded yet.</p>
               ) : (
                 <div className="li-badges-grid league-info-modal__badges-grid">
                   {sortedEntries.map((e) => {
                     const teamName = e.entry_name ?? '—'
+                    const yours = isMyClub(e.id, myClubId)
                     return (
-                      <div className="li-badge" key={e.id}>
+                      <button
+                        type="button"
+                        className={'li-badge' + (yours ? ' is-yours' : '')}
+                        key={e.id}
+                        aria-pressed={yours}
+                        onClick={() => writeMyClubId(yours ? null : e.id)}
+                      >
                         <div className="li-badge__crest league-info-modal__badge-crest">
                           <TeamAvatar
                             entryId={e.id}
@@ -324,7 +338,8 @@ export function LeagueInfoModal({
                           />
                         </div>
                         <div className="li-badge__name">{teamName}</div>
-                      </div>
+                        {yours ? <div className="li-badge__yours">Your club</div> : null}
+                      </button>
                     )
                   })}
                 </div>

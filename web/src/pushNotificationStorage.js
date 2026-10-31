@@ -39,7 +39,8 @@ export function writePushEnabled(enabled) {
 export function readPushEntryId() {
   if (typeof window === 'undefined') return null
   try {
-    const raw = window.localStorage.getItem(PUSH_ENTRY_ID_STORAGE_KEY)
+    const club = window.localStorage.getItem('tclot:my-club')
+    const raw = club || window.localStorage.getItem(PUSH_ENTRY_ID_STORAGE_KEY)
     if (!raw) return null
     const n = Number(raw)
     return Number.isFinite(n) ? n : null
@@ -52,8 +53,15 @@ export function readPushEntryId() {
 export function writePushEntryId(entryId) {
   if (typeof window === 'undefined') return
   try {
-    if (entryId == null) window.localStorage.removeItem(PUSH_ENTRY_ID_STORAGE_KEY)
-    else window.localStorage.setItem(PUSH_ENTRY_ID_STORAGE_KEY, String(entryId))
+    if (entryId == null) {
+      window.localStorage.removeItem(PUSH_ENTRY_ID_STORAGE_KEY)
+      window.localStorage.removeItem('tclot:my-club')
+    } else {
+      const v = String(entryId)
+      window.localStorage.setItem(PUSH_ENTRY_ID_STORAGE_KEY, v)
+      window.localStorage.setItem('tclot:my-club', v)
+    }
+    window.dispatchEvent(new Event('tclot:my-club'))
   } catch {
     /* ignore */
   }

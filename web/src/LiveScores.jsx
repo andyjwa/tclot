@@ -630,6 +630,7 @@ export function LiveScores({
   projectionsOnly = false,
   /** Mobile app shell: hide tile h2; GW toolbar sticks below section sub-pills. */
   compactMobileChrome = false,
+  myClubId = null,
 }) {
   const { error, fixturesDegradedNotice, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
@@ -717,8 +718,17 @@ export function LiveScores({
 
   const gwMatches = useMemo(() => {
     if (!Array.isArray(matches) || matches.length === 0) return [];
-    return matches.filter((m) => Number(m.event) === Number(gameweek));
-  }, [matches, gameweek]);
+    const rows = matches.filter((m) => Number(m.event) === Number(gameweek));
+    if (myClubId == null) return rows;
+    const id = Number(myClubId);
+    const mine = [];
+    const rest = [];
+    for (const m of rows) {
+      if (Number(m.league_entry_1) === id || Number(m.league_entry_2) === id) mine.push(m);
+      else rest.push(m);
+    }
+    return mine.concat(rest);
+  }, [matches, gameweek, myClubId]);
 
   const squadByLeagueEntry = useMemo(() => {
     const m = new Map();
@@ -1522,6 +1532,7 @@ export function LiveScores({
                   liveRankByEntry={liveRankByEntry}
                   teamLogoMap={teamLogoMap}
                   kitIndexByEntry={kitIndexByEntry}
+                  myClubId={myClubId}
                   homeDisplayName={homeDisplayName}
                   awayDisplayName={awayDisplayName}
                   homeStatus={homeStatus}
