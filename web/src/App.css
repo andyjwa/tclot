@@ -20466,8 +20466,15 @@ button.live-xp__player-name:focus-visible {
   grid-area: crest;
 }
 
-.prem-start__name {
+.prem-start__who {
   grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.prem-start__name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

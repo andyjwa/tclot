@@ -125,7 +125,10 @@ test('everyone sees starters, bench, left-out, and waiting, and skips full time 
   assert.equal(byName(snap.groups[0].starting, 'Saliba').oppShort, 'LIV');
   const not = snap.groups[0].notStarting;
   assert.equal(byName(not, 'Trent').role, 'bench');
+  assert.equal(byName(not, 'Trent').onFantasyBench, true);
+  assert.equal(byName(snap.groups[0].starting, 'Saliba').onFantasyBench, false);
   assert.equal(byName(not, 'Saka').role, 'nis');
+  assert.equal(byName(not, 'Saka').onFantasyBench, false);
   assert.deepEqual(names(snap.groups[0].waiting), ['Haaland']);
   assert.equal(names(snap.groups[0].starting).includes('Raya'), false);
   const menu = listAnnouncedFixtures(fixtures, teamById);
