@@ -34,7 +34,12 @@
     right: 0;
     bottom: 0;
     z-index: 100;
-    background: transparent;
+    /* Page colour across the whole dock footprint. A transparent bar let
+       the next section slide under the pill: its title got sliced and the
+       summary line ("Who held waiver slot #1…") sat alone in the gap and
+       through the glass. The pill and search button paint their own glass
+       on top of this. */
+    background: var(--fm-bg, var(--bg));
     border: 0;
     padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
     pointer-events: none;
