@@ -512,14 +512,15 @@ import { TradeTool } from './TradeTool.jsx'
 import { SeasonPredictions } from './SeasonPredictions'
 import { BookieView } from './BookieView'
 import { WeeklyRecap } from './WeeklyRecap'
-import { recapMenuLabelForStatus } from './weeklyRecapView.js'
 import { pickDeadlinePassedLiveEvent, pickDeadlinePassedLiveGw } from './fplLiveCalendar.js'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
 import {
+  canonicalFplLiveTab,
   isBookieHubTab,
   isMovesDashboardView,
+  isPredictionsTab,
 } from './dashboardNavModel.js'
 import { useMyClub } from './useMyClub.js'
 import { isMyClub } from './myClub.js'
@@ -615,7 +616,6 @@ function MarketsStrip({ tab, onSelect }) {
   const items = [
     ['bookie', 'Slip', 'tab-fpl-live-bookie-hub'],
     ['board', 'Board', 'tab-fpl-live-board'],
-    ['predictions', 'Season', 'tab-fpl-live-season'],
   ]
   return (
     <div className="subnav subnav--predictions" role="tablist" aria-label="Markets">
@@ -2661,20 +2661,16 @@ function App() {
   const [movesTabPrimed, setMovesTabPrimed] = useState(false)
   /* FPL Live sub-tab. `null` = no explicit choice yet — the rendered tab then
    * follows the season phase (see `fplLiveTab` below, derived after the brand
-   * header status). Legacy values are coerced to `'live'` so a persisted pref
-   * or stale deep link cannot leave the Live tab blank: `'vibes'` (cinematics,
-   * moved to the Preseason hub) and `'forecast'` (player forecast leaderboard,
-   * hidden — the forecast data still powers the fixture Odds tab). */
+   * header status). Legacy values are folded onto the page that replaced
+   * them: `'vibes'` and `'forecast'` open Scores, and `'predictions'` (the
+   * old Season markets tab) opens Predictions. */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie' | 'board'} */ (
-      () => readTclotViewState().fplLiveTab
+    /** @type {null | 'squads' | 'live' | 'recap' | 'bookie' | 'board'} */ (
+      () => canonicalFplLiveTab(readTclotViewState().fplLiveTab)
     ),
   )
-  /** FPL Live Recap/Preview tab label. Live (lineups locked) → Preview;
-   * otherwise Recap. WeeklyRecap updates this when mounted. */
-  const [recapMenuLabel, setRecapMenuLabel] = useState(/** @type {'Preview' | 'Recap'} */ ('Recap'))
   const setFplLiveTab = useCallback((next) => {
-    setFplLiveTabRaw(next === 'vibes' || next === 'forecast' ? 'live' : next)
+    setFplLiveTabRaw(canonicalFplLiveTab(next))
   }, [])
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
@@ -2765,7 +2761,7 @@ function App() {
     }
   }, [draftGate.navLocked])
 
-  /** Contextual centre button: always opens Scores. Recap is a More destination. */
+  /** Contextual centre button: always opens Scores. Predictions is a More destination. */
   const selectLiveHub = useCallback(
     (view, tab) => {
       if (tab) setFplLiveTab(tab)
@@ -2999,11 +2995,6 @@ function App() {
   /* Effective FPL Live sub-tab. Until the user picks one, Scores is the
    * landing tab in every season phase, including pre-season. */
   const fplLiveTab = fplLiveTabRaw ?? 'live'
-
-  useEffect(() => {
-    if (fplLiveTab === 'recap') return
-    setRecapMenuLabel(recapMenuLabelForStatus(brandHeaderStatus?.status))
-  }, [fplLiveTab, brandHeaderStatus?.status])
 
   /** Keep the open tab across a pull-to-refresh document reload. */
   useEffect(() => {
@@ -4227,10 +4218,10 @@ function App() {
             >
               {!(
                 mobileLayout &&
-                (fplLiveTab === 'recap' || isBookieHubTab(fplLiveTab))
+                (isPredictionsTab(fplLiveTab) || isBookieHubTab(fplLiveTab))
               ) ? (
               <div className="section-chrome section-chrome--sticky">
-              {/* Mobile: Recap and Markets live in the More sheet, so the
+              {/* Mobile: Predictions and Markets live in the More sheet, so the
                   Scores / Lineups tabs stay hidden there. Desktop keeps them. */}
               <div
                 className="subnav"
@@ -4269,14 +4260,14 @@ function App() {
                       type="button"
                       role="tab"
                       id="tab-fpl-live-recap"
-                      aria-selected={fplLiveTab === 'recap'}
+                      aria-selected={isPredictionsTab(fplLiveTab)}
                       className={
                         'subnav__tab' +
-                        (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
+                        (isPredictionsTab(fplLiveTab) ? ' subnav__tab--active' : '')
                       }
                       onClick={() => setFplLiveTab('recap')}
                     >
-                      {recapMenuLabel}
+                      Predictions
                     </button>
                     <button
                       type="button"
@@ -4334,20 +4325,15 @@ function App() {
                   myClubId={myClubId}
                 />
               ) : null}
-              {fplLiveTab === 'recap' ? (
+              {isPredictionsTab(fplLiveTab) ? (
                 <div className="dashboard-stack">
                   <WeeklyRecap
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                     liveStatus={brandHeaderStatus}
-                    onMenuLabelChange={setRecapMenuLabel}
                     matches={matches ?? []}
                     leagueEntries={leagueEntries}
                   />
-                </div>
-              ) : null}
-              {fplLiveTab === 'predictions' ? (
-                <div className="dashboard-stack">
                   <SeasonPredictions
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
