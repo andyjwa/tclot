@@ -18,10 +18,10 @@
  *     mono "FT GW{n}" chip, where {n} is `liveStatus.lastFinishedGw` — the
  *     same field the brand header's "GW {n} complete" strip uses. Falls
  *     back to a bare "FT" when the GW number is unavailable. No pulse;
- *     label "Scores". Routes to FPL Live on Scores. Recap lives in More.
+ *     label "Scores". Routes to FPL Live on Scores. Predictions lives in More.
  *
  * Players lives under Moves (left of Waivers). More opens a popup above
- * the dock with Recap or Preview (by gameweek), Markets, and Heritage.
+ * the dock with Predictions, Markets, and Heritage.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
  * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses
@@ -63,7 +63,7 @@ const TABS = [
 
 /** Per-phase copy + routing for the contextual centre slot. `tab` is the
  * FPL Live sub-tab the button lands on: Scores in every season phase.
- * Recap is a More destination, not the centre. */
+ * Predictions is a More destination, not the centre. */
 const CENTER_BY_STATE = {
   pre:  { label: 'Scores', view: /** @type {const} */ ('fplLive'), tab: 'live', aria: 'FPL Live scores' },
   live: { label: 'Live',    view: /** @type {const} */ ('fplLive'), tab: 'live',        aria: 'FPL Live scores' },
@@ -174,7 +174,6 @@ export function MobileBottomNav({
               menuRef={moreMenuRef}
               dashboardView={dashboardView}
               fplLiveTab={fplLiveTab}
-              liveStatus={liveStatus}
               onNavigate={(view, tab) => {
                 setMoreOpen(false)
                 if (tab && onCenterSelect) onCenterSelect(view, tab)
@@ -292,11 +291,10 @@ function MoreButton({ buttonRef, active, open, onToggle }) {
  *   menuRef: import('react').RefObject<HTMLDivElement | null>,
  *   dashboardView: string,
  *   fplLiveTab?: string | null,
- *   liveStatus?: { status?: string } | null,
  *   onNavigate: (view: string, tab: string | null) => void,
  * }} props
  */
-function MoreMenu({ menuRef, dashboardView, fplLiveTab, liveStatus, onNavigate }) {
+function MoreMenu({ menuRef, dashboardView, fplLiveTab, onNavigate }) {
   return (
     <div
       id="mobile-more-menu"
@@ -327,7 +325,7 @@ function MoreMenu({ menuRef, dashboardView, fplLiveTab, liveStatus, onNavigate }
               <NavIcon name={item.icon} size={20} />
             </span>
             <span className="mobile-tab-bar__more-label">
-              {moreMenuItemLabel(item, liveStatus?.status)}
+              {moreMenuItemLabel(item)}
             </span>
           </button>
         )
