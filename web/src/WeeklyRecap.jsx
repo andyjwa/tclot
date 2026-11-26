@@ -43,13 +43,12 @@ async function loadRecapSiteData() {
  *
  * Default: after the lineup deadline (live) opens Preview; looking back (GW
  * complete, or still before the next deadline) opens Recap. Copied-forward
- * XIs before the deadline are not a preview. The FPL Live menu label follows.
+ * XIs before the deadline are not a preview. The nav tab is Predictions.
  */
 export function WeeklyRecap({
   teamLogoMap = {},
   kitIndexByEntry,
   liveStatus = null,
-  onMenuLabelChange,
   matches = [],
   leagueEntries = [],
 }) {
@@ -135,10 +134,6 @@ export function WeeklyRecap({
       ? 'Preview'
       : 'Recap'
 
-  useEffect(() => {
-    onMenuLabelChange?.(menuLabel)
-  }, [menuLabel, onMenuLabelChange])
-
   const site = useMemo(
     () => indexRecapSite({ ...(siteRaw || {}), matches }),
     [siteRaw, matches],
@@ -170,7 +165,7 @@ export function WeeklyRecap({
           gets the week&apos;s odds, who to watch, and whether the bench looks off.
         </p>
         <p className="weekly-recap__note">
-          Until then, the Predictions tab has the model&apos;s pre-season view.
+          Until then, the season outlook below is the model&apos;s pre-season view.
         </p>
       </section>
     )

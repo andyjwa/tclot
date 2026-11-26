@@ -21,9 +21,9 @@
  *                    the contextual centre slot in the mobile bottom tab bar
  *   - search       : Magnifying glass — floating search button next to the
  *                    mobile Liquid Glass dock (FotMob-style)
- *   - newspaper    : Recap / Preview in the More sheet
+ *   - newspaper    : Predictions in the More sheet
  *   - dices        : Bookies in the More sheet
- *   - sparkle      : Season Predictions (Bookies sub-item)
+ *   - sparkle      : line icon
  *
  * Stroke color is `currentColor` so the icon inherits CSS color from its
  * surrounding button (active vs. idle). pulsing-dot is the lone exception:

@@ -429,7 +429,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry, pane = 'slip' })
         <p className="bookie__note">
           Every manager starts the season with {fmtCoins(state.startingBalance ?? 1000)}{' '}
           Clotcoins — the official TCLOT currency: completely fake, worthless, and worth
-          fighting over. Odds are set by the same model behind the Season Predictions tab,
+          fighting over. Odds are set by the same model behind the Predictions tab,
           with a small house margin, and quoted as traditional fractions. Weekly matchup
           and player-special markets close at the FPL deadline — player specials pool both
           squads, pay every scorer (or the top point scorer, dead heats all paying), and
@@ -960,7 +960,7 @@ const PLACE_TABS = [
     crown: 'Champion',
     slipLabel: (name) => `${name} to win the league`,
     detail: 'Outright champion',
-    note: 'Pays if they win the league. Odds track Season Predictions and reprice weekly — your ticket locks the price you took.',
+    note: 'Pays if they win the league. Odds track the Predictions tab and reprice weekly — your ticket locks the price you took.',
   },
   {
     kind: 'titan',
