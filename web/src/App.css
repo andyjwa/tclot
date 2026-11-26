@@ -16075,27 +16075,108 @@ button.live-xp__player-name:focus-visible {
   box-shadow: none;
 }
 
-/* Desktop: match Standings. "Table" and the standings card share one left
- * edge (label at 18px, card at 16px). The FPL Live strip is nested in a
- * padded tile, so it needs the page gutter (16) + tile padding (16) + border
- * (1) cancelled to land on that same edge. Content then drops the extra
- * 16px insets so the cards, heading, and back control start there too. */
+/* Desktop: FPL Live was one bordered tile wrapped around more bordered
+ * tiles. Every Scores section therefore drew a second outline, and the
+ * match page sat as a panel inside that panel. Standings and Moves keep
+ * the sub-nav on the page and let each section be a single card — match
+ * that. Phone (≤1080px) keeps the existing shell, including the dock.
+ *
+ * `!important` is required: `.tile--compact` padding, the live-scores
+ * group's transparent chrome, and the Ceefax tile border are all
+ * `!important`. Ceefax stays square and shadowless via its own `*` reset
+ * plus the `:not(ceefax)` guards below. */
 @media (min-width: 1081px) {
+  .fotmob .tile.tile--compact.tile--team-selection,
+  body[data-tclot-theme='ceefax'] .tile.tile--compact.tile--team-selection {
+    background: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    overflow: visible;
+  }
+
+  /* Same edge-bleed and gap as `.standings-subnav-strip`. */
   .tile--team-selection > .section-chrome--sticky {
-    margin-left: -33px;
-    margin-right: -33px;
+    margin: 0 -16px 12px;
   }
   .tile--team-selection > .section-body {
-    margin-left: -16px;
-    margin-right: -16px;
+    margin-left: 0;
+    margin-right: 0;
   }
-  .tile--team-selection .live-banner-group-tile {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+
+  /* Game week control is its own card. The nav's bottom rule would sit
+     just inside the card border, so the card edge is the only line. */
+  .live-scores-chrome {
+    background: var(--fm-card);
+    border: 1px solid var(--fm-border);
+    border-radius: 12px;
   }
-  .tile--team-selection .gw-nav {
-    padding-left: 2px;
-    padding-right: 2px;
+  .fotmob[data-theme='light'] .live-scores-chrome {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+  .fotmob:not([data-theme='light']):not([data-theme='ceefax']) .live-scores-chrome {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  }
+  .live-scores-chrome .gw-nav {
+    border-bottom: 0;
+  }
+
+  /* Live Scores: one card, title, then hairline rows. Same 12px radius
+     as `.tile`. Per-card frames and the 16px side inset are what made
+     the stack look double-ruled next to Points Feed and the Live Table. */
+  .fotmob .live-banner-group-tile {
+    background: var(--fm-card) !important;
+    border: 1px solid var(--fm-border) !important;
+    padding: 0 !important;
+    gap: 0;
+    overflow: hidden;
+  }
+  body:not([data-tclot-theme='ceefax']) .fotmob .live-banner-group-tile {
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  }
+  body:not([data-tclot-theme='ceefax']) .fotmob:not([data-theme='light']) .live-banner-group-tile {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+  }
+  .live-banner-group__head {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--fm-border);
+  }
+  .live-banner-group__list {
+    gap: 0;
+  }
+  .live-banner-group__list .lo-matchup {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    border-top: 1px solid var(--fm-border);
+  }
+  .live-banner-group__list .lo-matchup:first-child {
+    border-top: 0;
+  }
+  .live-banner-group__list .lo-matchup--nav:hover,
+  .live-banner-group__list .lo-matchup--nav:focus-within {
+    background-color: color-mix(in srgb, var(--fm-text) 4%, transparent);
+    border-color: var(--fm-border);
+  }
+  /* Head padding and the meta strip's negative margin stay in lockstep
+     so the seed band still runs edge to edge. */
+  .live-banner-group__list .lo-matchup__head {
+    padding: 12px 16px 14px;
+  }
+  .live-banner-group__list .lo-meta {
+    margin: -12px -16px 10px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* Live Table had opted into --r-lg (14px) while every sibling card
+     uses the 12px `.tile` radius. */
+  .tile.tile--live-standings {
+    border-radius: 12px;
   }
 }
 
