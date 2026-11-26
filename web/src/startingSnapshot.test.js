@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildStartingSnapshot, listAnnouncedFixtures } from './startingSnapshot.js';
+import {
+  STARTING_SCOPE_GW,
+  STARTING_SCOPE_UPCOMING,
+  buildStartingSnapshot,
+  listAnnouncedFixtures,
+  listGameweekFixtures,
+} from './startingSnapshot.js';
 
 const teamById = {
   10: { name: 'Arsenal', short_name: 'ARS', code: 3 },
@@ -214,4 +220,70 @@ test('a confirmed sheet with no resolved ids is waiting, not out', () => {
     snap.groups[0].notStarting.some((p) => p.name === 'Gordon'),
     false,
   );
+});
+
+test('upcoming games are announced sheets that have not kicked off', () => {
+  const snap = buildStartingSnapshot({
+    fixtures,
+    squads,
+    elementById,
+    teamById,
+    scope: STARTING_SCOPE_UPCOMING,
+  });
+  assert.deepEqual(names(snap.groups[0].starting), ['Saliba']);
+  assert.deepEqual(names(snap.groups[0].notStarting), ['Trent', 'Saka']);
+  assert.deepEqual(snap.groups[0].waiting, []);
+  assert.equal(names(snap.groups[0].starting).includes('Gordon'), false);
+});
+
+test('full game week totals include live and full-time sheets', () => {
+  const snap = buildStartingSnapshot({
+    fixtures,
+    squads,
+    elementById,
+    teamById,
+    scope: STARTING_SCOPE_GW,
+  });
+  const starting = snap.groups[0].starting;
+  assert.deepEqual(
+    starting.map((p) => [p.name, p.fixtureId]),
+    [
+      ['Saliba', 100],
+      ['Saliba', 400],
+      ['Gordon', 300],
+      ['Gordon', 400],
+    ],
+  );
+  assert.equal(starting.find((p) => p.fixtureId === 400).fullTime, true);
+  assert.equal(starting.find((p) => p.fixtureId === 300).live, true);
+  assert.equal(snap.groups[0].waiting.length, 0);
+  assert.equal(snap.totals.starting, 4);
+  assert.equal(snap.totals.notStarting, 4);
+});
+
+test('the fixture menu lists every gameweek match, then one match filters to it', () => {
+  const menu = listGameweekFixtures(fixtures, teamById);
+  assert.deepEqual(menu.map((f) => f.id), [400, 300, 100, 200]);
+  assert.equal(menu.find((f) => f.id === 200).announced, false);
+  assert.equal(menu.find((f) => f.id === 400).fullTime, true);
+  assert.equal(menu.find((f) => f.id === 100).kickedOff, false);
+
+  const none = buildStartingSnapshot({
+    fixtures,
+    squads,
+    elementById,
+    teamById,
+    fixtureId: 200,
+  });
+  assert.deepEqual(none.groups, []);
+
+  const done = buildStartingSnapshot({
+    fixtures,
+    squads,
+    elementById,
+    teamById,
+    fixtureId: 400,
+  });
+  assert.deepEqual(names(done.groups[0].starting), ['Saliba', 'Gordon']);
+  assert.equal(done.groups[0].starting.every((p) => p.fullTime), true);
 });
