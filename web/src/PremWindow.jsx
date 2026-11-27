@@ -609,10 +609,47 @@ function MobileLineupRow({
   );
 }
 
+function benchPlayerName(player, elementById) {
+  const el =
+    player?.elementId != null && elementById ? elementById[player.elementId] : null;
+  if (el) return fplElementWebName(el, player.elementId);
+  return player?.fplWebName?.trim() || player?.name || '—';
+}
+
+/** Phone bench: names flow across wrapped lines, crest level with the first line. */
+function CompactBench({ players, club, elementById }) {
+  if (!players?.length) return null;
+  const crestUrl = club?.code != null ? plBadgeUrl(club.code) : null;
+  return (
+    <div className="prem-bench-wrap">
+      {crestUrl ? (
+        <img className="prem-bench-wrap__crest" src={crestUrl} alt="" />
+      ) : (
+        <span className="prem-bench-wrap__crest" aria-hidden />
+      )}
+      <ul className="prem-bench-wrap__names">
+        {players.map((p, i) => {
+          const name = benchPlayerName(p, elementById);
+          return (
+            <li className="prem-bench-wrap__name" key={`bench-${p?.elementId ?? i}`}>
+              <ClickablePlayerName
+                element={p?.elementId}
+                displayName={name}
+                web_name={name}
+              >
+                {name}
+              </ClickablePlayerName>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 /**
- * One team's XI and bench on a phone. Every bench player uses the same
- * row grid as the starters, so names, badges, and positions stay aligned.
- * The bench header is hidden when the bench is empty.
+ * One team's XI and bench on a phone. Starters keep the aligned grid.
+ * The bench is a compact wrap of names. The header is hidden when empty.
  */
 function MobileLineupSide({
   side,
@@ -652,21 +689,11 @@ function MobileLineupSide({
       {sortedBench.length > 0 ? (
         <>
           <div className="prem-mlu-bench-head">Bench</div>
-          <div className="prem-mlu-list">
-            {sortedBench.map((p, i) => (
-              <MobileLineupRow
-                key={`bench-${i}`}
-                player={p}
-                club={club}
-                ownerByEl={ownerByEl}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-                elementById={elementById}
-                teamById={teamById}
-                bench
-              />
-            ))}
-          </div>
+          <CompactBench
+            players={sortedBench}
+            club={club}
+            elementById={elementById}
+          />
         </>
       ) : null}
       <NotInSquadRow
