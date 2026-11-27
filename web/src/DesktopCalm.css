@@ -1,0 +1,384 @@
+/*
+ * Desktop calm chrome — browser widths only (≥1081px).
+ *
+ * One rhythm for every page: a soft hairline, roomier padding, and
+ * section cards instead of a border around every row. Phone (≤1080px)
+ * is untouched. Ceefax keeps its teletext grid.
+ *
+ * Tokens live on `.fotmob` so later rules can share them. Colours stay
+ * on the existing theme tokens (light, dark, Scorebook).
+ */
+
+@media (min-width: 1081px) {
+  body:not([data-tclot-theme='ceefax']) .fotmob {
+    --calm-line: color-mix(in srgb, var(--border, var(--fm-border)) 46%, transparent);
+    --calm-pad-x: 20px;
+    --calm-pad-y: 18px;
+    --calm-gap: 20px;
+    --calm-radius: 12px;
+  }
+
+  /* —— Page rhythm —— */
+  body:not([data-tclot-theme='ceefax']) .dashboard-content,
+  body:not([data-tclot-theme='ceefax']) .dashboard-stack,
+  body:not([data-tclot-theme='ceefax']) .live-scores-root,
+  body:not([data-tclot-theme='ceefax']) .main-tiles {
+    gap: var(--calm-gap, 20px);
+  }
+
+  /* The match page and the Live Scores list own their own padding.
+     Giving them the compact-tile inset would put a second frame back. */
+  body:not([data-tclot-theme='ceefax']) .fotmob .tile.tile--compact:not(.lfx-page):not(.live-banner-group-tile) {
+    padding: var(--calm-pad-y, 18px) var(--calm-pad-x, 20px) !important;
+    border-color: var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .fotmob .tile-head-row,
+  body:not([data-tclot-theme='ceefax']) .fotmob .tile-head-row--tight {
+    margin-bottom: 16px !important;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .fotmob .tile-title,
+  body:not([data-tclot-theme='ceefax']) .fotmob .tile-title--sm {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em;
+  }
+
+  /* Nav: same underline, more air, a lighter rule under the bar. */
+  body:not([data-tclot-theme='ceefax']) .dashboard-layout--with-nav > .dashboard-nav,
+  body:not([data-tclot-theme='ceefax']) .standings-subnav-strip,
+  body:not([data-tclot-theme='ceefax']) .subview-subnav-strip,
+  body:not([data-tclot-theme='ceefax']) .heritage-subnav-strip,
+  body:not([data-tclot-theme='ceefax']) .tile--team-selection > .section-chrome--sticky {
+    border-bottom-color: var(--calm-line, var(--fm-border));
+    box-shadow: none;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .subnav:not(.li-subnav) .subnav__tab,
+  body:not([data-tclot-theme='ceefax']) .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
+    padding-top: 16px;
+    padding-bottom: 14px;
+    font-weight: 600;
+  }
+
+  /* Tables (Standings, Live Table, Hall): hairline rows, taller cells. */
+  body:not([data-tclot-theme='ceefax']) .standings-table th,
+  body:not([data-tclot-theme='ceefax']) .standings-table td {
+    padding: 14px 12px;
+    border-bottom-color: var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .tile.tile--standings,
+  body:not([data-tclot-theme='ceefax']) .tile.hall-of-champions {
+    border-color: var(--calm-line, var(--fm-border));
+  }
+
+  /* —— Scores list: quiet captions, roomy rows, one hairline —— */
+  body:not([data-tclot-theme='ceefax']) .live-banner-group__head {
+    padding: 16px 20px;
+    border-bottom-color: var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .live-banner-group__list .lo-matchup {
+    border-top: 1px solid var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .live-banner-group__list .lo-matchup__head {
+    padding: 16px 20px 18px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .live-banner-group__list .lo-meta {
+    margin: 0 0 10px;
+    padding: 0;
+    background: transparent;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .live-banner-group__list .lo-hdr__name {
+    font-size: 1rem;
+    font-weight: 650;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .live-banner-group__list .lo-hdr__score {
+    font-size: 1.25rem;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .live-banner-group__list .lo-gauge {
+    margin-top: 12px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .live-scores-chrome .gw-nav {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  /* —— Lineups: one fixture, inline expanders, no stacked boxes —— */
+  body:not([data-tclot-theme='ceefax']) .prem-start-modes {
+    border: 0;
+    background: color-mix(in srgb, var(--fm-text) 6%, transparent);
+    max-width: 440px;
+    margin: 4px 0 4px;
+    padding: 4px;
+    border-radius: 999px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-start-modes button {
+    padding: 9px 14px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-start-modes button.is-on {
+    background: var(--fm-card);
+    color: var(--fm-text-strong);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-fxlist-card {
+    border-color: var(--calm-line, var(--fm-border));
+    border-radius: var(--calm-radius, 12px);
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-day {
+    background: transparent;
+    border: 0;
+    padding: 22px 20px 2px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fm-muted);
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-fxitem {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 16px;
+    border-bottom: 1px solid var(--calm-line, var(--fm-border));
+    padding: 4px 8px 8px;
+    background: transparent;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-fxitem:last-child {
+    border-bottom: 0;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-fxrow {
+    flex: 1 0 100%;
+    padding: 12px 12px 2px;
+    min-height: 52px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-fxrow__name {
+    font-size: 15px;
+    font-weight: 650;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-fxrow__score {
+    font-size: 16px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-moments.lfc-events,
+  body:not([data-tclot-theme='ceefax']) .prem-lu {
+    border: 0;
+    background: transparent;
+    margin: 0 4px 6px 12px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-moments:not(.lfc-events--open),
+  body:not([data-tclot-theme='ceefax']) .prem-lu:not(.is-open) {
+    flex: 0 0 auto;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-moments.lfc-events--open,
+  body:not([data-tclot-theme='ceefax']) .prem-lu.is-open {
+    flex: 1 0 100%;
+    margin: 2px 8px 10px;
+    padding-bottom: 6px;
+    background: color-mix(in srgb, var(--fm-surface-2) 70%, transparent);
+    border-radius: 10px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-moments__toggle,
+  body:not([data-tclot-theme='ceefax']) .prem-lu__toggle {
+    width: auto;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-moments:not(.lfc-events--open) .prem-moments__toggle,
+  body:not([data-tclot-theme='ceefax']) .prem-lu:not(.is-open) .prem-lu__toggle {
+    background: color-mix(in srgb, var(--fm-text) 5%, transparent);
+  }
+
+  body:not([data-tclot-theme='ceefax']) .prem-moments__title,
+  body:not([data-tclot-theme='ceefax']) .prem-lu__title {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fm-muted);
+  }
+
+  /* —— Match page: same card, site type, underline tabs —— */
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-head {
+    background: transparent;
+    color: var(--fm-text-strong);
+    padding-bottom: 0;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-hero {
+    padding: 8px 24px 6px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-hero__name {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-hero__score {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--fm-text-strong);
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-hero__sub,
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-hero__status {
+    color: var(--fm-muted);
+    opacity: 1;
+    font-weight: 600;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-strip {
+    border-bottom: 1px solid var(--calm-line, var(--fm-border));
+    gap: 4px;
+    padding: 14px 16px 10px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-strip__card {
+    border: 0;
+    background: transparent;
+    border-radius: 10px;
+    padding: 8px 12px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-strip__card.is-active {
+    background: color-mix(in srgb, var(--brand, var(--tclot-logo-purple)) 10%, transparent);
+    border: 0;
+    box-shadow: none;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-mini__name {
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-mini__score {
+    font-size: 15px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-tabs {
+    justify-content: flex-start;
+    gap: 0;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfc-tab {
+    color: var(--fm-muted);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 14px 11px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfc-tab.is-active {
+    color: var(--fm-text-strong);
+    background: none;
+    border: 0;
+    box-shadow: inset 0 -2px 0 var(--tclot-logo-purple);
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfc-split__row {
+    padding: 12px 20px;
+    font-size: 14px;
+    border-top-color: var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfc-split__head {
+    padding: 12px 20px;
+    background: color-mix(in srgb, var(--fm-surface-2) 80%, var(--fm-card));
+    box-shadow: none;
+    border-bottom: 1px solid var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfc-events {
+    background: transparent;
+    border-bottom: 1px solid var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfx-page__topbar,
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfxp-head + .lfxp-pane {
+    border-color: var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .lfx-page .lfx-page__topbar {
+    border-bottom-color: var(--calm-line, var(--fm-border));
+    padding: 14px 20px;
+  }
+
+  /* —— Moves: one waiver list, softer trade cards —— */
+  body:not([data-tclot-theme='ceefax']) .waivers-glance {
+    gap: 0;
+    border: 1px solid var(--calm-line, var(--fm-border));
+    border-radius: var(--calm-radius, 12px);
+    overflow: hidden;
+    background: var(--fm-card);
+  }
+
+  body:not([data-tclot-theme='ceefax']) .waivers-glance__item {
+    border: 0;
+    border-radius: 0;
+    border-top: 1px solid var(--calm-line, var(--fm-border));
+    background: transparent;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .waivers-glance__item:first-child {
+    border-top: 0;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .waivers-glance__row {
+    padding: 14px 16px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .waiver-row {
+    padding: 12px 0;
+    border-bottom-color: var(--calm-line, var(--fm-border));
+  }
+
+  body:not([data-tclot-theme='ceefax']) .trades-list {
+    gap: 16px;
+  }
+
+  body:not([data-tclot-theme='ceefax']) .trade-card {
+    border-color: var(--calm-line, var(--fm-border));
+    border-radius: var(--calm-radius, 12px);
+    padding: 16px 18px;
+  }
+
+  /* Hall record tiles and prediction/market cards share the hairline. */
+  body:not([data-tclot-theme='ceefax']) .heritage-record-tile,
+  body:not([data-tclot-theme='ceefax']) .bookie-market,
+  body:not([data-tclot-theme='ceefax']) .weekly-recap,
+  body:not([data-tclot-theme='ceefax']) .season-preview {
+    border-color: var(--calm-line, var(--fm-border));
+  }
+}
