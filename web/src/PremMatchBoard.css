@@ -1,0 +1,311 @@
+/* Premier League scorecard — desktop detail panel and phone sheet.
+   Colours come from the FotMob / Ceefax tokens so every theme stays intact. */
+
+.prem-board {
+  background: var(--fm-card, var(--surface));
+  color: var(--fm-text, var(--text));
+  border: 1px solid var(--fm-border, var(--border));
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.prem-board__score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 18px 16px 12px;
+  background: var(--tclot-header-solid, var(--fm-surface-2, var(--surface-2)));
+  color: #fff;
+}
+
+.prem-board__side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.prem-board__side--home { justify-content: flex-end; text-align: right; }
+.prem-board__side--away { justify-content: flex-start; text-align: left; }
+
+.prem-board__club {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.prem-board__club-name {
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prem-board__club-short {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+.prem-board__badge {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.prem-board__mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.prem-board__big {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.prem-board__dash { opacity: 0.7; padding: 0 4px; }
+.prem-board__status {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.prem-board__status.is-live { color: #fecaca; }
+
+.prem-board__scorers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px 16px 4px;
+  font-size: 12px;
+  color: var(--fm-muted, var(--text-muted));
+}
+.prem-board__scorers span:first-child { text-align: right; }
+
+.prem-board__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 8px 14px 10px;
+}
+.prem-board__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--fm-border, var(--border));
+  background: var(--fm-surface-2, var(--surface-2));
+  font-size: 12px;
+  font-weight: 700;
+}
+.prem-board__chip.is-just-in {
+  background: color-mix(in srgb, var(--fm-pitch, #12a15a) 22%, var(--fm-card, var(--surface)));
+  border-color: var(--fm-pitch, #12a15a);
+}
+.prem-board__just {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-pitch, #12a15a);
+}
+
+.prem-board__xi { display: flex; flex-direction: column; }
+.prem-board__xi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--fm-border, var(--border));
+}
+.prem-board__cell {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto 18px;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.prem-board__cell--empty { min-height: 28px; }
+.prem-board__cell.is-owned {
+  background: color-mix(in srgb, var(--tclot-header-solid, #795bfb) 8%, transparent);
+}
+.prem-board__mini {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.prem-board__pname {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+.prem-board__pts {
+  font-weight: 800;
+  font-size: 13px;
+}
+.prem-board__owner {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.prem-board__owner .team-avatar-frame--sm,
+.prem-board__owner .team-avatar {
+  width: 16px;
+  height: 16px;
+}
+.prem-board__empty { padding: 16px; }
+
+.prem-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.prem-sheet__dim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: color-mix(in srgb, #000 46%, transparent);
+  cursor: pointer;
+}
+.prem-sheet__panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(88vh, 100%);
+  overflow: auto;
+  background: var(--fm-bg, var(--bg));
+  border-radius: 18px 18px 0 0;
+  padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.28);
+}
+.prem-sheet__panel.is-dragging { transition: none; }
+.prem-sheet__grab {
+  width: 36px;
+  height: 4px;
+  margin: 4px auto 8px;
+  border-radius: 999px;
+  background: var(--fm-muted, var(--text-muted));
+  opacity: 0.55;
+}
+.prem-sheet__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--fm-muted, var(--text-muted));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .prem-split {
+    display: grid;
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+  .prem-rail {
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+  .prem-rail > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .prem-rail__day {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fm-muted, var(--text-muted));
+    padding: 4px 4px 0;
+  }
+  .prem-rail__btn {
+    appearance: none;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--fm-border, var(--border));
+    background: var(--fm-card, var(--surface));
+    color: var(--fm-text, var(--text));
+    cursor: pointer;
+    font: inherit;
+  }
+  .prem-rail__btn.is-selected {
+    border-color: var(--tclot-header-solid, var(--tclot-logo-purple, #795bfb));
+    box-shadow: inset 0 0 0 1px var(--tclot-header-solid, var(--tclot-logo-purple, #795bfb));
+  }
+  .prem-rail__teams {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+  .prem-rail__line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .prem-rail__line img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex: 0 0 auto;
+  }
+  .prem-rail__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .prem-rail__score {
+    font-weight: 800;
+    font-size: 14px;
+    text-align: right;
+  }
+  .prem-rail__meta {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--fm-muted, var(--text-muted));
+    text-transform: uppercase;
+  }
+  .prem-rail__meta.is-live { color: var(--fm-loss-dot, #ef4444); }
+}
+
+@media (max-width: 767px) {
+  .prem-board__club-name { font-size: 13px; }
+  .prem-board__big { font-size: 34px; }
+  .prem-board__cell { font-size: 12px; padding: 5px 6px; gap: 4px; }
+}

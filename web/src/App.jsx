@@ -513,6 +513,12 @@ import { SeasonPredictions } from './SeasonPredictions'
 import { BookieView } from './BookieView'
 import { WeeklyRecap } from './WeeklyRecap'
 import { pickDeadlinePassedLiveEvent, pickDeadlinePassedLiveGw } from './fplLiveCalendar.js'
+import {
+  parseFplLiveHash,
+  buildFplLiveHash,
+  replaceFplLiveHash,
+  clearFplLiveHash,
+} from './fplLiveRoutes.js'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
@@ -2513,6 +2519,7 @@ function initialDashboardViewForViewport() {
   if (hasPlayersHash || archiveView) {
     return initialDashboardView({ hasPlayersHash, archiveView })
   }
+  if (parseFplLiveHash(window.location.hash)) return 'fplLive'
   const stored = readTclotViewState().dashboardView
   if (stored === 'settings') return 'standings'
   if (stored) return stored
@@ -2663,11 +2670,16 @@ function App() {
   /* FPL Live sub-tab. `null` = no explicit choice yet — the rendered tab then
    * follows the season phase (see `fplLiveTab` below, derived after the brand
    * header status). Legacy values are folded onto the page that replaced
-   * them: `'vibes'` and `'forecast'` open Scores, and `'predictions'` (the
-   * old Season markets tab) opens Predictions. */
+   * them: `'vibes'` and `'forecast'` open TCLOT, and `'predictions'` (the
+   * old Season markets tab) opens Predictions. A `#/fpl/…` hash wins over
+   * the stored tab so a shared link opens the named subtab. */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
     /** @type {null | 'squads' | 'live' | 'recap' | 'bookie' | 'board'} */ (
-      () => canonicalFplLiveTab(readTclotViewState().fplLiveTab)
+      () => {
+        const hashed = typeof window === 'undefined' ? null : parseFplLiveHash(window.location.hash)
+        if (hashed?.tab === 'squads' || hashed?.tab === 'live') return hashed.tab
+        return canonicalFplLiveTab(readTclotViewState().fplLiveTab)
+      }
     ),
   )
   const setFplLiveTab = useCallback((next) => {
@@ -2685,7 +2697,11 @@ function App() {
    * condensed rows below. Visual treatment matches the leader hero so
    * the rank-1 highlight tradition still reads, plus user can mark any
    * other row for at-a-glance comparison. */
-  const [liveGw, setLiveGw] = useState(() => readTclotViewState().liveGw)
+  const [liveGw, setLiveGw] = useState(() => {
+    const hashed = typeof window === 'undefined' ? null : parseFplLiveHash(window.location.hash)
+    if (hashed?.gameweek) return hashed.gameweek
+    return readTclotViewState().liveGw
+  })
   /** Draft bootstrap `events.current` — default Live tab GW when user has not chosen one. */
   const [fplLiveLandingGw, setFplLiveLandingGw] = useState(null)
   const [waiverGwView, setWaiverGwView] = useState(null)
@@ -2787,6 +2803,7 @@ function App() {
 
   useEffect(() => {
     if (!draftGate.navLocked) return
+    if (typeof window !== 'undefined' && parseFplLiveHash(window.location.hash)) return
     if (!isPreDraftAllowedView(dashboardView)) {
       setDashboardView('teamSelection')
     }
@@ -3374,6 +3391,39 @@ function App() {
     if (leader != null) return leader
     return teamsForFormSelect[0]?.id ?? null
   }, [statsH2hTeamId, tableRows, teamsForFormSelect])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    function applyHash() {
+      if (parsePlayersHash()) return
+      const parsed = parseFplLiveHash(window.location.hash)
+      if (!parsed || draftGate.navLocked) return
+      setDashboardView('fplLive')
+      setFplLiveTab(parsed.tab === 'squads' ? 'squads' : 'live')
+      if (parsed.gameweek) setLiveGw(parsed.gameweek)
+      if (parsed.alias && window.location.hash !== buildFplLiveHash(parsed)) {
+        replaceFplLiveHash(parsed)
+      }
+    }
+    applyHash()
+    window.addEventListener('hashchange', applyHash)
+    return () => window.removeEventListener('hashchange', applyHash)
+  }, [draftGate.navLocked, setFplLiveTab])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (parsePlayersHash()) return
+    if (draftGate.navLocked) return
+    const onFplLive = dashboardView === 'fplLive' && (fplLiveTab === 'live' || fplLiveTab === 'squads')
+    if (!onFplLive) {
+      clearFplLiveHash()
+      return
+    }
+    const parsed = parseFplLiveHash(window.location.hash)
+    const tab = fplLiveTab === 'squads' ? 'squads' : 'live'
+    if (parsed?.tab === tab) return
+    replaceFplLiveHash({ tab, gameweek: Number(liveGw) || undefined })
+  }, [dashboardView, fplLiveTab, liveGw, draftGate.navLocked])
 
   if (loading) {
     return (
@@ -4222,8 +4272,10 @@ function App() {
                 (isPredictionsTab(fplLiveTab) || isBookieHubTab(fplLiveTab))
               ) ? (
               <div className="section-chrome section-chrome--sticky">
-              {/* Mobile: Predictions and Markets live in the More sheet, so the
-                  Scores / Lineups tabs stay hidden there. Desktop keeps them. */}
+              {/* Mobile: Predictions and Markets live in the More sheet, so only
+                  TCLOT and Premier League show there. Desktop keeps all four.
+                  Tab ids stay `live` / `squads` so saved sessions keep working.
+                  `#/fpl/scores` and `#/fpl/lineups` are aliases of the new paths. */}
               <div
                 className="subnav"
                 role="tablist"
@@ -4240,7 +4292,7 @@ function App() {
                   }
                   onClick={() => setFplLiveTab('live')}
                 >
-                  Scores
+                  TCLOT
                 </button>
                 <button
                   type="button"
@@ -4253,7 +4305,7 @@ function App() {
                   }
                   onClick={() => setFplLiveTab('squads')}
                 >
-                  Lineups
+                  Premier League
                 </button>
                 {!mobileLayout ? (
                   <>
