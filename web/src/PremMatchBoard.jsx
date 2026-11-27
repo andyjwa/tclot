@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { TeamAvatar } from './TeamAvatar';
 import { fplElementWebName } from './fplElementNames.js';
@@ -293,78 +292,5 @@ function XiCell({
         <span className="prem-board__owner" />
       )}
     </div>
-  );
-}
-
-/**
- * Phone scorecard sheet. Tap the dim or the close control, or drag the
- * panel down, to dismiss. The fixture list underneath stays mounted.
- */
-export function PremScoreSheet({ fx, onClose, children }) {
-  const [drag, setDrag] = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const startY = useRef(0);
-  const panelRef = useRef(null);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
-
-  const onTouchStart = (e) => {
-    startY.current = e.touches[0]?.clientY ?? 0;
-    setDragging(true);
-  };
-  const onTouchMove = (e) => {
-    const y = e.touches[0]?.clientY ?? 0;
-    const next = Math.max(0, y - startY.current);
-    setDrag(next);
-  };
-  const onTouchEnd = () => {
-    setDragging(false);
-    if (drag > 90) onClose();
-    else setDrag(0);
-  };
-
-  if (typeof document === 'undefined' || !fx) return null;
-
-  return createPortal(
-    <div className="prem-sheet" role="presentation">
-      <button
-        type="button"
-        className="prem-sheet__dim"
-        aria-label="Close match"
-        onClick={onClose}
-      />
-      <div
-        ref={panelRef}
-        className={'prem-sheet__panel' + (dragging ? ' is-dragging' : '')}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Match scorecard"
-        style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        <div className="prem-sheet__grab" aria-hidden />
-        <button type="button" className="prem-sheet__close" onClick={onClose}>
-          Close
-        </button>
-        {children}
-      </div>
-    </div>,
-    document.body,
   );
 }
