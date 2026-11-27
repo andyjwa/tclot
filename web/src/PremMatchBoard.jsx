@@ -26,6 +26,106 @@ function playerLabel(player, elementById) {
   return player?.fplWebName?.trim() || player?.name || '—';
 }
 
+const POS_LABEL = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
+const POS_FROM_SHORT = { GK: 'GK', D: 'DEF', M: 'MID', F: 'FWD' };
+
+function positionLabel(player, elementById) {
+  const el = elementById?.[player?.elementId] ?? elementById?.[String(player?.elementId)];
+  const fromType = POS_LABEL[Number(el?.element_type)];
+  if (fromType) return fromType;
+  const short = String(player?.fplPos || '').trim().toUpperCase();
+  return POS_FROM_SHORT[short] || '';
+}
+
+function managerFirstWord(owner) {
+  const name = String(owner?.teamName ?? '').trim();
+  if (!name) return '';
+  return name.split(/\s+/)[0] || name;
+}
+
+/**
+ * One lineup row. Every slot is always present so manager badges, the
+ * chair, and the position sit on the same vertical lines no matter how
+ * long the player or manager name is, and whether anyone owns the player.
+ *
+ * Pass `points` (including null) to add the fixed points column used by
+ * the desktop scorecard. Omit it on the phone list.
+ */
+export function PremLineupRow({
+  player,
+  club,
+  ownerByEl,
+  elementById,
+  teamById,
+  teamLogoMap,
+  kitIndexByEntry,
+  points,
+  bench = false,
+}) {
+  const id = Number(player?.elementId);
+  const owner = Number.isFinite(id)
+    ? ownerByEl?.get(id) ?? ownerByEl?.get(String(id)) ?? null
+    : null;
+  const el = elementById?.[player?.elementId] ?? elementById?.[String(player?.elementId)];
+  const name = playerLabel(player, elementById);
+  const pos = positionLabel(player, elementById);
+  const mgr = managerFirstWord(owner);
+  const showPts = points !== undefined;
+  const crestUrl = club?.code != null ? crest(club) : null;
+  const teamShort = el && teamById ? teamById[Number(el.team)]?.short_name : undefined;
+  return (
+    <div
+      className={
+        'prem-mlu-row' +
+        (bench ? ' prem-mlu-row--bench' : '') +
+        (owner ? ' is-owned' : '') +
+        (showPts ? ' prem-mlu-row--pts' : '')
+      }
+    >
+      {crestUrl ? (
+        <img className="prem-mlu-crest" src={crestUrl} alt="" />
+      ) : (
+        <span className="prem-mlu-crest" aria-hidden />
+      )}
+      <span className="prem-mlu-name">
+        <ClickablePlayerName
+          element={player?.elementId}
+          displayName={el ? fplElementWebName(el, player.elementId) : name}
+          web_name={el ? fplElementWebName(el, player.elementId) : name}
+          teamShort={teamShort}
+        >
+          {name}
+        </ClickablePlayerName>
+      </span>
+      {showPts ? (
+        <span className="prem-mlu-pts tabular">{points == null ? '–' : points}</span>
+      ) : null}
+      <span className="prem-mlu-mgr" title={owner?.teamName || undefined}>
+        {mgr}
+      </span>
+      <span className="prem-mlu-badge">
+        {owner ? (
+          <TeamAvatar
+            entryId={owner.leagueEntryId}
+            name={owner.teamName}
+            size="sm"
+            logoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+        ) : null}
+      </span>
+      <span className="prem-mlu-icon">
+        {owner?.onFantasyBench ? (
+          <span className="prem-owner-bench" title="On fantasy bench" aria-label="On fantasy bench">
+            🪑
+          </span>
+        ) : null}
+      </span>
+      <span className="prem-mlu-pos">{pos}</span>
+    </div>
+  );
+}
+
 function eventKey(ev, i) {
   if (ev?.eventId != null) return `id:${ev.eventId}`;
   return `${ev?.kind}|${ev?.minuteLabel}|${ev?.playerName}|${ev?.teamSide}|${i}`;
@@ -128,7 +228,10 @@ export function PremMatchBoard({
 
   const xiH = sortXi(fx?.lineups?.home?.xi, elementById);
   const xiA = sortXi(fx?.lineups?.away?.xi, elementById);
+  const benchH = sortXi(fx?.lineups?.home?.bench, elementById);
+  const benchA = sortXi(fx?.lineups?.away?.bench, elementById);
   const rows = Math.max(xiH.length, xiA.length);
+  const benchRows = Math.max(benchH.length, benchA.length);
 
   const scorerLine = (list) =>
     list.length
@@ -180,39 +283,43 @@ export function PremMatchBoard({
       ) : null}
 
       {rows > 0 ? (
-        <div className="prem-board__xi" role="list">
-          {Array.from({ length: rows }, (_, i) => (
-            <div className="prem-board__xi-row" key={`xi-${i}`} role="listitem">
-              <XiCell
-                player={xiH[i]}
-                club={home}
-                elementById={elementById}
-                ownerByEl={ownerByEl}
-                liveFullByElementId={liveFullByElementId}
-                fixtureId={fixtureId}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-                side="home"
-              />
-              <XiCell
-                player={xiA[i]}
-                club={away}
-                elementById={elementById}
-                ownerByEl={ownerByEl}
-                liveFullByElementId={liveFullByElementId}
-                fixtureId={fixtureId}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-                side="away"
-              />
-            </div>
-          ))}
-        </div>
+        <LineupGrid
+          homePlayers={xiH}
+          awayPlayers={xiA}
+          home={home}
+          away={away}
+          elementById={elementById}
+          teamById={teamById}
+          ownerByEl={ownerByEl}
+          liveFullByElementId={liveFullByElementId}
+          fixtureId={fixtureId}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
       ) : (
         <p className="muted muted--tight prem-board__empty">
           Lineups not confirmed yet. Both XIs usually land around team news.
         </p>
       )}
+      {benchRows > 0 ? (
+        <>
+          <div className="prem-board__bench-head">Bench</div>
+          <LineupGrid
+            homePlayers={benchH}
+            awayPlayers={benchA}
+            home={home}
+            away={away}
+            elementById={elementById}
+            teamById={teamById}
+            ownerByEl={ownerByEl}
+            liveFullByElementId={liveFullByElementId}
+            fixtureId={fixtureId}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            bench
+          />
+        </>
+      ) : null}
     </article>
   );
 }
@@ -247,50 +354,48 @@ function BoardSide({ name, short, team, align }) {
   );
 }
 
-function XiCell({
-  player,
-  club,
+function LineupGrid({
+  homePlayers,
+  awayPlayers,
+  home,
+  away,
   elementById,
+  teamById,
   ownerByEl,
   liveFullByElementId,
   fixtureId,
   teamLogoMap,
   kitIndexByEntry,
-  side,
+  bench = false,
 }) {
-  if (!player) return <div className="prem-board__cell prem-board__cell--empty" />;
-  const id = Number(player.elementId);
-  const owner = Number.isFinite(id) ? ownerByEl?.get(id) ?? ownerByEl?.get(String(id)) : null;
-  const el = elementById?.[player.elementId] ?? elementById?.[String(player.elementId)];
-  const name = playerLabel(player, elementById);
-  const pts = fixtureFplPoints(liveFullByElementId, id, fixtureId);
-  const badge = crest(club);
+  const count = Math.max(homePlayers.length, awayPlayers.length);
+  const cell = (player, club, side) => {
+    if (!player) return <div className="prem-board__cell prem-board__cell--empty" />;
+    const pts = fixtureFplPoints(liveFullByElementId, player.elementId, fixtureId);
+    return (
+      <div className={'prem-board__cell prem-board__cell--' + side}>
+        <PremLineupRow
+          player={player}
+          club={club}
+          ownerByEl={ownerByEl}
+          elementById={elementById}
+          teamById={teamById}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          points={pts}
+          bench={bench}
+        />
+      </div>
+    );
+  };
   return (
-    <div className={'prem-board__cell prem-board__cell--' + side + (owner ? ' is-owned' : '')}>
-      {badge ? <img className="prem-board__mini" src={badge} alt="" /> : <span className="prem-board__mini" />}
-      <span className="prem-board__pname">
-        <ClickablePlayerName
-          element={player.elementId}
-          displayName={name}
-          web_name={el ? fplElementWebName(el, player.elementId) : name}
-        >
-          {name}
-        </ClickablePlayerName>
-      </span>
-      <span className="prem-board__pts tabular">{pts == null ? '–' : pts}</span>
-      {owner ? (
-        <span className="prem-board__owner" title={owner.teamName}>
-          <TeamAvatar
-            entryId={owner.leagueEntryId}
-            name={owner.teamName}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        </span>
-      ) : (
-        <span className="prem-board__owner" />
-      )}
+    <div className="prem-board__xi" role="list">
+      {Array.from({ length: count }, (_, i) => (
+        <div className="prem-board__xi-row" key={`${bench ? 'b' : 'xi'}-${i}`} role="listitem">
+          {cell(homePlayers[i], home, 'home')}
+          {cell(awayPlayers[i], away, 'away')}
+        </div>
+      ))}
     </div>
   );
 }
