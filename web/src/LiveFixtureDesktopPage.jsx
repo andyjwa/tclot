@@ -43,6 +43,8 @@ import { patchTclotViewState } from './tclotViewState.js';
  * @param {(index: number) => void} props.onSelectFixture  Switch open fixture.
  * @param {Object}  props.ctx           Shared live context (teams, logos, …).
  * @param {() => void} props.onBack     Return to the scores list.
+ * @param {boolean} [props.embedded]    Desktop split panel: no back control,
+ *   no fixture strip (the rail is the list), and Escape does not dismiss.
  */
 export function LiveFixtureDesktopPage({
   fixtures,
@@ -51,6 +53,7 @@ export function LiveFixtureDesktopPage({
   ctx,
   onBack,
   initialTabId = null,
+  embedded = false,
 }) {
   const [tab, setTab] = useState(() =>
     FIXTURE_CARD_TABS.some((t) => t.id === initialTabId) ? initialTabId : 'match',
@@ -73,14 +76,16 @@ export function LiveFixtureDesktopPage({
     })
   }, [fixture, tab, ctx?.gameweek])
 
-  // Esc backs out, matching the card deck's dismissal affordance.
+  // Esc backs out of the full-page takeover. The desktop split keeps the
+  // panel mounted, so Escape is left to overlays (player detail, sheets).
   useEffect(() => {
+    if (embedded || typeof onBack !== 'function') return undefined;
     const onKey = (e) => {
       if (e.key === 'Escape') onBack();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onBack]);
+  }, [onBack, embedded]);
 
   const {
     homeId,
@@ -148,25 +153,32 @@ export function LiveFixtureDesktopPage({
   };
 
   return (
-    <section className="tile tile--compact lfx-page" aria-label={`${homeName} vs ${awayName}`}>
-      <div className="lfx-page__topbar">
-        <button
-          type="button"
-          className="lfxp-back lfxp-back--ghost"
-          onClick={onBack}
-        >
-          <span aria-hidden="true">‹</span> All Scores
-        </button>
-        <span className="lfxp-comp">{comp}</span>
-      </div>
-      <FixtureStrip
-        fixtures={fixtures}
-        activeIndex={safeIndex}
-        gwFinished={ctx.gwFinished}
-        teamLogoMap={ctx.teamLogoMap}
-        kitIndexByEntry={ctx.kitIndexByEntry}
-        onSelectFixture={onSelectFixture}
-      />
+    <section
+      className={'tile tile--compact lfx-page' + (embedded ? ' lfx-page--embedded' : '')}
+      aria-label={`${homeName} vs ${awayName}`}
+    >
+      {embedded ? null : (
+        <div className="lfx-page__topbar">
+          <button
+            type="button"
+            className="lfxp-back lfxp-back--ghost"
+            onClick={onBack}
+          >
+            <span aria-hidden="true">‹</span> All Scores
+          </button>
+          <span className="lfxp-comp">{comp}</span>
+        </div>
+      )}
+      {embedded ? null : (
+        <FixtureStrip
+          fixtures={fixtures}
+          activeIndex={safeIndex}
+          gwFinished={ctx.gwFinished}
+          teamLogoMap={ctx.teamLogoMap}
+          kitIndexByEntry={ctx.kitIndexByEntry}
+          onSelectFixture={onSelectFixture}
+        />
+      )}
       {/* Hero + tab strip share one gradient band so the pills sit on the
           same dark surface as on the phone card. */}
       <div className="lfxp-head">

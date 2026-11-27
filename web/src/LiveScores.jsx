@@ -30,6 +30,11 @@ import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureCardDeck } from './LiveFixtureCardDeck.jsx';
 import { LiveFixtureDesktopPage } from './LiveFixtureDesktopPage.jsx';
+import { TclotDesktopSplit } from './TclotDesktopSplit.jsx';
+import {
+  fixtureIndexFromFplHash,
+  replaceFplLiveHash,
+} from './fplLiveRoutes.js';
 import {
   GuardOfHonourSplash,
   GuardOfHonourCollapsedStrip,
@@ -84,6 +89,18 @@ function fixtureWinProbs(homeSquad, awaySquad, byId, sigmaScale = 1) {
  * fall back to `Draw N%` / `Even N%` so the strip never picks a side that
  * isn't actually ahead.
  */
+/** Rounded projected scoreline from the same blend as the Odds tab. */
+function projectedScoreline(homeSquad, awaySquad, byId) {
+  if (!byId) return null;
+  const homeRows = effectiveStartersForCard(homeSquad);
+  const awayRows = effectiveStartersForCard(awaySquad);
+  const mode = anyFixtureLive(homeRows, awayRows) ? 'live' : 'prematch';
+  const home = teamProjection(homeRows, byId, mode);
+  const away = teamProjection(awayRows, byId, mode);
+  if (home.matched === 0 && away.matched === 0) return null;
+  return `${Math.round(home.mu)}\u2013${Math.round(away.mu)}`;
+}
+
 function favouriteMetaLabel(probs, homeDisplayName, awayDisplayName) {
   if (!probs) return null;
   const h = Number(probs.homeWinPct) || 0;
@@ -1139,8 +1156,14 @@ export function LiveScores({
   const [restoreScorecard, setRestoreScorecard] = useState(false);
   const restoredFixtureTab = readTclotViewState().fixtureTab;
 
-  /** A fixture is open as the desktop full-width takeover page. */
-  const pageOpen = !mobileNarrowViewport && cardDeckIndex != null;
+  /**
+   * Desktop (>767px) keeps the matchup list and the fixture page side by
+   * side. Phones keep the separate full-screen card. `pageOpen` is only the
+   * legacy full-width takeover, which the split replaces.
+   */
+  const desktopSplit =
+    !mobileNarrowViewport && useFixtureLayout && !projectionsOnly;
+  const pageOpen = !mobileNarrowViewport && !desktopSplit && cardDeckIndex != null;
 
   /**
    * List scroll position captured when the fixture page opens, so Back
@@ -1203,6 +1226,9 @@ export function LiveScores({
         homeRemaining,
         awayRemaining,
         comp: selectedGwOption?.label ?? `Gameweek ${gameweek}`,
+        projLabel: showFixtureOdds
+          ? projectedScoreline(homeSquad, awaySquad, oddsById)
+          : null,
       };
     });
   }, [
@@ -1213,6 +1239,8 @@ export function LiveScores({
     selectedGwOption,
     gwStandingsFrozen,
     finishedMatchPtsByLeagueEntry,
+    showFixtureOdds,
+    oddsById,
   ]);
 
   const mottyEntryIds = useMemo(
@@ -1258,11 +1286,21 @@ export function LiveScores({
     if (cardFixtures.length === 0) return
     restoredScorecardRef.current = true
     const stored = readTclotViewState()
-    const i = fixtureIndexFromViewState(cardFixtures, stored.fixture, gameweek)
-    if (i == null) return
-    setRestoreScorecard(true)
-    setCardDeckIndex(i)
-  }, [cardFixtures, gameweek])
+    const fromStore = fixtureIndexFromViewState(cardFixtures, stored.fixture, gameweek)
+    const fromHash =
+      typeof window === 'undefined'
+        ? null
+        : fixtureIndexFromFplHash(cardFixtures, gameweek, window.location.hash)
+    const i = fromHash ?? fromStore
+    if (i != null) {
+      setRestoreScorecard(true)
+      setCardDeckIndex(i)
+      return
+    }
+    // Desktop opens on the first matchup so the detail panel is never empty.
+    // Phones stay on the list until a row is tapped.
+    if (!mobileNarrowViewport && useFixtureLayout && !projectionsOnly) setCardDeckIndex(0)
+  }, [cardFixtures, gameweek, mobileNarrowViewport, useFixtureLayout, projectionsOnly])
 
   useEffect(() => {
     if (cardDeckIndex != null) {
@@ -1285,6 +1323,39 @@ export function LiveScores({
       patchTclotViewState({ fixture: null, fixtureTab: null })
     }
   }, [cardDeckIndex, cardFixtures, gameweek])
+
+  // Desktop selection is the shareable URL. Phones keep the card deck off
+  // the hash so opening a match does not change history or the address bar.
+  useEffect(() => {
+    if (!desktopSplit) return
+    if (cardDeckIndex == null) return
+    const fx = cardFixtures[cardDeckIndex]
+    if (!fx) return
+    replaceFplLiveHash({
+      tab: 'live',
+      gameweek: Number(gameweek),
+      homeId: fx.homeId,
+      awayId: fx.awayId,
+    })
+  }, [desktopSplit, cardDeckIndex, cardFixtures, gameweek])
+
+  const desktopGwRef = useRef(gameweek)
+  useEffect(() => {
+    if (desktopGwRef.current === gameweek) return
+    desktopGwRef.current = gameweek
+    setCardDeckIndex(desktopSplit ? 0 : null)
+  }, [gameweek, desktopSplit])
+
+  useEffect(() => {
+    if (!desktopSplit || typeof window === 'undefined') return undefined
+    const onHash = () => {
+      const i = fixtureIndexFromFplHash(cardFixtures, gameweek, window.location.hash)
+      if (i == null) return
+      setCardDeckIndex(i)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [desktopSplit, cardFixtures, gameweek])
 
   return (
     <div
@@ -1384,10 +1455,27 @@ export function LiveScores({
         />
       ) : (
         <>
+      {desktopSplit && cardFixtures.length > 0 ? (
+        <TclotDesktopSplit
+          fixtures={cardFixtures}
+          activeIndex={Math.min(cardDeckIndex ?? 0, cardFixtures.length - 1)}
+          onSelectFixture={setCardDeckIndex}
+          ctx={cardDeckCtx}
+          initialTabId={restoredFixtureTab}
+          squads={squads}
+          feedProps={{
+            leagueId,
+            gameweek,
+            contributionLiveContext,
+            waiverOutGwRows,
+            lastUpdated,
+            teamLogoMap,
+            kitIndexByEntry,
+          }}
+        />
+      ) : null}
       {pageOpen && cardFixtures.length > 0 ? (
-        /* Desktop: the tapped fixture takes over the Scores stack as a wide
-           two-column page (Match split | Stats + H2H + Odds) with a back
-           button — natural document scroll, no overlays. */
+        /* Fallback full-width fixture page when the split is not in use. */
         <LiveFixtureDesktopPage
           fixtures={cardFixtures}
           activeIndex={Math.min(cardDeckIndex, cardFixtures.length - 1)}
@@ -1397,12 +1485,13 @@ export function LiveScores({
           initialTabId={restoredFixtureTab}
         />
       ) : null}
-      {/* `display: contents` wrapper — invisible to layout. While the fixture
-          page is open it hides the scores stack but keeps it MOUNTED, so live
-          polling state survives and Back is instant. */}
+      {/* `display: contents` wrapper — invisible to layout. While the desktop
+          split (or a fallback fixture page) is open it hides the scores stack
+          but keeps it MOUNTED. Phones never set these flags, so this tree
+          stays exactly as the list + card deck. */}
       <div
         className={
-          'lfx-main-col' + (pageOpen ? ' lfx-main-col--hidden' : '')
+          'lfx-main-col' + ((pageOpen || desktopSplit) ? ' lfx-main-col--hidden' : '')
         }
       >
       {championFixtureBundle ? (

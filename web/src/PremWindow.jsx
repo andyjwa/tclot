@@ -26,6 +26,9 @@ import { subscribeTclotRefresh } from './tclotRefresh.js';
 import { PremFixtureMoments } from './PremFixtureMoments.jsx';
 import { StartingSnapshot } from './StartingSnapshot.jsx';
 import { claimedLineupElementIds } from './matchEvents.js';
+import { useMobileNarrowViewport } from './usePortraitMobile.js';
+import { PremMatchBoard, PremScoreSheet } from './PremMatchBoard.jsx';
+import { parseFplLiveHash, replaceFplLiveHash } from './fplLiveRoutes.js';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
 function plBadgeUrl(code) {
@@ -1003,6 +1006,8 @@ function FixtureRow({
   narrow,
   expanded,
   onToggle,
+  sheetMode = false,
+  onOpenSheet,
 }) {
   const home = teamById?.[Number(fx.fplFixture?.team_h)];
   const away = teamById?.[Number(fx.fplFixture?.team_a)];
@@ -1053,8 +1058,12 @@ function FixtureRow({
     fx.fplFixture?.kickoff_time || fx.score?.kickoffIso || null;
 
   const [lineupsOpen, setLineupsOpen] = useState(false);
-  const headerOpen = canShowLineups ? lineupsOpen : expanded;
+  const headerOpen = sheetMode ? false : canShowLineups ? lineupsOpen : expanded;
   const toggleHeader = () => {
+    if (sheetMode && onOpenSheet) {
+      onOpenSheet();
+      return;
+    }
     if (canShowLineups) setLineupsOpen((o) => !o);
     else onToggle();
   };
@@ -1133,7 +1142,16 @@ function FixtureRow({
         claimedElementIds={claimedElementIds}
       />
 
-      {canShowLineups ? (
+      {sheetMode ? (
+        canShowLineups ? (
+          <button type="button" className="prem-lu__toggle" onClick={onOpenSheet}>
+            <span className="prem-lu__title">Lineups</span>
+            <span className="prem-lu__chev" aria-hidden>
+              ›
+            </span>
+          </button>
+        ) : null
+      ) : canShowLineups ? (
         <FixtureLineupsPanel
           open={lineupsOpen}
           onToggle={() => setLineupsOpen((o) => !o)}
@@ -1179,7 +1197,7 @@ function FixtureRow({
 /* in-play. Live fixtures shown here are removed from the day groups   */
 /* below to avoid duplication.                                         */
 /* ================================================================== */
-function LiveStrip({ fixtures, rowProps, expandedSet, onToggle }) {
+function LiveStrip({ fixtures, rowProps, expandedSet, onToggle, sheetMode = false, onOpen }) {
   if (!fixtures?.length) return null;
   return (
     <section className="prem-livenow" aria-label="Live now">
@@ -1199,6 +1217,8 @@ function LiveStrip({ fixtures, rowProps, expandedSet, onToggle }) {
               {...rowProps}
               expanded={expandedSet.has(key)}
               onToggle={() => onToggle(key)}
+              sheetMode={sheetMode}
+              onOpenSheet={() => onOpen?.(key)}
             />
           );
         })}
@@ -1210,6 +1230,54 @@ function LiveStrip({ fixtures, rowProps, expandedSet, onToggle }) {
 /** Day band ('Saturday, Apr 12') above each day group. */
 function DayBand({ label }) {
   return <div className="prem-day">{label}</div>;
+}
+
+function railStatus(fx) {
+  const state = fixtureMockupState(fx);
+  if (state === 'live') return liveMinuteLabel(fx) || 'LIVE';
+  if (state === 'ft') return 'FT';
+  if (state === 'pre') return 'XI';
+  const iso = fx?.fplFixture?.kickoff_time || fx?.score?.kickoffIso;
+  return iso ? kickoffTimeLabel(String(iso)) : '—';
+}
+
+function PremRailButton({ fx, teamById, selected, onSelect }) {
+  const home = teamById?.[Number(fx.fplFixture?.team_h)];
+  const away = teamById?.[Number(fx.fplFixture?.team_a)];
+  const showScore =
+    fx.score &&
+    (fx.score.started || fx.score.finished) &&
+    Number.isFinite(Number(fx.score.homeScore));
+  const state = fixtureMockupState(fx);
+  const line = (team) => (
+    <span className="prem-rail__line">
+      {team?.code != null ? (
+        <img src={plBadgeUrl(team.code)} alt="" />
+      ) : (
+        <span />
+      )}
+      <span className="prem-rail__name">{team?.short_name || team?.name || '—'}</span>
+    </span>
+  );
+  return (
+    <button
+      type="button"
+      className={'prem-rail__btn' + (selected ? ' is-selected' : '')}
+      aria-current={selected ? 'true' : undefined}
+      onClick={onSelect}
+    >
+      <span className={'prem-rail__meta' + (state === 'live' ? ' is-live' : '')}>
+        {railStatus(fx)}
+      </span>
+      <span className="prem-rail__teams">
+        {line(home)}
+        {line(away)}
+      </span>
+      <span className="prem-rail__score tabular">
+        {showScore ? `${fx.score.homeScore}\u2013${fx.score.awayScore}` : 'vs'}
+      </span>
+    </button>
+  );
 }
 
 /* ================================================================== */
@@ -1253,6 +1321,7 @@ export function PremWindow({
   const teamById = contributionLiveContext?.teamById ?? null;
   const elementById = contributionLiveContext?.elementById ?? null;
   const narrow = useNarrow560();
+  const phoneLayout = useMobileNarrowViewport();
   const [lineupMode, setLineupMode] = useState('lineups');
   const [premWindowLoading, setPremWindowLoading] = useState(false);
   const [premWindowError, setPremWindowError] = useState(null);
@@ -1459,6 +1528,9 @@ export function PremWindow({
   }, [events]);
 
   const [expanded, setExpanded] = useState(() => new Set());
+  const [selectedKey, setSelectedKey] = useState(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const appliedPremGwRef = useRef(null);
   const toggle = useCallback((/** @type {number | string} */ matchKey) => {
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -1485,6 +1557,57 @@ export function PremWindow({
   /* Only claim "no fixtures" once every loading phase has settled —
    * otherwise this renders *alongside* the loading tiles during the
    * initial FPL-context fetch, which reads as a contradiction. */
+  const orderedRows = useMemo(
+    () => [...liveFixtures, ...dayGroups.flatMap((d) => d.fixtures)],
+    [liveFixtures, dayGroups],
+  );
+  const selectedFx = useMemo(
+    () => orderedRows.find((r) => String(fixtureKey(r)) === String(selectedKey)) ?? null,
+    [orderedRows, selectedKey],
+  );
+
+  useEffect(() => {
+    if (!orderedRows.length || typeof window === 'undefined') return;
+    if (appliedPremGwRef.current === gameweek && selectedKey != null) return;
+    appliedPremGwRef.current = gameweek;
+    const hash = parseFplLiveHash(window.location.hash);
+    const hashGwOk = hash?.gameweek == null || Number(hash.gameweek) === Number(gameweek);
+    const hit =
+      hash?.tab === 'squads' && hash.fixtureKey != null && hashGwOk
+        ? orderedRows.find((r) => String(fixtureKey(r)) === String(hash.fixtureKey))
+        : null;
+    if (hit) {
+      setSelectedKey(fixtureKey(hit));
+      if (phoneLayout) setSheetOpen(true);
+      return;
+    }
+    if (!phoneLayout) setSelectedKey(fixtureKey(orderedRows[0]));
+    else setSheetOpen(false);
+  }, [orderedRows, phoneLayout, gameweek, selectedKey]);
+
+  useEffect(() => {
+    if (phoneLayout || selectedKey == null) return;
+    replaceFplLiveHash({
+      tab: 'squads',
+      gameweek: Number(gameweek),
+      fixtureKey: selectedKey,
+    });
+  }, [phoneLayout, selectedKey, gameweek]);
+
+  const openMatch = useCallback((key) => {
+    setSelectedKey(key);
+    if (phoneLayout) setSheetOpen(true);
+  }, [phoneLayout]);
+
+  const boardProps = {
+    teamById: teamById || {},
+    elementById,
+    ownerByEl,
+    liveFullByElementId: contributionLiveContext?.liveFullByElementId,
+    teamLogoMap,
+    kitIndexByEntry,
+  };
+
   const noFixtures =
     liveFixtures.length === 0 &&
     dayGroups.length === 0 &&
@@ -1494,7 +1617,7 @@ export function PremWindow({
 
   return (
     <div className="dashboard-stack prem-window-root">
-      <section className="prem-window-chrome" aria-label="Lineups">
+      <section className="prem-window-chrome" aria-label="Premier League">
         {/* Same navigator the Scores subtab uses (`GameWeekNavigator` from
             `LiveScores.jsx`). Auto-refresh is handled by the 90s
             `useLiveScores` poll plus the GW-change effect; the manual Refresh
@@ -1512,7 +1635,7 @@ export function PremWindow({
             className="prem-window-refresh"
             onClick={handleManualRefresh}
             disabled={liveLoading || premWindowLoading}
-            aria-label="Refresh lineups"
+            aria-label="Refresh Premier League"
           >
             {liveLoading || premWindowLoading ? 'Refreshing…' : 'Refresh'}
           </button>
@@ -1588,34 +1711,93 @@ export function PremWindow({
       ) : null}
 
       {lineupMode === 'lineups' && (liveFixtures.length > 0 || dayGroups.length > 0) ? (
-        <section className="prem-fixlist-card" aria-label="Fixtures">
-          <LiveStrip
-            fixtures={liveFixtures}
-            rowProps={rowProps}
-            expandedSet={expanded}
-            onToggle={toggle}
-          />
-          {dayGroups.map((day) => (
-            <section className="prem-daysect" key={day.label}>
-              <DayBand label={day.label} />
-              <div className="prem-fxlist">
-                {day.fixtures.map((fx) => {
-                  const key = fixtureKey(fx);
-                  if (!key) return null;
-                  return (
-                    <FixtureRow
-                      key={key}
-                      fx={fx}
-                      {...rowProps}
-                      expanded={expanded.has(key)}
-                      onToggle={() => toggle(key)}
-                    />
-                  );
-                })}
-              </div>
+        phoneLayout ? (
+          <>
+            <section className="prem-fixlist-card" aria-label="Fixtures">
+              <LiveStrip
+                fixtures={liveFixtures}
+                rowProps={rowProps}
+                expandedSet={expanded}
+                onToggle={toggle}
+                sheetMode
+                onOpen={openMatch}
+              />
+              {dayGroups.map((day) => (
+                <section className="prem-daysect" key={day.label}>
+                  <DayBand label={day.label} />
+                  <div className="prem-fxlist">
+                    {day.fixtures.map((fx) => {
+                      const key = fixtureKey(fx);
+                      if (!key) return null;
+                      return (
+                        <FixtureRow
+                          key={key}
+                          fx={fx}
+                          {...rowProps}
+                          expanded={expanded.has(key)}
+                          onToggle={() => toggle(key)}
+                          sheetMode
+                          onOpenSheet={() => openMatch(key)}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </section>
-          ))}
-        </section>
+            {sheetOpen && selectedFx ? (
+              <PremScoreSheet fx={selectedFx} onClose={() => setSheetOpen(false)}>
+                <PremMatchBoard fx={selectedFx} {...boardProps} />
+              </PremScoreSheet>
+            ) : null}
+          </>
+        ) : (
+          <div className="prem-split">
+            <aside className="prem-rail" aria-label="Premier League matches">
+              {liveFixtures.length ? (
+                <div>
+                  <div className="prem-rail__day">Live now</div>
+                  {liveFixtures.map((fx) => {
+                    const key = fixtureKey(fx);
+                    if (!key) return null;
+                    return (
+                      <PremRailButton
+                        key={key}
+                        fx={fx}
+                        teamById={teamById || {}}
+                        selected={String(key) === String(selectedKey)}
+                        onSelect={() => openMatch(key)}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+              {dayGroups.map((day) => (
+                <div key={day.label}>
+                  <div className="prem-rail__day">{day.label}</div>
+                  {day.fixtures.map((fx) => {
+                    const key = fixtureKey(fx);
+                    if (!key) return null;
+                    return (
+                      <PremRailButton
+                        key={key}
+                        fx={fx}
+                        teamById={teamById || {}}
+                        selected={String(key) === String(selectedKey)}
+                        onSelect={() => openMatch(key)}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </aside>
+            {selectedFx ? (
+              <PremMatchBoard fx={selectedFx} {...boardProps} />
+            ) : (
+              <p className="muted muted--tight">Select a match.</p>
+            )}
+          </div>
+        )
       ) : null}
     </div>
   );
