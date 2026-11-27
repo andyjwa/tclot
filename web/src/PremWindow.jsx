@@ -27,7 +27,7 @@ import { PremFixtureMoments } from './PremFixtureMoments.jsx';
 import { StartingSnapshot } from './StartingSnapshot.jsx';
 import { claimedLineupElementIds } from './matchEvents.js';
 import { useMobileNarrowViewport } from './usePortraitMobile.js';
-import { PremMatchBoard } from './PremMatchBoard.jsx';
+import { PremLineupRow, PremMatchBoard } from './PremMatchBoard.jsx';
 import { parseFplLiveHash, replaceFplLiveHash } from './fplLiveRoutes.js';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
@@ -560,27 +560,7 @@ function countOwnedInXi(side, ownerByEl) {
  * and the short `fplPos` as the fallback. Unknown positions are sorted last
  * so they don't break the visual cadence at the top of the list.
  */
-const POS_LABEL_FOR_FPLPOS = {
-  GK: 'GK',
-  D: 'DEF',
-  M: 'MID',
-  F: 'FWD',
-};
 const POS_RANK_FOR_FPLPOS = { GK: 1, D: 2, M: 3, F: 4 };
-
-function lineupPlayerPosLabel(player, elementById) {
-  const el =
-    player?.elementId != null && elementById
-      ? elementById[player.elementId]
-      : null;
-  const elementType = Number(el?.element_type);
-  if (elementType === 1) return 'GK';
-  if (elementType === 2) return 'DEF';
-  if (elementType === 3) return 'MID';
-  if (elementType === 4) return 'FWD';
-  const short = String(player?.fplPos || '').trim().toUpperCase();
-  return POS_LABEL_FOR_FPLPOS[short] || null;
-}
 
 function lineupPlayerPosRank(player, elementById) {
   const el =
@@ -615,125 +595,61 @@ function MobileLineupRow({
   teamById,
   bench = false,
 }) {
-  const ownerElId = Number(player.elementId);
-  const owner =
-    Number.isFinite(ownerElId) && ownerByEl ? ownerByEl.get(ownerElId) : null;
-  const el = player.elementId != null && elementById ? elementById[player.elementId] : null;
-  const displayName = el
-    ? fplElementDisplayName(el, player.elementId)
-    : (player.fplWebName?.trim() ||
-        player.name ||
-        `#${player.fotmobPlayerId ?? '?'}`);
-  const teamShort =
-    el && teamById ? teamById[Number(el.team)]?.short_name : undefined;
-  const posLabel = lineupPlayerPosLabel(player, elementById);
   return (
-    <div
-      className={
-        'prem-mlu-row' +
-        (bench ? ' prem-mlu-row--bench' : '') +
-        (owner ? ' is-owned' : '')
-      }
-    >
-      {club?.code != null && plBadgeUrl(club.code) ? (
-        <img
-          className="prem-mlu-crest"
-          src={plBadgeUrl(club.code)}
-          alt={club?.name || ''}
-          loading="lazy"
-        />
-      ) : (
-        <span className="prem-mlu-crest" aria-hidden />
-      )}
-      <span className="prem-mlu-name">
-        <ClickablePlayerName
-          element={player.elementId}
-          displayName={el ? fplElementWebName(el, player.elementId) : undefined}
-          web_name={el ? fplElementWebName(el, player.elementId) : undefined}
-          teamShort={teamShort}
-        >
-          {displayName}
-        </ClickablePlayerName>
-      </span>
-      {owner ? (
-        <OwnerTag
-          owner={owner}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-      ) : null}
-      {/* Always render the pos cell (even empty) so the right-edge position
-          column stays vertically aligned when a position is unknown. */}
-      <span className="prem-mlu-pos">{posLabel || ''}</span>
-    </div>
+    <PremLineupRow
+      player={player}
+      club={club}
+      ownerByEl={ownerByEl}
+      elementById={elementById}
+      teamById={teamById}
+      teamLogoMap={teamLogoMap}
+      kitIndexByEntry={kitIndexByEntry}
+      bench={bench}
+    />
   );
 }
 
-/**
- * Compact strip listing unowned bench players. One PL crest sits on the far
- * left, then a flex-wrap list of names where the separator is a `border-left`
- * on each cell. A negative `margin-left` + `overflow: hidden` clip on the
- * inner names wrapper hides the leftmost border of every wrapped visual row
- * so the strip reads as a tidy multi-row list (no leading ` | ` on row 2+).
- */
-function UnownedBenchStrip({ players, club, elementById }) {
+function benchPlayerName(player, elementById) {
+  const el =
+    player?.elementId != null && elementById ? elementById[player.elementId] : null;
+  if (el) return fplElementWebName(el, player.elementId);
+  return player?.fplWebName?.trim() || player?.name || '—';
+}
+
+/** Phone bench: names flow across wrapped lines, crest level with the first line. */
+function CompactBench({ players, club, elementById }) {
   if (!players?.length) return null;
-  const crest =
-    club?.code != null && plBadgeUrl(club.code) ? (
-      <img
-        className="prem-bench-other__crest"
-        src={plBadgeUrl(club.code)}
-        alt={club?.name || ''}
-        loading="lazy"
-      />
-    ) : (
-      <span className="prem-bench-other__crest" aria-hidden />
-    );
+  const crestUrl = club?.code != null ? plBadgeUrl(club.code) : null;
   return (
-    <div className="prem-bench-other">
-      {crest}
-      <span className="prem-bench-other__items-wrap">
-        <span className="prem-bench-other__items">
-          {players.map((p, i) => {
-            const el =
-              p?.elementId != null && elementById
-                ? elementById[p.elementId]
-                : null;
-            const displayName = el
-              ? fplElementWebName(el, p.elementId)
-              : (p?.fplWebName?.trim() ||
-                  p?.name ||
-                  `#${p?.fotmobPlayerId ?? '?'}`);
-            return (
-              <span className="prem-bench-other__item" key={`bo-${i}`}>
-                <ClickablePlayerName
-                  element={p?.elementId}
-                  displayName={displayName}
-                  web_name={displayName}
-                >
-                  <span className="prem-bench-other__name">{displayName}</span>
-                </ClickablePlayerName>
-              </span>
-            );
-          })}
-        </span>
-      </span>
+    <div className="prem-bench-wrap">
+      {crestUrl ? (
+        <img className="prem-bench-wrap__crest" src={crestUrl} alt="" />
+      ) : (
+        <span className="prem-bench-wrap__crest" aria-hidden />
+      )}
+      <ul className="prem-bench-wrap__names">
+        {players.map((p, i) => {
+          const name = benchPlayerName(p, elementById);
+          return (
+            <li className="prem-bench-wrap__name" key={`bench-${p?.elementId ?? i}`}>
+              <ClickablePlayerName
+                element={p?.elementId}
+                displayName={name}
+                web_name={name}
+              >
+                {name}
+              </ClickablePlayerName>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
 
 /**
- * Renders one team's XI + bench + not-in-squad strip on mobile.
- *
- * Bench is partitioned into:
- *   - `ownedBench`: bench players whose `elementId` is in `ownerByEl` —
- *     rendered as full `MobileLineupRow`s (with owner tag + position pill).
- *   - `unownedBench`: everyone else — rendered as a single compact strip
- *     via `UnownedBenchStrip` (one club crest + names separated by ` | `).
- *
- * The "Bench" header is hidden when both partitions are empty. XI and the
- * owned bench rows are sorted GK → DEF → MID → FWD via
- * `sortPlayersByPosition`.
+ * One team's XI and bench on a phone. Starters keep the aligned grid.
+ * The bench is a compact wrap of names. The header is hidden when empty.
  */
 function MobileLineupSide({
   side,
@@ -749,22 +665,10 @@ function MobileLineupSide({
     () => sortPlayersByPosition(side?.xi || [], elementById),
     [side?.xi, elementById],
   );
-  const { ownedBench, unownedBench } = useMemo(() => {
-    const owned = [];
-    const unowned = [];
-    for (const p of side?.bench || []) {
-      const id = Number(p?.elementId);
-      const isOwned =
-        Number.isFinite(id) && ownerByEl && ownerByEl.get(id);
-      if (isOwned) owned.push(p);
-      else unowned.push(p);
-    }
-    return {
-      ownedBench: sortPlayersByPosition(owned, elementById),
-      unownedBench: sortPlayersByPosition(unowned, elementById),
-    };
-  }, [side?.bench, ownerByEl, elementById]);
-  const showBenchHeader = ownedBench.length > 0 || unownedBench.length > 0;
+  const sortedBench = useMemo(
+    () => sortPlayersByPosition(side?.bench || [], elementById),
+    [side?.bench, elementById],
+  );
 
   return (
     <>
@@ -782,32 +686,15 @@ function MobileLineupSide({
           />
         ))}
       </div>
-      {showBenchHeader ? (
-        <div className="prem-mlu-bench-head">Bench</div>
-      ) : null}
-      {ownedBench.length > 0 ? (
-        <div className="prem-mlu-list">
-          {ownedBench.map((p, i) => (
-            <MobileLineupRow
-              key={`bench-owned-${i}`}
-              player={p}
-              club={club}
-              ownerByEl={ownerByEl}
-              teamLogoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-              elementById={elementById}
-              teamById={teamById}
-              bench
-            />
-          ))}
-        </div>
-      ) : null}
-      {unownedBench.length > 0 ? (
-        <UnownedBenchStrip
-          players={unownedBench}
-          club={club}
-          elementById={elementById}
-        />
+      {sortedBench.length > 0 ? (
+        <>
+          <div className="prem-mlu-bench-head">Bench</div>
+          <CompactBench
+            players={sortedBench}
+            club={club}
+            elementById={elementById}
+          />
+        </>
       ) : null}
       <NotInSquadRow
         players={notInSquad}

@@ -19588,16 +19588,22 @@ button.live-xp__player-name:focus-visible {
 }
 
 .prem-mlu-list { display: flex; flex-direction: column; }
-/* Row backgrounds (owned tint, borders) bleed edge-to-edge on mobile, so the
-   content inset lives on the row itself: left inset keeps the club crest off
-   the screen edge, right inset keeps the position label from being clipped. */
+/* Fixed columns so the manager name, badge, chair, and position line up
+   down the list. The name is the only flexible column. Empty owner slots
+   stay in the grid so unowned rows are the same width. */
 .prem-mlu-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 4.75rem 18px 16px 2.15rem;
   align-items: center;
-  gap: 9px;
-  padding: 5px 12px 5px 10px;
+  column-gap: 6px;
+  padding: 4px 10px 4px 10px;
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   min-width: 0;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+.prem-mlu-row--pts {
+  grid-template-columns: 18px minmax(0, 1fr) 1.8rem 4.5rem 18px 16px 2.15rem;
 }
 .prem-mlu-list:first-of-type .prem-mlu-row:first-child { border-top: none; }
 .prem-mlu-row.is-owned {
@@ -19614,79 +19620,85 @@ button.live-xp__player-name:focus-visible {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-strong);
-  flex: 1 1 auto;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Plain-text position label: quiet metadata to the right of each player
-   name. No background, no border — just small uppercase muted text in a
-   fixed column slot so rows stay vertically aligned. The extra left margin
-   separates it from the owner badge so the two right-side columns read as
-   distinct rather than one crowded cluster. */
+.prem-mlu-mgr {
+  min-width: 0;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prem-mlu-badge,
+.prem-mlu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  overflow: hidden;
+}
+.prem-mlu-icon { width: 16px; }
+.prem-mlu-badge .team-avatar-frame,
+.prem-mlu-badge .team-avatar,
+.prem-mlu-badge img {
+  width: 18px;
+  height: 18px;
+}
+.prem-mlu-pts {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong, var(--fm-text-strong));
+}
+/* Plain-text position label in a fixed right-hand column. */
 .prem-mlu-pos {
-  display: inline-block;
-  min-width: 32px;
-  margin-left: 4px;
+  display: block;
   text-align: right;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--text-muted);
   text-transform: uppercase;
-  flex-shrink: 0;
 }
 
-/* Compact strip of bench players who aren't owned in fantasy. One PL crest
-   sits on the far left, then a tidy multi-row list of names with `|`
-   separators drawn as `border-left` on each cell. The inner `__items`
-   container has a negative `margin-left` equal to one cell's
-   `border-left + padding-left`, and the outer `__items-wrap` clips it with
-   `overflow: hidden`, hiding the leftmost border of every wrapped visual
-   row including the first. Net effect: names line up at a uniform left
-   edge on every row and no row starts with a stray `|`. */
-.prem-bench-other {
+/* Phone bench: names wrap in even gaps. The crest stays on the first line. */
+.prem-bench-wrap {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  /* Horizontal insets match .prem-mlu-row so the crest column lines up. */
-  padding: 8px 12px 4px 10px;
-  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  padding: 4px 12px 8px 10px;
   min-width: 0;
 }
-.prem-bench-other__crest {
+.prem-bench-wrap__crest {
   width: 20px;
   height: 20px;
-  flex-shrink: 0;
+  flex: 0 0 20px;
   object-fit: contain;
-  margin-top: 1px;
 }
-.prem-bench-other__items-wrap {
+.prem-bench-wrap__names {
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-}
-.prem-bench-other__items {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  row-gap: 3px;
-  /* Pull the whole list left by the cell's `border-left + padding-left`
-     so the first column's separator is clipped by the wrapper above. */
-  margin-left: -11px;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.prem-bench-other__item {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 10px;
-  min-width: 0;
-  border-left: 1px solid
-    color-mix(in srgb, var(--text-muted) 35%, transparent);
-}
-.prem-bench-other__name {
+.prem-bench-wrap__name {
   font-size: 12.5px;
   font-weight: 500;
+  line-height: 20px;
   color: var(--text-muted);
   white-space: nowrap;
 }
