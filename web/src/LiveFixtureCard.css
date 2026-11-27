@@ -1358,15 +1358,19 @@
 }
 
 @media (min-width: 768px) {
-  .lfx-page {
-    padding: 0;
+  /* One card, same chrome as every other section tile. `.tile--compact`
+     padding is `!important`, so the page has to say so too — otherwise the
+     hero and the match body sit inset inside a second border. */
+  .tile.tile--compact.lfx-page {
+    padding: 0 !important;
     overflow: hidden;
+    border-radius: 12px;
   }
   .lfx-page__topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--fm-border);
   }
   .lfxp-back {
@@ -1416,37 +1420,36 @@
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    padding: 10px 14px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--fm-border);
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
   }
   .lfxp-strip__card {
     appearance: none;
-    flex: 0 0 auto;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     gap: 5px;
-    width: 168px;
-    padding: 7px 9px 6px;
+    width: auto;
+    min-width: 0;
+    padding: 7px 10px 6px;
     border: 1px solid var(--fm-border);
     border-radius: 12px;
-    background: var(--fm-card);
+    background: var(--fm-surface-2);
     color: var(--fm-text);
     cursor: pointer;
     text-align: left;
     transition:
       border-color 0.15s ease,
-      background 0.15s ease,
-      box-shadow 0.15s ease;
+      background 0.15s ease;
   }
   .lfxp-strip__card:hover {
     background: var(--fm-surface-2);
   }
   .lfxp-strip__card.is-active {
     border-color: var(--tclot-logo-purple, #795bfb);
-    box-shadow: inset 0 0 0 1px var(--tclot-logo-purple, #795bfb);
-    background: var(--fm-surface-2);
+    background: var(--fm-card);
   }
   .lfxp-mini {
     display: flex;
@@ -1585,33 +1588,80 @@
     padding: 0 16px 2px;
   }
 
-  /* One pane at a time below the head — natural document scroll. */
+  /* One pane at a time below the head — natural document scroll.
+     Match, lineups and the table run edge to edge inside this card, the
+     same way the Standings table fills its tile. Stats and odds keep a
+     gutter because they are a grid of their own cards. No width cap: a
+     centred max-width read as a narrower panel floating in the card. */
   .lfxp-pane {
     padding: 14px 16px 18px;
     min-width: 0;
   }
-  /* The compact match split is phone-shaped; cap it so it doesn't stretch
-     across a monitor. Same for the odds stack and the standings table. */
-  .lfxp-pane--match {
-    max-width: 860px;
-    margin: 0 auto;
-  }
-  .lfxp-pane--odds {
-    max-width: 720px;
-    margin: 0 auto;
-  }
+  .lfxp-pane--match,
+  .lfxp-pane--lineups,
   .lfxp-pane--table {
-    max-width: 980px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
+    padding: 0;
   }
-  /* The split's bottom margin exists to clear the phone deck's pagination
-     dots; there are none here. Its sticky team headers resolve against the
-     card's 10px-padded scroll pane (top: -10px) — re-pin to the viewport. */
-  .lfxp-pane--match .lfc-split {
+  .lfxp-pane--odds,
+  .lfxp-pane--stats {
+    max-width: none;
+    margin: 0;
+  }
+  /* Drop the phone split's own border and 16px radius — this card is
+     already the frame. Hairline between the two squads stays. */
+  .lfx-page .lfc-split {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     margin-bottom: 0;
   }
-  .lfxp-pane--match .lfc-split__head {
+  .lfx-page .lfc-split__head {
     top: 0;
+    padding: 10px 16px;
+  }
+  .lfx-page .lfc-split__head--home,
+  .lfx-page .lfc-split__head--away {
+    border-radius: 0;
+  }
+  .lfx-page .lfc-split__head-name,
+  .lfx-page .lfc-split__head-pts {
+    font-size: 13px;
+  }
+  .lfx-page .lfc-split__row {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  .lfx-page .lfc-split__pos {
+    width: 28px;
+    font-size: 10px;
+  }
+  .lfx-page .lfc-events__toggle {
+    padding: 8px 16px;
+  }
+  .lfx-page .lfc-events__body {
+    padding: 4px 16px 10px;
+  }
+  .lfx-page .lfc-events__row {
+    font-size: 13px;
+    padding: 6px 0;
+  }
+  /* Lineups tables: same single surface, split by a hairline, instead of
+     two bordered cards nested in this one. */
+  .lfx-page .live-xp {
+    gap: 0;
+  }
+  .lfx-page .live-xp__columns {
+    gap: 0;
+  }
+  .lfx-page .live-xp__column {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .lfx-page .live-xp__column + .live-xp__column {
+    border-left: 1px solid var(--fm-border);
   }
   /* Stats pane: the three stat cards flow as a responsive grid. */
   .lfxp-pane--stats {
@@ -1619,17 +1669,20 @@
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 12px;
     align-items: start;
-    max-width: 1100px;
-    margin: 0 auto;
   }
   .lfxp-pane--stats > .lfc-block {
     margin: 0;
+  }
+  /* Same 12px radius as section tiles. The phone card keeps 16px. */
+  .lfx-page .lfc-block,
+  .lfx-page .live-fixture-season-h2h {
+    border-radius: 12px;
   }
   /* The Season H2H strip was designed for the accordion's tinted panel —
      box it to match the lfc-block cards beside it. */
   .lfxp-pane--stats .live-fixture-season-h2h {
     border: 1px solid var(--fm-border);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 10px 12px;
     margin: 0;
   }

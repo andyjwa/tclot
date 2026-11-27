@@ -592,6 +592,7 @@ import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import PullToRefresh from './PullToRefresh.jsx'
 import './App.css'
+import './DesktopCalm.css'
 
 /**
  * Complete / future GW tiles: full club name at every width — matching the
