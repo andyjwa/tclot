@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
-import { LiveFixtureMatchSplit } from './LiveFixtureMatchSplit.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { LiveFixtureKeyStats } from './LiveFixtureKeyStats.jsx';
 import { LiveFixtureH2hBars } from './LiveFixtureH2hBars.jsx';
@@ -10,17 +9,19 @@ import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
 import { patchTclotViewState } from './tclotViewState.js';
 
+/** Desktop drops the Match tab. Lineups covers that pane. Phone keeps Match. */
+const DESKTOP_FIXTURE_TABS = FIXTURE_CARD_TABS.filter((t) => t.id !== 'match');
+
+function desktopFixtureTab(tabId) {
+  return DESKTOP_FIXTURE_TABS.some((t) => t.id === tabId) ? tabId : 'lineups';
+}
+
 /**
- * Desktop / tablet fixture page — a full-width takeover that replaces the
- * Scores stack when a fixture row is clicked. Mirrors the phone card's
- * structure instead of inventing its own: a hero score strip, then the same
- * Match / Lineups / Stats / Odds / Table tab strip, then one pane at a time.
- * The old stacked two-column layout (everything at once + stats rail) read
- * as a wall on iPads.
+ * Desktop fixture panel. Same hero and tabs as the phone card, except Match
+ * is omitted: Lineups is the default, and a stored Match tab opens Lineups.
+ * Phone keeps Match.
  *
- * Pane mapping vs the phone card:
- *   - Match   → `LiveFixtureMatchSplit` (compact split columns + events band),
- *               width-capped so it doesn't stretch across a monitor.
+ * Pane mapping vs the phone card (Match stays on the phone only):
  *   - Lineups → the detailed side-by-side `LiveExpandedFixture` desktop
  *               tables (the phone card shows one team at a time; here both
  *               fit untruncated at full page width).
@@ -55,9 +56,8 @@ export function LiveFixtureDesktopPage({
   initialTabId = null,
   embedded = false,
 }) {
-  const [tab, setTab] = useState(() =>
-    FIXTURE_CARD_TABS.some((t) => t.id === initialTabId) ? initialTabId : 'match',
-  );
+  const [tab, setTab] = useState(() => desktopFixtureTab(initialTabId));
+  const shown = desktopFixtureTab(tab);
 
   const safeIndex = Math.min(
     Math.max(Number(activeIndex) || 0, 0),
@@ -72,7 +72,7 @@ export function LiveFixtureDesktopPage({
       fixture: Number.isFinite(gw)
         ? { homeId: fixture.homeId, awayId: fixture.awayId, gameweek: gw }
         : null,
-      fixtureTab: tab,
+      fixtureTab: desktopFixtureTab(tab),
     })
   }, [fixture, tab, ctx?.gameweek])
 
@@ -199,13 +199,13 @@ export function LiveFixtureDesktopPage({
           {heroSide('away')}
         </div>
         <div className="lfc-tabs lfxp-tabs" role="tablist">
-          {FIXTURE_CARD_TABS.map((t) => (
+          {DESKTOP_FIXTURE_TABS.map((t) => (
             <button
               key={t.id}
               type="button"
               role="tab"
-              aria-selected={tab === t.id}
-              className={'lfc-tab' + (tab === t.id ? ' is-active' : '')}
+              aria-selected={shown === t.id}
+              className={'lfc-tab' + (shown === t.id ? ' is-active' : '')}
               onClick={() => setTab(t.id)}
             >
               {t.label}
@@ -214,17 +214,7 @@ export function LiveFixtureDesktopPage({
         </div>
       </div>
 
-      {tab === 'match' ? (
-        <div className="lfxp-pane lfxp-pane--match">
-          <LiveFixtureMatchSplit
-            fixture={fixture}
-            ctx={ctx}
-            onOpenPlayer={ctx.onOpenPlayer}
-          />
-        </div>
-      ) : null}
-
-      {tab === 'lineups' ? (
+      {shown === 'lineups' ? (
         <div className="lfxp-pane lfxp-pane--lineups">
           <LiveExpandedFixture
             homeSquad={homeSquad}
@@ -237,7 +227,7 @@ export function LiveFixtureDesktopPage({
         </div>
       ) : null}
 
-      {tab === 'stats' ? (
+      {shown === 'stats' ? (
         <div className="lfxp-pane lfxp-pane--stats">
           <LiveFixtureKeyStats homeSquad={homeSquad} awaySquad={awaySquad} />
           <LiveFixtureH2hBars
@@ -263,7 +253,7 @@ export function LiveFixtureDesktopPage({
         </div>
       ) : null}
 
-      {tab === 'odds' ? (
+      {shown === 'odds' ? (
         <div className="lfxp-pane lfxp-pane--odds">
           <LiveFixtureOdds
             homeSquad={homeSquad}
@@ -277,7 +267,7 @@ export function LiveFixtureDesktopPage({
         </div>
       ) : null}
 
-      {tab === 'table' ? (
+      {shown === 'table' ? (
         <div className="lfxp-pane lfxp-pane--table">
           <LiveStandingsTable
             liveStandingsRows={ctx.liveStandingsRows}

@@ -76,6 +76,46 @@
 }
 .prem-board__status.is-live { color: #fecaca; }
 
+.prem-board__scorers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px 16px 4px;
+  font-size: 12px;
+  color: var(--fm-muted, var(--text-muted));
+}
+.prem-board__scorers span:first-child { text-align: right; }
+
+.prem-board__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 8px 14px 10px;
+}
+.prem-board__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--fm-border, var(--border));
+  background: var(--fm-surface-2, var(--surface-2));
+  font-size: 12px;
+  font-weight: 700;
+}
+.prem-board__chip.is-just-in {
+  background: color-mix(in srgb, var(--fm-pitch, #12a15a) 22%, var(--fm-card, var(--surface)));
+  border-color: var(--fm-pitch, #12a15a);
+}
+.prem-board__just {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-pitch, #12a15a);
+}
+
 .prem-board__xi { display: flex; flex-direction: column; }
 .prem-board__xi-row {
   display: grid;
