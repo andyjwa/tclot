@@ -165,54 +165,6 @@
 }
 .prem-board__empty { padding: 16px; }
 
-.prem-sheet {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-.prem-sheet__dim {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  padding: 0;
-  background: color-mix(in srgb, #000 46%, transparent);
-  cursor: pointer;
-}
-.prem-sheet__panel {
-  position: relative;
-  width: min(560px, 100%);
-  max-height: min(88vh, 100%);
-  overflow: auto;
-  background: var(--fm-bg, var(--bg));
-  border-radius: 18px 18px 0 0;
-  padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.28);
-}
-.prem-sheet__panel.is-dragging { transition: none; }
-.prem-sheet__grab {
-  width: 36px;
-  height: 4px;
-  margin: 4px auto 8px;
-  border-radius: 999px;
-  background: var(--fm-muted, var(--text-muted));
-  opacity: 0.55;
-}
-.prem-sheet__close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  border: 0;
-  background: transparent;
-  color: var(--fm-muted, var(--text-muted));
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 @media (min-width: 768px) {
   .prem-split {
     display: grid;
@@ -302,10 +254,4 @@
     text-transform: uppercase;
   }
   .prem-rail__meta.is-live { color: var(--fm-loss-dot, #ef4444); }
-}
-
-@media (max-width: 767px) {
-  .prem-board__club-name { font-size: 13px; }
-  .prem-board__big { font-size: 34px; }
-  .prem-board__cell { font-size: 12px; padding: 5px 6px; gap: 4px; }
 }

@@ -27,7 +27,7 @@ import { PremFixtureMoments } from './PremFixtureMoments.jsx';
 import { StartingSnapshot } from './StartingSnapshot.jsx';
 import { claimedLineupElementIds } from './matchEvents.js';
 import { useMobileNarrowViewport } from './usePortraitMobile.js';
-import { PremMatchBoard, PremScoreSheet } from './PremMatchBoard.jsx';
+import { PremMatchBoard } from './PremMatchBoard.jsx';
 import { parseFplLiveHash, replaceFplLiveHash } from './fplLiveRoutes.js';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
@@ -1006,8 +1006,6 @@ function FixtureRow({
   narrow,
   expanded,
   onToggle,
-  sheetMode = false,
-  onOpenSheet,
 }) {
   const home = teamById?.[Number(fx.fplFixture?.team_h)];
   const away = teamById?.[Number(fx.fplFixture?.team_a)];
@@ -1058,12 +1056,8 @@ function FixtureRow({
     fx.fplFixture?.kickoff_time || fx.score?.kickoffIso || null;
 
   const [lineupsOpen, setLineupsOpen] = useState(false);
-  const headerOpen = sheetMode ? false : canShowLineups ? lineupsOpen : expanded;
+  const headerOpen = canShowLineups ? lineupsOpen : expanded;
   const toggleHeader = () => {
-    if (sheetMode && onOpenSheet) {
-      onOpenSheet();
-      return;
-    }
     if (canShowLineups) setLineupsOpen((o) => !o);
     else onToggle();
   };
@@ -1142,16 +1136,7 @@ function FixtureRow({
         claimedElementIds={claimedElementIds}
       />
 
-      {sheetMode ? (
-        canShowLineups ? (
-          <button type="button" className="prem-lu__toggle" onClick={onOpenSheet}>
-            <span className="prem-lu__title">Lineups</span>
-            <span className="prem-lu__chev" aria-hidden>
-              ›
-            </span>
-          </button>
-        ) : null
-      ) : canShowLineups ? (
+      {canShowLineups ? (
         <FixtureLineupsPanel
           open={lineupsOpen}
           onToggle={() => setLineupsOpen((o) => !o)}
@@ -1197,7 +1182,7 @@ function FixtureRow({
 /* in-play. Live fixtures shown here are removed from the day groups   */
 /* below to avoid duplication.                                         */
 /* ================================================================== */
-function LiveStrip({ fixtures, rowProps, expandedSet, onToggle, sheetMode = false, onOpen }) {
+function LiveStrip({ fixtures, rowProps, expandedSet, onToggle }) {
   if (!fixtures?.length) return null;
   return (
     <section className="prem-livenow" aria-label="Live now">
@@ -1217,8 +1202,6 @@ function LiveStrip({ fixtures, rowProps, expandedSet, onToggle, sheetMode = fals
               {...rowProps}
               expanded={expandedSet.has(key)}
               onToggle={() => onToggle(key)}
-              sheetMode={sheetMode}
-              onOpenSheet={() => onOpen?.(key)}
             />
           );
         })}
@@ -1529,7 +1512,6 @@ export function PremWindow({
 
   const [expanded, setExpanded] = useState(() => new Set());
   const [selectedKey, setSelectedKey] = useState(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const appliedPremGwRef = useRef(null);
   const toggle = useCallback((/** @type {number | string} */ matchKey) => {
     setExpanded((prev) => {
@@ -1567,6 +1549,7 @@ export function PremWindow({
   );
 
   useEffect(() => {
+    if (phoneLayout) return;
     if (!orderedRows.length || typeof window === 'undefined') return;
     if (appliedPremGwRef.current === gameweek && selectedKey != null) return;
     appliedPremGwRef.current = gameweek;
@@ -1578,11 +1561,9 @@ export function PremWindow({
         : null;
     if (hit) {
       setSelectedKey(fixtureKey(hit));
-      if (phoneLayout) setSheetOpen(true);
       return;
     }
-    if (!phoneLayout) setSelectedKey(fixtureKey(orderedRows[0]));
-    else setSheetOpen(false);
+    setSelectedKey(fixtureKey(orderedRows[0]));
   }, [orderedRows, phoneLayout, gameweek, selectedKey]);
 
   useEffect(() => {
@@ -1596,8 +1577,7 @@ export function PremWindow({
 
   const openMatch = useCallback((key) => {
     setSelectedKey(key);
-    if (phoneLayout) setSheetOpen(true);
-  }, [phoneLayout]);
+  }, []);
 
   const boardProps = {
     teamById: teamById || {},
@@ -1712,45 +1692,34 @@ export function PremWindow({
 
       {lineupMode === 'lineups' && (liveFixtures.length > 0 || dayGroups.length > 0) ? (
         phoneLayout ? (
-          <>
-            <section className="prem-fixlist-card" aria-label="Fixtures">
-              <LiveStrip
-                fixtures={liveFixtures}
-                rowProps={rowProps}
-                expandedSet={expanded}
-                onToggle={toggle}
-                sheetMode
-                onOpen={openMatch}
-              />
-              {dayGroups.map((day) => (
-                <section className="prem-daysect" key={day.label}>
-                  <DayBand label={day.label} />
-                  <div className="prem-fxlist">
-                    {day.fixtures.map((fx) => {
-                      const key = fixtureKey(fx);
-                      if (!key) return null;
-                      return (
-                        <FixtureRow
-                          key={key}
-                          fx={fx}
-                          {...rowProps}
-                          expanded={expanded.has(key)}
-                          onToggle={() => toggle(key)}
-                          sheetMode
-                          onOpenSheet={() => openMatch(key)}
-                        />
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
-            </section>
-            {sheetOpen && selectedFx ? (
-              <PremScoreSheet fx={selectedFx} onClose={() => setSheetOpen(false)}>
-                <PremMatchBoard fx={selectedFx} {...boardProps} />
-              </PremScoreSheet>
-            ) : null}
-          </>
+          <section className="prem-fixlist-card" aria-label="Fixtures">
+            <LiveStrip
+              fixtures={liveFixtures}
+              rowProps={rowProps}
+              expandedSet={expanded}
+              onToggle={toggle}
+            />
+            {dayGroups.map((day) => (
+              <section className="prem-daysect" key={day.label}>
+                <DayBand label={day.label} />
+                <div className="prem-fxlist">
+                  {day.fixtures.map((fx) => {
+                    const key = fixtureKey(fx);
+                    if (!key) return null;
+                    return (
+                      <FixtureRow
+                        key={key}
+                        fx={fx}
+                        {...rowProps}
+                        expanded={expanded.has(key)}
+                        onToggle={() => toggle(key)}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </section>
         ) : (
           <div className="prem-split">
             <aside className="prem-rail" aria-label="Premier League matches">
